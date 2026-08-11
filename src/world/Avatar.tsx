@@ -90,7 +90,7 @@ export function Avatar() {
   });
 
   return (
-    <group ref={root}>
+    <group ref={root} rotation-y={Math.PI}>
       {/* legs */}
       <group ref={legL} position={[0.16, 0.82, 0]}>
         <mesh position={[0, -0.16, 0]}>
