@@ -3,35 +3,74 @@
 Snapshot of what actually exists. Update this with every change.
 
 **Last updated:** 2026-08-11
-**Current phase:** Documentation — awaiting approval to write application code.
+**Current phase:** Milestone 1 implemented and verified in a browser.
 
 ## Built and working
 
-- Nothing yet, product-wise.
-- Repository baseline: Vite + React 19 + TypeScript + TanStack Router,
-  Tailwind CSS v4 tokens in `src/styles.css`, shadcn-style UI primitives
-  available but unused.
-- `src/routes/index.tsx` still renders the default placeholder.
+The full minimal loop runs end to end: land → enter → walk → look → approach →
+prompt → read journal → close.
 
-## Not built
+- **Landing screen** (`src/ui/LandingScreen.tsx`): title, one line of
+  description, "Enter WondersLand" button, short controls hint. Sets
+  `entered: true`.
+- **The world** (`src/world/World.tsx`): one `<Canvas>`, gradient sky sphere
+  (`Sky.tsx`), fog, hemisphere + directional light, circular ground with a
+  darker boundary ring, an instanced hedge ring, instanced grass tufts and
+  rocks (`Ground.tsx`). Garden radius 19 units; the player is clamped to it.
+- **Movement and camera** (`src/world/Player.tsx`): capsule avatar, WASD /
+  arrow keys, drag anywhere on the canvas to rotate yaw (mouse and touch, no
+  pointer lock), third-person camera with damped follow. Radial clamp only —
+  no physics engine.
+- **Touch controls** (`src/ui/TouchControls.tsx`): on-screen joystick shown
+  only on coarse-pointer devices; drag elsewhere still rotates the camera.
+- **The plant** (`src/world/plants/CannabisPlant.tsx`): one procedural
+  cannabis plant — soil mound, stem, four nodes of paired seven-leaflet fan
+  leaves, a top cola — with a gentle sway driven in `useFrame`.
+- **Interaction** (`src/ui/InteractPrompt.tsx`): proximity is measured in
+  `useFrame`; the store is written only when the in/out state flips. Prompt
+  reads "Cannabis · Press E to read"; E or a tap opens the journal.
+- **Journal** (`src/ui/Journal.tsx`): DOM overlay, `role="dialog"`,
+  `aria-modal`, labelled by its title, focus moved to the close button, Esc or
+  the button closes it. Movement input is zeroed while it is open.
+- **Content** (`src/content/plants.ts`): static typed data for the one plant.
+- **State** (`src/state/useWorldStore.ts`): `entered`, `focusedPlantId`,
+  `journalOpen` and their three setters. Nothing else.
+- **Per-frame input** (`src/state/input.ts`): a plain mutable object written by
+  keyboard/joystick handlers and read inside `useFrame` — never React state.
+- **SEO/metadata**: route-level `head()` on `/` with title, description and
+  Open Graph/Twitter tags; Fraunces/Karla loaded via a `<link>` in the root
+  route.
 
-Everything in `ROADMAP.md`, starting with Milestone 1.
+## Performance notes
 
-## Dependencies to be installed at the start of Milestone 1
+- The 3D module is `React.lazy` behind `<ClientOnly>`, so the landing screen
+  paints without Three.js.
+- Grass, rocks and hedge are three `InstancedMesh` draw calls; matrices are
+  computed once in `useMemo` with a deterministic PRNG.
+- No allocations inside `useFrame` — all vectors are module-scope scratch
+  objects. No `setState` per frame. No post-processing, no shadows maps.
+- `dpr` capped at 1.75.
 
-- `three`
-- `@react-three/fiber`
-- `@react-three/drei`
-- `zustand`
-- `@types/three` (dev)
+## Verified
 
-No other dependency may be added without a matching roadmap line.
+- `tsgo --noEmit` and `vite build --mode development` both clean.
+- Headless Chromium run: enter → rotate → walk → prompt appears → E opens the
+  journal → Esc closes it. No console errors or React warnings. (Only a
+  Three.js internal `THREE.Clock` deprecation notice and swiftshader GPU
+  messages from the headless test environment.)
 
-## Known constraints
+## Known limitations
 
-- SSR is on; the 3D scene must be client-only.
-- Preview/dev server runs on port 8080.
+- Only one plant exists; the journal is hard-wired to it.
+- Camera pitch is fixed; only yaw rotates.
+- Collision is a circular clamp — the player can walk through the plant mesh.
+- No audio, no day/night, no save state — all deliberately out of scope.
+- Two small additions beyond the file list in `AI_HANDOFF.md`, both required by
+  Milestone 1: `src/state/input.ts` (per-frame input refs) and
+  `src/ui/TouchControls.tsx` (mobile joystick), plus
+  `src/world/three-jsx.d.ts` for R3F JSX typings.
 
-## Open questions
+## Next step
 
-- None. Scope is frozen to Milestone 1.
+Milestone 1 is complete. Nothing in "Later" may be started without a new
+roadmap entry.
