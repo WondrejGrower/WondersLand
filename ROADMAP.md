@@ -48,6 +48,12 @@ Loading state, page metadata/SEO, mobile pass, performance pass
 **Milestone 1 is done when** a first-time visitor can complete the full loop
 without instructions and without a single console error.
 
+## Milestone 1 visual identity polish — player avatar only (done)
+
+A single user-authorized visual pass: replace the player capsule with a
+low-poly stylized garden-keeper avatar built from primitives, with idle and
+walk animation. No new systems, no environment changes, nothing else.
+
 ## Later (not planned, not scaffolded)
 
 - More plants and a small journal index

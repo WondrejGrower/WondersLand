@@ -2,7 +2,7 @@
 
 Snapshot of what actually exists. Update this with every change.
 
-**Last updated:** 2026-08-11
+**Last updated:** 2026-08-11 (avatar polish)
 **Current phase:** Milestone 1 implemented and verified in a browser.
 
 ## Built and working
@@ -17,6 +17,15 @@ prompt → read journal → close.
   (`Sky.tsx`), fog, hemisphere + directional light, circular ground with a
   darker boundary ring, an instanced hedge ring, instanced grass tufts and
   rocks (`Ground.tsx`). Garden radius 19 units; the player is clamped to it.
+- **The avatar** (`src/world/Avatar.tsx`): the capsule placeholder is gone. A
+  code-native low-poly garden keeper built from boxes, cylinders, cones and
+  spheres — slightly oversized head, layered spiky black hair, large dark eyes,
+  oversized black tee with a locally drawn `CanvasTexture` "42 / FastBuds"
+  chest graphic, black shorts, white striped socks, black-and-white sneakers,
+  olive crossbody bag with strap, dark wristwatch. Same height (~1.9) and
+  origin as the old capsule. Idle breathing plus an arm/leg walk cycle, driven
+  by refs in `useFrame` and blended in only while movement input is non-zero
+  and the journal is closed. All its colors live in `palette.ts`.
 - **Movement and camera** (`src/world/Player.tsx`): capsule avatar, WASD /
   arrow keys, drag anywhere on the canvas to rotate yaw (mouse and touch, no
   pointer lock), third-person camera with damped follow. Radial clamp only —
@@ -69,6 +78,14 @@ prompt → read journal → close.
   Milestone 1: `src/state/input.ts` (per-frame input refs) and
   `src/ui/TouchControls.tsx` (mobile joystick), plus
   `src/world/three-jsx.d.ts` for R3F JSX typings.
+
+## Milestone 1 visual identity polish (user-authorized, avatar only)
+
+Replaced the player capsule with the stylized garden-keeper avatar described
+above. Deliberate simplifications: no fingers, no facial features beyond eyes,
+the bag is a single box with a clasp, sneaker detail is two stacked boxes, and
+the chest graphic is a flat generated texture on one front quad rather than
+extruded lettering. Nothing else in the scene changed.
 
 ## Next step
 

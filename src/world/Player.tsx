@@ -6,6 +6,8 @@ import { useWorldStore } from "../state/useWorldStore";
 import { CANNABIS, INTERACT_RADIUS } from "../content/plants";
 import { GARDEN_RADIUS } from "./Ground";
 import { palette } from "./palette";
+import { Avatar } from "./Avatar";
+
 
 const SPEED = 4.2;
 const CAMERA_DISTANCE = 6;
@@ -165,14 +167,7 @@ export function Player() {
 
   return (
     <group ref={body}>
-      <mesh position={[0, 0.85, 0]} castShadow>
-        <capsuleGeometry args={[0.32, 0.75, 4, 8]} />
-        <meshLambertMaterial color="#e8d3a9" />
-      </mesh>
-      <mesh position={[0, 1.65, 0]}>
-        <sphereGeometry args={[0.26, 12, 10]} />
-        <meshLambertMaterial color="#f2e0be" />
-      </mesh>
+      <Avatar />
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]}>
         <circleGeometry args={[0.5, 16]} />
         <meshBasicMaterial color={palette.groundDark} transparent opacity={0.35} />
@@ -180,3 +175,4 @@ export function Player() {
     </group>
   );
 }
+

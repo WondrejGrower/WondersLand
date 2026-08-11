@@ -15,4 +15,21 @@ export const palette = {
   leafLight: "#6d9c46",
   bud: "#7f9b52",
   sun: "#fff3d6",
+  // Garden-keeper avatar
+  skin: "#e8b98d",
+  skinShadow: "#d9a377",
+  hair: "#1e1a19",
+  eye: "#2b1f1a",
+  shirt: "#1c1b1a",
+  shirtGraphic: "#f08a1e",
+  shorts: "#171615",
+  sockWhite: "#f4f2ec",
+  sockStripe: "#3a3936",
+  shoeWhite: "#efece4",
+  shoeBlack: "#232220",
+  bag: "#5f6642",
+  bagStrap: "#6d7448",
+  bagClasp: "#c9c6b6",
+  watch: "#2a2c26",
 } as const;
+
