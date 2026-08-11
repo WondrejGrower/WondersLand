@@ -225,19 +225,28 @@ export function Avatar() {
           <sphereGeometry args={[0.25, 14, 12, 0, Math.PI * 2, 0, Math.PI * 0.62]} />
           <meshLambertMaterial color={palette.hair} />
         </mesh>
-        {/* spikes */}
-        <mesh position={[0.1, 0.24, 0.04]} rotation={[0.3, 0, -0.4]}>
-          <coneGeometry args={[0.07, 0.18, 5]} />
+        {/* layered spikes — flatter and swept back, five tufts */}
+        <mesh position={[0.15, 0.19, 0.02]} rotation={[0.2, 0, -1.0]}>
+          <coneGeometry args={[0.075, 0.15, 5]} />
           <meshLambertMaterial color={palette.hair} />
         </mesh>
-        <mesh position={[-0.09, 0.25, -0.02]} rotation={[-0.2, 0, 0.45]}>
-          <coneGeometry args={[0.07, 0.17, 5]} />
+        <mesh position={[-0.15, 0.2, -0.02]} rotation={[-0.2, 0, 1.0]}>
+          <coneGeometry args={[0.075, 0.15, 5]} />
           <meshLambertMaterial color={palette.hair} />
         </mesh>
-        <mesh position={[0.0, 0.22, -0.14]} rotation={[-0.6, 0, 0]}>
-          <coneGeometry args={[0.07, 0.16, 5]} />
+        <mesh position={[0.05, 0.24, -0.12]} rotation={[-0.9, 0, -0.25]}>
+          <coneGeometry args={[0.075, 0.17, 5]} />
           <meshLambertMaterial color={palette.hair} />
         </mesh>
+        <mesh position={[-0.06, 0.25, -0.06]} rotation={[-0.7, 0, 0.2]}>
+          <coneGeometry args={[0.07, 0.15, 5]} />
+          <meshLambertMaterial color={palette.hair} />
+        </mesh>
+        <mesh position={[0.0, 0.2, 0.13]} rotation={[0.8, 0, 0.1]}>
+          <coneGeometry args={[0.08, 0.14, 5]} />
+          <meshLambertMaterial color={palette.hair} />
+        </mesh>
+
         {/* fringe */}
         <mesh position={[0, 0.13, 0.19]} rotation={[0.35, 0, 0]}>
           <boxGeometry args={[0.34, 0.12, 0.1]} />
