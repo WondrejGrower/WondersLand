@@ -1,0 +1,26 @@
+import { Canvas } from "@react-three/fiber";
+import { Sky } from "./Sky";
+import { Ground } from "./Ground";
+import { Player } from "./Player";
+import { CannabisPlant } from "./plants/CannabisPlant";
+import { palette } from "./palette";
+import { CANNABIS } from "../content/plants";
+
+export default function World() {
+  return (
+    <Canvas
+      dpr={[1, 1.75]}
+      camera={{ fov: 55, near: 0.1, far: 200, position: [0, 3, 14] }}
+      gl={{ antialias: true, powerPreference: "high-performance" }}
+      style={{ touchAction: "none" }}
+    >
+      <fog attach="fog" args={[palette.fog, 26, 78]} />
+      <hemisphereLight args={[palette.skyTop, palette.ground, 1.1]} />
+      <directionalLight position={[8, 12, 6]} intensity={1.15} color={palette.sun} />
+      <Sky />
+      <Ground />
+      <CannabisPlant position={CANNABIS.position} />
+      <Player />
+    </Canvas>
+  );
+}
