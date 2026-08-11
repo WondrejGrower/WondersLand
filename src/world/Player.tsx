@@ -6,6 +6,8 @@ import { useWorldStore } from "../state/useWorldStore";
 import { CANNABIS, INTERACT_RADIUS } from "../content/plants";
 import { GARDEN_RADIUS } from "./Ground";
 import { palette } from "./palette";
+import { Avatar } from "./Avatar";
+
 
 const SPEED = 4.2;
 const CAMERA_DISTANCE = 6;
