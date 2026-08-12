@@ -1,6 +1,7 @@
 import { Canvas } from "@react-three/fiber";
 import { Sky } from "./Sky";
 import { Ground } from "./Ground";
+import { Plaza } from "./Plaza";
 import { Player } from "./Player";
 import { CannabisPlant } from "./plants/CannabisPlant";
 import { palette } from "./palette";
@@ -14,13 +15,15 @@ export default function World() {
       gl={{ antialias: true, powerPreference: "high-performance" }}
       style={{ touchAction: "none" }}
     >
-      <fog attach="fog" args={[palette.fog, 26, 78]} />
-      <hemisphereLight args={[palette.skyTop, palette.ground, 1.1]} />
-      <directionalLight position={[8, 12, 6]} intensity={1.15} color={palette.sun} />
+      <fog attach="fog" args={[palette.fog, 30, 84]} />
+      <hemisphereLight args={[palette.skyTop, palette.ground, 1.0]} />
+      <directionalLight position={[8, 12, 6]} intensity={1.25} color={palette.sun} />
       <Sky />
       <Ground />
+      <Plaza />
       <CannabisPlant position={CANNABIS.position} />
       <Player />
     </Canvas>
   );
 }
+
