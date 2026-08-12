@@ -1,6 +1,20 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useWorldStore } from "../state/useWorldStore";
 import { CANNABIS } from "../content/plants";
+
+// Coarse pointer (phone/tablet) gets a touch hint, fine pointer gets the key.
+function useCoarsePointer() {
+  const [coarse, setCoarse] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(pointer: coarse)");
+    const update = () => setCoarse(mql.matches);
+    update();
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
+  }, []);
+  return coarse;
+}
+
 
 export function InteractPrompt() {
   const focusedPlantId = useWorldStore((s) => s.focusedPlantId);
