@@ -51,7 +51,7 @@ export function CannabisPlant({ position }: { position: [number, number, number]
   );
 
   return (
-    <group position={position} scale={1.4}>
+    <group position={position} scale={1.9}>
       {/* soil mound */}
       <mesh position={[0, 0.08, 0]} scale={[0.85, 0.28, 0.85]}>
         <sphereGeometry args={[1, 14, 8]} />
