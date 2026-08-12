@@ -149,19 +149,35 @@ function EntranceArch() {
   );
 }
 
+// Shared path curve so vegetation can keep clear of the walkable route.
+const PATH_FROM = { x: 0, z: 16 };
+const PATH_MID = { x: -1.4, z: 3 };
+const PATH_TO = { x: 5.4, z: -3.2 };
+
+function pathPoint(t: number) {
+  const x =
+    (1 - t) * (1 - t) * PATH_FROM.x + 2 * (1 - t) * t * PATH_MID.x + t * t * PATH_TO.x;
+  const z =
+    (1 - t) * (1 - t) * PATH_FROM.z + 2 * (1 - t) * t * PATH_MID.z + t * t * PATH_TO.z;
+  return { x, z };
+}
+
+function nearPath(x: number, z: number, clearance: number) {
+  for (let i = 0; i <= 20; i++) {
+    const p = pathPoint(i / 20);
+    if (Math.hypot(p.x - x, p.z - z) < clearance) return true;
+  }
+  return false;
+}
+
 // A short curved path: reused flat quads stepped along a spline-ish curve.
 function Path() {
   const steps = useMemo(() => {
     const list: { p: [number, number, number]; r: number }[] = [];
-    const from = { x: 0, z: 16 };
-    const mid = { x: -1.4, z: 3 };
-    const to = { x: 5.4, z: -3.2 };
-    const count = 26;
-    let prev = from;
+    const count = 22;
+    let prev = PATH_FROM;
     for (let i = 0; i <= count; i++) {
-      const t = i / count;
-      const x = (1 - t) * (1 - t) * from.x + 2 * (1 - t) * t * mid.x + t * t * to.x;
-      const z = (1 - t) * (1 - t) * from.z + 2 * (1 - t) * t * mid.z + t * t * to.z;
+      const { x, z } = pathPoint(i / count);
       const r = Math.atan2(x - prev.x, z - prev.z);
       list.push({ p: [x, 0.02, z], r: i === 0 ? 0 : r });
       prev = { x, z };
@@ -173,8 +189,8 @@ function Path() {
     <group>
       {steps.map(({ p, r }, i) => (
         <mesh key={i} position={p} rotation={[-Math.PI / 2, 0, -r]}>
-          <planeGeometry args={[2.5, 1.4]} />
-          <meshLambertMaterial color={i % 3 === 0 ? palette.pathEdge : palette.path} />
+          <planeGeometry args={[2.4, 1.6]} />
+          <meshLambertMaterial color={palette.path} />
         </mesh>
       ))}
     </group>
@@ -273,10 +289,13 @@ function Scatter() {
     const random = rng(902);
     const dummy = new Object3D();
     const list: Matrix4[] = [];
-    for (let i = 0; i < 46; i++) {
+    for (let i = 0; i < 70 && list.length < 46; i++) {
       const a = random() * Math.PI * 2;
       const r = 5 + random() * 11;
-      dummy.position.set(Math.cos(a) * r, 0.35, Math.sin(a) * r);
+      const x = Math.cos(a) * r;
+      const z = Math.sin(a) * r;
+      if (nearPath(x, z, 2.6)) continue;
+      dummy.position.set(x, 0.35, z);
       dummy.rotation.set(0, random() * Math.PI, 0);
       const s = 0.4 + random() * 0.5;
       dummy.scale.set(s, s * 0.8, s);
@@ -290,10 +309,13 @@ function Scatter() {
     const random = rng(77);
     const dummy = new Object3D();
     const list: Matrix4[] = [];
-    for (let i = 0; i < 70; i++) {
+    for (let i = 0; i < 110 && list.length < 70; i++) {
       const a = random() * Math.PI * 2;
       const r = 4 + random() * 12;
-      dummy.position.set(Math.cos(a) * r, 0.25 + random() * 0.1, Math.sin(a) * r);
+      const x = Math.cos(a) * r;
+      const z = Math.sin(a) * r;
+      if (nearPath(x, z, 1.9)) continue;
+      dummy.position.set(x, 0.25 + random() * 0.1, z);
       dummy.rotation.set(0, random() * Math.PI, 0);
       dummy.scale.setScalar(0.11 + random() * 0.08);
       dummy.updateMatrix();
