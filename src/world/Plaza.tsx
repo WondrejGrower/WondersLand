@@ -217,11 +217,11 @@ function GardenIsland() {
         </Instances>
       </group>
       {/* a few taller shrubs in the bed */}
-      {[
+      {([
         [-1.2, 0.6, 0.4],
         [0.9, 0.7, -0.9],
         [0.2, 0.55, 1.3],
-      ].map(([x, s, z], i) => (
+      ] as [number, number, number][]).map(([x, s, z], i) => (
         <mesh key={i} position={[x, 0.55 + s * 0.4, z]} scale={s}>
           <icosahedronGeometry args={[1, 1]} />
           <meshLambertMaterial color={i % 2 ? palette.shrub : palette.foliageB} />
@@ -326,12 +326,12 @@ export function Plaza() {
       <Tree position={[8.5, 0, 5.5]} scale={0.95} tint={palette.foliageB} />
       <Tree position={[10, 0, -8]} scale={1.3} tint={palette.foliageC} />
       {/* rocks framing the plaza */}
-      {[
+      {([
         [-5.2, -1.6, 0.7],
         [4.2, 6.4, 0.55],
         [-9, -6, 0.9],
         [8.6, 0.5, 0.45],
-      ].map(([x, z, s], i) => (
+      ] as [number, number, number][]).map(([x, z, s], i) => (
         <mesh key={i} position={[x, s * 0.5, z]} scale={s} rotation-y={i}>
           <dodecahedronGeometry args={[1, 0]} />
           <meshLambertMaterial color={palette.stone} />
