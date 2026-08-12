@@ -31,5 +31,26 @@ export const palette = {
   bagStrap: "#6d7448",
   bagClasp: "#c9c6b6",
   watch: "#2a2c26",
+  // Entrance plaza
+  path: "#d9c9a3",
+  pathEdge: "#c3ac7f",
+  stone: "#bdb3a2",
+  stoneDark: "#9a8f7e",
+  wood: "#a9743f",
+  woodDark: "#7d5330",
+  sign: "#f0e2c2",
+  trunk: "#7a5738",
+  foliageA: "#4f7f43",
+  foliageB: "#68a052",
+  foliageC: "#3f6a3a",
+  shrub: "#4a7a45",
+  bedSoil: "#5f4a36",
+  flowerPink: "#e58aa5",
+  flowerCream: "#f5efd2",
+  flowerGold: "#f0bd57",
+  glass: "#cfe7e2",
+  frame: "#e8e2d2",
+  shadow: "#3c4a2e",
 } as const;
+
 

@@ -22,4 +22,4 @@ export const CANNABIS: Plant = {
   position: [6, 0, -4],
 };
 
-export const INTERACT_RADIUS = 3.2;
+export const INTERACT_RADIUS = 4;

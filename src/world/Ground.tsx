@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Color, InstancedMesh, Matrix4, Object3D } from "three";
 import { palette } from "./palette";
+import { nearPath } from "./Plaza";
 
 export const GARDEN_RADIUS = 19;
 
@@ -14,15 +15,24 @@ function rng(seed: number) {
   };
 }
 
-function useScatter(count: number, seed: number, inner: number, outer: number) {
+function useScatter(
+  count: number,
+  seed: number,
+  inner: number,
+  outer: number,
+  clearance = 0,
+) {
   return useMemo(() => {
     const random = rng(seed);
     const dummy = new Object3D();
     const list: Matrix4[] = [];
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < count * 2 && list.length < count; i++) {
       const a = random() * Math.PI * 2;
       const r = inner + random() * (outer - inner);
-      dummy.position.set(Math.cos(a) * r, 0, Math.sin(a) * r);
+      const x = Math.cos(a) * r;
+      const z = Math.sin(a) * r;
+      if (clearance > 0 && nearPath(x, z, clearance)) continue;
+      dummy.position.set(x, 0, z);
       dummy.rotation.set(0, random() * Math.PI * 2, 0);
       const s = 0.6 + random() * 0.9;
       dummy.scale.set(s, s * (0.7 + random() * 0.8), s);
@@ -30,7 +40,7 @@ function useScatter(count: number, seed: number, inner: number, outer: number) {
       list.push(dummy.matrix.clone());
     }
     return list;
-  }, [count, seed, inner, outer]);
+  }, [count, seed, inner, outer, clearance]);
 }
 
 function Instances({
@@ -57,8 +67,8 @@ function Instances({
 }
 
 export function Ground() {
-  const grass = useScatter(320, 7, 1.5, GARDEN_RADIUS - 1.5);
-  const rocks = useScatter(28, 91, 4, GARDEN_RADIUS - 2);
+  const grass = useScatter(320, 7, 1.5, GARDEN_RADIUS - 1.5, 1.6);
+  const rocks = useScatter(28, 91, 4, GARDEN_RADIUS - 2, 2.2);
   const hedge = useMemo(() => {
     const dummy = new Object3D();
     const random = rng(313);
