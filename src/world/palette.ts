@@ -47,7 +47,7 @@ export const palette = {
   bedSoil: "#5f4a36",
   flowerPink: "#e58aa5",
   flowerCream: "#f5efd2",
-  flowerGold: "#f0b councilor",
+  flowerGold: "#f0bd57",
   glass: "#cfe7e2",
   frame: "#e8e2d2",
   shadow: "#3c4a2e",
