@@ -39,6 +39,13 @@ src/
 
 Nothing outside this tree gets created in Milestone 1.
 
+Since then the authorized additions are `src/world/Avatar.tsx` (garden-keeper
+player model) and `src/world/Plaza.tsx` (entrance arch, path, planted island,
+trees, instanced shrubs/flowers, rocks, greenhouse silhouette, fake contact
+shadows). `Plaza.tsx` exports `nearPath(x, z, clearance)`; `Ground.tsx` uses it
+to keep grass and rocks off the walkable route. Any new scenery goes in
+`Plaza.tsx` until it is large enough to split.
+
 ## Store contract
 
 ```ts
@@ -72,6 +79,8 @@ the boolean in/out state flips.
 ## Verification before you claim done
 
 - App loads, no console errors.
+- Interaction prompt reads "Press E" on a fine pointer and "Touch it" on a
+  coarse pointer (test both viewports).
 - Enter → walk → rotate → approach → prompt → E → journal → Esc works end to
   end in a real browser.
 - Update `PROJECT_STATE.md` with what changed.

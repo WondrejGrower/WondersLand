@@ -54,6 +54,13 @@ A single user-authorized visual pass: replace the player capsule with a
 low-poly stylized garden-keeper avatar built from primitives, with idle and
 walk animation. No new systems, no environment changes, nothing else.
 
+## Entrance plaza — first playable environment slice (done, 2026-08-12)
+
+One user-authorized environment pass: entrance arch with a locally drawn sign,
+short curved walkable path, central planted island, three trees, instanced
+shrubs/flowers/rocks, a distant greenhouse silhouette, cheap fake contact
+shadows, and a device-aware interaction prompt. No new systems or packages.
+
 ## Later (not planned, not scaffolded)
 
 - More plants and a small journal index

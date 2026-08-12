@@ -2,7 +2,7 @@
 
 Snapshot of what actually exists. Update this with every change.
 
-**Last updated:** 2026-08-11 (avatar polish)
+**Last updated:** 2026-08-12 (entrance plaza)
 **Current phase:** Milestone 1 implemented and verified in a browser.
 
 ## Built and working
@@ -87,7 +87,29 @@ the bag is a single box with a clasp, sneaker detail is two stacked boxes, and
 the chest graphic is a flat generated texture on one front quad rather than
 extruded lettering. Nothing else in the scene changed.
 
+## Entrance plaza (user-authorized environment pass, 2026-08-12)
+
+`src/world/Plaza.tsx` adds the first real environment: a WondersLand entrance
+arch with a locally drawn sign texture, a short curved path from the arch past
+a central planted island to the cannabis plant, three low-poly trees, instanced
+shrubs/flowers/rocks kept clear of the path, a distant greenhouse silhouette,
+and flat translucent contact-shadow discs. Grass and rocks in `Ground.tsx` now
+respect a path-clearance radius. The cannabis plant is larger (scale 1.9,
+interact radius 4) so it reads as the interaction target. The prompt says
+"Press E" on fine pointers and "Touch it" on coarse pointers.
+
+Verified in headless Chromium at 1280x800 and 390x780: enter, drag-rotate,
+walk, prompt appears with the right wording per device, click/tap opens the
+journal, Esc and the close button dismiss it, zero console errors.
+
+Known issues: no collision — the player can walk through the flower bed, trees
+and the greenhouse; the path is a strip of overlapping quads so its edges are
+visibly jagged (stylized, acceptable for now); the greenhouse is scenery only
+and cannot be entered.
+
 ## Next step
 
-Milestone 1 is complete. Nothing in "Later" may be started without a new
-roadmap entry.
+Milestone 1 plus the entrance plaza are complete. The exact next step, when
+authorized: simple soft collision (radial push-out) around the planted island,
+trees and the greenhouse so the plaza feels solid. Nothing else in "Later" may
+be started without a new roadmap entry.
