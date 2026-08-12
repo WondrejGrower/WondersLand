@@ -20,6 +20,7 @@ export function InteractPrompt() {
   const focusedPlantId = useWorldStore((s) => s.focusedPlantId);
   const journalOpen = useWorldStore((s) => s.journalOpen);
   const openJournal = useWorldStore((s) => s.openJournal);
+  const coarse = useCoarsePointer();
 
   useEffect(() => {
     if (!focusedPlantId || journalOpen) return;
@@ -45,7 +46,8 @@ export function InteractPrompt() {
       >
         <span className="font-medium">{CANNABIS.name}</span>
         <span className="mx-2 text-muted-foreground">·</span>
-        <span className="text-muted-foreground">Press E to read</span>
+        <span className="text-muted-foreground">{coarse ? "Touch it" : "Press E"}</span>
+
       </button>
     </div>
   );
