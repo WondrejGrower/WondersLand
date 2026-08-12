@@ -109,7 +109,7 @@ function useSignTexture() {
 function EntranceArch() {
   const sign = useSignTexture();
   return (
-    <group position={[0, 0, 12]}>
+    <group position={[0, 0, 17]}>
       {[-2.4, 2.4].map((x) => (
         <group key={x} position={[x, 0, 0]}>
           <mesh position={[0, 0.25, 0]}>
@@ -133,7 +133,7 @@ function EntranceArch() {
         <meshLambertMaterial color={palette.wood} />
       </mesh>
       {/* sign board */}
-      <mesh position={[0, 3.05, 0.26]}>
+      <mesh position={[0, 3.05, -0.26]} rotation-y={Math.PI}>
         <planeGeometry args={[4.1, 1.0]} />
         {sign ? (
           <meshBasicMaterial map={sign} toneMapped={false} />
@@ -153,7 +153,7 @@ function EntranceArch() {
 function Path() {
   const steps = useMemo(() => {
     const list: { p: [number, number, number]; r: number }[] = [];
-    const from = { x: 0, z: 11 };
+    const from = { x: 0, z: 16 };
     const mid = { x: -1.4, z: 3 };
     const to = { x: 5.4, z: -3.2 };
     const count = 26;
