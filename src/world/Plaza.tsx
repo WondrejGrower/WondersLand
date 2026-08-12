@@ -162,7 +162,7 @@ function pathPoint(t: number) {
   return { x, z };
 }
 
-function nearPath(x: number, z: number, clearance: number) {
+export function nearPath(x: number, z: number, clearance: number) {
   for (let i = 0; i <= 20; i++) {
     const p = pathPoint(i / 20);
     if (Math.hypot(p.x - x, p.z - z) < clearance) return true;
