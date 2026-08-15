@@ -6,7 +6,7 @@ import { useWorldStore } from "../state/useWorldStore";
 import { CANNABIS, INTERACT_RADIUS } from "../content/plants";
 import { GARDEN_RADIUS } from "./Ground";
 import { palette } from "./palette";
-import { Avatar } from "./Avatar";
+import { CharacterAvatar } from "./CharacterAvatar";
 
 
 const SPEED = 4.2;
@@ -167,7 +167,7 @@ export function Player() {
 
   return (
     <group ref={body}>
-      <Avatar />
+      <CharacterAvatar />
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]}>
         <circleGeometry args={[0.5, 16]} />
         <meshBasicMaterial color={palette.groundDark} transparent opacity={0.35} />
