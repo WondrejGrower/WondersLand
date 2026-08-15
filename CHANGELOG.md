@@ -39,3 +39,7 @@ systems, no packages, no imported assets.
 ### Not added (deliberately)
 Backend, auth, AI, inventory, quests, achievements, shop, weather, save system,
 database, post-processing, dynamic shadow maps, imported models or packs.
+
+## Main character model — 2026-08-15
+- Replaced the primitive garden-keeper avatar with the user-uploaded rigged
+  GLB character, served from CDN and animated with its own Walking clip.
