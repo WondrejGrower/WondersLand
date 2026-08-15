@@ -71,3 +71,6 @@ shadows, and a device-aware interaction prompt. No new systems or packages.
 
 These are listed only so nobody builds them early. No code for them exists or
 should exist.
+
+- [x] Main character model (user-authorized scope change): imported rigged GLB
+      player replaces the code-built avatar.

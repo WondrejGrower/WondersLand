@@ -84,3 +84,11 @@ the boolean in/out state flips.
 - Enter → walk → rotate → approach → prompt → E → journal → Esc works end to
   end in a real browser.
 - Update `PROJECT_STATE.md` with what changed.
+
+## Character model
+The player mesh is an imported rigged GLB loaded with drei `useGLTF` in
+`src/world/CharacterAvatar.tsx`; the file lives on the Lovable CDN via
+`src/assets/village-boy.glb.asset.json`. Animation is a single `Walking`
+AnimationAction whose weight is blended by `input.forward/strafe` inside
+`useFrame` — no state writes per frame. Do not edit `src/world/Avatar.tsx`
+(legacy, unused).

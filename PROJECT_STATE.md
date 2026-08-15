@@ -113,3 +113,23 @@ Milestone 1 plus the entrance plaza are complete. The exact next step, when
 authorized: simple soft collision (radial push-out) around the planted island,
 trees and the greenhouse so the plaza feels solid. Nothing else in "Later" may
 be started without a new roadmap entry.
+
+## Main character model (user-authorized, 2026-08-15)
+
+The player is now the uploaded rigged GLB character ("Village Boy Qing",
+Meshy AI), not the code-built primitive avatar. This is a deliberate scope
+change by the user: imported 3D models were previously banned.
+
+- `src/world/CharacterAvatar.tsx`: loads the model via drei `useGLTF` from a
+  CDN asset pointer (`src/assets/village-boy.glb.asset.json`, ~11 MB, mesh +
+  `Walking` + `Running` clips), plays `Walking` with a weight blended in/out
+  by movement input, adds a small idle bob. Scaled 1.08 so the ~1.76 native
+  height matches the old ~1.9 gameplay height; origin stays at the feet.
+- `src/world/Player.tsx` renders `<CharacterAvatar />` instead of `<Avatar />`.
+  Controls, camera, contact shadow, proximity logic unchanged.
+- `src/world/Avatar.tsx` is untouched but no longer used.
+
+Verified in headless Chromium: enter → walk → walk cycle animates, no console
+errors. Limitations: no idle clip in the file (standing uses the bind pose plus
+a bob), the `Running` clip is unused, and the model is a large download that is
+only fetched after the landing screen.
