@@ -4,7 +4,7 @@ import { Vector3, type Group } from "three";
 import { input } from "../state/input";
 import { useWorldStore } from "../state/useWorldStore";
 import { useNostrStore } from "../state/useNostrStore";
-import { CANNABIS, INTERACT_RADIUS } from "../content/plants";
+const INTERACT_RADIUS = 4;
 import { GARDEN_RADIUS } from "./Ground";
 import { palette } from "./palette";
 import { CharacterAvatar } from "./CharacterAvatar";
