@@ -86,7 +86,7 @@ export function LandingScreen() {
             ))}
           </nav>
           <span className="rounded-full bg-leaf px-4 py-2.5 text-sm font-semibold text-forest-deep shadow-lg shadow-leaf/20">
-            ✦ <span className="hidden xs:inline sm:inline">Sign in with Nostr</span>
+            ✦ <span className="hidden min-[420px]:inline">Sign in with Nostr</span><span className="min-[420px]:hidden">Sign in</span>
           </span>
           <button
             type="button"
