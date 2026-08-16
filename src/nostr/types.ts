@@ -2,7 +2,7 @@ import type { Event as NostrEvent } from "nostr-tools";
 
 export type { NostrEvent };
 
-export type AuthMethod = "nip07" | "npub";
+export type AuthMethod = "nip07" | "npub" | "nsec";
 
 export type Profile = {
   pubkey: string;

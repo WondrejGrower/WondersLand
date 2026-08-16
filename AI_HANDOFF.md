@@ -120,3 +120,16 @@ the local draft (debounced), and `useGardenStore.save()` is the single place a
 signer is invoked, so the extension never prompts on its own. A failed publish
 keeps the draft. Only `src/nostr/signers/` may touch key material, and only via
 NIP-07 — npub sessions are read-only and `canEdit` is false.
+
+## Key material rules (alpha)
+`src/nostr/signers/local.ts` is the ONLY module that may hold a private key.
+It stores the decoded bytes in module scope, exposes `unlockLocalSigner`,
+`clearLocalSigner` and `signWithLocalKey`, and must never gain a persistence
+path (no storage helpers, no store fields, no logging, no event tags). Session
+records written to storage always downgrade `nsec` to `npub`, so refresh means
+read-only until the owner unlocks again. Write capability is derived solely
+from `getSigner(method)`; UI must never infer it from the auth method string.
+
+Future endpoints live in `src/nostr/endpoints.ts`. Keep the WondersLand relay
+opt-in (`WONDERSLAND_RELAY_ENABLED`) and never make it the only relay; Blossom
+is a constant only until an upload milestone is approved.

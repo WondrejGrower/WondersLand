@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { fetchDiaries, getCachedDiaries } from "../nostr/diaries";
 import { getNip07PublicKey, isNip07Available } from "../nostr/signers/nip07";
+import { clearLocalSigner, unlockLocalSigner } from "../nostr/signers/local";
 import { fetchProfile } from "../nostr/profile";
 import { loadRelays } from "../nostr/relays";
 import { getJson, removeKey, setJson } from "../nostr/storage";
@@ -21,6 +22,7 @@ type NostrState = {
   restore: () => Promise<void>;
   signInWithExtension: () => Promise<void>;
   signInWithNpub: (npub: string) => Promise<void>;
+  signInWithNsec: (nsec: string) => Promise<void>;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -61,7 +63,12 @@ export const useNostrStore = create<NostrState>((set, get) => {
 
   async function start(session: Session) {
     await loadRelays();
-    await setJson(SESSION_KEY, session);
+    // An nsec session is memory-only: persist it as a read-only npub session so
+    // a refresh can never resurrect write access without the key.
+    await setJson(SESSION_KEY, {
+      pubkey: session.pubkey,
+      method: session.method === "nsec" ? "npub" : session.method,
+    });
     set({ pubkey: session.pubkey, method: session.method });
     await load(session.pubkey);
   }
@@ -102,12 +109,24 @@ export const useNostrStore = create<NostrState>((set, get) => {
       }
     },
 
+    signInWithNsec: async (nsec) => {
+      set({ status: "connecting", error: null });
+      try {
+        const pubkey = unlockLocalSigner(nsec);
+        await start({ pubkey, method: "nsec" });
+      } catch (err) {
+        clearLocalSigner();
+        set({ status: "error", error: err instanceof Error ? err.message : "Invalid nsec" });
+      }
+    },
+
     refresh: async () => {
       const { pubkey } = get();
       if (pubkey) await load(pubkey);
     },
 
     signOut: async () => {
+      clearLocalSigner();
       await removeKey(SESSION_KEY);
       useGardenStore.getState().reset();
       set({ pubkey: null, method: null, profile: null, diaries: [], status: "idle", error: null });

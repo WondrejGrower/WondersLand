@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNostrStore } from "../state/useNostrStore";
 import { profileLabel } from "../nostr/profile";
+import { SaveGarden } from "./SaveGarden";
 
 /**
  * Read-only Nostr identity: browser extension (NIP-07) or a pasted npub.
@@ -9,6 +10,8 @@ import { profileLabel } from "../nostr/profile";
 export function NostrSignIn() {
   const [open, setOpen] = useState(false);
   const [npub, setNpub] = useState("");
+  const [advanced, setAdvanced] = useState(false);
+  const [nsec, setNsec] = useState("");
   const pubkey = useNostrStore((s) => s.pubkey);
   const profile = useNostrStore((s) => s.profile);
   const status = useNostrStore((s) => s.status);
@@ -18,6 +21,7 @@ export function NostrSignIn() {
   const restore = useNostrStore((s) => s.restore);
   const signInWithExtension = useNostrStore((s) => s.signInWithExtension);
   const signInWithNpub = useNostrStore((s) => s.signInWithNpub);
+  const signInWithNsec = useNostrStore((s) => s.signInWithNsec);
   const signOut = useNostrStore((s) => s.signOut);
 
   useEffect(() => {
@@ -25,13 +29,18 @@ export function NostrSignIn() {
   }, [restore]);
 
   useEffect(() => {
-    if (pubkey) setOpen(false);
+    if (pubkey) {
+      setOpen(false);
+      setNsec("");
+    }
   }, [pubkey]);
 
   const busy = status === "connecting" || status === "loading";
 
   if (pubkey) {
     return (
+      <div className="flex items-center gap-2">
+      <SaveGarden />
       <button
         type="button"
         onClick={() => void signOut()}
@@ -48,6 +57,7 @@ export function NostrSignIn() {
           {busy ? "syncing…" : `${diaryCount} diaries`}
         </span>
       </button>
+      </div>
     );
   }
 
@@ -98,6 +108,46 @@ export function NostrSignIn() {
                 Go
               </button>
             </div>
+          </div>
+          <div className="mt-4 border-t border-white/10 pt-3">
+            <button
+              type="button"
+              onClick={() => setAdvanced((v) => !v)}
+              aria-expanded={advanced}
+              className="text-[0.7rem] uppercase tracking-wide text-white/50"
+            >
+              Advanced: use nsec {advanced ? "▴" : "▾"}
+            </button>
+            {advanced ? (
+              <div className="mt-2">
+                <p className="text-[0.7rem] leading-snug text-white/50">
+                  Alpha owner login. Your key is kept in memory for this tab only — never stored,
+                  never sent anywhere. Refreshing signs you out.
+                </p>
+                <div className="mt-2 flex gap-2">
+                  <input
+                    id="nsec-input"
+                    type="password"
+                    autoComplete="off"
+                    value={nsec}
+                    onChange={(e) => setNsec(e.target.value)}
+                    placeholder="nsec1…"
+                    className="min-w-0 flex-1 rounded-lg border border-white/15 bg-black/20 px-2 py-1.5 text-sm text-white placeholder:text-white/30"
+                  />
+                  <button
+                    type="button"
+                    disabled={busy || nsec.trim().length === 0}
+                    onClick={() => {
+                      void signInWithNsec(nsec);
+                      setNsec("");
+                    }}
+                    className="rounded-lg border border-leaf/50 px-3 py-1.5 text-sm text-leaf disabled:opacity-50"
+                  >
+                    Unlock
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </div>
           {error ? <p className="mt-3 text-xs text-red-300">{error}</p> : null}
         </div>

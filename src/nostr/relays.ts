@@ -1,3 +1,4 @@
+import { WONDERSLAND_RELAY_ENABLED, WONDERSLAND_RELAY_URL } from "./endpoints";
 import { getJson, setJson } from "./storage";
 
 export type Relay = { url: string; enabled: boolean; custom?: boolean };
@@ -9,6 +10,8 @@ const DEFAULTS: Relay[] = [
   { url: "wss://relay.nostr.band", enabled: true },
   { url: "wss://nos.lol", enabled: true },
   { url: "wss://nostr-pub.wellorder.net", enabled: false },
+  // Future WondersLand relay: listed but off until it is reachable.
+  { url: WONDERSLAND_RELAY_URL, enabled: WONDERSLAND_RELAY_ENABLED },
 ];
 
 const KEY = "relays";
