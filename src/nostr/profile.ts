@@ -22,10 +22,10 @@ export async function fetchProfile(pubkey: string): Promise<Profile> {
       const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
       profile = {
         pubkey,
-        name: str(meta.name),
-        displayName: str(meta.display_name) ?? str(meta.displayName),
-        picture: str(meta.picture),
-        about: str(meta.about),
+        name: str(meta["name"]),
+        displayName: str(meta["display_name"]) ?? str(meta["displayName"]),
+        picture: str(meta["picture"]),
+        about: str(meta["about"]),
       };
     } catch {
       // malformed metadata — keep the bare profile
