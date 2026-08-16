@@ -1,8 +1,11 @@
 // NIP-07 browser-extension signer. WondersLand never touches an nsec.
+import type { NostrEvent } from "../types";
+
 type Nip07 = {
   getPublicKey(): Promise<string>;
   signEvent(event: unknown): Promise<unknown>;
 };
+
 
 function ext(): Nip07 | null {
   if (typeof window === "undefined") return null;
