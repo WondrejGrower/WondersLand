@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Wander a peaceful 3D garden, walk up to a cannabis plant and read its botanical journal. No downloads, no accounts.",
+          "Wander a peaceful 3D garden, wander among plants and read their grow journals. No downloads, no accounts.",
       },
       { property: "og:title", content: "WondersLand — A cozy 3D botanical world" },
       {
@@ -52,7 +52,6 @@ function Index() {
         </Suspense>
       </ClientOnly>
       <TouchControls />
-      <InteractPrompt />
       <Journal />
     </main>
   );
