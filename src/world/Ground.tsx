@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Color, InstancedMesh, Matrix4, Object3D } from "three";
+import { Trees } from "./Trees";
 import { palette } from "./palette";
 import { nearPath } from "./Plaza";
 
@@ -69,22 +70,6 @@ function Instances({
 export function Ground() {
   const grass = useScatter(320, 7, 1.5, GARDEN_RADIUS - 1.5, 1.6);
   const rocks = useScatter(28, 91, 4, GARDEN_RADIUS - 2, 2.2);
-  const hedge = useMemo(() => {
-    const dummy = new Object3D();
-    const random = rng(313);
-    const list: Matrix4[] = [];
-    const count = 64;
-    for (let i = 0; i < count; i++) {
-      const a = (i / count) * Math.PI * 2;
-      const r = GARDEN_RADIUS + 0.6;
-      dummy.position.set(Math.cos(a) * r, 0.7 + random() * 0.4, Math.sin(a) * r);
-      dummy.rotation.set(0, a, 0);
-      dummy.scale.set(1.6, 1.5 + random() * 0.5, 1.6);
-      dummy.updateMatrix();
-      list.push(dummy.matrix.clone());
-    }
-    return list;
-  }, []);
 
   return (
     <group>
@@ -97,9 +82,7 @@ export function Ground() {
         <meshLambertMaterial color={palette.groundDark} />
       </mesh>
 
-      <Instances matrices={hedge} color={palette.hedge}>
-        <icosahedronGeometry args={[1, 1]} />
-      </Instances>
+      <Trees radius={GARDEN_RADIUS} />
 
       <Instances matrices={grass} color={palette.grass}>
         <coneGeometry args={[0.16, 0.7, 4]} />

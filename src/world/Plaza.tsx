@@ -52,38 +52,6 @@ function ContactShadow({
   );
 }
 
-function Tree({
-  position,
-  scale = 1,
-  tint = palette.foliageA,
-}: {
-  position: [number, number, number];
-  scale?: number;
-  tint?: string;
-}) {
-  return (
-    <group position={position} scale={scale}>
-      <mesh position={[0, 1.1, 0]}>
-        <cylinderGeometry args={[0.16, 0.28, 2.2, 6]} />
-        <meshLambertMaterial color={palette.trunk} />
-      </mesh>
-      <mesh position={[0, 2.7, 0]} scale={[1.5, 1.25, 1.5]}>
-        <icosahedronGeometry args={[1, 0]} />
-        <meshLambertMaterial color={tint} />
-      </mesh>
-      <mesh position={[0.75, 2.2, 0.35]} scale={0.85}>
-        <icosahedronGeometry args={[1, 0]} />
-        <meshLambertMaterial color={palette.foliageC} />
-      </mesh>
-      <mesh position={[-0.6, 2.35, -0.5]} scale={0.75}>
-        <icosahedronGeometry args={[1, 0]} />
-        <meshLambertMaterial color={palette.foliageB} />
-      </mesh>
-      <ContactShadow position={[0, 0.03, 0]} radius={1.5 } />
-    </group>
-  );
-}
-
 // Locally drawn sign texture — no remote font, no network asset.
 function useSignTexture() {
   return useMemo(() => {
@@ -344,9 +312,6 @@ export function Plaza() {
       <GardenIsland />
       <Greenhouse />
       <Scatter />
-      <Tree position={[-7.5, 0, 6]} scale={1.15} tint={palette.foliageA} />
-      <Tree position={[8.5, 0, 5.5]} scale={0.95} tint={palette.foliageB} />
-      <Tree position={[10, 0, -8]} scale={1.3} tint={palette.foliageC} />
       {/* rocks framing the plaza */}
       {([
         [-5.2, -1.6, 0.7],
