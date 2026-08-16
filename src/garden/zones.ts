@@ -1,4 +1,4 @@
-import type { PlantCategory } from "./categories";
+import type { GrowthStage, PlantCategory } from "./categories";
 
 export type ZoneId = "open-garden" | "raised-beds" | "orchard" | "greenhouse" | "house";
 
@@ -89,9 +89,18 @@ export const ZONE_FOR_CATEGORY: Record<PlantCategory, ZoneId> = {
   vegetable: "raised-beds",
   herb: "raised-beds",
   fruit: "orchard",
-  seedling: "greenhouse",
   indoor: "house",
+  other: "open-garden",
 };
+
+/**
+ * Placement is a separate concern from category: early-stage plants of any
+ * category live in the greenhouse until they are established.
+ */
+export function zoneForPlant(category: PlantCategory, stage: GrowthStage): ZoneId {
+  if (stage === "germination" || stage === "seedling") return "greenhouse";
+  return ZONE_FOR_CATEGORY[category];
+}
 
 export function slotPosition(zone: Zone, index: number): [number, number, number] {
   const slot = zone.slots[index % zone.slots.length]!;

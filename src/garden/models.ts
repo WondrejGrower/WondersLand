@@ -1,4 +1,4 @@
-import type { PlantCategory } from "./categories";
+import type { GrowthStage, PlantCategory } from "./categories";
 
 export type ModelKey = "cannabis" | "vegetable" | "herb" | "fruit-tree" | "houseplant" | "seedling";
 
@@ -20,12 +20,22 @@ const GENERIC: Record<PlantCategory, ModelKey> = {
   cannabis: "cannabis",
   vegetable: "vegetable",
   herb: "herb",
+  // A generic "fruit" stand-in is a tree today; growth form is not yet modelled,
+  // so strawberries and grapes also get it until a GrowthForm trait exists.
   fruit: "fruit-tree",
   indoor: "houseplant",
-  seedling: "seedling",
+  other: "herb",
 };
 
-export function resolveModel(category: PlantCategory, plantSlug?: string): ModelChoice {
+export function resolveModel(
+  category: PlantCategory,
+  plantSlug?: string,
+  stage: GrowthStage = "unknown",
+): ModelChoice {
+  // Stage wins visually while the plant is tiny, whatever it will become.
+  if (stage === "germination" || stage === "seedling") {
+    return { key: "seedling", dedicated: false };
+  }
   const dedicated = plantSlug ? DEDICATED[plantSlug] : undefined;
   if (dedicated) return { key: dedicated, dedicated: true };
   if (category === "cannabis") return { key: "cannabis", dedicated: true };
