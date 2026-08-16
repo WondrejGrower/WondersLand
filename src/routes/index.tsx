@@ -3,7 +3,7 @@ import { ClientOnly } from "@tanstack/react-router";
 import { Suspense, lazy } from "react";
 import { useWorldStore } from "../state/useWorldStore";
 import { LandingScreen } from "../ui/LandingScreen";
-import { InteractPrompt } from "../ui/InteractPrompt";
+
 import { Journal } from "../ui/Journal";
 import { TouchControls } from "../ui/TouchControls";
 
