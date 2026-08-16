@@ -73,3 +73,10 @@ animation. A proper Idle clip would need a new asset. `Running` stays unused.
 - `Player.tsx` focuses the nearest plant in range instead of only the demo one.
 - `Journal.tsx` renders diary entries (date, phase, photo, text) when the
   focused plant comes from Nostr.
+
+## 2026-08-16 — Cottage replaces the demo cannabis plant
+
+- Added `src/world/Cottage.tsx`: static uploaded GLB (Draco+WebP compressed, 117 MB -> 6.3 MB) placed at [6, 0, -4], auto-scaled to ~5.5 units and grounded via a bounding box.
+- Removed the demo cannabis plant, its proximity trigger, `src/content/plants.ts`, and `src/ui/InteractPrompt.tsx` (prompt UI).
+- Journal now only renders for Nostr diary plants; the "E" open shortcut moved into `Journal.tsx`.
+- Cottage is scenery only: no interaction or UI attached.
