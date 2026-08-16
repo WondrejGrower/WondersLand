@@ -78,3 +78,7 @@ should exist.
 - [x] Nostr Phase 1 (user-authorized scope change): read-only identity, profile
       and Weedoshi diary fetching, mapped into semantic garden zones with a
       dedicated/generic model fallback.
+
+- [x] Nostr Phase 2 (user-authorized scope change): per-user garden persistence
+      as a kind-30078 addressable event, local-first draft autosave, explicit
+      signed publish, and NIP-01 conflict handling. Editing UI is not built.

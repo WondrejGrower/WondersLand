@@ -3,7 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3, type Group } from "three";
 import { input } from "../state/input";
 import { useWorldStore } from "../state/useWorldStore";
-import { useNostrStore } from "../state/useNostrStore";
+import { useGardenStore } from "../state/useGardenStore";
 const INTERACT_RADIUS = 4;
 import { GARDEN_RADIUS } from "./Ground";
 import { palette } from "./palette";
@@ -163,7 +163,7 @@ export function Player() {
     // the focused plant actually changes.
     let focusId: string | null = null;
     let best = INTERACT_RADIUS;
-    for (const plant of useNostrStore.getState().plants) {
+    for (const plant of useGardenStore.getState().plants) {
       candidate.set(plant.position[0], 0, plant.position[2]);
       const dist = pos.current.distanceTo(candidate);
       if (dist < best) {

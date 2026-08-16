@@ -5,7 +5,7 @@ import { fetchProfile } from "../nostr/profile";
 import { loadRelays } from "../nostr/relays";
 import { getJson, removeKey, setJson } from "../nostr/storage";
 import type { AuthMethod, Diary, Profile } from "../nostr/types";
-import { mapDiariesToGarden, type GardenPlant } from "../garden/mapping";
+import { useGardenStore } from "./useGardenStore";
 import { nip19 } from "nostr-tools";
 
 type Session = { pubkey: string; method: AuthMethod };
@@ -15,7 +15,6 @@ type NostrState = {
   method: AuthMethod | null;
   profile: Profile | null;
   diaries: Diary[];
-  plants: GardenPlant[];
   status: "idle" | "connecting" | "loading" | "ready" | "error";
   error: string | null;
   nip07Available: boolean;
@@ -42,11 +41,15 @@ function decodeNpub(input: string): string {
 export const useNostrStore = create<NostrState>((set, get) => {
   async function load(pubkey: string) {
     set({ status: "loading", error: null });
+    const method = get().method ?? "npub";
     const cached = await getCachedDiaries(pubkey);
-    if (cached.length > 0) set({ diaries: cached, plants: mapDiariesToGarden(cached) });
+    // Render the cached garden immediately; the relays catch up in step two.
+    set({ diaries: cached });
+    await useGardenStore.getState().load(pubkey, method, cached);
     try {
       const [profile, diaries] = await Promise.all([fetchProfile(pubkey), fetchDiaries(pubkey)]);
-      set({ profile, diaries, plants: mapDiariesToGarden(diaries), status: "ready" });
+      set({ profile, diaries, status: "ready" });
+      useGardenStore.getState().setDiaries(diaries);
     } catch (err) {
       set({
         status: cached.length > 0 ? "ready" : "error",
@@ -54,6 +57,7 @@ export const useNostrStore = create<NostrState>((set, get) => {
       });
     }
   }
+
 
   async function start(session: Session) {
     await loadRelays();
@@ -67,7 +71,6 @@ export const useNostrStore = create<NostrState>((set, get) => {
     method: null,
     profile: null,
     diaries: [],
-    plants: [],
     status: "idle",
     error: null,
     nip07Available: false,
@@ -106,7 +109,8 @@ export const useNostrStore = create<NostrState>((set, get) => {
 
     signOut: async () => {
       await removeKey(SESSION_KEY);
-      set({ pubkey: null, method: null, profile: null, diaries: [], plants: [], status: "idle", error: null });
+      useGardenStore.getState().reset();
+      set({ pubkey: null, method: null, profile: null, diaries: [], status: "idle", error: null });
     },
   };
 });

@@ -208,3 +208,24 @@ The demo cannabis plant and its journal/prompt are gone. A static cottage GLB
 (`src/assets/cottage.glb.asset.json`) stands where it was, rendered by
 `src/world/Cottage.tsx` with no interaction. Proximity focus and the journal now
 serve only Nostr garden plants; "Press E" is handled inside `Journal.tsx`.
+
+### Per-user gardens on Nostr (2026-08-16)
+Garden layout is now persisted per pubkey as a NIP-78 addressable event
+(kind 30078, permanent `d` tag `wondersland:garden-config`) — no backend, no
+database. `src/garden/` holds the data model (`config.ts`), validation and
+clamping (`validate.ts`), migrations (`migrate.ts`) and deterministic default
+placement (`defaults.ts`). `src/nostr/garden.ts` is the transport: fetch,
+NIP-01 addressable ordering (newest `created_at`, lowest `id` breaks a tie),
+event building and multi-relay publish. `src/state/useGardenStore.ts` owns
+config, plants, sync status and conflicts; `useNostrStore` now only handles
+identity and diaries and hands them over.
+
+Lifecycle: cached config renders instantly, relays reconcile in the background,
+edits autosave to a local draft (`garden:<pubkey>:draft`, with base event id /
+created_at / rev for provenance) and are only signed on an explicit save.
+Signing lives behind the `Signer` interface in `src/nostr/signers/` — nsec is
+never read or stored.
+
+Limitations: no editing UI yet, so nothing marks the draft dirty in the running
+app and the save path is only reachable programmatically; conflict resolution
+is whole-config (mine/theirs), not per-plant.

@@ -43,6 +43,34 @@ export async function query(
   return [...seen.values()].sort((a, b) => b.created_at - a.created_at);
 }
 
+export type PublishResult = { relay: string; ok: boolean; error?: string };
+
+/** Publish one signed event to every relay, reporting each one separately. */
+export async function publish(
+  relays: string[],
+  event: NostrEvent,
+  maxWaitMs = 8000,
+): Promise<PublishResult[]> {
+  if (relays.length === 0) return [];
+  const p = getPool();
+  const timeout = <T,>(promise: Promise<T>) =>
+    Promise.race([
+      promise,
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), maxWaitMs)),
+    ]);
+
+  const settled = await Promise.allSettled(
+    p.publish(relays, event).map((promise) => timeout(promise)),
+  );
+  return settled.map((result, index) => ({
+    relay: relays[index] ?? "",
+    ok: result.status === "fulfilled",
+    ...(result.status === "rejected"
+      ? { error: result.reason instanceof Error ? result.reason.message : "failed" }
+      : {}),
+  }));
+}
+
 export function closePool(relays: string[]): void {
   if (!pool) return;
   try {
@@ -52,3 +80,4 @@ export function closePool(relays: string[]): void {
   }
   pool = null;
 }
+

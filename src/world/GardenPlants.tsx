@@ -1,4 +1,4 @@
-import { useNostrStore } from "../state/useNostrStore";
+import { useGardenStore } from "../state/useGardenStore";
 import { CannabisPlant } from "./plants/CannabisPlant";
 import { GenericPlant } from "./plants/GenericPlants";
 import { palette } from "./palette";
@@ -8,7 +8,7 @@ import { palette } from "./palette";
  * semantic zones. Read-only: nothing here writes back to Nostr.
  */
 export function GardenPlants() {
-  const plants = useNostrStore((s) => s.plants);
+  const plants = useGardenStore((s) => s.plants);
   if (plants.length === 0) return null;
 
   return (
