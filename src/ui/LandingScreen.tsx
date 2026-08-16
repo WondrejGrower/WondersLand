@@ -57,10 +57,10 @@ export function LandingScreen() {
   return (
     <div className="min-h-screen bg-forest-deep text-cream">
       {/* Nav */}
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-6 lg:px-10">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-leaf/15 text-leaf ring-1 ring-leaf/40">
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 sm:px-6 lg:px-10">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-leaf/15 text-leaf ring-1 ring-leaf/40 sm:h-9 sm:w-9">
+            <svg viewBox="0 0 24 24" className="h-4 w-4 sm:h-5 sm:w-5" fill="none" aria-hidden="true">
               <path
                 d="M20 4c0 9-5.5 14-12 14 0-8 5-13 12-14ZM4 20c1.5-4 4-7 8-9"
                 stroke="currentColor"
@@ -70,14 +70,14 @@ export function LandingScreen() {
             </svg>
           </span>
           <span
-            className="text-base font-semibold tracking-tight sm:text-xl"
+            className="text-sm font-semibold tracking-tight sm:text-xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
             WondersLand<span className="text-leaf">.online</span>
           </span>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <nav className="mr-4 hidden items-center gap-7 text-sm text-cream/75 lg:flex">
             {NAV.map((item) => (
               <span key={item} className="cursor-default transition-colors hover:text-cream">
@@ -85,7 +85,7 @@ export function LandingScreen() {
               </span>
             ))}
           </nav>
-          <span className="rounded-full bg-leaf px-4 py-2.5 text-sm font-semibold text-forest-deep shadow-lg shadow-leaf/20">
+          <span className="rounded-full bg-leaf px-3 py-2 text-xs font-semibold text-forest-deep shadow-lg shadow-leaf/20 sm:px-4 sm:py-2.5 sm:text-sm">
             ✦ <span className="hidden min-[420px]:inline">Sign in with Nostr</span><span className="min-[420px]:hidden">Sign in</span>
           </span>
           <button
@@ -93,7 +93,7 @@ export function LandingScreen() {
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((v) => !v)}
-            className="grid h-11 w-11 place-items-center rounded-xl border border-forest-soft/70 bg-forest/60 text-cream lg:hidden"
+            className="grid h-10 w-10 place-items-center rounded-xl border border-forest-soft/70 bg-forest/60 text-cream lg:hidden sm:h-11 sm:w-11"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
               <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
