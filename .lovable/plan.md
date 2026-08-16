@@ -100,11 +100,16 @@ IndexedDB via the existing `src/nostr/storage.ts` kv (`wl:` prefix):
 
 ```
 garden:<pubkey>        -> { event: NostrEvent, config: GardenConfig, fetchedAt }
-garden:<pubkey>:draft  -> { config, dirtyAt }   // unpublished owner edits
+garden:<pubkey>:draft  -> {
+  config, dirtyAt,
+  baseEventId, baseCreatedAt, baseRev   // remote version this draft was branched from
+}
 ```
 
 The raw signed event is cached alongside the parsed config so a restored cache can be
-re-verified and re-published unchanged after a failed publish.
+re-verified and re-published unchanged after a failed publish. The draft's base fields are
+what make "someone edited this garden on another device" detectable before publishing.
+
 
 ## 5. Load lifecycle
 
