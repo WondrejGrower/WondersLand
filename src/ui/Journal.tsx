@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useWorldStore } from "../state/useWorldStore";
 import { useNostrStore } from "../state/useNostrStore";
-import { CANNABIS } from "../content/plants";
+
 import { firstImage } from "../nostr/media";
 
 function formatDate(seconds: number): string {
