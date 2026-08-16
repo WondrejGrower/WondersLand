@@ -133,3 +133,21 @@ Verified in headless Chromium: enter → walk → walk cycle animates, no consol
 errors. Limitations: no idle clip in the file (standing uses the bind pose plus
 a bob), the `Running` clip is unused, and the model is a large download that is
 only fetched after the landing screen.
+
+## Landing page redesign (user-authorized, 2026-08-16)
+
+`src/ui/LandingScreen.tsx` is now the WondersLand front door, matching the
+supplied reference: dark forest shell with nav (Explore / Gardens / How it
+works / Sign in with Nostr — visual only), hero ("Step Into Your Living
+Garden") with the lightweight-scene-loading badge, a generated static
+illustration of the floating garden island (`src/assets/world-preview.png`)
+instead of a second Three.js scene, three destination cards (My Garden is the
+only functional one and calls `enter()`; Plaza and Visit a Friend show
+"Coming soon"), three informational feature panels and a footer strip.
+New landing color tokens (`--forest`, `--forest-deep`, `--forest-soft`,
+`--leaf`, `--cream`, `--sand`, `--plum`, `--bark`) live in `src/styles.css`.
+
+The 3D world is untouched and still `React.lazy` behind `<ClientOnly>`, so
+Three.js and the character GLB load only after My Garden is clicked. Verified
+headless at 1280x1800 and 390x844: no console errors, no horizontal overflow,
+My Garden click mounts the canvas.
