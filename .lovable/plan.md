@@ -25,7 +25,13 @@ tags:
 content: JSON.stringify(GardenConfig)   // plaintext, public, no media, no keys
 ```
 
+The address (`30078` + `wondersland:garden-config`) is permanent: the `d` tag is never
+versioned. Every future schema version migrates under the same address, so a garden always
+has exactly one canonical location. `created_at` is forced strictly increasing per publish
+so two saves in the same second still order correctly.
+
 Existing diary parsing gets one defensive guard: skip any `d` tag starting `wondersland:`.
+
 
 ## 2. GardenConfig schema (`src/garden/config.ts`)
 
