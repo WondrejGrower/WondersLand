@@ -80,3 +80,12 @@ animation. A proper Idle clip would need a new asset. `Running` stays unused.
 - Removed the demo cannabis plant, its proximity trigger, `src/content/plants.ts`, and `src/ui/InteractPrompt.tsx` (prompt UI).
 - Journal now only renders for Nostr diary plants; the "E" open shortcut moved into `Journal.tsx`.
 - Cottage is scenery only: no interaction or UI attached.
+
+## 2026-08-16 — New player character GLB
+
+- `src/world/CharacterAvatar.tsx` now loads `src/assets/character.glb.asset.json`
+  (uploaded Meshy merged-animation rig) instead of the village-boy GLB.
+- Height is measured from the model bounds and normalised to 1.9 world units,
+  replacing the hard-coded 1.08 scale factor.
+- Movement, camera, controls, speed and third-person behaviour unchanged; the
+  new clips are still named `Walking` / `Running`, so the frozen-walk idle keeps working.
