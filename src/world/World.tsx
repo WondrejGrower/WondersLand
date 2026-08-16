@@ -21,7 +21,7 @@ export default function World() {
       <Sky />
       <Ground />
       <Plaza />
-      <CannabisPlant position={CANNABIS.position} />
+      <Cottage />
       <GardenPlants />
       <Player />
     </Canvas>
