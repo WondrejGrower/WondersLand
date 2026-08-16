@@ -32,7 +32,7 @@ export async function query(
       resolve();
     };
     const timer = setTimeout(finish, maxWaitMs);
-    const sub = p.subscribeMany(relays, [filter], {
+    const sub = p.subscribeMany(relays, filter, {
       onevent: (event) => {
         seen.set(event.id, event as NostrEvent);
       },
