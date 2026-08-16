@@ -229,3 +229,21 @@ never read or stored.
 Limitations: no editing UI yet, so nothing marks the draft dirty in the running
 app and the save path is only reachable programmatically; conflict resolution
 is whole-config (mine/theirs), not per-plant.
+
+### Alpha owner sessions (2026-08-16)
+Sign-in now offers three paths: NIP-07 extension, npub/nprofile (read-only) and
+an "Advanced" nsec unlock for alpha owner testing. The nsec signer keeps the key
+in memory only for the current tab; nothing persists it and a refresh downgrades
+the session to read-only. A small owner-only "Save Garden" control next to the
+sign-in button exposes `useGardenStore.save()` so a first signed publish and
+restore can be tested; there is still no 3D editing UI.
+
+Security limitation (alpha): pasting an nsec into a web page is inherently
+weaker than an extension or NIP-46 signer — it is exposed to the page's JS for
+the session. This option is for the project owner during alpha only and should
+be replaced by NIP-46 before any public use.
+
+Planned infrastructure (not deployed, not enabled): the WondersLand relay
+`wss://relay.wondersland.online` is listed in the relay set but disabled until
+reachable, and `https://blossom.wondersland.online` exists only as a constant in
+`src/nostr/endpoints.ts` — no media upload code exists.

@@ -95,3 +95,18 @@ animation. A proper Idle clip would need a new asset. `Running` stays unused.
 - Added `src/world/Trees.tsx`: the uploaded canopy GLB (59 MB -> 464 KB via simplify + WebP + Draco),
   normalised to ~6.2 units and drawn as ONE instanced mesh (26 boundary trees + 3 plaza trees).
 - Removed the low-poly `Tree` component from `Plaza.tsx` and the icosahedron hedge ring from `Ground.tsx`.
+
+## 2026-08-16 — Alpha owner login (nsec) + reachable Save Garden
+
+- Added `src/nostr/signers/local.ts`: in-memory nsec signer. The key is decoded
+  with nostr-tools, held in module scope for the tab only, zeroed on sign-out,
+  and never written to IndexedDB, localStorage, Zustand, events, URLs or logs.
+- `AuthMethod` gained `nsec`; `getSigner()` returns the local signer only while
+  it is unlocked. npub sessions stay read-only.
+- `useNostrStore.signInWithNsec()` derives the pubkey and persists the session
+  as a read-only npub session, so a refresh drops write access by design.
+- New `src/ui/SaveGarden.tsx`: owner-only Save Garden control with
+  unsaved / saving / saved / error states, wired to `useGardenStore.save()`.
+- New `src/nostr/endpoints.ts`: future `wss://relay.wondersland.online` (listed
+  but disabled) and `https://blossom.wondersland.online` (config point only, no
+  upload code). Existing multi-relay defaults unchanged.
