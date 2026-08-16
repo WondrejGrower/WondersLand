@@ -182,7 +182,8 @@ New layers:
   Diary tag/content parsing matches Weedoshi byte for byte, so both apps read
   the same events.
 - `src/garden/` — categorises each diary (cannabis, vegetable, herb, fruit,
-  indoor, seedling), assigns it to a semantic zone (open garden, raised beds,
+  indoor, other) plus an independent growth stage (germination, seedling,
+  vegetative, flowering, harvested, unknown), assigns it to a semantic zone (open garden, raised beds,
   orchard, greenhouse, house) and resolves a model: the dedicated cannabis
   model when the species has one, otherwise a generic representative for the
   category, flagged as a stand-in.

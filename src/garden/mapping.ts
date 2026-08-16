@@ -1,8 +1,8 @@
 import type { Diary } from "../nostr/types";
 import { plantDisplayName } from "../nostr/plants/catalog";
-import { categorizePlant, type PlantCategory } from "./categories";
+import { categorizePlant, getGrowthStage, type GrowthStage, type PlantCategory } from "./categories";
 import { resolveModel, type ModelChoice } from "./models";
-import { slotPosition, ZONES, ZONE_FOR_CATEGORY, type ZoneId } from "./zones";
+import { slotPosition, ZONES, zoneForPlant, type ZoneId } from "./zones";
 
 export type GardenPlant = {
   /** Diary id — also the focus id used by the interaction system. */
@@ -11,6 +11,7 @@ export type GardenPlant = {
   label: string;
   species: string | undefined;
   category: PlantCategory;
+  stage: GrowthStage;
   zone: ZoneId;
   model: ModelChoice;
   position: [number, number, number];
@@ -39,9 +40,9 @@ export function mapDiariesToGarden(diaries: Diary[]): GardenPlant[] {
       plant: diary.plant,
       species: diary.species,
       title: diary.title,
-      phase: diary.phase,
     });
-    const zone = ZONE_FOR_CATEGORY[category];
+    const stage = getGrowthStage({ phase: diary.phase });
+    const zone = zoneForPlant(category, stage);
     const index = used[zone] ?? 0;
     used[zone] = index + 1;
     const variation = hash(diary.id);
@@ -52,8 +53,9 @@ export function mapDiariesToGarden(diaries: Diary[]): GardenPlant[] {
       label: plantDisplayName(diary.plantSlug, diary.plant) || diary.title,
       species: diary.species ?? diary.cultivar,
       category,
+      stage,
       zone,
-      model: resolveModel(category, diary.plantSlug),
+      model: resolveModel(category, diary.plantSlug, stage),
       position: slotPosition(ZONES[zone], index),
       rotation: variation * Math.PI * 2,
       scale: 0.88 + variation * 0.28,

@@ -1,6 +1,15 @@
 import { decodeCustomPlantSlug } from "../nostr/plants/catalog";
 
-export type PlantCategory = "cannabis" | "fruit" | "vegetable" | "herb" | "indoor" | "seedling";
+export type PlantCategory = "cannabis" | "fruit" | "vegetable" | "herb" | "indoor" | "other";
+
+/** Life-cycle phase of a diary. Independent from what the plant *is*. */
+export type GrowthStage =
+  | "germination"
+  | "seedling"
+  | "vegetative"
+  | "flowering"
+  | "harvested"
+  | "unknown";
 
 const INDOOR = new Set([
   "anthurium-andraeanum",
@@ -69,9 +78,28 @@ const HERB = new Set([
   "thymus-vulgaris",
 ]);
 
+const VEGETABLE = new Set([
+  "allium-cepa",
+  "allium-sativum",
+  "beta-vulgaris",
+  "brassica-oleracea",
+  "capsicum-annuum",
+  "cucumis-sativus",
+  "cucurbita-pepo",
+  "daucus-carota",
+  "lactuca-sativa",
+  "phaseolus-vulgaris",
+  "pisum-sativum",
+  "raphanus-sativus",
+  "solanum-lycopersicum",
+  "solanum-melongena",
+  "solanum-tuberosum",
+  "spinacia-oleracea",
+  "zea-mays",
+]);
+
 const KEYWORDS: Array<[PlantCategory, string[]]> = [
   ["cannabis", ["cannabis", "weed", "hemp", "marijuana", "ganja", "sativa", "indica", "ruderalis", "kush", "haze"]],
-  ["seedling", ["seedling", "sprout", "clone", "cutting", "germination"]],
   ["indoor", ["houseplant", "indoor", "monstera", "pothos", "philodendron", "orchid", "succulent", "cactus", "ficus"]],
   ["fruit", ["fruit", "berry", "apple", "pear", "cherry", "plum", "peach", "grape", "lemon", "orange", "fig", "melon", "strawberry"]],
   ["herb", ["herb", "mint", "basil", "thyme", "sage", "oregano", "rosemary", "lavender", "parsley", "dill", "chive", "hops"]],
@@ -87,27 +115,26 @@ function fromText(text: string): PlantCategory | null {
 }
 
 /**
- * Decide which kind of plant a diary describes. Catalog slugs win; free-text
- * names fall back to keyword matching; anything unrecognised becomes a
- * vegetable-bed resident so it still shows up in the world.
+ * Decide WHAT the plant is. Catalog slugs win; free-text names fall back to
+ * keyword matching; anything unrecognised stays `other` rather than being
+ * silently filed as a vegetable.
+ *
+ * Category is deliberately independent from growth stage and from physical
+ * growth form (tree / vine / shrub / herbaceous), which are separate traits.
  */
 export function categorizePlant(input: {
   plantSlug?: string | undefined;
   plant?: string | undefined;
   species?: string | undefined;
   title?: string | undefined;
-  phase?: string | undefined;
 }): PlantCategory {
-  const phase = (input.phase ?? "").toLowerCase();
-  if (phase.includes("seedling") || phase.includes("germination")) return "seedling";
-
   const slug = input.plantSlug;
   if (slug && !slug.startsWith("custom:")) {
     if (slug.startsWith("cannabis-")) return "cannabis";
     if (INDOOR.has(slug)) return "indoor";
     if (FRUIT.has(slug)) return "fruit";
     if (HERB.has(slug)) return "herb";
-    return "vegetable";
+    if (VEGETABLE.has(slug)) return "vegetable";
   }
 
   const text = [
@@ -118,5 +145,23 @@ export function categorizePlant(input: {
   ]
     .filter(Boolean)
     .join(" ");
-  return fromText(text) ?? "vegetable";
+  return fromText(text) ?? "other";
+}
+
+const STAGE_KEYWORDS: Array<[GrowthStage, string[]]> = [
+  ["harvested", ["harvest", "cure", "curing", "dried", "drying", "done", "finished"]],
+  ["flowering", ["flower", "bloom", "bud", "fruiting", "ripening"]],
+  ["vegetative", ["veg", "growth", "growing", "mature"]],
+  ["seedling", ["seedling", "sprout", "clone", "cutting", "transplant"]],
+  ["germination", ["germination", "germinating", "soak", "seed"]],
+];
+
+/** Decide WHAT STAGE the plant is currently in. */
+export function getGrowthStage(input: { phase?: string | undefined }): GrowthStage {
+  const phase = (input.phase ?? "").toLowerCase().trim();
+  if (!phase) return "unknown";
+  for (const [stage, words] of STAGE_KEYWORDS) {
+    if (words.some((word) => phase.includes(word))) return stage;
+  }
+  return "unknown";
 }
