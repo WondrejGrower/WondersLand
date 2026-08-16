@@ -13,7 +13,7 @@ function useTreeAsset() {
   const gltf = useGLTF(model.url, true);
   return useMemo(() => {
     let geometry: BufferGeometry | null = null;
-    let material: Material | Material[] | null = null;
+    let material: Material | undefined;
     gltf.scene.updateWorldMatrix(true, true);
     gltf.scene.traverse((child) => {
       if (geometry || !(child as Mesh).isMesh) return;
@@ -21,9 +21,9 @@ function useTreeAsset() {
       const geo = mesh.geometry.clone();
       geo.applyMatrix4(mesh.matrixWorld);
       geometry = geo;
-      material = mesh.material;
+      material = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
     });
-    if (!geometry) return null;
+    if (!geometry || !material) return null;
     const geo = geometry as BufferGeometry;
     // Normalise: centre on X/Z, sit on the ground, scale to a believable height.
     const box = new Box3().setFromBufferAttribute(geo.getAttribute("position") as never);
@@ -33,7 +33,7 @@ function useTreeAsset() {
     geo.translate(-center.x, -box.min.y, -center.z);
     geo.scale(scale, scale, scale);
     geo.computeVertexNormals();
-    return { geometry: geo, material: material as Material };
+    return { geometry: geo, material };
   }, [gltf.scene]);
 }
 
