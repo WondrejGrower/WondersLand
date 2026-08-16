@@ -25,7 +25,13 @@ tags:
 content: JSON.stringify(GardenConfig)   // plaintext, public, no media, no keys
 ```
 
+The address (`30078` + `wondersland:garden-config`) is permanent: the `d` tag is never
+versioned. Every future schema version migrates under the same address, so a garden always
+has exactly one canonical location. `created_at` is forced strictly increasing per publish
+so two saves in the same second still order correctly.
+
 Existing diary parsing gets one defensive guard: skip any `d` tag starting `wondersland:`.
+
 
 ## 2. GardenConfig schema (`src/garden/config.ts`)
 
@@ -100,11 +106,16 @@ IndexedDB via the existing `src/nostr/storage.ts` kv (`wl:` prefix):
 
 ```
 garden:<pubkey>        -> { event: NostrEvent, config: GardenConfig, fetchedAt }
-garden:<pubkey>:draft  -> { config, dirtyAt }   // unpublished owner edits
+garden:<pubkey>:draft  -> {
+  config, dirtyAt,
+  baseEventId, baseCreatedAt, baseRev   // remote version this draft was branched from
+}
 ```
 
 The raw signed event is cached alongside the parsed config so a restored cache can be
-re-verified and re-published unchanged after a failed publish.
+re-verified and re-published unchanged after a failed publish. The draft's base fields are
+what make "someone edited this garden on another device" detectable before publishing.
+
 
 ## 5. Load lifecycle
 
@@ -122,18 +133,25 @@ re-verified and re-published unchanged after a failed publish.
 
 ## 6. Save lifecycle
 
+Local autosave and Nostr signing are separate steps.
+
 ```
-3D drag → useGardenStore.setPlacement() → dirty flag + local draft write (immediate)
-        → debounce 3–5 s of inactivity (or explicit "Save garden")
-        → build config { rev: rev+1, updatedAt: now } → signer.signEvent
-        → publish to all enabled relays → collect per-relay OK
-        → cache signed event → clear dirty
+3D drag → useGardenStore.setPlacement() → dirty flag
+        → autosave to IndexedDB draft (debounced ~1 s)   [no signing, no network]
+        → owner presses "Save Garden"                     [explicit]
+        → build config { rev: rev+1, updatedAt: now }
+        → created_at = max(now, lastPublishedCreatedAt + 1)   // strictly increasing
+        → signer.signEvent → publish to enabled relays → per-relay OK
+        → cache signed event, record it as the draft base, clear dirty
 ```
 
+- NIP-07 users are never prompted by the extension on autosave — signing happens only on
+  the explicit Save action, so editing never spams the extension or the relays.
 - No Nostr call ever happens inside `useFrame`. Drag updates write to refs; the store
   is touched once on pointer-up.
 - Publishing is serialized: one in-flight publish per pubkey, later edits coalesce into
   the next one.
+
 
 ## 7. Reliability and conflicts
 
@@ -144,10 +162,14 @@ re-verified and re-published unchanged after a failed publish.
   reconnect and on next sign-in. UI shows "unsaved changes".
 - **Optimistic updates**: local state applies instantly; a failed publish never rolls back
   silently, it keeps the draft.
-- **Conflict**: `rev` first, then `updated_at`, then `created_at`, then event id as a
-  deterministic tiebreak. Remote newer + no local draft → adopt remote. Remote newer +
-  local draft → keep the draft, warn ("this garden was edited on another device"), and let
-  the owner choose Keep mine / Load theirs. No silent merge.
+- **Event ordering** follows NIP-01 addressable-event semantics, not application data:
+  higher `created_at` wins; on a tie the **lowest event id** wins. `rev` is application
+  metadata for display and draft provenance only and never overrides this ordering.
+- **Conflict**: compare remote against the draft's recorded base (`baseEventId`,
+  `baseCreatedAt`, `baseRev`). Remote newer + no draft → adopt remote. Remote newer than the
+  base + a draft exists → the garden was edited on another device: warn and let the owner
+  choose Keep mine / Load theirs. No silent merge.
+
 - **Missing asset ids** after a world update: unknown `assetId` / `modelOverride` falls back
   to the category-generic model and the entry is preserved so a later world version can
   restore it. Unknown `zone` falls back to `open-garden`.
