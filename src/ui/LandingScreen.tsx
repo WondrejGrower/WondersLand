@@ -279,7 +279,7 @@ function ComingSoonCard({
   return (
     <div
       aria-disabled="true"
-      className={`relative grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-3xl p-3 pt-10 text-forest-deep shadow-lg sm:p-4 sm:pt-12 lg:grid-cols-1 lg:items-start lg:gap-2 lg:pt-4 ${surface}`}
+      className={`relative grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2.5 rounded-3xl p-2.5 pt-9 text-forest-deep shadow-lg sm:gap-3 sm:p-4 sm:pt-12 lg:grid-cols-1 lg:items-start lg:gap-2 lg:pt-4 ${surface}`}
     >
       <img
         src={image}
@@ -287,21 +287,21 @@ function ComingSoonCard({
         width={512}
         height={512}
         loading="lazy"
-        className="h-20 w-20 shrink-0 object-contain sm:h-24 sm:w-24 lg:h-28 lg:w-28"
+        className="h-16 w-16 shrink-0 object-contain sm:h-24 sm:w-24 lg:h-28 lg:w-28"
       />
       <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold text-cream ${dot}`}>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-semibold text-cream sm:h-7 sm:w-7 ${dot}`}>
             {index}
           </span>
-          <span className="text-xl font-semibold sm:text-2xl" style={{ fontFamily: "var(--font-display)" }}>
+          <span className="text-lg font-semibold sm:text-2xl" style={{ fontFamily: "var(--font-display)" }}>
             {title}
           </span>
         </div>
-        <p className="mt-1.5 text-sm text-forest-deep/70">{description}</p>
+        <p className="mt-0.5 text-sm text-forest-deep/70 sm:mt-1.5">{description}</p>
       </div>
       <span
-        className={`absolute right-3 top-3 rounded-full px-3 py-1 text-xs font-medium sm:right-4 sm:top-4 lg:static lg:justify-self-end ${badge}`}
+        className={`absolute right-2.5 top-2.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium sm:right-4 sm:top-4 sm:px-3 sm:py-1 sm:text-xs lg:static lg:justify-self-end ${badge}`}
       >
         Coming soon
       </span>
