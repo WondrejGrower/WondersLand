@@ -18,7 +18,7 @@ const CAMERA_HEIGHT = 3.1;
 const move = new Vector3();
 const desiredCam = new Vector3();
 const lookAt = new Vector3();
-const plantPos = new Vector3(...CANNABIS.position);
+
 const candidate = new Vector3();
 
 const keyMap: Record<string, [axis: "forward" | "strafe", value: number]> = {
