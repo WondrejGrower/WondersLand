@@ -125,21 +125,7 @@ export function Journal() {
               </ul>
             )}
           </>
-        ) : (
-          <>
-            <p className="mt-5 text-sm leading-relaxed">{CANNABIS.description}</p>
-            <h3 className="mt-6 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              Field notes
-            </h3>
-            <ul className="mt-3 space-y-2 text-sm leading-relaxed">
-              {CANNABIS.notes.map((note) => (
-                <li key={note} className="border-l-2 border-primary/40 pl-3">
-                  {note}
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
+        ) : null}
       </div>
     </div>
   );
