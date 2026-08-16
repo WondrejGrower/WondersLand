@@ -161,9 +161,8 @@ export function Player() {
 
     // Proximity: closest plant within reach wins. Only write to the store when
     // the focused plant actually changes.
-    let focusId: string | null =
-      pos.current.distanceTo(plantPos) < INTERACT_RADIUS ? CANNABIS.id : null;
-    let best = focusId ? pos.current.distanceTo(plantPos) : INTERACT_RADIUS;
+    let focusId: string | null = null;
+    let best = INTERACT_RADIUS;
     for (const plant of useNostrStore.getState().plants) {
       candidate.set(plant.position[0], 0, plant.position[2]);
       const dist = pos.current.distanceTo(candidate);
