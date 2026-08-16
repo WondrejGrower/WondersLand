@@ -294,7 +294,7 @@ function ComingSoonCard({
         className="h-20 w-20 shrink-0 object-contain sm:h-24 sm:w-24 lg:h-28 lg:w-28"
       />
       <div className="min-w-0">
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold text-cream ${dot}`}>
             {index}
           </span>
@@ -305,10 +305,11 @@ function ComingSoonCard({
         <p className="mt-1.5 text-sm text-forest-deep/70">{description}</p>
       </div>
       <span
-        className={`shrink-0 self-start rounded-full px-3 py-1 text-xs font-medium lg:justify-self-end ${badge}`}
+        className={`absolute right-3 top-3 rounded-full px-3 py-1 text-xs font-medium sm:right-4 sm:top-4 lg:static lg:justify-self-end ${badge}`}
       >
         Coming soon
       </span>
+
     </div>
   );
 }
