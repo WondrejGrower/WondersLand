@@ -283,7 +283,7 @@ function ComingSoonCard({
   return (
     <div
       aria-disabled="true"
-      className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-3xl p-3 text-forest-deep shadow-lg sm:p-4 lg:grid-cols-1 lg:items-start lg:gap-2 ${surface}`}
+      className={`relative grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-3xl p-3 pt-10 text-forest-deep shadow-lg sm:p-4 sm:pt-12 lg:grid-cols-1 lg:items-start lg:gap-2 lg:pt-4 ${surface}`}
     >
       <img
         src={image}
