@@ -1,14 +1,14 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useAnimations, useGLTF } from "@react-three/drei";
-import type { Group } from "three";
+import { Box3, type Group } from "three";
 import { input } from "../state/input";
 import { useWorldStore } from "../state/useWorldStore";
-import model from "../assets/village-boy.glb.asset.json";
+import model from "../assets/character.glb.asset.json";
 
-// Uploaded rigged character (Meshy "Village Boy Qing"). Native height ~1.76,
-// origin at the feet — scaled to the ~1.9 gameplay height of the old avatar.
-const SCALE = 1.08;
+// Uploaded rigged character. Native height varies per export, so the model is
+// measured once and scaled to the same ~1.9 gameplay height as before.
+const TARGET_HEIGHT = 1.9;
 
 // The GLB ships only "Walking" and "Running" — there is no Idle clip. Fading
 // the walk out to weight 0 left the rig in its bind/T-pose, so instead the walk
@@ -21,6 +21,12 @@ export function CharacterAvatar() {
   const gltf = useGLTF(model.url);
   const { actions } = useAnimations(gltf.animations, root);
   const speed = useRef(0);
+
+  const scale = useMemo(() => {
+    const box = new Box3().setFromObject(gltf.scene);
+    const height = box.max.y - box.min.y;
+    return height > 0 ? TARGET_HEIGHT / height : 1;
+  }, [gltf.scene]);
 
   useEffect(() => {
     const walk = actions["Walking"];
@@ -64,7 +70,7 @@ export function CharacterAvatar() {
 
 
   return (
-    <group ref={root} rotation-y={Math.PI} scale={SCALE}>
+    <group ref={root} rotation-y={Math.PI} scale={scale}>
       <primitive object={gltf.scene} />
     </group>
   );
