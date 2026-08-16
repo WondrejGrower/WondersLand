@@ -108,3 +108,15 @@ live in `zones.ts`; add a dedicated model by registering its slug in
 once when diaries load, never per frame; `Player.tsx` reads the plant list with
 `useNostrStore.getState()` inside `useFrame` and only writes to the world store
 when the focused plant changes.
+
+## Garden persistence
+The garden address is permanent: kind 30078, `d = wondersland:garden-config`.
+Never version that tag — bump `schema` inside the content and add a step in
+`migrateConfig` instead. Ordering is NIP-01 only (`created_at`, then lowest
+`id`); `rev` is application metadata and must never decide a winner.
+
+Autosave and publishing are separate on purpose: placement changes only write
+the local draft (debounced), and `useGardenStore.save()` is the single place a
+signer is invoked, so the extension never prompts on its own. A failed publish
+keeps the draft. Only `src/nostr/signers/` may touch key material, and only via
+NIP-07 — npub sessions are read-only and `canEdit` is false.
