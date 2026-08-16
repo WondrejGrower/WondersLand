@@ -89,3 +89,9 @@ animation. A proper Idle clip would need a new asset. `Running` stays unused.
   replacing the hard-coded 1.08 scale factor.
 - Movement, camera, controls, speed and third-person behaviour unchanged; the
   new clips are still named `Walking` / `Running`, so the frozen-walk idle keeps working.
+
+## 2026-08-16 — Uploaded tree replaces background trees
+
+- Added `src/world/Trees.tsx`: the uploaded canopy GLB (59 MB -> 464 KB via simplify + WebP + Draco),
+  normalised to ~6.2 units and drawn as ONE instanced mesh (26 boundary trees + 3 plaza trees).
+- Removed the low-poly `Tree` component from `Plaza.tsx` and the icosahedron hedge ring from `Ground.tsx`.
