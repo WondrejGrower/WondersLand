@@ -4,7 +4,7 @@ import { Vector3, type Group } from "three";
 import { input } from "../state/input";
 import { useWorldStore } from "../state/useWorldStore";
 import { useNostrStore } from "../state/useNostrStore";
-import { CANNABIS, INTERACT_RADIUS } from "../content/plants";
+const INTERACT_RADIUS = 4;
 import { GARDEN_RADIUS } from "./Ground";
 import { palette } from "./palette";
 import { CharacterAvatar } from "./CharacterAvatar";
@@ -18,7 +18,7 @@ const CAMERA_HEIGHT = 3.1;
 const move = new Vector3();
 const desiredCam = new Vector3();
 const lookAt = new Vector3();
-const plantPos = new Vector3(...CANNABIS.position);
+
 const candidate = new Vector3();
 
 const keyMap: Record<string, [axis: "forward" | "strafe", value: number]> = {
@@ -161,9 +161,8 @@ export function Player() {
 
     // Proximity: closest plant within reach wins. Only write to the store when
     // the focused plant actually changes.
-    let focusId: string | null =
-      pos.current.distanceTo(plantPos) < INTERACT_RADIUS ? CANNABIS.id : null;
-    let best = focusId ? pos.current.distanceTo(plantPos) : INTERACT_RADIUS;
+    let focusId: string | null = null;
+    let best = INTERACT_RADIUS;
     for (const plant of useNostrStore.getState().plants) {
       candidate.set(plant.position[0], 0, plant.position[2]);
       const dist = pos.current.distanceTo(candidate);

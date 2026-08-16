@@ -202,3 +202,9 @@ and renders it in the header; zone mapping checked against six sample diaries.
 Limitations: no publishing, no growmies/social view, no relay-management UI
 (relays are configurable in code and cached), and only cannabis has a dedicated
 3D model — everything else uses a stand-in.
+
+### Cottage (2026-08-16)
+The demo cannabis plant and its journal/prompt are gone. A static cottage GLB
+(`src/assets/cottage.glb.asset.json`) stands where it was, rendered by
+`src/world/Cottage.tsx` with no interaction. Proximity focus and the journal now
+serve only Nostr garden plants; "Press E" is handled inside `Journal.tsx`.

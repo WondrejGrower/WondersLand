@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useWorldStore } from "../state/useWorldStore";
 import { useNostrStore } from "../state/useNostrStore";
-import { CANNABIS } from "../content/plants";
+
 import { firstImage } from "../nostr/media";
 
 function formatDate(seconds: number): string {
@@ -35,10 +35,25 @@ export function Journal() {
     return () => window.removeEventListener("keydown", onKey, true);
   }, [open, close]);
 
-  if (!open) return null;
+  // Press E near a garden plant to read its grow log.
+  const openJournal = useWorldStore((s) => s.openJournal);
+  useEffect(() => {
+    if (open || !plant) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === "KeyE") {
+        e.preventDefault();
+        openJournal();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, plant, openJournal]);
 
-  const title = plant ? plant.diary.title : CANNABIS.name;
-  const subtitle = plant ? (plant.label ?? plant.species ?? "") : CANNABIS.species;
+
+  if (!open || !plant) return null;
+
+  const title = plant.diary.title;
+  const subtitle = plant.label ?? plant.species ?? "";
 
   return (
     <div className="absolute inset-0 z-20 flex items-center justify-center bg-foreground/30 p-4 backdrop-blur-sm">
@@ -125,21 +140,7 @@ export function Journal() {
               </ul>
             )}
           </>
-        ) : (
-          <>
-            <p className="mt-5 text-sm leading-relaxed">{CANNABIS.description}</p>
-            <h3 className="mt-6 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              Field notes
-            </h3>
-            <ul className="mt-3 space-y-2 text-sm leading-relaxed">
-              {CANNABIS.notes.map((note) => (
-                <li key={note} className="border-l-2 border-primary/40 pl-3">
-                  {note}
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
+        ) : null}
       </div>
     </div>
   );
