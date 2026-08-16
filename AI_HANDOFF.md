@@ -88,7 +88,10 @@ the boolean in/out state flips.
 ## Character model
 The player mesh is an imported rigged GLB loaded with drei `useGLTF` in
 `src/world/CharacterAvatar.tsx`; the file lives on the Lovable CDN via
-`src/assets/village-boy.glb.asset.json`. Animation is a single `Walking`
-AnimationAction whose weight is blended by `input.forward/strafe` inside
-`useFrame` — no state writes per frame. Do not edit `src/world/Avatar.tsx`
+`src/assets/village-boy.glb.asset.json`. The file contains exactly two clips,
+`Walking` and `Running` — there is no Idle clip. `Walking` is therefore held at
+weight 1 permanently and its `timeScale` is eased by `input.forward/strafe`
+inside `useFrame`; on stop it settles on the clip's passing pose
+(`NEUTRAL_FRACTION`) so the rig never falls back to its bind/T-pose. Never fade
+that weight to 0. No state writes per frame. Do not edit `src/world/Avatar.tsx`
 (legacy, unused).

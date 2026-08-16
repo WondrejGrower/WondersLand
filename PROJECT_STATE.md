@@ -151,3 +151,20 @@ The 3D world is untouched and still `React.lazy` behind `<ClientOnly>`, so
 Three.js and the character GLB load only after My Garden is clicked. Verified
 headless at 1280x1800 and 390x844: no console errors, no horizontal overflow,
 My Garden click mounts the canvas.
+
+## Character idle pose fix (2026-08-16)
+
+Clip inventory of `village-boy.glb`: `Walking`, `Running` — **no Idle clip**.
+
+The character no longer snaps to its bind/T-pose when movement stops. Instead
+of fading the walk out to weight 0, `CharacterAvatar.tsx` keeps `Walking` at
+full weight and eases its `timeScale` to 0, settling on the clip's passing pose
+(legs together) as a stand-in idle stance. Starting to move eases the speed
+back up from that frame, so there is no pop.
+
+Verified in headless Chromium: enter → walk → stop holds a natural standing
+pose; no console errors (only the Three.js `THREE.Clock` deprecation notice and
+swiftshader GPU messages).
+
+Limitation: this is a frozen walk frame, not a true idle animation — arms rest
+slightly away from the body. A real idle would require a new animation asset.

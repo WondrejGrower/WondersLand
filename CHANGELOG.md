@@ -43,3 +43,17 @@ database, post-processing, dynamic shadow maps, imported models or packs.
 ## Main character model — 2026-08-15
 - Replaced the primitive garden-keeper avatar with the user-uploaded rigged
   GLB character, served from CDN and animated with its own Walking clip.
+
+## Character idle pose fix — 2026-08-16
+The GLB ships only two animation clips: `Walking` and `Running`. There is no
+Idle clip. `CharacterAvatar.tsx` used to fade the walk weight to 0 when the
+player stopped, which left the rig in its unposed bind/T-pose.
+
+- `src/world/CharacterAvatar.tsx` — `Walking` now stays at full weight forever.
+  Movement drives `timeScale` instead: it eases to 0 on stop and the action
+  settles onto the clip's passing pose (`NEUTRAL_FRACTION = 0.4516` of the
+  1.033 s clip, the frame where the leg bones are closest together), then eases
+  back up when input resumes. The gentle idle bob is unchanged.
+
+Limitation: the standing pose is a frozen walk frame, not a real idle
+animation. A proper Idle clip would need a new asset. `Running` stays unused.
