@@ -35,6 +35,21 @@ export function Journal() {
     return () => window.removeEventListener("keydown", onKey, true);
   }, [open, close]);
 
+  // Press E near a garden plant to read its grow log.
+  const openJournal = useWorldStore((s) => s.openJournal);
+  useEffect(() => {
+    if (open || !plant) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === "KeyE") {
+        e.preventDefault();
+        openJournal();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, plant, openJournal]);
+
+
   if (!open || !plant) return null;
 
   const title = plant.diary.title;
