@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useWorldStore } from "../state/useWorldStore";
-import { useNostrStore } from "../state/useNostrStore";
+import { useGardenStore } from "../state/useGardenStore";
 
 import { firstImage } from "../nostr/media";
 
@@ -16,7 +16,7 @@ export function Journal() {
   const open = useWorldStore((s) => s.journalOpen);
   const close = useWorldStore((s) => s.closeJournal);
   const focusedId = useWorldStore((s) => s.focusedPlantId);
-  const plants = useNostrStore((s) => s.plants);
+  const plants = useGardenStore((s) => s.plants);
   const closeRef = useRef<HTMLButtonElement>(null);
 
   const plant = useMemo(() => plants.find((p) => p.id === focusedId) ?? null, [plants, focusedId]);
