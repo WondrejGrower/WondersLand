@@ -41,12 +41,15 @@ function decodeNpub(input: string): string {
 export const useNostrStore = create<NostrState>((set, get) => {
   async function load(pubkey: string) {
     set({ status: "loading", error: null });
+    const method = get().method ?? "npub";
     const cached = await getCachedDiaries(pubkey);
-    if (cached.length > 0) set({ diaries: cached });
+    // Render the cached garden immediately; the relays catch up in step two.
+    set({ diaries: cached });
+    await useGardenStore.getState().load(pubkey, method, cached);
     try {
       const [profile, diaries] = await Promise.all([fetchProfile(pubkey), fetchDiaries(pubkey)]);
       set({ profile, diaries, status: "ready" });
-      await useGardenStore.getState().load(pubkey, get().method ?? "npub", diaries);
+      useGardenStore.getState().setDiaries(diaries);
     } catch (err) {
       set({
         status: cached.length > 0 ? "ready" : "error",
@@ -54,6 +57,7 @@ export const useNostrStore = create<NostrState>((set, get) => {
       });
     }
   }
+
 
   async function start(session: Session) {
     await loadRelays();
