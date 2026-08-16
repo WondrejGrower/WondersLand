@@ -70,7 +70,7 @@ export function LandingScreen() {
             </svg>
           </span>
           <span
-            className="truncate text-lg font-semibold tracking-tight sm:text-xl"
+            className="text-base font-semibold tracking-tight sm:text-xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
             WondersLand<span className="text-leaf">.online</span>
@@ -176,7 +176,7 @@ export function LandingScreen() {
                   <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                     1
                   </span>
-                  <span className="truncate text-2xl font-semibold" style={{ fontFamily: "var(--font-display)" }}>
+                  <span className="text-xl font-semibold sm:text-2xl" style={{ fontFamily: "var(--font-display)" }}>
                     My Garden
                   </span>
                 </span>
@@ -298,7 +298,7 @@ function ComingSoonCard({
           <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold text-cream ${dot}`}>
             {index}
           </span>
-          <span className="truncate text-2xl font-semibold" style={{ fontFamily: "var(--font-display)" }}>
+          <span className="text-xl font-semibold sm:text-2xl" style={{ fontFamily: "var(--font-display)" }}>
             {title}
           </span>
         </div>
