@@ -168,3 +168,36 @@ swiftshader GPU messages).
 
 Limitation: this is a frozen walk frame, not a true idle animation — arms rest
 slightly away from the body. A real idle would require a new animation asset.
+
+## Nostr integration — Phase 1, read-only (2026-08-16)
+
+WondersLand can now sign in with a Nostr identity and grow the visitor's
+existing Weedoshi diaries as plants in the world. Read-only: nothing is
+published, and no private key is ever requested, held or stored.
+
+New layers:
+- `src/nostr/` — relays, a timeout-bounded SimplePool query helper, an
+  IndexedDB/localStorage cache, NIP-07 signer detection, profile (kind 0) and
+  diary (kind 30078) fetching, plus the plant catalog ported from Weedoshi.
+  Diary tag/content parsing matches Weedoshi byte for byte, so both apps read
+  the same events.
+- `src/garden/` — categorises each diary (cannabis, vegetable, herb, fruit,
+  indoor, seedling), assigns it to a semantic zone (open garden, raised beds,
+  orchard, greenhouse, house) and resolves a model: the dedicated cannabis
+  model when the species has one, otherwise a generic representative for the
+  category, flagged as a stand-in.
+- `src/state/useNostrStore.ts` — identity, profile, diaries, mapped plants.
+- `src/ui/NostrSignIn.tsx` — extension sign-in or pasted npub, in the header.
+- `src/world/GardenPlants.tsx` + `plants/GenericPlants.tsx` — the mapped plants
+  in the scene, sharing one set of geometries and materials.
+
+`Player.tsx` now focuses the nearest plant in range (diary plants or the
+original demo cannabis) and `Journal.tsx` shows that diary's entries, with
+images pulled from the referenced kind-1 notes.
+
+Verified headless: sign-in with an npub fetches the profile from live relays
+and renders it in the header; zone mapping checked against six sample diaries.
+
+Limitations: no publishing, no growmies/social view, no relay-management UI
+(relays are configurable in code and cached), and only cannabis has a dedicated
+3D model — everything else uses a stand-in.

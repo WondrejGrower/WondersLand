@@ -57,3 +57,19 @@ player stopped, which left the rig in its unposed bind/T-pose.
 
 Limitation: the standing pose is a frozen walk frame, not a real idle
 animation. A proper Idle clip would need a new asset. `Running` stays unused.
+
+## 2026-08-16 — Nostr Phase 1 (read-only diaries in the garden)
+
+### Added
+- `src/nostr/*` — relay list, pooled queries, browser cache, NIP-07 sign-in,
+  npub sign-in, profile and diary fetching, Weedoshi plant catalog.
+- `src/garden/*` — plant categorisation, semantic zones, model fallback,
+  diary-to-world mapping.
+- `src/state/useNostrStore.ts`, `src/ui/NostrSignIn.tsx`,
+  `src/world/GardenPlants.tsx`, `src/world/plants/GenericPlants.tsx`.
+
+### Changed
+- Header sign-in button is now functional.
+- `Player.tsx` focuses the nearest plant in range instead of only the demo one.
+- `Journal.tsx` renders diary entries (date, phase, photo, text) when the
+  focused plant comes from Nostr.
