@@ -3,6 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3, type Group } from "three";
 import { input } from "../state/input";
 import { useWorldStore } from "../state/useWorldStore";
+import { useNostrStore } from "../state/useNostrStore";
 import { CANNABIS, INTERACT_RADIUS } from "../content/plants";
 import { GARDEN_RADIUS } from "./Ground";
 import { palette } from "./palette";
@@ -18,6 +19,7 @@ const move = new Vector3();
 const desiredCam = new Vector3();
 const lookAt = new Vector3();
 const plantPos = new Vector3(...CANNABIS.position);
+const candidate = new Vector3();
 
 const keyMap: Record<string, [axis: "forward" | "strafe", value: number]> = {
   KeyW: ["forward", 1],
@@ -34,7 +36,7 @@ export function Player() {
   const body = useRef<Group>(null);
   const pos = useRef(new Vector3(0, 0, 8));
   const yaw = useRef(0);
-  const near = useRef(false);
+  const near = useRef<string | null>(null);
   const gl = useThree((s) => s.gl);
 
   useEffect(() => {
@@ -157,11 +159,22 @@ export function Player() {
     lookAt.set(pos.current.x, 1.2, pos.current.z);
     state.camera.lookAt(lookAt);
 
-    // Proximity: only write to the store when the in/out state flips.
-    const isNear = pos.current.distanceTo(plantPos) < INTERACT_RADIUS;
-    if (isNear !== near.current) {
-      near.current = isNear;
-      store.setFocusedPlant(isNear ? CANNABIS.id : null);
+    // Proximity: closest plant within reach wins. Only write to the store when
+    // the focused plant actually changes.
+    let focusId: string | null =
+      pos.current.distanceTo(plantPos) < INTERACT_RADIUS ? CANNABIS.id : null;
+    let best = focusId ? pos.current.distanceTo(plantPos) : INTERACT_RADIUS;
+    for (const plant of useNostrStore.getState().plants) {
+      candidate.set(plant.position[0], 0, plant.position[2]);
+      const dist = pos.current.distanceTo(candidate);
+      if (dist < best) {
+        best = dist;
+        focusId = plant.id;
+      }
+    }
+    if (focusId !== near.current) {
+      near.current = focusId;
+      store.setFocusedPlant(focusId);
     }
   });
 

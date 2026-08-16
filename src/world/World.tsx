@@ -2,6 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { Sky } from "./Sky";
 import { Ground } from "./Ground";
 import { Plaza } from "./Plaza";
+import { GardenPlants } from "./GardenPlants";
 import { Player } from "./Player";
 import { CannabisPlant } from "./plants/CannabisPlant";
 import { palette } from "./palette";
@@ -22,6 +23,7 @@ export default function World() {
       <Ground />
       <Plaza />
       <CannabisPlant position={CANNABIS.position} />
+      <GardenPlants />
       <Player />
     </Canvas>
   );

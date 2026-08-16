@@ -74,3 +74,7 @@ should exist.
 
 - [x] Main character model (user-authorized scope change): imported rigged GLB
       player replaces the code-built avatar.
+
+- [x] Nostr Phase 1 (user-authorized scope change): read-only identity, profile
+      and Weedoshi diary fetching, mapped into semantic garden zones with a
+      dedicated/generic model fallback.

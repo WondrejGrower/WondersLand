@@ -95,3 +95,16 @@ inside `useFrame`; on stop it settles on the clip's passing pose
 (`NEUTRAL_FRACTION`) so the rig never falls back to its bind/T-pose. Never fade
 that weight to 0. No state writes per frame. Do not edit `src/world/Avatar.tsx`
 (legacy, unused).
+
+## Nostr / garden data layer
+`src/nostr/` is the only place that talks to relays. Event schemas are shared
+with Weedoshi — do not change kinds (30078 diaries, 0 profiles, 30000 growmies)
+or tag names, or the two apps stop reading each other's data. Phase 1 is
+read-only: no signing beyond `getPublicKey`, no nsec handling, ever.
+
+`src/garden/` is pure mapping: diary -> category -> zone slot -> model. Zones
+live in `zones.ts`; add a dedicated model by registering its slug in
+`models.ts` and rendering it in `GardenPlants.tsx`. Plant placement is computed
+once when diaries load, never per frame; `Player.tsx` reads the plant list with
+`useNostrStore.getState()` inside `useFrame` and only writes to the world store
+when the focused plant changes.

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useWorldStore } from "../state/useWorldStore";
+import { NostrSignIn } from "./NostrSignIn";
 import worldPreview from "../assets/world-preview.png";
 import cardGarden from "../assets/card-garden.png";
 import cardPlaza from "../assets/card-plaza.png";
@@ -85,9 +86,7 @@ export function LandingScreen() {
               </span>
             ))}
           </nav>
-          <span className="rounded-full bg-leaf px-3 py-2 text-xs font-semibold text-forest-deep shadow-lg shadow-leaf/20 sm:px-4 sm:py-2.5 sm:text-sm">
-            ✦ <span className="hidden min-[420px]:inline">Sign in with Nostr</span><span className="min-[420px]:hidden">Sign in</span>
-          </span>
+          <NostrSignIn />
           <button
             type="button"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
