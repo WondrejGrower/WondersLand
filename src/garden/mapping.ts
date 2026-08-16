@@ -1,6 +1,8 @@
 import type { Diary } from "../nostr/types";
 import { plantDisplayName } from "../nostr/plants/catalog";
 import { categorizePlant, getGrowthStage, type GrowthStage, type PlantCategory } from "./categories";
+import type { GardenConfig, PlantPlacement } from "./config";
+import { unitHash } from "./defaults";
 import { resolveModel, type ModelChoice } from "./models";
 import { slotPosition, ZONES, zoneForPlant, type ZoneId } from "./zones";
 
@@ -20,45 +22,65 @@ export type GardenPlant = {
   scale: number;
 };
 
-function hash(text: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < text.length; i += 1) {
-    h ^= text.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return (h >>> 0) / 4294967295;
+function describe(diary: Diary) {
+  const category = categorizePlant({
+    plantSlug: diary.plantSlug,
+    plant: diary.plant,
+    species: diary.species,
+    title: diary.title,
+  });
+  const stage = getGrowthStage({ phase: diary.phase });
+  return { category, stage };
 }
 
-/** Turn a grower's diaries into placed plants across the garden's zones. */
+function toPlant(diary: Diary, placement: PlantPlacement): GardenPlant {
+  const { category, stage } = describe(diary);
+  const variation = unitHash(diary.id);
+  const zone = ZONES[placement.zone] ? placement.zone : "open-garden";
+  const model = placement.modelOverride
+    ? { key: placement.modelOverride, dedicated: false }
+    : resolveModel(category, diary.plantSlug, stage);
+
+  return {
+    id: diary.id,
+    diary,
+    label: plantDisplayName(diary.plantSlug, diary.plant) || diary.title,
+    species: diary.species ?? diary.cultivar,
+    category,
+    stage,
+    zone,
+    model,
+    position: placement.position ?? slotPosition(ZONES[zone], placement.slot),
+    rotation: placement.rotationY ?? variation * Math.PI * 2,
+    scale: placement.scale ?? 0.88 + variation * 0.28,
+  };
+}
+
+/** Render list for a garden: placements from the config, diaries for content. */
+export function mapConfigToGarden(config: GardenConfig, diaries: Diary[]): GardenPlant[] {
+  const byId = new Map(diaries.map((diary) => [diary.id, diary]));
+  const plants: GardenPlant[] = [];
+  for (const placement of config.plants) {
+    const diary = byId.get(placement.diaryId);
+    // A placement without its diary is kept in the config but not rendered.
+    if (diary) plants.push(toPlant(diary, placement));
+  }
+  return plants;
+}
+
+/**
+ * Placement-free fallback used before a config exists (and by tests): plants
+ * fall into their semantic zone in diary order.
+ */
 export function mapDiariesToGarden(diaries: Diary[]): GardenPlant[] {
   const used: Partial<Record<ZoneId, number>> = {};
-  const ordered = [...diaries].sort((a, b) => a.createdAt - b.createdAt);
-
-  return ordered.map((diary) => {
-    const category = categorizePlant({
-      plantSlug: diary.plantSlug,
-      plant: diary.plant,
-      species: diary.species,
-      title: diary.title,
+  return [...diaries]
+    .sort((a, b) => a.createdAt - b.createdAt)
+    .map((diary) => {
+      const { category, stage } = describe(diary);
+      const zone = zoneForPlant(category, stage);
+      const slot = used[zone] ?? 0;
+      used[zone] = slot + 1;
+      return toPlant(diary, { diaryId: diary.id, zone, slot });
     });
-    const stage = getGrowthStage({ phase: diary.phase });
-    const zone = zoneForPlant(category, stage);
-    const index = used[zone] ?? 0;
-    used[zone] = index + 1;
-    const variation = hash(diary.id);
-
-    return {
-      id: diary.id,
-      diary,
-      label: plantDisplayName(diary.plantSlug, diary.plant) || diary.title,
-      species: diary.species ?? diary.cultivar,
-      category,
-      stage,
-      zone,
-      model: resolveModel(category, diary.plantSlug, stage),
-      position: slotPosition(ZONES[zone], index),
-      rotation: variation * Math.PI * 2,
-      scale: 0.88 + variation * 0.28,
-    };
-  });
 }
