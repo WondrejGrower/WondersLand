@@ -4,9 +4,8 @@ import { Ground } from "./Ground";
 import { Plaza } from "./Plaza";
 import { GardenPlants } from "./GardenPlants";
 import { Player } from "./Player";
-import { CannabisPlant } from "./plants/CannabisPlant";
+import { Cottage } from "./Cottage";
 import { palette } from "./palette";
-import { CANNABIS } from "../content/plants";
 
 export default function World() {
   return (
