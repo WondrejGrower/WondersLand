@@ -122,18 +122,25 @@ re-verified and re-published unchanged after a failed publish.
 
 ## 6. Save lifecycle
 
+Local autosave and Nostr signing are separate steps.
+
 ```
-3D drag → useGardenStore.setPlacement() → dirty flag + local draft write (immediate)
-        → debounce 3–5 s of inactivity (or explicit "Save garden")
-        → build config { rev: rev+1, updatedAt: now } → signer.signEvent
-        → publish to all enabled relays → collect per-relay OK
-        → cache signed event → clear dirty
+3D drag → useGardenStore.setPlacement() → dirty flag
+        → autosave to IndexedDB draft (debounced ~1 s)   [no signing, no network]
+        → owner presses "Save Garden"                     [explicit]
+        → build config { rev: rev+1, updatedAt: now }
+        → created_at = max(now, lastPublishedCreatedAt + 1)   // strictly increasing
+        → signer.signEvent → publish to enabled relays → per-relay OK
+        → cache signed event, record it as the draft base, clear dirty
 ```
 
+- NIP-07 users are never prompted by the extension on autosave — signing happens only on
+  the explicit Save action, so editing never spams the extension or the relays.
 - No Nostr call ever happens inside `useFrame`. Drag updates write to refs; the store
   is touched once on pointer-up.
 - Publishing is serialized: one in-flight publish per pubkey, later edits coalesce into
   the next one.
+
 
 ## 7. Reliability and conflicts
 
