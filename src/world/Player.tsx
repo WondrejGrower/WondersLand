@@ -8,6 +8,7 @@ const INTERACT_RADIUS = 4;
 import { GARDEN_RADIUS } from "./Ground";
 import { palette } from "./palette";
 import { CharacterAvatar } from "./CharacterAvatar";
+import { COTTAGE_INTERACT_RADIUS, COTTAGE_POSITION } from "./Cottage";
 
 
 const SPEED = 4.2;
@@ -116,7 +117,7 @@ export function Player() {
   useFrame((state, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05);
     const store = useWorldStore.getState();
-    const frozen = store.journalOpen;
+    const frozen = store.journalOpen || store.indoorOpen;
 
     if (frozen) {
       input.forward = 0;
@@ -159,21 +160,31 @@ export function Player() {
     lookAt.set(pos.current.x, 1.2, pos.current.z);
     state.camera.lookAt(lookAt);
 
-    // Proximity: closest plant within reach wins. Only write to the store when
-    // the focused plant actually changes.
-    let focusId: string | null = null;
-    let best = INTERACT_RADIUS;
-    for (const plant of useGardenStore.getState().plants) {
-      candidate.set(plant.position[0], 0, plant.position[2]);
-      const dist = pos.current.distanceTo(candidate);
-      if (dist < best) {
-        best = dist;
-        focusId = plant.id;
+    // Proximity: the cottage wins over plants so its door isn't fighting the
+    // flower beds. Only write to the store when the target actually changes.
+    candidate.set(COTTAGE_POSITION[0], 0, COTTAGE_POSITION[2]);
+    const cottageDist = pos.current.distanceTo(candidate);
+
+    let key: string | null = null;
+    if (cottageDist < COTTAGE_INTERACT_RADIUS) {
+      key = "cottage";
+    } else {
+      let best = INTERACT_RADIUS;
+      for (const plant of useGardenStore.getState().plants) {
+        candidate.set(plant.position[0], 0, plant.position[2]);
+        const dist = pos.current.distanceTo(candidate);
+        if (dist < best) {
+          best = dist;
+          key = plant.id;
+        }
       }
     }
-    if (focusId !== near.current) {
-      near.current = focusId;
-      store.setFocusedPlant(focusId);
+
+    if (key !== near.current) {
+      near.current = key;
+      store.setTarget(
+        key === null ? null : key === "cottage" ? { kind: "cottage" } : { kind: "plant", id: key },
+      );
     }
   });
 

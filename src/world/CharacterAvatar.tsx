@@ -42,7 +42,8 @@ export function CharacterAvatar() {
 
   useFrame((state, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05);
-    const frozen = useWorldStore.getState().journalOpen;
+    const world = useWorldStore.getState();
+    const frozen = world.journalOpen || world.indoorOpen;
     const isMoving = !frozen && (input.forward !== 0 || input.strafe !== 0);
 
     const walk = actions["Walking"];
