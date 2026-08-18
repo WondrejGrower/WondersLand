@@ -110,3 +110,24 @@ animation. A proper Idle clip would need a new asset. `Running` stays unused.
 - New `src/nostr/endpoints.ts`: future `wss://relay.wondersland.online` (listed
   but disabled) and `https://blossom.wondersland.online` (config point only, no
   upload code). Existing multi-relay defaults unchanged.
+
+
+## Cottage = Indoor Plants hub (user-authorized, 2026-08-18)
+
+The cottage is now an interaction target, not just scenery. `useWorldStore`
+gained a generic `target` (`{kind:"plant"|"cottage"}`) plus `indoorOpen`;
+`Player.tsx` resolves proximity each frame and lets the cottage win over nearby
+plants (`COTTAGE_INTERACT_RADIUS = 5`, exported from `Cottage.tsx`).
+`src/ui/InteractionPrompt.tsx` is one shared prompt for desktop ("Press E ·
+Indoor Plants") and coarse pointers ("Open Indoor Plants"); it is also the E
+handler for the cottage. `src/ui/IndoorGarden.tsx` is a DOM overlay listing only
+diaries whose `categorizePlant(...)` is `indoor`, read from the diaries already
+in `useNostrStore` — no new fetching, no new event kind, nothing inside
+`useFrame`. Cards open a detail view reusing the Journal's visual language;
+Esc steps back from a diary and then closes the overlay. Movement, camera and
+avatar animation freeze on `journalOpen || indoorOpen`.
+
+Limitation: the headless walk-to-cottage test could not be driven reliably in
+this environment (synthetic key events did not move the avatar far enough), so
+the desktop/mobile approach was verified by code path and typecheck rather than
+by a full automated run.
