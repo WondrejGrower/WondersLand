@@ -6,6 +6,9 @@ import model from "../assets/cottage.glb.asset.json";
 /** Static scenery: the garden cottage. No interaction, no UI. */
 const TARGET_HEIGHT = 5.5;
 const POSITION: [number, number, number] = [6, 0, -4];
+/** World position + reach used by the interaction system. */
+export const COTTAGE_POSITION = POSITION;
+export const COTTAGE_INTERACT_RADIUS = 5;
 const ROTATION_Y = -0.5;
 
 export function Cottage() {

@@ -62,7 +62,8 @@ export function Avatar() {
   useFrame((state, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05);
     const t = state.clock.elapsedTime;
-    const frozen = useWorldStore.getState().journalOpen;
+    const world = useWorldStore.getState();
+    const frozen = world.journalOpen || world.indoorOpen;
     const moving =
       !frozen && (input.forward !== 0 || input.strafe !== 0) ? 1 : 0;
 

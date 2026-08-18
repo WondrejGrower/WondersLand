@@ -5,6 +5,8 @@ import { useWorldStore } from "../state/useWorldStore";
 import { LandingScreen } from "../ui/LandingScreen";
 
 import { Journal } from "../ui/Journal";
+import { IndoorGarden } from "../ui/IndoorGarden";
+import { InteractionPrompt } from "../ui/InteractionPrompt";
 import { TouchControls } from "../ui/TouchControls";
 
 // Three.js is browser-only: the module itself must not load during SSR.
@@ -52,7 +54,9 @@ function Index() {
         </Suspense>
       </ClientOnly>
       <TouchControls />
+      <InteractionPrompt />
       <Journal />
+      <IndoorGarden />
     </main>
   );
 }
