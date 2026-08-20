@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3, type Group } from "three";
 import { input } from "../state/input";
@@ -9,11 +9,21 @@ import { GARDEN_RADIUS } from "./Ground";
 import { palette } from "./palette";
 import { CharacterAvatar } from "./CharacterAvatar";
 import { COTTAGE_INTERACT_RADIUS, COTTAGE_POSITION } from "./Cottage";
+import {
+  WORLD_COLLIDERS,
+  assertSpawnClear,
+  resolveMove,
+  resolved,
+  type Collider,
+} from "./collision";
 
 
 const SPEED = 4.2;
 const CAMERA_DISTANCE = 6;
 const CAMERA_HEIGHT = 3.1;
+/** Diary plants are solid too, but slim enough to walk right up to. */
+const PLANT_COLLIDER_RADIUS = 0.45;
+const SPAWN: [number, number] = [0, 8];
 
 // Scratch objects — never allocate inside useFrame.
 const move = new Vector3();
@@ -21,6 +31,7 @@ const desiredCam = new Vector3();
 const lookAt = new Vector3();
 
 const candidate = new Vector3();
+
 
 const keyMap: Record<string, [axis: "forward" | "strafe", value: number]> = {
   KeyW: ["forward", 1],
