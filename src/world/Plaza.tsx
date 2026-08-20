@@ -203,7 +203,7 @@ function GardenIsland() {
   }, []);
 
   return (
-    <group position={[-3.6, 0, 2]}>
+    <group position={[ISLAND_CENTER[0], 0, ISLAND_CENTER[1]]}>
       {/* stone rim + soil */}
       <mesh rotation-x={-Math.PI / 2} position-y={0.05}>
         <ringGeometry args={[2.6, 3.1, 24]} />
