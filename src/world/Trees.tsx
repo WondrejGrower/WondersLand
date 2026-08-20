@@ -1,7 +1,9 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { useGLTF } from "@react-three/drei";
-import { Box3, Matrix4, Mesh, Object3D, Vector3, type BufferGeometry, type InstancedMesh, type Material } from "three";
+import { Box3, Mesh, Object3D, Vector3, type BufferGeometry, type InstancedMesh, type Material } from "three";
 import model from "../assets/tree.glb.asset.json";
+import { TREE_INSTANCES } from "./layout";
+
 
 /**
  * Background trees: one uploaded low-poly tree GLB, drawn as a single
