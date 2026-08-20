@@ -331,12 +331,8 @@ export function Plaza() {
       <Greenhouse />
       <Scatter />
       {/* rocks framing the plaza */}
-      {([
-        [-5.2, -1.6, 0.7],
-        [4.2, 6.4, 0.55],
-        [-9, -6, 0.9],
-        [8.6, 0.5, 0.45],
-      ] as [number, number, number][]).map(([x, z, s], i) => (
+      {PLAZA_ROCKS.map(([x, z, s], i) => (
+
         <mesh key={i} position={[x, s * 0.5, z]} scale={s} rotation-y={i}>
           <dodecahedronGeometry args={[1, 0]} />
           <meshLambertMaterial color={palette.stone} />
