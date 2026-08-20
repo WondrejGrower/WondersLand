@@ -74,12 +74,30 @@ function useSignTexture() {
   }, []);
 }
 
+/** Shared scenery constants — collision.ts reads these so it cannot drift. */
+export const ARCH_POSITION: [number, number, number] = [0, 0, 17];
+export const ARCH_POST_X = [-2.4, 2.4];
+export const ARCH_POST_RADIUS = 0.55;
+export const ISLAND_CENTER: [number, number] = [-3.6, 2];
+export const ISLAND_RADIUS = 3.1;
+export const GREENHOUSE_POSITION: [number, number, number] = [-13, 0, -13];
+export const GREENHOUSE_ROTATION_Y = 0.7;
+/** Half-extents of the greenhouse stone base (7 x 4.4). */
+export const GREENHOUSE_HALF: [number, number] = [3.5, 2.2];
+export const PLAZA_ROCKS: [number, number, number][] = [
+  [-5.2, -1.6, 0.7],
+  [4.2, 6.4, 0.55],
+  [-9, -6, 0.9],
+  [8.6, 0.5, 0.45],
+];
+
 function EntranceArch() {
   const sign = useSignTexture();
   return (
-    <group position={[0, 0, 17]}>
-      {[-2.4, 2.4].map((x) => (
+    <group position={ARCH_POSITION}>
+      {ARCH_POST_X.map((x) => (
         <group key={x} position={[x, 0, 0]}>
+
           <mesh position={[0, 0.25, 0]}>
             <boxGeometry args={[0.9, 0.5, 0.9]} />
             <meshLambertMaterial color={palette.stoneDark} />
@@ -185,7 +203,7 @@ function GardenIsland() {
   }, []);
 
   return (
-    <group position={[-3.6, 0, 2]}>
+    <group position={[ISLAND_CENTER[0], 0, ISLAND_CENTER[1]]}>
       {/* stone rim + soil */}
       <mesh rotation-x={-Math.PI / 2} position-y={0.05}>
         <ringGeometry args={[2.6, 3.1, 24]} />
@@ -217,7 +235,7 @@ function GardenIsland() {
 
 function Greenhouse() {
   return (
-    <group position={[-13, 0, -13]} rotation-y={0.7}>
+    <group position={GREENHOUSE_POSITION} rotation-y={GREENHOUSE_ROTATION_Y}>
       <ContactShadow position={[0, 0.04, 0]} radius={4.4} opacity={0.18} />
       {/* low stone base */}
       <mesh position={[0, 0.3, 0]}>
@@ -313,12 +331,8 @@ export function Plaza() {
       <Greenhouse />
       <Scatter />
       {/* rocks framing the plaza */}
-      {([
-        [-5.2, -1.6, 0.7],
-        [4.2, 6.4, 0.55],
-        [-9, -6, 0.9],
-        [8.6, 0.5, 0.45],
-      ] as [number, number, number][]).map(([x, z, s], i) => (
+      {PLAZA_ROCKS.map(([x, z, s], i) => (
+
         <mesh key={i} position={[x, s * 0.5, z]} scale={s} rotation-y={i}>
           <dodecahedronGeometry args={[1, 0]} />
           <meshLambertMaterial color={palette.stone} />

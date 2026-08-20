@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## 2026-08-20 — World collision
+
+Lightweight XZ collision so the avatar can no longer walk through solid
+scenery. No physics dependency added.
+
+### Added
+- `src/world/layout.ts` — shared deterministic layout (`rng`, `GRASS_INSTANCES`,
+  `ROCK_INSTANCES`, `TREE_INSTANCES`) used by both rendering and collision.
+- `src/world/collision.ts` — `Collider` (circle | rotated box), `WORLD_COLLIDERS`,
+  allocation-free `resolveMove(...)` with sliding, `PLAYER_RADIUS = 0.42`, and a
+  dev-only `assertSpawnClear(...)`.
+
+### Changed
+- `Player.tsx` resolves each move against the world colliders plus dynamic diary
+  plant colliders (memoised, never rebuilt in `useFrame`).
+- `Ground.tsx` / `Trees.tsx` now consume the shared layout arrays; `Trees` no
+  longer takes a `radius` prop.
+- `Plaza.tsx` and `Cottage.tsx` export their placement/footprint constants.
+
+### Not included
+- Camera collision, per-triangle collision, colliding grass/flowers/pebbles.
+
 ## 2026-08-12 — Entrance plaza (first playable environment slice)
 
 Added a cozy botanical entrance plaza around the existing minimal loop. No new

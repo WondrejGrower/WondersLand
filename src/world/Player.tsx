@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3, type Group } from "three";
 import { input } from "../state/input";
@@ -9,11 +9,21 @@ import { GARDEN_RADIUS } from "./Ground";
 import { palette } from "./palette";
 import { CharacterAvatar } from "./CharacterAvatar";
 import { COTTAGE_INTERACT_RADIUS, COTTAGE_POSITION } from "./Cottage";
+import {
+  WORLD_COLLIDERS,
+  assertSpawnClear,
+  resolveMove,
+  resolved,
+  type Collider,
+} from "./collision";
 
 
 const SPEED = 4.2;
 const CAMERA_DISTANCE = 6;
 const CAMERA_HEIGHT = 3.1;
+/** Diary plants are solid too, but slim enough to walk right up to. */
+const PLANT_COLLIDER_RADIUS = 0.45;
+const SPAWN: [number, number] = [0, 8];
 
 // Scratch objects — never allocate inside useFrame.
 const move = new Vector3();
@@ -21,6 +31,7 @@ const desiredCam = new Vector3();
 const lookAt = new Vector3();
 
 const candidate = new Vector3();
+
 
 const keyMap: Record<string, [axis: "forward" | "strafe", value: number]> = {
   KeyW: ["forward", 1],
@@ -35,10 +46,30 @@ const keyMap: Record<string, [axis: "forward" | "strafe", value: number]> = {
 
 export function Player() {
   const body = useRef<Group>(null);
-  const pos = useRef(new Vector3(0, 0, 8));
+  const pos = useRef(new Vector3(SPAWN[0], 0, SPAWN[1]));
   const yaw = useRef(0);
   const near = useRef<string | null>(null);
   const gl = useThree((s) => s.gl);
+
+  // Diary plants are dynamic scenery: rebuild their colliders only when the
+  // list changes, never inside useFrame.
+  const plants = useGardenStore((s) => s.plants);
+  const plantColliders = useRef<Collider[]>([]);
+  plantColliders.current = useMemo(
+    () =>
+      plants.map((p) => ({
+        kind: "circle" as const,
+        x: p.position[0],
+        z: p.position[2],
+        r: PLANT_COLLIDER_RADIUS,
+      })),
+    [plants],
+  );
+
+  useEffect(() => {
+    if (import.meta.env.DEV) assertSpawnClear(SPAWN[0], SPAWN[1]);
+  }, []);
+
 
   useEffect(() => {
     const held = new Set<string>();
@@ -138,13 +169,21 @@ export function Player() {
       );
       if (move.lengthSq() > 0) {
         move.normalize().multiplyScalar(SPEED * delta);
-        pos.current.add(move);
-        const dist = Math.hypot(pos.current.x, pos.current.z);
+        let nx = pos.current.x + move.x;
+        let nz = pos.current.z + move.z;
+        const dist = Math.hypot(nx, nz);
         if (dist > GARDEN_RADIUS - 1) {
-          pos.current.multiplyScalar((GARDEN_RADIUS - 1) / dist);
+          const k = (GARDEN_RADIUS - 1) / dist;
+          nx *= k;
+          nz *= k;
         }
+        // Push out of solid scenery; the surviving tangential motion is the slide.
+        resolveMove(nx, nz, WORLD_COLLIDERS, plantColliders.current);
+        pos.current.x = resolved.x;
+        pos.current.z = resolved.z;
       }
     }
+
 
     if (body.current) {
       body.current.position.copy(pos.current);

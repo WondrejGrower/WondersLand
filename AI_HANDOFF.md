@@ -154,3 +154,18 @@ Limitation: the headless walk-to-cottage test could not be driven reliably in
 this environment (synthetic key events did not move the avatar far enough), so
 the desktop/mobile approach was verified by code path and typecheck rather than
 by a full automated run.
+
+
+## World collision (2026-08-20)
+
+Rules to preserve:
+- Physical colliders live only in `src/world/collision.ts`. Interaction radii
+  (`COTTAGE_INTERACT_RADIUS`, plant reach in `Player.tsx`) are separate and must
+  always stay larger than the matching collider.
+- Any new scattered scenery must get its positions from `src/world/layout.ts`,
+  not from a private `rng` inside a render component.
+- `resolveMove` is allocation free and must stay that way; it is called once per
+  frame from `Player.tsx`.
+- Decorative clutter (grass, blooms, pebbles) stays non-colliding for mobile
+  performance. Keep the collider count in the low tens.
+- Camera collision is intentionally not implemented.

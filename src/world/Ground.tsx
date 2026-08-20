@@ -2,46 +2,22 @@ import { useMemo } from "react";
 import { Color, InstancedMesh, Matrix4, Object3D } from "three";
 import { Trees } from "./Trees";
 import { palette } from "./palette";
-import { nearPath } from "./Plaza";
+import { GARDEN_RADIUS as RADIUS, GRASS_INSTANCES, ROCK_INSTANCES, type Instance } from "./layout";
 
-export const GARDEN_RADIUS = 19;
+export const GARDEN_RADIUS = RADIUS;
 
-// Deterministic pseudo-random so the garden looks the same every visit
-// without shipping any data.
-function rng(seed: number) {
-  let s = seed;
-  return () => {
-    s = (s * 1664525 + 1013904223) % 4294967296;
-    return s / 4294967296;
-  };
-}
-
-function useScatter(
-  count: number,
-  seed: number,
-  inner: number,
-  outer: number,
-  clearance = 0,
-) {
+/** Turn shared layout data into instance matrices. Rendering only. */
+function useMatrices(instances: Instance[]) {
   return useMemo(() => {
-    const random = rng(seed);
     const dummy = new Object3D();
-    const list: Matrix4[] = [];
-    for (let i = 0; i < count * 2 && list.length < count; i++) {
-      const a = random() * Math.PI * 2;
-      const r = inner + random() * (outer - inner);
-      const x = Math.cos(a) * r;
-      const z = Math.sin(a) * r;
-      if (clearance > 0 && nearPath(x, z, clearance)) continue;
-      dummy.position.set(x, 0, z);
-      dummy.rotation.set(0, random() * Math.PI * 2, 0);
-      const s = 0.6 + random() * 0.9;
-      dummy.scale.set(s, s * (0.7 + random() * 0.8), s);
+    return instances.map((it) => {
+      dummy.position.set(it.x, 0, it.z);
+      dummy.rotation.set(0, it.rot, 0);
+      dummy.scale.set(it.scale, it.scaleY, it.scale);
       dummy.updateMatrix();
-      list.push(dummy.matrix.clone());
-    }
-    return list;
-  }, [count, seed, inner, outer, clearance]);
+      return dummy.matrix.clone();
+    });
+  }, [instances]);
 }
 
 function Instances({
@@ -68,8 +44,8 @@ function Instances({
 }
 
 export function Ground() {
-  const grass = useScatter(320, 7, 1.5, GARDEN_RADIUS - 1.5, 1.6);
-  const rocks = useScatter(28, 91, 4, GARDEN_RADIUS - 2, 2.2);
+  const grass = useMatrices(GRASS_INSTANCES);
+  const rocks = useMatrices(ROCK_INSTANCES);
 
   return (
     <group>
@@ -82,7 +58,7 @@ export function Ground() {
         <meshLambertMaterial color={palette.groundDark} />
       </mesh>
 
-      <Trees radius={GARDEN_RADIUS} />
+      <Trees />
 
       <Instances matrices={grass} color={palette.grass}>
         <coneGeometry args={[0.16, 0.7, 4]} />
