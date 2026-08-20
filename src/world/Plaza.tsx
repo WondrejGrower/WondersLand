@@ -235,7 +235,7 @@ function GardenIsland() {
 
 function Greenhouse() {
   return (
-    <group position={[-13, 0, -13]} rotation-y={0.7}>
+    <group position={GREENHOUSE_POSITION} rotation-y={GREENHOUSE_ROTATION_Y}>
       <ContactShadow position={[0, 0.04, 0]} radius={4.4} opacity={0.18} />
       {/* low stone base */}
       <mesh position={[0, 0.3, 0]}>
