@@ -10,6 +10,10 @@ const POSITION: [number, number, number] = [6, 0, -4];
 export const COTTAGE_POSITION = POSITION;
 export const COTTAGE_INTERACT_RADIUS = 5;
 const ROTATION_Y = -0.5;
+/** Rotation + solid footprint half-extents used by collision.ts. */
+export const COTTAGE_ROTATION_Y = ROTATION_Y;
+export const COTTAGE_HALF: [number, number] = [3.4, 2.8];
+
 
 export function Cottage() {
   const gltf = useGLTF(model.url, true);
