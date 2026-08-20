@@ -46,10 +46,30 @@ const keyMap: Record<string, [axis: "forward" | "strafe", value: number]> = {
 
 export function Player() {
   const body = useRef<Group>(null);
-  const pos = useRef(new Vector3(0, 0, 8));
+  const pos = useRef(new Vector3(SPAWN[0], 0, SPAWN[1]));
   const yaw = useRef(0);
   const near = useRef<string | null>(null);
   const gl = useThree((s) => s.gl);
+
+  // Diary plants are dynamic scenery: rebuild their colliders only when the
+  // list changes, never inside useFrame.
+  const plants = useGardenStore((s) => s.plants);
+  const plantColliders = useRef<Collider[]>([]);
+  plantColliders.current = useMemo(
+    () =>
+      plants.map((p) => ({
+        kind: "circle" as const,
+        x: p.position[0],
+        z: p.position[2],
+        r: PLANT_COLLIDER_RADIUS,
+      })),
+    [plants],
+  );
+
+  useEffect(() => {
+    if (import.meta.env.DEV) assertSpawnClear(SPAWN[0], SPAWN[1]);
+  }, []);
+
 
   useEffect(() => {
     const held = new Set<string>();
