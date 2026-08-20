@@ -149,13 +149,21 @@ export function Player() {
       );
       if (move.lengthSq() > 0) {
         move.normalize().multiplyScalar(SPEED * delta);
-        pos.current.add(move);
-        const dist = Math.hypot(pos.current.x, pos.current.z);
+        let nx = pos.current.x + move.x;
+        let nz = pos.current.z + move.z;
+        const dist = Math.hypot(nx, nz);
         if (dist > GARDEN_RADIUS - 1) {
-          pos.current.multiplyScalar((GARDEN_RADIUS - 1) / dist);
+          const k = (GARDEN_RADIUS - 1) / dist;
+          nx *= k;
+          nz *= k;
         }
+        // Push out of solid scenery; the surviving tangential motion is the slide.
+        resolveMove(nx, nz, WORLD_COLLIDERS, plantColliders.current);
+        pos.current.x = resolved.x;
+        pos.current.z = resolved.z;
       }
     }
+
 
     if (body.current) {
       body.current.position.copy(pos.current);
