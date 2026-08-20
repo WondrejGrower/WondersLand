@@ -268,3 +268,32 @@ Limitation: the headless walk-to-cottage test could not be driven reliably in
 this environment (synthetic key events did not move the avatar far enough), so
 the desktop/mobile approach was verified by code path and typecheck rather than
 by a full automated run.
+
+
+## World collision (user-authorized, 2026-08-20)
+
+Movement is ground based, so collision is 2D on the XZ plane — no physics
+engine, no BVH, no per-triangle tests.
+
+- `src/world/layout.ts` is the single deterministic layout source. It owns the
+  seeded `rng`, `GRASS_INSTANCES`, `ROCK_INSTANCES` and `TREE_INSTANCES`.
+  `Ground.tsx` and `Trees.tsx` build their instance matrices from it, and
+  `collision.ts` derives colliders from the same arrays, so a rendered trunk and
+  its collider cannot drift apart.
+- `src/world/collision.ts` owns `PLAYER_RADIUS = 0.42`, the `Collider` union
+  (circle | rotated box), the static `WORLD_COLLIDERS` list, the allocation-free
+  `resolveMove(...)`, and a dev-only `assertSpawnClear(...)`.
+- Solid: cottage (OBB), greenhouse (OBB), central garden island (circle),
+  both entrance arch posts, the four framing rocks, scattered rocks with
+  scale >= 0.8, every tree trunk (radius 0.45 x scale), and each diary plant
+  (radius 0.45, rebuilt in a memo when the plant list changes — never in
+  `useFrame`).
+- Non-colliding: grass tufts, blooms, shrubs, small pebbles, path quads and
+  contact shadows.
+- Resolution: clamp to the existing garden radius, then push the candidate
+  position out along the shortest surface normal over two relaxation passes.
+  The surviving tangential component is the slide.
+- Physical colliders stay smaller than the interaction radii, so the cottage
+  (`COTTAGE_INTERACT_RADIUS = 5` vs a ~3.4/2.8 half-extent box) and plants can
+  still be interacted with from outside their mesh.
+- No camera collision in this pass.

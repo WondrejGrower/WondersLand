@@ -82,3 +82,8 @@ should exist.
 - [x] Nostr Phase 2 (user-authorized scope change): per-user garden persistence
       as a kind-30078 addressable event, local-first draft autosave, explicit
       signed publish, and NIP-01 conflict handling. Editing UI is not built.
+
+- [x] World collision (user-authorized scope change): lightweight XZ circle/OBB
+      colliders with sliding resolution for cottage, greenhouse, garden island,
+      arch posts, substantial rocks, tree trunks and diary plants. Shared
+      deterministic layout source. No physics engine, no camera collision.
