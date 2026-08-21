@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## 2026-08-21 — Weedoshi-compatible diary write path (P2)
+
+### Added
+- `src/nostr/writeDiaries.ts` — `createDiary`, `updateDiary`, `addEntry` and a
+  stubbed `uploadMedia` seam for Blossom. Diaries stay addressable kind 30078
+  with `d: diary-<id>` and `t: weedoshi-diary`; an entry is a kind 1 note
+  published first and then referenced from the diary event (`items[]` + `e`
+  tag), so entry text never moves inside the diary event. One entry = at most
+  two signer prompts.
+- `src/ui/DiaryComposer.tsx` — create diary / edit diary / add entry modal.
+  Publishing fails loudly when no relay accepts the event.
+
+### Changed
+- `useNostrStore.upsertDiary(diary)` merges an optimistic write into the store
+  and pushes it to the garden store, so the 3D world reflects the new diary
+  without a relay round-trip.
+- `HomeDashboard` shows `+ New diary` and per-card `Update` actions for
+  `nip07` / `nsec` sessions; `npub` sessions see no write affordance at all.
+
+### Limitations
+- No automated Weedoshi round-trip test yet (the project has no test runner
+  configured); compatibility is enforced by writing exactly the fields
+  `parseDiary` reads. Verify one real publish in Weedoshi before calling P2 done.
+- Media upload is not implemented — entries accept pasted image URLs.
+
 ## 2026-08-21 — Signed-in Home dashboard (P1)
 
 ### Added
