@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ClientOnly } from "@tanstack/react-router";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { useWorldStore } from "../state/useWorldStore";
 import { useNostrStore } from "../state/useNostrStore";
 import { LandingScreen } from "../ui/LandingScreen";
@@ -47,6 +47,27 @@ function Loading() {
 function Index() {
   const entered = useWorldStore((s) => s.entered);
   const pubkey = useNostrStore((s) => s.pubkey);
+  const restoring = useNostrStore((s) => s.restoring);
+  const restore = useNostrStore((s) => s.restore);
+
+  // Restore the saved session as early as possible so a returning grower never
+  // sees the signed-out landing page flash before their dashboard.
+  useEffect(() => {
+    void restore();
+  }, [restore]);
+
+  // Signing in or out always returns to the 2D shell, never into a stale world.
+  useEffect(() => {
+    useWorldStore.setState({
+      entered: false,
+      journalOpen: false,
+      indoorOpen: false,
+      target: null,
+      focusedPlantId: null,
+    });
+  }, [pubkey]);
+
+  if (restoring) return <Loading />;
 
   // Signed-out visitors keep the marketing landing; signed-in Nostr users get
   // the app Home, from which the 3D garden is one destination.
