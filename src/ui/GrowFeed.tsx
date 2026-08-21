@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Leaf, Maximize2, X } from "lucide-react";
+import { Heart, Leaf, Maximize2, MessageCircle, Repeat2, X, Zap } from "lucide-react";
 import { nip19 } from "nostr-tools";
 import { useFeedStore } from "../state/useFeedStore";
 import type { FeedPost } from "../nostr/feed";
