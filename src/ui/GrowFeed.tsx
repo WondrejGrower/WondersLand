@@ -119,20 +119,23 @@ export function GrowFeed({
       }`}
       aria-label="Grow Feed"
     >
-      <header className="flex items-start justify-between gap-3 border-b border-forest-soft/40 px-5 py-4">
+      <header className="flex items-start justify-between gap-3 px-5 pb-3 pt-5">
         <div>
-          <h2 className="text-base font-semibold text-cream" style={{ fontFamily: "var(--font-display)" }}>
-            Grow Feed
+          <h2
+            className="flex items-center gap-2 text-lg font-semibold text-cream"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            <Leaf className="h-4 w-4 text-leaf" aria-hidden /> Grow Feed
           </h2>
-          <p className="text-xs text-cream/50">All posts from the Nostr garden community</p>
+          <p className="mt-0.5 text-xs text-cream/50">All posts from the Nostr garden community</p>
         </div>
         <button
           type="button"
           onClick={onToggleExpand}
           aria-label={expanded ? "Back to dashboard" : "Expand feed"}
-          className="rounded-full border border-forest-soft/60 px-2.5 py-1 text-xs text-cream/70 hover:text-cream"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-forest-soft/50 bg-forest/60 text-cream/70 hover:text-cream"
         >
-          {expanded ? "✕" : "⤢"}
+          {expanded ? <X className="h-4 w-4" aria-hidden /> : <Maximize2 className="h-4 w-4" aria-hidden />}
         </button>
       </header>
 
