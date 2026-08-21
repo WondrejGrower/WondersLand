@@ -2,7 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ClientOnly } from "@tanstack/react-router";
 import { Suspense, lazy } from "react";
 import { useWorldStore } from "../state/useWorldStore";
+import { useNostrStore } from "../state/useNostrStore";
 import { LandingScreen } from "../ui/LandingScreen";
+import { HomeDashboard } from "../ui/HomeDashboard";
+
 
 import { Journal } from "../ui/Journal";
 import { IndoorGarden } from "../ui/IndoorGarden";
@@ -43,8 +46,12 @@ function Loading() {
 
 function Index() {
   const entered = useWorldStore((s) => s.entered);
+  const pubkey = useNostrStore((s) => s.pubkey);
 
-  if (!entered) return <LandingScreen />;
+  // Signed-out visitors keep the marketing landing; signed-in Nostr users get
+  // the app Home, from which the 3D garden is one destination.
+  if (!entered) return pubkey ? <HomeDashboard /> : <LandingScreen />;
+
 
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-background">
