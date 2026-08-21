@@ -1,103 +1,198 @@
-# World collision: lightweight XZ colliders
+# WondersLand — Nostr grow-diary client with a game-like 3D garden
 
-Goal: the avatar can no longer walk through the cottage, trees, greenhouse, garden island, arch posts and large rocks — while movement still feels smooth and nothing else in the app changes.
+Direction plan only. No code changes in this pass.
 
-No physics engine. Movement is ground-based, so collision is solved in 2D (X/Z) with circles and rotated boxes, resolved with sliding.
+## 1. Product states
 
-## 1. Collider data shape and where it lives
+**Signed out** — the current marketing landing stays exactly as it is: same
+hero, same copy, same SEO head, same visual identity. Only entry points are
+"Enter the demo garden" (read-only walkthrough) and Nostr sign-in.
 
-New module `src/world/collision.ts` — the single source of truth, plain data, no Three imports at module scope.
+**Signed in** — `/` renders an app-style Home/Dashboard instead of marketing.
+Same route, different tree, chosen by `useNostrStore().pubkey`. The 3D world
+stops being "the app" and becomes one destination inside a client shell.
+
+Write capability is a third axis: `nip07` / `nsec` sessions can publish, `npub`
+sessions are read-only and every write affordance is hidden (not disabled-only).
+
+## 2. Authenticated information architecture
+
+Target routes (introduced gradually, see phases):
 
 ```text
-Collider =
-  | { kind: "circle", x, z, r }
-  | { kind: "box",   x, z, hw, hd, rot }   // rotated box (OBB) around its centre
+/            signed-out marketing  |  signed-in Home dashboard
+/garden      the 3D world (replaces the boolean `entered`)
+/diaries     list + filter of the user's diaries
+/diary/:id   single diary: entries timeline, add-entry action
+/new         create diary (modal-capable route)
+/explore     Growmies / other pubkeys           (later)
+/profile     identity, relays, GardenConfig, session   (later)
 ```
 
-- `WORLD_COLLIDERS: Collider[]` is built once at module load (static scenery) and exported.
-- A tiny helper `resolveMove(fromX, fromZ, toX, toZ, radius) -> {x, z}` also lives here; it is pure, allocation-free (module-scope scratch numbers only), and used by `Player.tsx`.
-- Player footprint: `PLAYER_RADIUS = 0.42`.
-- Colliders are physical only. Interaction radii (`COTTAGE_INTERACT_RADIUS`, plant reach) stay exactly as they are, and every collider is sized so the player can stand inside the interaction range while outside the mesh.
+Migration rule: `entered` keeps working until `/garden` exists; when it lands,
+`enter()` becomes `navigate({to:'/garden'})` and the store flag is deleted in the
+same commit. The 3D world stays lazy + client-only in every step.
 
-Dynamic colliders (diary plants from `useGardenStore`) are read separately: a small `useMemo` in `Player.tsx` derives circle colliders from `plants` and keeps them in a ref, refreshed only when the plant list changes — never inside `useFrame`.
+## 3. Home dashboard hierarchy
 
-## 2. Which object gets which collider
+1. **Hero action** — large `▶ Enter My Garden` card with the garden stage name
+   and a thin growth bar (`Living Garden · 12 of 20 to Ecosystem`).
+2. **Today in your Garden** — at most three calm, factual cards: "3 diaries not
+   updated in 14 days", "Bloom started 2 days ago", "New badge available".
+   No streaks, no countdowns, no red urgency, dismissible.
+3. **Your diaries** — responsive grid of diary cards built purely from existing
+   `Diary` fields: cover image, title, plant/cultivar, phase chip, entry count,
+   relative last-update. Card → `/diary/:id`; secondary "Update" jumps straight
+   to the add-entry composer.
+4. **Quick actions** — New diary, Add entry, Discovery Book, Badges.
+5. **Garden status** — zone occupancy (indoor / beds / orchard / open), relay
+   sync state, GardenConfig save state (existing `SaveGarden` control folded in).
 
-| Object | Primitive | Notes |
+Empty state repeats the onboarding promise and offers "Create your first diary".
+
+## 4. Diary write path (Weedoshi compatible)
+
+Non-negotiable: WondersLand must not invent a format. Both apps keep reading the
+same events.
+
+- Diary = addressable kind `30078`, `d` = `diary-<id>`, tag `t: weedoshi-diary`,
+  plus the existing optional `plant` / `species` / `cultivar` / `breeder` /
+  `title` tags. Content = the JSON object `src/nostr/diaries.ts` already parses
+  (`title`, `plant`, `plantSlug`, `phase`, `coverImage`, `createdAt`,
+  `updatedAt`, `items[]`).
+- Entry = kind `1` note published first; the diary event is then re-published
+  with the note appended to `items[]` **and** as an `e` tag. The referenced-note
+  model is preserved; entry text never moves inside the diary event.
+- New module `src/nostr/writeDiaries.ts`: `createDiary`, `updateDiary`,
+  `addEntry`. It builds unsigned events, delegates to the existing signer
+  abstraction (`nip07` | in-memory `nsec`), publishes to all enabled relays and
+  merges the optimistic result into `useNostrStore`.
+- Compatibility guard: a round-trip test that feeds every event produced by the
+  writer back through `parseDiary` and asserts field-for-field equality. Any tag
+  or content key Weedoshi may read is written even when WondersLand ignores it.
+- Conflict rule: read-modify-write on the latest known diary event using NIP-01
+  addressable ordering (highest `created_at`, then lowest `id`) — same rule
+  already used for GardenConfig.
+- Media: entries accept image URLs pasted/typed now. A single
+  `uploadMedia(file): Promise<string>` seam is declared and stubbed so Blossom
+  can be dropped in later without touching the composer.
+- NIP-46 remote signing is designed for (signer interface stays async and
+  fallible) but not implemented.
+
+## 5. Derived Garden Growth
+
+`src/progression/**` — pure TypeScript, no React, no Three, no network:
+`computeProgress(diaries: Diary[]): GardenProgress`. Deterministic, recomputed
+on every diary load; nothing is stored in GardenConfig.
+
+Stages: Seed → Sprout → Seedling → Young Garden → Living Garden → Ecosystem.
+
+Signals (each individually capped so no single behaviour dominates):
+- distinct species/plants documented,
+- diary entries counted **per distinct calendar day per diary** (this is the
+  main anti-spam rule — ten notes in one hour count once),
+- completed/harvested grows (phase reaching harvest/cure),
+- category diversity (indoor / vegetable / herb / fruit / other),
+- diary longevity: days between first and last entry,
+- milestones discovered.
+
+Anti-spam principles: per-day dedupe, per-diary caps, ignore empty notes,
+require a real time span for longevity credit, never reward raw event volume,
+never punish inactivity (the score can plateau, it never decays).
+
+## 6. Discovery Book, badges, unlocks
+
+- **Discovery Book** — derived catalogue of every species the user documented,
+  cross-referenced with `src/nostr/plants/catalog.ts`; undiscovered entries show
+  as silhouettes. Educational text lives in static typed data, not in state.
+- **Badges** — pure predicates over `Diary[]`: First Sprout, Indoor Gardener,
+  First Harvest, Seed Saver, Six Species, Full Season. Rendered in 2D first; a
+  physical garden board in the 3D world comes later.
+- **Unlocks** — a stage or badge makes a decor asset *available*; whether and
+  where it is placed is GardenConfig (physical layout). Availability is always
+  derived, placement is always signed config. This boundary must never blur.
+
+## 7. Diary data → 3D world
+
+| Source | Zone | Visual reaction |
 | --- | --- | --- |
-| Cottage (`[6,0,-4]`, rot -0.5) | rotated box ~3.6 x 3.0 half-extents tuned to the GLB footprint | smaller than `COTTAGE_INTERACT_RADIUS = 5`, so E/touch still reachable |
-| Greenhouse (`[-13,0,-13]`, rot 0.7) | rotated box ~3.6 x 2.3 | matches stone base |
-| Garden island bed (`[-3.6,0,2]`) | circle r ≈ 3.1 | stone rim |
-| Entrance arch posts (`[±2.4,0,17]`) | two circles r ≈ 0.55 | walkway between them stays open |
-| Framing rocks in `Plaza` (4 hand-placed) | circles r = scale × 0.9 | |
-| Scattered rocks in `Ground` (28) | circles, only those with scale ≥ 0.8 | small pebbles stay walkable |
-| Trees (boundary ring + 3 close trees) | circles r ≈ 0.45 × instance scale | trunk only, canopy is walkable-under |
-| Diary plants (`GardenPlants`) | circles r ≈ 0.45 | dynamic, from store |
-| Grass tufts, blooms, shrubs, flowers, path quads, contact shadows | none | decorative |
+| category `indoor` | cottage | already the Indoor Garden hub |
+| `vegetable` / `herb` | raised beds | bed fills as diaries are added |
+| `fruit` | orchard | tree per diary, canopy scales with entries |
+| `other` outdoor | open garden | scattered plants |
+| stage germination/seedling | greenhouse | overrides zone until it vegetates |
 
-Outer boundary: the existing `GARDEN_RADIUS - 1` clamp in `Player.tsx` stays untouched.
+Per-plant visuals read the diary's growth stage: height, foliage density and
+bloom accents step with phase; harvested diaries keep a small marker rather than
+disappearing. The central **Garden Tree** is scaled directly from the derived
+stage — one mesh, no new draw calls. All of this is prop-driven from data
+already in the store; `src/world/**` still performs zero network work.
 
-## 3. Movement resolution (sliding)
+## 8. First-spawn onboarding
 
-Per frame, after computing the desired delta:
+Canonical copy, verbatim:
 
-1. Compute candidate position `to = pos + move`.
-2. Clamp to garden radius (existing behaviour).
-3. Loop over colliders (2 relaxation passes for corner cases). For each overlapping collider compute the shortest push-out normal:
-   - circle: normal = (to − centre) normalised; push so distance = `r + PLAYER_RADIUS`.
-   - box: transform `to` into box-local space by `-rot`, clamp to the box, take the axis of least penetration, push out by `PLAYER_RADIUS`, transform back.
-4. Applying the push-out along the surface normal *is* the sliding behaviour: the tangential component of the movement survives, so the player glides along walls instead of stopping.
-5. Broad phase: skip any collider whose centre is farther than `r + PLAYER_RADIUS + moveLength` — a cheap squared-distance test, so the ~50-collider list costs nothing on mobile.
+```text
+Welcome to your garden 🌱
+Everything here grows from what you do.
+Growing your own food is one of the first steps toward true sovereignty.
+Let’s learn together!
+```
 
-All maths uses scalars; no `new Vector3()`, no `setState`, no store writes.
+Flow: welcome card → "walk to the cottage" hint → opening Indoor Garden
+completes step two → one card naming the zones → "Explore freely". Four steps,
+plain DOM overlay, no quest engine, skippable at any point. Completion stored
+locally as `wl:onboarding:<pubkey>`; never published to Nostr. A "Replay
+tutorial" item lives in Profile later.
 
-## 4. Sharing deterministic scatter with rendering
+## 9. Data ownership boundaries
 
-Today `Ground.tsx` and `Trees.tsx` each hold a private `rng()` and generate positions in a `useMemo`, which would drift from any duplicated collider list. Fix:
+- **Nostr (30078 diaries + kind 1 notes)** — the single source of truth for all
+  diary content. Never duplicated into any other store.
+- **GardenConfig (NIP-78, `d: wondersland:garden-config`)** — physical layout,
+  placement and chosen decor only. No diary text, no progression numbers.
+- **Derived (memory)** — progression, badges, Discovery Book, zone assignment.
+  Recomputed, never persisted, never signed.
+- **Local only (IndexedDB/localStorage)** — draft diaries and entries, cached
+  relay reads, onboarding flags, UI preferences.
+- **Blossom (later)** — binary media only, referenced by URL from notes.
+- **No backend, no database.**
 
-- Move the shared deterministic `rng(seed)` and the two layout generators into a new `src/world/layout.ts`:
-  - `TREE_INSTANCES: { x, z, rot, scale }[]` (boundary ring + close trees)
-  - `ROCK_INSTANCES: { x, z, rot, scale }[]`
-- `Trees.tsx` and `Ground.tsx` build their instance matrices from these arrays instead of generating them inline (rendering output stays visually identical — same seeds, same order).
-- `collision.ts` imports the same arrays to derive trunk/rock circles. One source, no drift.
-- Grass stays generated inside `Ground.tsx` (non-colliding, no need to share).
+## 10. Migration phases
 
-## 5. Spawn / stuck safety
+Each phase ships independently and leaves the live site working.
 
-- Spawn is `(0, 8)` on the open path; verified against the collider list at build time by an assertion helper `assertSpawnClear()` run once in dev (`import.meta.env.DEV`) that logs a warning if the spawn overlaps.
-- Runtime safety valve: if after resolution the player is still inside a collider (possible only from a bad data change), push out along the largest penetration normal regardless of movement direction — so the player is always ejected rather than trapped.
-- Resolution always starts from the last known-good position, so a zero-length move can never teleport the player inside geometry.
+- **P1 — Signed-in Home shell.** `/` branches on session; dashboard with hero
+  Play, diary cards, quick actions. `entered` untouched. Marketing unchanged.
+- **P2 — Write path.** `writeDiaries.ts` + create-diary and add-entry composers,
+  plus the Weedoshi round-trip test. Closes the real functional gap.
+- **P3 — Routes.** `/garden`, `/diaries`, `/diary/:id`; retire `entered`.
+- **P4 — Progression.** `src/progression/**`, growth bar, Garden Tree scaling.
+- **P5 — Discovery Book + badges.**
+- **P6 — Onboarding flow.**
+- **P7 — Zone/visual reactions per phase; unlockable decor.**
+- **Later** — Explore/Growmies, Visit Friend, Blossom, NIP-46.
 
-## 6. Files
+## 11. Where to build what
 
-Add:
-- `src/world/collision.ts` — collider types, `WORLD_COLLIDERS`, `resolveMove`, `PLAYER_RADIUS`.
-- `src/world/layout.ts` — shared deterministic `rng`, `TREE_INSTANCES`, `ROCK_INSTANCES`.
+Lovable next: **P1**, then **P2** — both are self-contained UI + one new nostr
+module, exactly the shape this environment handles well.
 
-Change:
-- `src/world/Player.tsx` — call `resolveMove` after the movement delta; derive dynamic plant colliders in a memo/ref.
-- `src/world/Trees.tsx` — consume `TREE_INSTANCES`.
-- `src/world/Ground.tsx` — consume `ROCK_INSTANCES` for rocks.
-- `src/world/Cottage.tsx`, `src/world/Plaza.tsx` — export the position/rotation/size constants collision needs (no visual change).
-- `PROJECT_STATE.md`, `AI_HANDOFF.md`, `CHANGELOG.md`, `ROADMAP.md` — record the collision layer rule: physical colliders live in `collision.ts`, interaction radii stay separate.
+Move to Codex/GitHub: P3 (route surgery touching every entry point), P4/P5
+(pure logic with heavy unit-test needs), and any Weedoshi cross-repo schema
+verification, which needs both repos side by side.
 
-Not touched: avatar, camera, joystick, Journal, IndoorGarden, Nostr, GardenConfig.
+## 12. Risks and verification
 
-## 7. Verification checklist
-
-Desktop:
-- Walk into the cottage from all four sides — blocked, and E prompt still appears while blocked.
-- Walk along the cottage wall diagonally — the avatar slides, does not stick.
-- Walk into greenhouse, garden island, both arch posts, big rocks, tree trunks — blocked.
-- Walk through grass, blooms, small pebbles, path — unobstructed.
-- Plant interaction and journal open/close unchanged; outer radius boundary still holds.
-- Camera never ends up inside a wall in a way that hides the avatar (note: camera collision is out of scope for this pass).
-
-Mobile / touch:
-- Joystick movement against a wall slides rather than jitters.
-- Tap-to-open cottage still works while pressed against it.
-- No frame-rate drop versus the current build (spot-check with the on-screen behaviour and a short profile).
-
-Both:
-- No console errors or warnings; typecheck and production build pass.
-- No new allocations in `useFrame` (code review of the frame path).
+- *Write-path incompatibility* — highest risk. Verified by the round-trip test
+  plus one manual publish read back in Weedoshi before P2 is called done.
+- *Relay write failure / partial publish* — surface per-relay results; treat one
+  success as success, keep the local draft until at least one relay accepts.
+- *Signer prompt spam* — batching: one note + one diary update per entry, never
+  more.
+- *Progression drift* — golden-fixture tests: fixed `Diary[]` → fixed stage.
+- *Landing regression* — signed-out `/` must keep byte-identical head metadata
+  and layout; snapshot before P1.
+- *Performance* — the Garden Tree and zone visuals must not raise draw calls
+  meaningfully; measure before/after on a mid-range profile.
+- *Read-only accounts* — every write affordance hidden for `npub` sessions.
