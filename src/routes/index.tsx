@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ClientOnly } from "@tanstack/react-router";
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { useWorldStore } from "../state/useWorldStore";
 import { useNostrStore } from "../state/useNostrStore";
 import { LandingScreen } from "../ui/LandingScreen";
@@ -49,6 +49,9 @@ function Index() {
   const pubkey = useNostrStore((s) => s.pubkey);
   const restoring = useNostrStore((s) => s.restoring);
   const restore = useNostrStore((s) => s.restore);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => setHydrated(true), []);
 
   // Restore the saved session as early as possible so a returning grower never
   // sees the signed-out landing page flash before their dashboard.
@@ -67,7 +70,9 @@ function Index() {
     });
   }, [pubkey]);
 
-  if (restoring) return <Loading />;
+  // SSR renders the public landing page (good for crawlers); only after
+  // hydration may we show the restore state.
+  if (hydrated && restoring) return <Loading />;
 
   // Signed-out visitors keep the marketing landing; signed-in Nostr users get
   // the app Home, from which the 3D garden is one destination.
