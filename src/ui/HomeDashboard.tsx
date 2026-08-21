@@ -1,4 +1,16 @@
 import { useMemo, useState } from "react";
+import {
+  BookOpen,
+  ExternalLink,
+  Leaf,
+  Radio,
+  Sparkles,
+  Sprout,
+  Star,
+  Users,
+  CheckCircle2,
+  LayoutGrid,
+} from "lucide-react";
 import { useNostrStore } from "../state/useNostrStore";
 import { useGardenStore } from "../state/useGardenStore";
 import { useWorldStore } from "../state/useWorldStore";
@@ -12,18 +24,18 @@ import { DiaryComposer, type ComposerMode } from "./DiaryComposer";
 import { GrowFeed } from "./GrowFeed";
 import { canPublish } from "../nostr/signers";
 import { computeGrowth, nextStep } from "../progression/growth";
-import heroArt from "../assets/world-preview.png";
+import heroArt from "../assets/garden-island.png";
 
 const DAY = 86_400_000;
 const STALE_DAYS = 14;
 
 type Section = "garden" | "diaries" | "missions" | "community";
 
-const NAV: { id: Section; label: string }[] = [
-  { id: "garden", label: "Garden" },
-  { id: "diaries", label: "Diaries" },
-  { id: "missions", label: "Missions" },
-  { id: "community", label: "Community" },
+const NAV: { id: Section; label: string; Icon: typeof Leaf }[] = [
+  { id: "garden", label: "Garden", Icon: Leaf },
+  { id: "diaries", label: "Diaries", Icon: BookOpen },
+  { id: "missions", label: "Missions", Icon: Sparkles },
+  { id: "community", label: "Community", Icon: Users },
 ];
 
 function relative(seconds: number): string {
@@ -37,6 +49,47 @@ function relative(seconds: number): string {
 
 function subtitle(diary: Diary): string {
   return [diary.cultivar, diary.plant ?? diary.species].filter(Boolean).join(" · ");
+}
+
+function Ring({ value }: { value: number }) {
+  const size = 108;
+  const stroke = 9;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`${value}% grown`}>
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke="var(--forest-soft)"
+        strokeWidth={stroke}
+        opacity={0.5}
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke="var(--leaf)"
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeDasharray={`${(c * value) / 100} ${c}`}
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+      <text
+        x="50%"
+        y="50%"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fill="var(--cream)"
+        style={{ fontFamily: "var(--font-display)", fontSize: 24 }}
+      >
+        {value}%
+      </text>
+    </svg>
+  );
 }
 
 function Card({
@@ -93,14 +146,19 @@ function Card({
 
 function Panel({
   title,
+  Icon,
   children,
 }: {
   title: string;
+  Icon: typeof Leaf;
   children: React.ReactNode;
 }) {
   return (
-    <section className="grid content-start gap-2 rounded-2xl border border-forest-soft/50 bg-forest/60 p-5">
-      <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-cream/50">{title}</h3>
+    <section className="grid content-start gap-3 rounded-2xl border border-forest-soft/50 bg-forest/60 p-5">
+      <h3 className="flex items-center gap-2 text-sm font-semibold text-cream">
+        <Icon className="h-4 w-4 text-leaf" aria-hidden />
+        {title}
+      </h3>
       {children}
     </section>
   );
@@ -145,34 +203,40 @@ export function HomeDashboard() {
 
   const name = profileLabel(profile, pubkey);
   const latest = sorted[0];
+  const latestCover = latest ? (latest.coverImage ?? latest.items.map(firstImage).find(Boolean)) : undefined;
   const showFeedFull = feedExpanded || section === "community";
+  const growthPercent = Math.round(
+    ((growth.level - 1 + growth.progress) / 6) * 100,
+  );
 
   const header = (
     <header className="sticky top-0 z-20 border-b border-forest-soft/40 bg-forest-deep/85 backdrop-blur">
       <div className="mx-auto flex w-full max-w-[110rem] items-center gap-4 px-4 py-3 sm:px-8">
         <span
-          className="text-base font-semibold tracking-tight sm:text-lg"
+          className="flex items-center gap-2 text-base font-semibold tracking-tight sm:text-xl"
           style={{ fontFamily: "var(--font-display)" }}
         >
+          <Leaf className="h-5 w-5 text-leaf" aria-hidden />
           WondersLand<span className="text-leaf">.online</span>
         </span>
-        <nav className="mx-auto hidden items-center gap-1 rounded-full border border-forest-soft/40 bg-forest/50 p-1 md:flex">
-          {NAV.map((item) => (
+        <nav className="mx-auto hidden items-center gap-1 md:flex">
+          {NAV.map(({ id, label, Icon }) => (
             <button
-              key={item.id}
+              key={id}
               type="button"
               onClick={() => {
-                setSection(item.id);
-                if (item.id !== "community") setFeedExpanded(false);
+                setSection(id);
+                if (id !== "community") setFeedExpanded(false);
               }}
-              aria-current={section === item.id ? "page" : undefined}
-              className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
-                section === item.id
-                  ? "bg-leaf/15 font-semibold text-leaf"
+              aria-current={section === id ? "page" : undefined}
+              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm transition-colors ${
+                section === id
+                  ? "border border-leaf/25 bg-leaf/10 font-semibold text-cream"
                   : "text-cream/60 hover:text-cream"
               }`}
             >
-              {item.label}
+              <Icon className={`h-4 w-4 ${section === id ? "text-leaf" : "text-cream/50"}`} aria-hidden />
+              {label}
             </button>
           ))}
         </nav>
@@ -181,19 +245,20 @@ export function HomeDashboard() {
         </div>
       </div>
       <nav className="flex items-center gap-1 overflow-x-auto px-4 pb-3 md:hidden">
-        {NAV.map((item) => (
+        {NAV.map(({ id, label, Icon }) => (
           <button
-            key={item.id}
+            key={id}
             type="button"
             onClick={() => {
-              setSection(item.id);
-              if (item.id !== "community") setFeedExpanded(false);
+              setSection(id);
+              if (id !== "community") setFeedExpanded(false);
             }}
-            className={`shrink-0 rounded-full px-3 py-1.5 text-xs ${
-              section === item.id ? "bg-leaf/15 font-semibold text-leaf" : "text-cream/60"
+            className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs ${
+              section === id ? "bg-leaf/10 font-semibold text-cream" : "text-cream/60"
             }`}
           >
-            {item.label}
+            <Icon className="h-3.5 w-3.5 text-leaf" aria-hidden />
+            {label}
           </button>
         ))}
       </nav>
@@ -219,17 +284,31 @@ export function HomeDashboard() {
   }
 
   const hero = (
-    <section className="overflow-hidden rounded-[1.75rem] border border-forest-soft/50 bg-forest shadow-[0_30px_80px_-45px_rgba(0,0,0,0.9)]">
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="p-6 sm:p-8">
-          <p className="text-sm text-cream/60">Welcome back, {name}</p>
+    <section className="relative overflow-hidden rounded-[1.75rem] border border-forest-soft/50 bg-forest shadow-[0_30px_80px_-45px_rgba(0,0,0,0.9)]">
+      <div className="grid items-center gap-4 lg:grid-cols-[1fr_1fr]">
+        <div className="relative z-10 p-6 sm:p-9">
+          <p className="flex items-center gap-2 text-sm text-cream/70">
+            <Sprout className="h-4 w-4 text-leaf" aria-hidden /> Welcome back, {name}
+          </p>
           <h2
-            className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl"
+            className="mt-2 text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            {diaries.length > 0 ? "Your garden is thriving" : "Your garden is waiting"}
+            {diaries.length > 0 ? (
+              <>
+                Your garden
+                <br />
+                is <span className="text-leaf">thriving</span>
+              </>
+            ) : (
+              <>
+                Your garden
+                <br />
+                is <span className="text-leaf">waiting</span>
+              </>
+            )}
           </h2>
-          <p className="mt-3 max-w-md text-sm text-cream/65">
+          <p className="mt-4 max-w-sm text-sm text-cream/65">
             A cozy space for your grow-diaries, memories, and moments that grow.
           </p>
 
@@ -237,15 +316,15 @@ export function HomeDashboard() {
             <button
               type="button"
               onClick={enter}
-              className="inline-flex items-center gap-2 rounded-full bg-leaf px-6 py-3 text-sm font-semibold text-forest-deep shadow-lg shadow-leaf/20"
+              className="inline-flex items-center gap-2 rounded-xl bg-leaf px-6 py-3 text-sm font-semibold text-forest-deep shadow-lg shadow-leaf/20"
             >
-              <span aria-hidden>▶</span> Enter Garden
+              <Leaf className="h-4 w-4" aria-hidden /> Enter Garden
             </button>
             {writable ? (
               <button
                 type="button"
                 onClick={() => setComposer({ kind: "create" })}
-                className="inline-flex items-center gap-2 rounded-full border border-forest-soft/60 px-5 py-3 text-sm font-medium text-cream/80"
+                className="inline-flex items-center gap-2 rounded-xl border border-forest-soft/60 px-5 py-3 text-sm font-medium text-cream/85"
               >
                 + New Diary
               </button>
@@ -257,27 +336,44 @@ export function HomeDashboard() {
           </div>
 
           {growth.signals.activeDays > 0 ? (
-            <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-forest-soft/30 px-3 py-1 text-xs text-cream/65">
-              <span aria-hidden>🌿</span>
-              {growth.signals.activeDays} documented{" "}
-              {growth.signals.activeDays === 1 ? "day" : "days"} · {growth.signals.species}{" "}
-              {growth.signals.species === 1 ? "species" : "species"}
-            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-3 text-xs">
+              <span className="inline-flex items-center gap-2 rounded-full border border-leaf/25 bg-leaf/10 px-3 py-1.5 text-cream/80">
+                <Sprout className="h-3.5 w-3.5 text-leaf" aria-hidden />
+                {growth.signals.activeDays} documented{" "}
+                {growth.signals.activeDays === 1 ? "day" : "days"}
+              </span>
+              <span className="text-leaf/80">Keep growing!</span>
+            </div>
           ) : null}
         </div>
 
-        <div className="relative min-h-[13rem]">
+        <div className="relative min-h-[15rem] lg:min-h-[22rem]">
           <img
             src={heroArt}
-            alt="A cozy isometric view of the WondersLand garden"
-            loading="lazy"
-            className="h-full w-full object-cover"
+            alt="A cozy isometric garden island with a cottage, tree and pond"
+            width={1024}
+            height={912}
+            className="h-full w-full object-contain"
           />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-forest via-forest/25 to-transparent" />
-          <div className="absolute right-4 top-4 rounded-2xl border border-forest-soft/50 bg-forest-deep/80 px-4 py-3 text-right backdrop-blur">
-            <p className="text-[0.65rem] uppercase tracking-[0.16em] text-cream/50">Gardener</p>
-            <p className="text-sm font-semibold text-leaf">
-              Lv {growth.level} · {growth.stage}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-forest via-transparent to-transparent" />
+          <div className="absolute right-4 top-4 w-40 rounded-2xl border border-forest-soft/50 bg-forest-deep/85 px-4 py-3 backdrop-blur">
+            <p className="flex items-center gap-1.5 text-[0.7rem] text-cream/60">
+              <Leaf className="h-3 w-3 text-leaf" aria-hidden /> Gardener Level
+            </p>
+            <p className="mt-1 flex items-baseline gap-2">
+              <span className="text-3xl font-semibold text-cream" style={{ fontFamily: "var(--font-display)" }}>
+                {growth.level}
+              </span>
+              <span className="text-xs text-leaf">{growth.stage}</span>
+            </p>
+            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-forest-soft/50">
+              <div
+                className="h-full rounded-full bg-leaf"
+                style={{ width: `${Math.round(growth.progress * 100)}%` }}
+              />
+            </div>
+            <p className="mt-1.5 text-[0.65rem] text-cream/45">
+              {growth.nextStage ? `next: ${growth.nextStage}` : "ecosystem reached"}
             </p>
           </div>
         </div>
@@ -287,50 +383,65 @@ export function HomeDashboard() {
 
   const cards = (
     <div className="grid gap-4 lg:grid-cols-3">
-      <Panel title="Garden growth">
-        <p className="text-lg font-semibold text-cream">{growth.stage}</p>
-        <div className="h-2 w-full overflow-hidden rounded-full bg-forest-deep/70">
-          <div
-            className="h-full rounded-full bg-leaf"
-            style={{ width: `${Math.round(growth.progress * 100)}%` }}
-          />
+      <Panel title="Garden growth" Icon={Sprout}>
+        <div className="flex items-center gap-4">
+          <Ring value={growthPercent} />
+          <div className="grid gap-1">
+            <p className="text-sm text-cream/80">
+              {diaries.length > 0 ? "Your garden is thriving." : "Your garden is just starting."}
+            </p>
+            <p className="text-xs text-cream/55">
+              {growth.nextStage
+                ? `${growth.pointsToNext} growth points to ${growth.nextStage}.`
+                : "Full ecosystem reached."}
+            </p>
+            <button
+              type="button"
+              onClick={() => setSection("missions")}
+              className="mt-1 justify-self-start rounded-lg border border-forest-soft/60 px-3 py-1.5 text-xs text-cream/80"
+            >
+              View growth
+            </button>
+          </div>
         </div>
-        <p className="text-xs text-cream/55">
-          {growth.nextStage
-            ? `${growth.pointsToNext} growth points to ${growth.nextStage}`
-            : "Full ecosystem — your garden is complete."}
-        </p>
-        <p className="text-xs text-cream/40">
-          Derived from {growth.signals.diaries} diaries · {growth.signals.entries} entries ·{" "}
-          {growth.signals.completed} completed
-        </p>
       </Panel>
 
-      <Panel title="Latest diary">
+      <Panel title="Latest diary" Icon={BookOpen}>
         {latest ? (
           <>
-            <p className="truncate text-lg font-semibold text-cream">{latest.title}</p>
-            <p className="text-xs text-cream/55">
-              {subtitle(latest) || "No plant set"}
-              {latest.phase ? ` · ${latest.phase}` : ""} · {relative(latest.updatedAt)}
+            <div className="aspect-[16/7] w-full overflow-hidden rounded-xl bg-forest-deep/70">
+              {latestCover ? (
+                <img src={latestCover} alt="" loading="lazy" className="h-full w-full object-cover" />
+              ) : (
+                <div className="grid h-full place-items-center text-xs text-cream/40">No photo yet</div>
+              )}
+            </div>
+            <p className="truncate text-lg font-semibold text-cream" style={{ fontFamily: "var(--font-display)" }}>
+              {latest.title}
             </p>
-            {writable ? (
+            <div className="flex items-center justify-between gap-2">
+              <p className="truncate text-xs text-cream/50">
+                {relative(latest.updatedAt)} · {latest.items.length}{" "}
+                {latest.items.length === 1 ? "entry" : "entries"}
+              </p>
               <button
                 type="button"
-                onClick={() => setComposer({ kind: "entry", diary: latest })}
-                className="mt-1 justify-self-start rounded-full border border-leaf/40 px-3 py-1 text-xs font-medium text-leaf"
+                onClick={() =>
+                  writable ? setComposer({ kind: "entry", diary: latest }) : setSection("diaries")
+                }
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-forest-soft/60 px-3 py-1.5 text-xs text-cream/85"
               >
-                Add entry
+                Open diary <ExternalLink className="h-3 w-3" aria-hidden />
               </button>
-            ) : null}
+            </div>
           </>
         ) : (
           <p className="text-sm text-cream/55">No diaries on your relays yet.</p>
         )}
       </Panel>
 
-      <Panel title="Next step">
-        <p className="text-lg font-semibold text-cream">{suggestion.title}</p>
+      <Panel title="Mission" Icon={Star}>
+        <p className="text-sm font-semibold text-cream">{suggestion.title}</p>
         <p className="text-xs text-cream/60">{suggestion.body}</p>
         {stale.length > 0 ? (
           <p className="text-xs text-cream/40">
@@ -338,48 +449,51 @@ export function HomeDashboard() {
             {STALE_DAYS}+ days. No rush.
           </p>
         ) : null}
+        <p className="inline-flex items-center gap-1.5 text-xs text-leaf">
+          <Sprout className="h-3.5 w-3.5" aria-hidden /> Real documentation is the only progress here.
+        </p>
       </Panel>
     </div>
   );
 
+  const statusItems: { label: string; value: string; Icon: typeof Leaf }[] = [
+    {
+      label: "Open gardens",
+      value: zones.length === 0 ? "0" : zones.map(([z, n]) => `${ZONES[z]?.label ?? z}: ${n}`).join(" · "),
+      Icon: Sprout,
+    },
+    { label: "Relays", value: `diaries ${status} · feed ${feedStatus}`, Icon: Radio },
+    { label: "Garden layout", value: gardenStatus, Icon: LayoutGrid },
+    {
+      label: "Sync health",
+      value: gardenError ? gardenError : gardenDirty ? "Unsaved changes" : "In sync",
+      Icon: CheckCircle2,
+    },
+  ];
+
   const gardenStatusCard = (
-    <section className="grid gap-4 rounded-2xl border border-forest-soft/50 bg-forest/60 p-5 sm:grid-cols-2 lg:grid-cols-4">
-      <div className="grid content-start gap-1">
-        <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-cream/50">
-          Open gardens
-        </h3>
-        {zones.length === 0 ? (
-          <span className="text-sm text-cream/50">No plants placed yet.</span>
-        ) : (
-          zones.map(([zone, count]) => (
-            <span key={zone} className="text-sm text-cream/70">
-              {ZONES[zone]?.label ?? zone}: {count}
+    <section className="rounded-2xl border border-forest-soft/50 bg-forest/60 p-5">
+      <h3 className="flex items-center gap-2 text-sm font-semibold text-cream">
+        <Sprout className="h-4 w-4 text-leaf" aria-hidden /> Garden status
+      </h3>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-center">
+        {statusItems.map(({ label, value, Icon }) => (
+          <div key={label} className="flex items-center gap-3">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-leaf/10">
+              <Icon className="h-4 w-4 text-leaf" aria-hidden />
             </span>
-          ))
-        )}
-      </div>
-      <div className="grid content-start gap-1">
-        <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-cream/50">Relays</h3>
-        <span className="text-sm text-cream/70">Diaries: {status}</span>
-        <span className="text-sm text-cream/70">Feed: {feedStatus}</span>
-      </div>
-      <div className="grid content-start gap-1">
-        <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-cream/50">
-          Garden layout
-        </h3>
-        <span className="text-sm text-cream/70">{gardenStatus}</span>
-        <span className="text-sm text-cream/50">
-          {gardenError ? gardenError : gardenDirty ? "Unsaved changes" : "In sync"}
-        </span>
-      </div>
-      <div className="grid content-start gap-2">
-        <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-cream/50">Manage</h3>
+            <span className="min-w-0">
+              <span className="block text-xs text-cream/50">{label}</span>
+              <span className="block truncate text-sm text-cream/85">{value}</span>
+            </span>
+          </div>
+        ))}
         <button
           type="button"
           onClick={enter}
-          className="justify-self-start rounded-full border border-leaf/40 px-4 py-1.5 text-xs font-medium text-leaf"
+          className="justify-self-start rounded-xl border border-forest-soft/60 px-4 py-2.5 text-sm text-cream/85 lg:justify-self-end"
         >
-          Manage Garden
+          Manage garden
         </button>
       </div>
     </section>
@@ -424,10 +538,14 @@ export function HomeDashboard() {
             ) : section === "missions" ? (
               <>
                 {cards}
-                <Panel title="Missions">
+                <Panel title="Missions" Icon={Sparkles}>
                   <p className="text-sm text-cream/65">
                     Missions grow out of real documentation: new species, entries on real days and
                     completed grows. Nothing here expires and nothing punishes you for being away.
+                  </p>
+                  <p className="text-xs text-cream/45">
+                    {growth.signals.species} species · {growth.signals.activeDays} active days ·{" "}
+                    {growth.signals.completed} completed grows
                   </p>
                 </Panel>
               </>

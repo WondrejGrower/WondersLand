@@ -1,14 +1,14 @@
 # CHANGELOG
 
-## 2026-08-21 — Dashboard rolled back to the published version
+## 2026-08-21 — Dashboard restored to the live wondersland.online version
 
 ### Changed
-- `src/ui/HomeDashboard.tsx` and `src/ui/GrowFeed.tsx` restored to the exact
-  state running on wondersland.online (verified by matching strings in the
-  published bundle): hero "Your garden is thriving" / "Your garden is waiting",
-  Garden growth / Latest diary / Next step cards, compact Grow Feed panel.
-- Removed the later "match the mock" pass (Gardener Level card, Garden status
-  row, icon nav) and deleted the unused `src/assets/garden-island.png` hero art.
+- `src/ui/HomeDashboard.tsx`, `src/ui/GrowFeed.tsx` and
+  `src/assets/garden-island.png` restored to the state deployed on
+  wondersland.online: icon nav, isometric garden-island hero with the
+  Gardener Level card, Garden growth ring, Latest diary, Next step and the
+  wide Garden status row.
+- An earlier rollback attempt in this session had removed that pass; it is undone.
 - Nothing else changed: 3D world, controls, collisions, Nostr layer, routing and
   the signed-out landing page are untouched.
 
