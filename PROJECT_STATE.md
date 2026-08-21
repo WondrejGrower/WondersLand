@@ -51,6 +51,9 @@ prompt → read journal → close.
   their sum, so clearing keyboard state on focus loss cannot cancel an active
   joystick.
 
+- **Home (`src/ui/HomeDashboard.tsx`)**: signed-in landing. Derived entirely
+  from diaries already in `useNostrStore` and plants in `useGardenStore`;
+  `/` picks landing vs Home on `pubkey`. The 3D world is entered from here.
 - **SEO/metadata**: route-level `head()` on `/` with title, description and
   Open Graph/Twitter tags; Fraunces/Karla loaded via a `<link>` in the root
   route.

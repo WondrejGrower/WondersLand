@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 2026-08-21 — Signed-in Home dashboard (P1)
+
+### Added
+- `src/ui/HomeDashboard.tsx` — app-style Home for signed-in Nostr users: hero
+  `▶ Enter My Garden`, a calm "Today in your Garden" section, diary cards built
+  from existing `Diary` fields, and garden/relay status. No new fetching, no new
+  event kinds.
+
+### Changed
+- `src/routes/index.tsx` branches on `useNostrStore().pubkey`: signed-out
+  visitors keep the untouched marketing landing, signed-in users get Home. The
+  `entered` flag and the 3D world path are unchanged.
+
 ## 2026-08-21 — Fix stuck movement after key release
 
 ### Fixed
