@@ -163,13 +163,16 @@ export function GrowFeed({
         )}
       </div>
 
-      <footer className="border-t border-forest-soft/40 px-5 py-3">
+      <footer className="px-4 pb-4">
         <button
           type="button"
           onClick={onToggleExpand}
-          className="text-xs font-medium text-leaf"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-forest-soft/50 bg-forest/50 px-4 py-3 text-sm font-medium text-cream/80 hover:text-cream"
         >
-          {expanded ? "Back to dashboard" : "View all posts →"}
+          {expanded ? "Back to dashboard" : "View all posts"}
+          <span aria-hidden className="text-leaf">
+            {expanded ? "←" : "→"}
+          </span>
         </button>
       </footer>
     </section>
