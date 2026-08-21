@@ -36,7 +36,6 @@ export function NostrSignIn() {
   }, [restore]);
 
   const newKey = keyBackupPending ? peekFreshNsec() : null;
-  console.log("DBG signin", { m: useNostrStore.getState().method, keyBackupPending });
 
   useEffect(() => {
     if (pubkey && !keyBackupPending) {

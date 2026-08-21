@@ -100,6 +100,12 @@ export const useNostrStore = create<NostrState>((set, get) => {
 
     restore: async () => {
       set({ nip07Available: isNip07Available() });
+      // Never downgrade a live session (a fresh nsec identity persists as a
+      // read-only npub, so re-running restore would drop write access).
+      if (get().pubkey) {
+        set({ restoring: false });
+        return;
+      }
       try {
         const session = await getJson<Session>(SESSION_KEY);
         if (!session?.pubkey) return;
