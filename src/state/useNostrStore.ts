@@ -109,6 +109,9 @@ export const useNostrStore = create<NostrState>((set, get) => {
       try {
         const session = await getJson<Session>(SESSION_KEY);
         if (!session?.pubkey) return;
+        // The identity is known here; the dashboard can paint while the relays
+        // are still being read.
+        set({ restoring: false });
         await start(session);
       } finally {
         set({ restoring: false });
