@@ -206,3 +206,29 @@ Limitation: the headless walk-to-cottage test could not be driven reliably in
 this environment (synthetic key events did not move the avatar far enough), so
 the desktop/mobile approach was verified by code path and typecheck rather than
 by a full automated run.
+
+## Authenticated dashboard redesign + Grow Feed (2026-08-21)
+
+Signed-in `/` now renders a two-column app shell (compact Grow Feed left ~30%,
+garden dashboard right ~70%); the signed-out marketing landing is untouched.
+
+- Added `src/nostr/feed.ts` — read-only kind-1 community feed by grow hashtags
+  plus batched kind-0 author metadata. Protocol code only; no UI, no Three.
+- Added `src/state/useFeedStore.ts` (loading / ready / empty / error states,
+  manual retry).
+- Added `src/ui/GrowFeed.tsx` — scrollable feed panel, expand/maximize into a
+  full-page view with a clear return, post cards (avatar, display name,
+  shortened npub, timestamp, text, media thumbnail) and a Like / Zap / Reply /
+  Repost row rendered as disabled placeholders.
+- Added `src/progression/growth.ts` — pure, deterministic Garden Growth derived
+  from diaries (species, active days, completed grows; entry volume capped to
+  resist spam) plus a gentle `nextStep()` suggestion.
+- Rewrote `src/ui/HomeDashboard.tsx`: sticky header with brand, centered nav
+  (Garden / Diaries / Missions / Community) and the existing user pill; hero
+  card ("Enter Garden" + "+ New Diary", Gardener level chip, reused
+  `world-preview.png` art); Garden growth / Latest diary / Next step cards; wide
+  Garden Status card (zones, relay + feed status, layout sync, Manage Garden).
+- Mobile/tablet collapses to garden hero first, then the full-width feed.
+
+Pending Nostr work: reactions (kind 7), replies, reposts (kind 6) and zaps
+(NIP-57) are UI-only placeholders — no write path exists for them yet.

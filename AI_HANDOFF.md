@@ -192,3 +192,13 @@ Never change the event shape: it must keep parsing through `parseDiary` in
 `src/nostr/diaries.ts` so Weedoshi keeps reading the same events. UI entry point
 is `src/ui/DiaryComposer.tsx`. Next phase per plan: P3 routes (`/garden`,
 `/diaries`, `/diary/:id`) — planned for Codex/GitHub, not Lovable.
+
+## Dashboard + feed rules (2026-08-21)
+
+- `src/nostr/feed.ts` is the only relay access for the community feed; UI reads
+  it through `useFeedStore`. Never call it from `useFrame`.
+- `src/progression/growth.ts` must stay pure (no React/Three/network) and must
+  remain derived from diaries — never persist growth into GardenConfig.
+- Feed interaction buttons stay disabled until real Nostr events are
+  implemented; do not fake local-only likes.
+- Signed-out `LandingScreen` is out of scope for dashboard changes.

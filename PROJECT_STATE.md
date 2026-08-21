@@ -314,3 +314,14 @@ entries are kind 1 notes referenced from the diary. `src/ui/DiaryComposer.tsx`
 drives it from the Home dashboard (`+ New diary`, per-card `Update`), hidden for
 read-only `npub` sessions. Optimistic merge via `useNostrStore.upsertDiary`.
 Media upload is a stub; no automated round-trip test yet.
+
+## Signed-in dashboard shell (2026-08-21)
+
+`HomeDashboard` is the signed-in `/`: sticky brand header, centered section nav
+(Garden / Diaries / Missions / Community — local state, not routes yet), compact
+`GrowFeed` on the left (~30% on desktop, expandable to a full-page grid) and the
+garden dashboard on the right (~70%). Growth numbers come from
+`src/progression/growth.ts`, which is pure and derived from the canonical
+diaries — GardenConfig stays the physical layout only. The feed is read-only:
+social interactions are disabled placeholders until the corresponding Nostr
+write paths (kind 7 / kind 6 / NIP-57) exist.
