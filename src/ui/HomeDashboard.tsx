@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNostrStore } from "../state/useNostrStore";
 import { useGardenStore } from "../state/useGardenStore";
 import { useWorldStore } from "../state/useWorldStore";
@@ -7,6 +7,8 @@ import { firstImage } from "../nostr/media";
 import { ZONES, type ZoneId } from "../garden/zones";
 import type { Diary } from "../nostr/types";
 import { NostrSignIn } from "./NostrSignIn";
+import { DiaryComposer, type ComposerMode } from "./DiaryComposer";
+import { canPublish } from "../nostr/signers";
 
 const DAY = 86_400_000;
 const STALE_DAYS = 14;
@@ -24,7 +26,13 @@ function subtitle(diary: Diary): string {
   return [diary.cultivar, diary.plant ?? diary.species].filter(Boolean).join(" · ");
 }
 
-function Card({ diary }: { diary: Diary }) {
+function Card({
+  diary,
+  onUpdate,
+}: {
+  diary: Diary;
+  onUpdate: ((diary: Diary) => void) | null;
+}) {
   const cover = diary.coverImage ?? diary.items.map(firstImage).find(Boolean);
   return (
     <article className="overflow-hidden rounded-2xl border border-forest-soft/50 bg-forest/70 text-left">
@@ -56,6 +64,15 @@ function Card({ diary }: { diary: Diary }) {
           {diary.items.length} {diary.items.length === 1 ? "entry" : "entries"} · updated{" "}
           {relative(diary.updatedAt)}
         </p>
+        {onUpdate ? (
+          <button
+            type="button"
+            onClick={() => onUpdate(diary)}
+            className="mt-2 justify-self-start rounded-full border border-leaf/40 px-3 py-1 text-xs font-medium text-leaf"
+          >
+            Update
+          </button>
+        ) : null}
       </div>
     </article>
   );
@@ -74,6 +91,9 @@ export function HomeDashboard() {
   const plants = useGardenStore((s) => s.plants);
   const gardenStatus = useGardenStore((s) => s.status);
   const enter = useWorldStore((s) => s.enter);
+  const method = useNostrStore((s) => s.method);
+  const [composer, setComposer] = useState<ComposerMode | null>(null);
+  const writable = canPublish(method);
 
   const sorted = useMemo(() => [...diaries].sort((a, b) => b.updatedAt - a.updatedAt), [diaries]);
 
@@ -123,6 +143,19 @@ export function HomeDashboard() {
           >
             <span aria-hidden="true">▶</span> Enter My Garden
           </button>
+          {writable ? (
+            <button
+              type="button"
+              onClick={() => setComposer({ kind: "create" })}
+              className="mt-3 ml-0 inline-flex items-center gap-2 rounded-full border border-forest-soft/60 px-5 py-2 text-sm font-medium text-cream/80 sm:ml-3 sm:mt-5"
+            >
+              + New diary
+            </button>
+          ) : (
+            <p className="mt-3 text-xs text-cream/45">
+              Read-only session. Sign in with a Nostr extension or nsec to publish diaries.
+            </p>
+          )}
         </section>
 
         {/* Today in your Garden — calm, factual, never urgent */}
@@ -158,7 +191,11 @@ export function HomeDashboard() {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {sorted.map((diary) => (
-                <Card key={diary.id} diary={diary} />
+                <Card
+                  key={diary.id}
+                  diary={diary}
+                  onUpdate={writable ? (d) => setComposer({ kind: "entry", diary: d }) : null}
+                />
               ))}
             </div>
           )}
@@ -186,6 +223,7 @@ export function HomeDashboard() {
           </div>
         </section>
       </main>
+      {composer ? <DiaryComposer mode={composer} onClose={() => setComposer(null)} /> : null}
     </div>
   );
 }
