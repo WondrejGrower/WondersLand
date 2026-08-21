@@ -87,14 +87,3 @@ should exist.
       colliders with sliding resolution for cottage, greenhouse, garden island,
       arch posts, substantial rocks, tree trunks and diary plants. Shared
       deterministic layout source. No physics engine, no camera collision.
-
-- [x] Authenticated dashboard redesign + Grow Feed (user-authorized scope
-      change): signed-in `/` is a two-column shell — compact Nostr Grow Feed
-      on the left (~30%, expandable to a full-screen browsing mode) and the
-      garden dashboard on the right (hero with Enter Garden / + New Diary,
-      Gardener Level, Garden growth ring, Latest diary, Mission, Garden
-      status). Growth is derived from canonical diary data. Feed reads are
-      live; Like/Zap/Reply/Repost are inert UI shells until standard Nostr
-      write events (NIP-25 reactions, NIP-18 reposts, NIP-10 replies,
-      NIP-57 zaps) are wired. No new packages, no database, no changes to
-      the world, cottage, collisions or mobile controls.
