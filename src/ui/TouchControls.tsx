@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { input } from "../state/input";
+import { clearTouchInput, setTouchAxes } from "../state/input";
+
 
 const RADIUS = 52;
 
@@ -36,17 +37,16 @@ export function TouchControls() {
       dy = (dy / len) * RADIUS;
     }
     setKnob(dx, dy);
-    input.strafe = dx / RADIUS;
-    input.forward = -dy / RADIUS;
+    setTouchAxes(-dy / RADIUS, dx / RADIUS);
   };
 
   const end = (e: React.PointerEvent) => {
     if (active.current !== e.pointerId) return;
     active.current = null;
     setKnob(0, 0);
-    input.strafe = 0;
-    input.forward = 0;
+    clearTouchInput();
   };
+
 
   return (
     <div

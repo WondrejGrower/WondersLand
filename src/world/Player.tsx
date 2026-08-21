@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3, type Group } from "three";
-import { input } from "../state/input";
+import { clearKeyboardInput, clearTouchInput, input, setKeyboardAxes } from "../state/input";
 import { useWorldStore } from "../state/useWorldStore";
 import { useGardenStore } from "../state/useGardenStore";
 const INTERACT_RADIUS = 4;
@@ -83,34 +83,45 @@ export function Player() {
         if (entry[0] === "forward") f += entry[1];
         else s += entry[1];
       });
-      input.forward = Math.max(-1, Math.min(1, f));
-      input.strafe = Math.max(-1, Math.min(1, s));
+      setKeyboardAxes(f, s);
     };
 
     const down = (e: KeyboardEvent) => {
-      if (!keyMap[e.code]) return;
+      if (!keyMap[e.code] || e.repeat) return;
       held.add(e.code);
       apply();
     };
     const up = (e: KeyboardEvent) => {
-      held.delete(e.code);
+      if (!held.delete(e.code)) return;
       apply();
     };
-    const blur = () => {
+    // Any focus/lifecycle change can swallow a keyup — drop keyboard state.
+    const release = () => {
+      if (held.size === 0) return;
       held.clear();
-      apply();
+      clearKeyboardInput();
+    };
+    const onVisibility = () => {
+      if (document.visibilityState !== "visible") release();
     };
 
     window.addEventListener("keydown", down);
-    window.addEventListener("keyup", up);
-    window.addEventListener("blur", blur);
+    // Capture phase: a keyup can never be swallowed by a stopPropagation overlay.
+    window.addEventListener("keyup", up, true);
+    window.addEventListener("blur", release);
+    window.addEventListener("pagehide", release);
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       window.removeEventListener("keydown", down);
-      window.removeEventListener("keyup", up);
-      window.removeEventListener("blur", blur);
-      blur();
+      window.removeEventListener("keyup", up, true);
+      window.removeEventListener("blur", release);
+      window.removeEventListener("pagehide", release);
+      document.removeEventListener("visibilitychange", onVisibility);
+      release();
+      clearKeyboardInput();
     };
   }, []);
+
 
   // Drag to look — works with mouse and touch, no pointer lock required.
   useEffect(() => {
@@ -151,10 +162,11 @@ export function Player() {
     const frozen = store.journalOpen || store.indoorOpen;
 
     if (frozen) {
-      input.forward = 0;
-      input.strafe = 0;
+      clearKeyboardInput();
+      clearTouchInput();
       input.yawDelta = 0;
     }
+
 
     yaw.current += input.yawDelta;
     input.yawDelta = 0;

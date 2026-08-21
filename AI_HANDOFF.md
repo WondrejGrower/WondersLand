@@ -169,3 +169,18 @@ Rules to preserve:
 - Decorative clutter (grass, blooms, pebbles) stays non-colliding for mobile
   performance. Keep the collider count in the low tens.
 - Camera collision is intentionally not implemented.
+
+
+## Input channels (2026-08-21)
+
+Rules to preserve:
+- `src/state/input.ts` owns two private channels: keyboard and touch.
+  `input.forward` / `input.strafe` are getters returning the clamped sum. Never
+  assign to them; use `setKeyboardAxes`, `setTouchAxes`, `clearKeyboardInput`,
+  `clearTouchInput` (or `resetInput`).
+- A keyboard reset must never clear touch state, and vice versa — this is what
+  keeps the mobile joystick alive when the page loses focus.
+- `keyup` must stay on the capture phase (`window.addEventListener("keyup", up,
+  true)`) so no overlay can swallow it, and `keydown` must ignore `e.repeat`.
+- Held keys are dropped on `blur`, `pagehide` and `visibilitychange !== visible`
+  to recover from missed keyups (alt-tab, tab suspend, browser chrome focus).
