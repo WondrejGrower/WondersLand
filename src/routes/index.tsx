@@ -2,7 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ClientOnly } from "@tanstack/react-router";
 import { Suspense, lazy } from "react";
 import { useWorldStore } from "../state/useWorldStore";
+import { useNostrStore } from "../state/useNostrStore";
 import { LandingScreen } from "../ui/LandingScreen";
+import { HomeDashboard } from "../ui/HomeDashboard";
+
 
 import { Journal } from "../ui/Journal";
 import { IndoorGarden } from "../ui/IndoorGarden";
