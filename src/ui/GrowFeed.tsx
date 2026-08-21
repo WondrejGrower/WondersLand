@@ -76,17 +76,19 @@ function PostCard({ post }: { post: FeedPost }) {
         />
       ) : null}
 
-      <div className="mt-3 flex items-center gap-1 border-t border-forest-soft/30 pt-2">
+      <div className="mt-3 grid grid-cols-4 gap-2">
         {ACTIONS.map((action) => (
           <button
             key={action.key}
             type="button"
             disabled
             title={`${action.label} — coming with Nostr write support`}
-            className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs text-cream/40 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-forest-soft/40 bg-forest-deep/40 px-2 py-1.5 text-[0.7rem] text-cream/45 disabled:cursor-not-allowed"
           >
-            <span aria-hidden>{action.icon}</span>
-            <span className="hidden sm:inline">{action.label}</span>
+            <span aria-hidden className="text-leaf/70">
+              {action.icon}
+            </span>
+            <span className="truncate">{action.label}</span>
           </button>
         ))}
       </div>
