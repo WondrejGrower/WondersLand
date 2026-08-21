@@ -44,8 +44,13 @@ prompt → read journal → close.
 - **Content** (`src/content/plants.ts`): static typed data for the one plant.
 - **State** (`src/state/useWorldStore.ts`): `entered`, `focusedPlantId`,
   `journalOpen` and their three setters. Nothing else.
-- **Per-frame input** (`src/state/input.ts`): a plain mutable object written by
-  keyboard/joystick handlers and read inside `useFrame` — never React state.
+- **Per-frame input** (`src/state/input.ts`): a plain mutable object read inside
+  `useFrame` — never React state. Keyboard and touch are separate internal
+  channels (`setKeyboardAxes` / `setTouchAxes`, `clearKeyboardInput` /
+  `clearTouchInput`); `input.forward` / `input.strafe` are clamped getters over
+  their sum, so clearing keyboard state on focus loss cannot cancel an active
+  joystick.
+
 - **SEO/metadata**: route-level `head()` on `/` with title, description and
   Open Graph/Twitter tags; Fraunces/Karla loaded via a `<link>` in the root
   route.

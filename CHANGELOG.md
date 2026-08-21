@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-08-21 — Fix stuck movement after key release
+
+### Fixed
+- Desktop avatar could keep walking after W/A/S/D was released when the browser
+  swallowed a `keyup` (alt-tab, focus loss, tab hidden, overlay open/close).
+- `keyup` is now bound in the capture phase, `keydown` ignores auto-repeat, and
+  keyboard state is cleared on `blur`, `pagehide` and `visibilitychange`.
+
+### Changed
+- `src/state/input.ts` splits keyboard and touch into separate channels behind
+  clamped `forward`/`strafe` getters; `TouchControls` and `Player` write through
+  `setTouchAxes` / `setKeyboardAxes` and their matching clear helpers, so a
+  keyboard reset never wipes an active mobile joystick.
+- The per-frame path stays allocation-free with no React/Zustand movement writes.
+
 ## 2026-08-20 — World collision
 
 Lightweight XZ collision so the avatar can no longer walk through solid
