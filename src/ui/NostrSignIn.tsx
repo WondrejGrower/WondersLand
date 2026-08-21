@@ -14,7 +14,7 @@ export function NostrSignIn() {
   const [advanced, setAdvanced] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
-  const [newKey, setNewKey] = useState<string | null>(() => takeFreshNsec());
+  const [newKey, setNewKey] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [nsec, setNsec] = useState("");
   const pubkey = useNostrStore((s) => s.pubkey);
@@ -28,11 +28,22 @@ export function NostrSignIn() {
   const signInWithNpub = useNostrStore((s) => s.signInWithNpub);
   const signInWithNsec = useNostrStore((s) => s.signInWithNsec);
   const createIdentity = useNostrStore((s) => s.createIdentity);
+  const keyBackupPending = useNostrStore((s) => s.keyBackupPending);
+  const dismissKeyBackup = useNostrStore((s) => s.dismissKeyBackup);
   const signOut = useNostrStore((s) => s.signOut);
 
   useEffect(() => {
     void restore();
   }, [restore]);
+
+  // The key is handed over once, in memory, by whichever instance is mounted
+  // when the new identity appears (the header swaps components on sign-in).
+  useEffect(() => {
+    if (keyBackupPending && !newKey) {
+      const fresh = takeFreshNsec();
+      if (fresh) setNewKey(fresh);
+    }
+  }, [keyBackupPending, newKey]);
 
   useEffect(() => {
     if (pubkey && !newKey) {
@@ -46,7 +57,10 @@ export function NostrSignIn() {
   if (pubkey) {
     return (
       <div className="relative flex items-center gap-2">
-      {newKey ? <KeyBackup nsec={newKey} copied={copied} setCopied={setCopied} onDone={() => setNewKey(null)} /> : null}
+      {newKey ? <KeyBackup nsec={newKey} copied={copied} setCopied={setCopied} onDone={() => {
+        setNewKey(null);
+        dismissKeyBackup();
+      }} /> : null}
       <SaveGarden />
       <button
         type="button"
@@ -137,7 +151,6 @@ export function NostrSignIn() {
                       void (async () => {
                         try {
                           await createIdentity(newName);
-                          setNewKey(takeFreshNsec());
                           setNewName("");
                           setCreating(false);
                         } catch {

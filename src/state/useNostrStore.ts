@@ -25,6 +25,9 @@ type NostrState = {
   nip07Available: boolean;
   /** True while a saved session is being restored, so the UI can avoid a landing-page flash. */
   restoring: boolean;
+  /** A key created this session still needs to be shown to its owner for backup. */
+  keyBackupPending: boolean;
+  dismissKeyBackup: () => void;
   restore: () => Promise<void>;
   /** Generate a brand-new Nostr identity. Returns the nsec ONCE for backup. */
   createIdentity: (displayName?: string) => Promise<string>;
@@ -91,6 +94,9 @@ export const useNostrStore = create<NostrState>((set, get) => {
     error: null,
     nip07Available: false,
     restoring: true,
+    keyBackupPending: false,
+
+    dismissKeyBackup: () => set({ keyBackupPending: false }),
 
     restore: async () => {
       set({ nip07Available: isNip07Available() });
@@ -107,6 +113,7 @@ export const useNostrStore = create<NostrState>((set, get) => {
       set({ status: "connecting", error: null });
       try {
         const { pubkey, nsec } = createLocalIdentity();
+        set({ keyBackupPending: true });
         await start({ pubkey, method: "nsec" });
         const name = displayName?.trim();
         if (name) {
@@ -178,7 +185,7 @@ export const useNostrStore = create<NostrState>((set, get) => {
       clearLocalSigner();
       await removeKey(SESSION_KEY);
       useGardenStore.getState().reset();
-      set({ pubkey: null, method: null, profile: null, diaries: [], status: "idle", error: null });
+      set({ pubkey: null, method: null, profile: null, diaries: [], status: "idle", error: null, keyBackupPending: false });
     },
   };
 });
