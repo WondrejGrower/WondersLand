@@ -43,8 +43,12 @@ function Loading() {
 
 function Index() {
   const entered = useWorldStore((s) => s.entered);
+  const pubkey = useNostrStore((s) => s.pubkey);
 
-  if (!entered) return <LandingScreen />;
+  // Signed-out visitors keep the marketing landing; signed-in Nostr users get
+  // the app Home, from which the 3D garden is one destination.
+  if (!entered) return pubkey ? <HomeDashboard /> : <LandingScreen />;
+
 
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-background">

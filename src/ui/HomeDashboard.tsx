@@ -88,7 +88,7 @@ export function HomeDashboard() {
     return [...counts.entries()].sort((a, b) => b[1] - a[1]);
   }, [plants]);
 
-  const name = profile ? profileLabel(profile) : (pubkey ?? "").slice(0, 8);
+  const name = profileLabel(profile, pubkey);
 
   return (
     <div className="min-h-screen bg-forest-deep text-cream">
