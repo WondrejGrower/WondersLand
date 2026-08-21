@@ -23,6 +23,7 @@ type NostrState = {
   signInWithExtension: () => Promise<void>;
   signInWithNpub: (npub: string) => Promise<void>;
   signInWithNsec: (nsec: string) => Promise<void>;
+  upsertDiary: (diary: Diary) => void;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -118,6 +119,13 @@ export const useNostrStore = create<NostrState>((set, get) => {
         clearLocalSigner();
         set({ status: "error", error: err instanceof Error ? err.message : "Invalid nsec" });
       }
+    },
+
+    upsertDiary: (diary) => {
+      const diaries = get().diaries.filter((d) => d.id !== diary.id);
+      const next = [diary, ...diaries].sort((a, b) => b.updatedAt - a.updatedAt);
+      set({ diaries: next });
+      useGardenStore.getState().setDiaries(next);
     },
 
     refresh: async () => {
