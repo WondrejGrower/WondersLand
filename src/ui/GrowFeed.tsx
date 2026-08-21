@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Leaf, Maximize2, X } from "lucide-react";
+import { Heart, Leaf, Maximize2, MessageCircle, Repeat2, X, Zap } from "lucide-react";
 import { nip19 } from "nostr-tools";
 import { useFeedStore } from "../state/useFeedStore";
 import type { FeedPost } from "../nostr/feed";
@@ -28,10 +28,10 @@ function ago(seconds: number): string {
  * yet — these stay visibly inert instead of pretending to publish.
  */
 const ACTIONS = [
-  { key: "like", label: "Like", icon: "♡" },
-  { key: "zap", label: "Zap", icon: "⚡" },
-  { key: "reply", label: "Reply", icon: "↩" },
-  { key: "repost", label: "Repost", icon: "⇅" },
+  { key: "like", label: "Like", Icon: Heart },
+  { key: "zap", label: "Zap", Icon: Zap },
+  { key: "reply", label: "Reply", Icon: MessageCircle },
+  { key: "repost", label: "Repost", Icon: Repeat2 },
 ] as const;
 
 function PostCard({ post }: { post: FeedPost }) {
@@ -78,18 +78,16 @@ function PostCard({ post }: { post: FeedPost }) {
       ) : null}
 
       <div className="mt-3 grid grid-cols-4 gap-2">
-        {ACTIONS.map((action) => (
+        {ACTIONS.map(({ key, label, Icon }) => (
           <button
-            key={action.key}
+            key={key}
             type="button"
             disabled
-            title={`${action.label} — coming with Nostr write support`}
+            title={`${label} — coming with Nostr write support`}
             className="flex items-center justify-center gap-1.5 rounded-xl border border-forest-soft/40 bg-forest-deep/40 px-2 py-1.5 text-[0.7rem] text-cream/45 disabled:cursor-not-allowed"
           >
-            <span aria-hidden className="text-leaf/70">
-              {action.icon}
-            </span>
-            <span className="truncate">{action.label}</span>
+            <Icon aria-hidden className="h-3.5 w-3.5 text-leaf/70" />
+            <span className="truncate">{label}</span>
           </button>
         ))}
       </div>
