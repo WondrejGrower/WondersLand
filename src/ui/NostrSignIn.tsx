@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { takeFreshNsec } from "../nostr/signers/local";
+import { forgetFreshNsec, peekFreshNsec } from "../nostr/signers/local";
 import { useNostrStore } from "../state/useNostrStore";
 import { profileLabel } from "../nostr/profile";
 import { SaveGarden } from "./SaveGarden";
@@ -14,7 +14,6 @@ export function NostrSignIn() {
   const [advanced, setAdvanced] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
-  const [newKey, setNewKey] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [nsec, setNsec] = useState("");
   const pubkey = useNostrStore((s) => s.pubkey);
@@ -36,21 +35,14 @@ export function NostrSignIn() {
     void restore();
   }, [restore]);
 
-  // The key is handed over once, in memory, by whichever instance is mounted
-  // when the new identity appears (the header swaps components on sign-in).
-  useEffect(() => {
-    if (keyBackupPending && !newKey) {
-      const fresh = takeFreshNsec();
-      if (fresh) setNewKey(fresh);
-    }
-  }, [keyBackupPending, newKey]);
+  const newKey = keyBackupPending ? peekFreshNsec() : null;
 
   useEffect(() => {
-    if (pubkey && !newKey) {
+    if (pubkey && !keyBackupPending) {
       setOpen(false);
       setNsec("");
     }
-  }, [pubkey, newKey]);
+  }, [pubkey, keyBackupPending]);
 
   const busy = status === "connecting" || status === "loading";
 
@@ -58,7 +50,7 @@ export function NostrSignIn() {
     return (
       <div className="relative flex items-center gap-2">
       {newKey ? <KeyBackup nsec={newKey} copied={copied} setCopied={setCopied} onDone={() => {
-        setNewKey(null);
+        forgetFreshNsec();
         dismissKeyBackup();
       }} /> : null}
       <SaveGarden />

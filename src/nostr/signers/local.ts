@@ -79,9 +79,12 @@ export function createLocalIdentity(): { pubkey: string; nsec: string } {
 
 let freshNsec: string | null = null;
 
-/** Read (and immediately forget) the nsec of an identity created this session. */
-export function takeFreshNsec(): string | null {
-  const value = freshNsec;
+/** The nsec of an identity created in this tab, until its owner confirms backup. */
+export function peekFreshNsec(): string | null {
+  return freshNsec;
+}
+
+/** Forget the freshly created nsec once the owner has saved it. */
+export function forgetFreshNsec(): void {
   freshNsec = null;
-  return value;
 }
