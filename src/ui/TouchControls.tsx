@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { input } from "../state/input";
+import { clearTouchInput, setTouchAxes } from "../state/input";
+
 
 const RADIUS = 52;
 
