@@ -28,10 +28,10 @@ function ago(seconds: number): string {
  * yet — these stay visibly inert instead of pretending to publish.
  */
 const ACTIONS = [
-  { key: "like", label: "Like", icon: "♡" },
-  { key: "zap", label: "Zap", icon: "⚡" },
-  { key: "reply", label: "Reply", icon: "↩" },
-  { key: "repost", label: "Repost", icon: "⇅" },
+  { key: "like", label: "Like", Icon: Heart },
+  { key: "zap", label: "Zap", Icon: Zap },
+  { key: "reply", label: "Reply", Icon: MessageCircle },
+  { key: "repost", label: "Repost", Icon: Repeat2 },
 ] as const;
 
 function PostCard({ post }: { post: FeedPost }) {
