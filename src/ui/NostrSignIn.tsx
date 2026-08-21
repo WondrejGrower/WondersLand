@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { takeFreshNsec } from "../nostr/signers/local";
 import { useNostrStore } from "../state/useNostrStore";
 import { profileLabel } from "../nostr/profile";
 import { SaveGarden } from "./SaveGarden";
@@ -13,7 +14,7 @@ export function NostrSignIn() {
   const [advanced, setAdvanced] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
-  const [newKey, setNewKey] = useState<string | null>(null);
+  const [newKey, setNewKey] = useState<string | null>(() => takeFreshNsec());
   const [copied, setCopied] = useState(false);
   const [nsec, setNsec] = useState("");
   const pubkey = useNostrStore((s) => s.pubkey);
@@ -135,8 +136,8 @@ export function NostrSignIn() {
                     onClick={() => {
                       void (async () => {
                         try {
-                          const key = await createIdentity(newName);
-                          setNewKey(key);
+                          await createIdentity(newName);
+                          setNewKey(takeFreshNsec());
                           setNewName("");
                           setCreating(false);
                         } catch {

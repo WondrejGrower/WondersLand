@@ -38,6 +38,7 @@ export function unlockLocalSigner(nsec: string): string {
 }
 
 export function clearLocalSigner(): void {
+  freshNsec = null;
   if (secret) secret.fill(0);
   secret = null;
   publicKey = null;
@@ -69,5 +70,18 @@ export function createLocalIdentity(): { pubkey: string; nsec: string } {
   const pubkey = getPublicKey(bytes);
   secret = bytes;
   publicKey = pubkey;
-  return { pubkey, nsec: nip19.nsecEncode(bytes) };
+  const nsec = nip19.nsecEncode(bytes);
+  // One-shot handoff: the sign-in UI unmounts when the dashboard takes over, so
+  // the backup panel picks the string up here exactly once. Memory only.
+  freshNsec = nsec;
+  return { pubkey, nsec };
+}
+
+let freshNsec: string | null = null;
+
+/** Read (and immediately forget) the nsec of an identity created this session. */
+export function takeFreshNsec(): string | null {
+  const value = freshNsec;
+  freshNsec = null;
+  return value;
 }
