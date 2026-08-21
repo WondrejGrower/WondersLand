@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3, type Group } from "three";
-import { input } from "../state/input";
+import { clearKeyboardInput, clearTouchInput, input, setKeyboardAxes } from "../state/input";
 import { useWorldStore } from "../state/useWorldStore";
 import { useGardenStore } from "../state/useGardenStore";
 const INTERACT_RADIUS = 4;
@@ -162,10 +162,11 @@ export function Player() {
     const frozen = store.journalOpen || store.indoorOpen;
 
     if (frozen) {
-      input.forward = 0;
-      input.strafe = 0;
+      clearKeyboardInput();
+      clearTouchInput();
       input.yawDelta = 0;
     }
+
 
     yaw.current += input.yawDelta;
     input.yawDelta = 0;
