@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { Leaf, Maximize2, X } from "lucide-react";
 import { nip19 } from "nostr-tools";
 import { useFeedStore } from "../state/useFeedStore";
 import type { FeedPost } from "../nostr/feed";
@@ -77,19 +76,17 @@ function PostCard({ post }: { post: FeedPost }) {
         />
       ) : null}
 
-      <div className="mt-3 grid grid-cols-4 gap-2">
+      <div className="mt-3 flex items-center gap-1 border-t border-forest-soft/30 pt-2">
         {ACTIONS.map((action) => (
           <button
             key={action.key}
             type="button"
             disabled
             title={`${action.label} — coming with Nostr write support`}
-            className="flex items-center justify-center gap-1.5 rounded-xl border border-forest-soft/40 bg-forest-deep/40 px-2 py-1.5 text-[0.7rem] text-cream/45 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs text-cream/40 disabled:cursor-not-allowed"
           >
-            <span aria-hidden className="text-leaf/70">
-              {action.icon}
-            </span>
-            <span className="truncate">{action.label}</span>
+            <span aria-hidden>{action.icon}</span>
+            <span className="hidden sm:inline">{action.label}</span>
           </button>
         ))}
       </div>
@@ -120,23 +117,20 @@ export function GrowFeed({
       }`}
       aria-label="Grow Feed"
     >
-      <header className="flex items-start justify-between gap-3 px-5 pb-3 pt-5">
+      <header className="flex items-start justify-between gap-3 border-b border-forest-soft/40 px-5 py-4">
         <div>
-          <h2
-            className="flex items-center gap-2 text-lg font-semibold text-cream"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            <Leaf className="h-4 w-4 text-leaf" aria-hidden /> Grow Feed
+          <h2 className="text-base font-semibold text-cream" style={{ fontFamily: "var(--font-display)" }}>
+            Grow Feed
           </h2>
-          <p className="mt-0.5 text-xs text-cream/50">All posts from the Nostr garden community</p>
+          <p className="text-xs text-cream/50">All posts from the Nostr garden community</p>
         </div>
         <button
           type="button"
           onClick={onToggleExpand}
           aria-label={expanded ? "Back to dashboard" : "Expand feed"}
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-forest-soft/50 bg-forest/60 text-cream/70 hover:text-cream"
+          className="rounded-full border border-forest-soft/60 px-2.5 py-1 text-xs text-cream/70 hover:text-cream"
         >
-          {expanded ? <X className="h-4 w-4" aria-hidden /> : <Maximize2 className="h-4 w-4" aria-hidden />}
+          {expanded ? "✕" : "⤢"}
         </button>
       </header>
 
@@ -167,16 +161,13 @@ export function GrowFeed({
         )}
       </div>
 
-      <footer className="px-4 pb-4">
+      <footer className="border-t border-forest-soft/40 px-5 py-3">
         <button
           type="button"
           onClick={onToggleExpand}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-forest-soft/50 bg-forest/50 px-4 py-3 text-sm font-medium text-cream/80 hover:text-cream"
+          className="text-xs font-medium text-leaf"
         >
-          {expanded ? "Back to dashboard" : "View all posts"}
-          <span aria-hidden className="text-leaf">
-            {expanded ? "←" : "→"}
-          </span>
+          {expanded ? "Back to dashboard" : "View all posts →"}
         </button>
       </footer>
     </section>
