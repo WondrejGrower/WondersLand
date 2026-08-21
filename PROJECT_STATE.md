@@ -305,3 +305,12 @@ engine, no BVH, no per-triangle tests.
   (`COTTAGE_INTERACT_RADIUS = 5` vs a ~3.4/2.8 half-extent box) and plants can
   still be interacted with from outside their mesh.
 - No camera collision in this pass.
+
+## Diary write path (P2, 2026-08-21)
+
+`src/nostr/writeDiaries.ts` publishes Weedoshi-compatible diaries: kind 30078,
+`d: diary-<id>`, `t: weedoshi-diary`, content JSON with `items[]` plus `e` tags;
+entries are kind 1 notes referenced from the diary. `src/ui/DiaryComposer.tsx`
+drives it from the Home dashboard (`+ New diary`, per-card `Update`), hidden for
+read-only `npub` sessions. Optimistic merge via `useNostrStore.upsertDiary`.
+Media upload is a stub; no automated round-trip test yet.

@@ -184,3 +184,11 @@ Rules to preserve:
   true)`) so no overlay can swallow it, and `keydown` must ignore `e.repeat`.
 - Held keys are dropped on `blur`, `pagehide` and `visibilitychange !== visible`
   to recover from missed keyups (alt-tab, tab suspend, browser chrome focus).
+
+## P2 done — diary write path
+
+Write path lives only in `src/nostr/writeDiaries.ts` (no React/Three imports).
+Never change the event shape: it must keep parsing through `parseDiary` in
+`src/nostr/diaries.ts` so Weedoshi keeps reading the same events. UI entry point
+is `src/ui/DiaryComposer.tsx`. Next phase per plan: P3 routes (`/garden`,
+`/diaries`, `/diary/:id`) — planned for Codex/GitHub, not Lovable.
