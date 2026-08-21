@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## 2026-08-21 — Dashboard as the post-login home + Nostr sign-up
+
+### Added
+- `createLocalIdentity()` / `peekFreshNsec()` / `forgetFreshNsec()` in
+  `src/nostr/signers/local.ts`: generate a brand-new Nostr keypair in the
+  browser. The secret stays in that module's memory for the tab only.
+- `useNostrStore.createIdentity(displayName?)`: starts an nsec session with the
+  generated key and optionally publishes a kind 0 profile to the enabled relays.
+- "New to Nostr? Create an identity" flow in `src/ui/NostrSignIn.tsx`, plus a
+  one-time key-backup panel (copy, explicit "I saved my key" confirmation,
+  NIP-07 recommendation) shown before the user continues to the dashboard.
+
+### Changed
+- `src/routes/index.tsx`: restores the saved session on mount, shows a restore
+  state after hydration instead of flashing the landing page, and resets world
+  state on every sign-in/sign-out so the dashboard is always the post-login home.
+- `useNostrStore.restore()` no longer downgrades a live session. A fresh nsec
+  session persists as read-only `npub`, so re-running restore used to drop write
+  access (the "+ New Diary" button disappeared right after sign-up).
+- `restore()` releases the restore gate as soon as the identity is known, so the
+  dashboard paints while the relays are still being read.
+
+### Security
+- No private key is ever written to localStorage, IndexedDB, GardenConfig, a URL
+  or a log line; only pubkey + auth method persist, and nsec sessions persist as
+  read-only. Refreshing clears the key by design.
+
 ## 2026-08-21 — Dashboard restored to the live wondersland.online version
 
 ### Changed

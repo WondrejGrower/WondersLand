@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { forgetFreshNsec, peekFreshNsec } from "../nostr/signers/local";
 import { useNostrStore } from "../state/useNostrStore";
 import { profileLabel } from "../nostr/profile";
 import { SaveGarden } from "./SaveGarden";
@@ -11,6 +12,9 @@ export function NostrSignIn() {
   const [open, setOpen] = useState(false);
   const [npub, setNpub] = useState("");
   const [advanced, setAdvanced] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [copied, setCopied] = useState(false);
   const [nsec, setNsec] = useState("");
   const pubkey = useNostrStore((s) => s.pubkey);
   const profile = useNostrStore((s) => s.profile);
@@ -22,24 +26,33 @@ export function NostrSignIn() {
   const signInWithExtension = useNostrStore((s) => s.signInWithExtension);
   const signInWithNpub = useNostrStore((s) => s.signInWithNpub);
   const signInWithNsec = useNostrStore((s) => s.signInWithNsec);
+  const createIdentity = useNostrStore((s) => s.createIdentity);
+  const keyBackupPending = useNostrStore((s) => s.keyBackupPending);
+  const dismissKeyBackup = useNostrStore((s) => s.dismissKeyBackup);
   const signOut = useNostrStore((s) => s.signOut);
 
   useEffect(() => {
     void restore();
   }, [restore]);
 
+  const newKey = keyBackupPending ? peekFreshNsec() : null;
+
   useEffect(() => {
-    if (pubkey) {
+    if (pubkey && !keyBackupPending) {
       setOpen(false);
       setNsec("");
     }
-  }, [pubkey]);
+  }, [pubkey, keyBackupPending]);
 
   const busy = status === "connecting" || status === "loading";
 
   if (pubkey) {
     return (
-      <div className="flex items-center gap-2">
+      <div className="relative flex items-center gap-2">
+      {newKey ? <KeyBackup nsec={newKey} copied={copied} setCopied={setCopied} onDone={() => {
+        forgetFreshNsec();
+        dismissKeyBackup();
+      }} /> : null}
       <SaveGarden />
       <button
         type="button"
@@ -110,6 +123,58 @@ export function NostrSignIn() {
             </div>
           </div>
           <div className="mt-4 border-t border-white/10 pt-3">
+            {creating ? (
+              <div>
+                <p className="text-[0.7rem] leading-snug text-white/60">
+                  WondersLand generates a Nostr key in your browser. It is yours alone — we cannot
+                  see it and cannot recover it.
+                </p>
+                <input
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Display name (optional)"
+                  className="mt-2 w-full rounded-lg border border-white/15 bg-black/20 px-2 py-1.5 text-sm text-white placeholder:text-white/30"
+                />
+                <div className="mt-2 flex gap-2">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => {
+                      void (async () => {
+                        try {
+                          await createIdentity(newName);
+                          setNewName("");
+                          setCreating(false);
+                        } catch {
+                          // error surfaces through the store
+                        }
+                      })();
+                    }}
+                    className="flex-1 rounded-lg bg-leaf px-3 py-1.5 text-sm font-semibold text-forest-deep disabled:opacity-60"
+                  >
+                    Create my identity
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCreating(false)}
+                    className="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/70"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setCreating(true)}
+                className="w-full rounded-xl border border-leaf/50 px-3 py-2 text-sm font-semibold text-leaf"
+              >
+                New to Nostr? Create an identity
+              </button>
+            )}
+          </div>
+
+          <div className="mt-4 border-t border-white/10 pt-3">
             <button
               type="button"
               onClick={() => setAdvanced((v) => !v)}
@@ -152,6 +217,66 @@ export function NostrSignIn() {
           {error ? <p className="mt-3 text-xs text-red-300">{error}</p> : null}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * Shown exactly once, right after an identity is generated. The nsec lives in
+ * component state for this moment only — never persisted, never logged.
+ */
+function KeyBackup({
+  nsec,
+  copied,
+  setCopied,
+  onDone,
+}: {
+  nsec: string;
+  copied: boolean;
+  setCopied: (v: boolean) => void;
+  onDone: () => void;
+}) {
+  const [confirmed, setConfirmed] = useState(false);
+  return (
+    <div className="absolute right-0 top-full z-40 mt-2 w-80 rounded-2xl border border-leaf/30 bg-forest-deep/95 p-4 text-left shadow-2xl backdrop-blur">
+      <p className="text-sm font-semibold text-leaf">Save your secret key</p>
+      <p className="mt-1 text-xs leading-snug text-white/70">
+        This is the only copy of your key. Anyone who has it controls your account, and nobody —
+        including WondersLand — can recover it for you. Store it in a password manager.
+      </p>
+      <code className="mt-3 block break-all rounded-lg border border-white/15 bg-black/30 p-2 text-[0.7rem] text-white/90">
+        {nsec}
+      </code>
+      <button
+        type="button"
+        onClick={() => {
+          void navigator.clipboard?.writeText(nsec).then(() => setCopied(true));
+        }}
+        className="mt-2 w-full rounded-lg border border-white/20 px-3 py-1.5 text-xs text-white"
+      >
+        {copied ? "Copied" : "Copy key"}
+      </button>
+      <label className="mt-3 flex items-start gap-2 text-xs text-white/70">
+        <input
+          type="checkbox"
+          checked={confirmed}
+          onChange={(e) => setConfirmed(e.target.checked)}
+          className="mt-0.5"
+        />
+        I saved my key somewhere safe.
+      </label>
+      <p className="mt-2 text-[0.7rem] leading-snug text-white/50">
+        Refreshing this tab signs you out. For everyday use, install a Nostr extension such as Alby
+        or nos2x and add this key there.
+      </p>
+      <button
+        type="button"
+        disabled={!confirmed}
+        onClick={onDone}
+        className="mt-3 w-full rounded-xl bg-leaf px-3 py-2 text-sm font-semibold text-forest-deep disabled:opacity-50"
+      >
+        Continue to my garden
+      </button>
     </div>
   );
 }

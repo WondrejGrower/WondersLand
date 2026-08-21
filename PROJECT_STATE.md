@@ -325,3 +325,18 @@ garden dashboard on the right (~70%). Growth numbers come from
 diaries — GardenConfig stays the physical layout only. The feed is read-only:
 social interactions are disabled placeholders until the corresponding Nostr
 write paths (kind 7 / kind 6 / NIP-57) exist.
+
+## Sign-up / post-login home (2026-08-21)
+
+`/` is the only route: signed out -> `LandingScreen`, signed in -> `HomeDashboard`,
+`Enter Garden` -> 3D world. The route restores the saved session itself and shows
+a restore state (after hydration only, so SSR still serves the landing page for
+crawlers) instead of flashing signed-out UI.
+
+New growers can create a Nostr identity in-app: `createLocalIdentity()` generates
+the keypair with nostr-tools, the key lives in `src/nostr/signers/local.ts` memory
+for the tab, and a one-time backup panel shows the nsec with an explicit
+confirmation before continuing. Optional display name publishes a kind 0 event.
+Limitations: no NIP-46 / no encrypted key storage, so a refresh drops write access
+back to read-only until the grower signs in again (extension recommended).
+

@@ -1,7 +1,11 @@
 import { create } from "zustand";
 import { fetchDiaries, getCachedDiaries } from "../nostr/diaries";
 import { getNip07PublicKey, isNip07Available } from "../nostr/signers/nip07";
-import { clearLocalSigner, unlockLocalSigner } from "../nostr/signers/local";
+import { clearLocalSigner, createLocalIdentity, unlockLocalSigner } from "../nostr/signers/local";
+import { localSigner } from "../nostr/signers";
+import { publish } from "../nostr/pool";
+import { getEnabledRelayUrls } from "../nostr/relays";
+import { KIND_PROFILE } from "../nostr/kinds";
 import { fetchProfile } from "../nostr/profile";
 import { loadRelays } from "../nostr/relays";
 import { getJson, removeKey, setJson } from "../nostr/storage";
@@ -19,7 +23,14 @@ type NostrState = {
   status: "idle" | "connecting" | "loading" | "ready" | "error";
   error: string | null;
   nip07Available: boolean;
+  /** True while a saved session is being restored, so the UI can avoid a landing-page flash. */
+  restoring: boolean;
+  /** A key created this session still needs to be shown to its owner for backup. */
+  keyBackupPending: boolean;
+  dismissKeyBackup: () => void;
   restore: () => Promise<void>;
+  /** Generate a brand-new Nostr identity. Returns the nsec ONCE for backup. */
+  createIdentity: (displayName?: string) => Promise<string>;
   signInWithExtension: () => Promise<void>;
   signInWithNpub: (npub: string) => Promise<void>;
   signInWithNsec: (nsec: string) => Promise<void>;
@@ -82,12 +93,58 @@ export const useNostrStore = create<NostrState>((set, get) => {
     status: "idle",
     error: null,
     nip07Available: false,
+    restoring: true,
+    keyBackupPending: false,
+
+    dismissKeyBackup: () => set({ keyBackupPending: false }),
 
     restore: async () => {
       set({ nip07Available: isNip07Available() });
-      const session = await getJson<Session>(SESSION_KEY);
-      if (!session?.pubkey) return;
-      await start(session);
+      // Never downgrade a live session (a fresh nsec identity persists as a
+      // read-only npub, so re-running restore would drop write access).
+      if (get().pubkey) {
+        set({ restoring: false });
+        return;
+      }
+      try {
+        const session = await getJson<Session>(SESSION_KEY);
+        if (!session?.pubkey) return;
+        // The identity is known here; the dashboard can paint while the relays
+        // are still being read.
+        set({ restoring: false });
+        await start(session);
+      } finally {
+        set({ restoring: false });
+      }
+    },
+
+    createIdentity: async (displayName) => {
+      set({ status: "connecting", error: null });
+      try {
+        const { pubkey, nsec } = createLocalIdentity();
+        set({ keyBackupPending: true });
+        await start({ pubkey, method: "nsec" });
+        const name = displayName?.trim();
+        if (name) {
+          try {
+            const event = await localSigner.signEvent({
+              kind: KIND_PROFILE,
+              created_at: Math.floor(Date.now() / 1000),
+              tags: [],
+              content: JSON.stringify({ name, display_name: name }),
+            });
+            await publish(getEnabledRelayUrls(), event);
+            set({ profile: { pubkey, name, displayName: name } });
+          } catch {
+            // The identity exists either way; the profile can be published later.
+          }
+        }
+        return nsec;
+      } catch (err) {
+        clearLocalSigner();
+        set({ status: "error", error: err instanceof Error ? err.message : "Could not create an identity" });
+        throw err;
+      }
     },
 
     signInWithExtension: async () => {
@@ -137,7 +194,7 @@ export const useNostrStore = create<NostrState>((set, get) => {
       clearLocalSigner();
       await removeKey(SESSION_KEY);
       useGardenStore.getState().reset();
-      set({ pubkey: null, method: null, profile: null, diaries: [], status: "idle", error: null });
+      set({ pubkey: null, method: null, profile: null, diaries: [], status: "idle", error: null, keyBackupPending: false });
     },
   };
 });

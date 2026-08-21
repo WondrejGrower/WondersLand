@@ -2,7 +2,7 @@
 // only for the current page session. It is never written to IndexedDB,
 // localStorage, Zustand, a Nostr event, a URL or a log line, and it is lost on
 // refresh by design.
-import { finalizeEvent, getPublicKey, nip19 } from "nostr-tools";
+import { finalizeEvent, generateSecretKey, getPublicKey, nip19 } from "nostr-tools";
 import type { NostrEvent } from "../types";
 import type { EventTemplate } from "./index";
 
@@ -38,6 +38,7 @@ export function unlockLocalSigner(nsec: string): string {
 }
 
 export function clearLocalSigner(): void {
+  freshNsec = null;
   if (secret) secret.fill(0);
   secret = null;
   publicKey = null;
@@ -54,4 +55,36 @@ export function getLocalPublicKey(): string | null {
 export async function signWithLocalKey(template: EventTemplate): Promise<NostrEvent> {
   if (!secret) throw new Error("Session key is gone — sign in with your nsec again");
   return finalizeEvent(template, secret) as NostrEvent;
+}
+
+/**
+ * Create a brand-new Nostr identity in the browser.
+ *
+ * The secret is generated with nostr-tools' CSPRNG and held in this module for
+ * the current tab only, exactly like an unlocked nsec. The nsec string is
+ * returned ONCE so the UI can show it to the owner for backup; it is never
+ * stored, logged or sent anywhere by WondersLand.
+ */
+export function createLocalIdentity(): { pubkey: string; nsec: string } {
+  const bytes = generateSecretKey();
+  const pubkey = getPublicKey(bytes);
+  secret = bytes;
+  publicKey = pubkey;
+  const nsec = nip19.nsecEncode(bytes);
+  // One-shot handoff: the sign-in UI unmounts when the dashboard takes over, so
+  // the backup panel picks the string up here exactly once. Memory only.
+  freshNsec = nsec;
+  return { pubkey, nsec };
+}
+
+let freshNsec: string | null = null;
+
+/** The nsec of an identity created in this tab, until its owner confirms backup. */
+export function peekFreshNsec(): string | null {
+  return freshNsec;
+}
+
+/** Forget the freshly created nsec once the owner has saved it. */
+export function forgetFreshNsec(): void {
+  freshNsec = null;
 }

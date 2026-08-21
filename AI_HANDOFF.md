@@ -202,3 +202,13 @@ is `src/ui/DiaryComposer.tsx`. Next phase per plan: P3 routes (`/garden`,
 - Feed interaction buttons stay disabled until real Nostr events are
   implemented; do not fake local-only likes.
 - Signed-out `LandingScreen` is out of scope for dashboard changes.
+
+## Identity rules (2026-08-21)
+
+- Key material may only exist inside `src/nostr/signers/local.ts`. Never move a
+  generated nsec into Zustand, storage, GardenConfig, an event, a URL or a log.
+- `restore()` must never overwrite a live session; nsec sessions persist as
+  read-only `npub` on purpose.
+- The key-backup panel is one-shot per tab; `forgetFreshNsec()` clears it.
+- Adding NIP-46 (bunker) is the right next step for durable write sessions.
+
