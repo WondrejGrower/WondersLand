@@ -178,7 +178,7 @@ export function HomeDashboard() {
   const gardenStatus = useGardenStore((s) => s.status);
   const gardenDirty = useGardenStore((s) => s.dirty);
   const gardenError = useGardenStore((s) => s.error);
-  const feedStatus = useFeedStore((s) => s.status);
+  const feedStatus = useFeedStore((s) => s[s.mode].status);
   const enter = useWorldStore((s) => s.enter);
   const method = useNostrStore((s) => s.method);
   const [composer, setComposer] = useState<ComposerMode | null>(null);
