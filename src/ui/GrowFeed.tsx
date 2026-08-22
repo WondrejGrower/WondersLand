@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { nip19 } from "nostr-tools";
 import { useFeedStore } from "../state/useFeedStore";
-import type { FeedPost } from "../nostr/feed";
+import type { FeedMode, FeedPost } from "../nostr/feed";
 
 function shortNpub(pubkey: string): string {
   try {
@@ -96,6 +96,24 @@ function PostCard({ post }: { post: FeedPost }) {
   );
 }
 
+const MODES: { key: FeedMode; label: string; icon: string }[] = [
+  { key: "grow", label: "Grow", icon: "🌱" },
+  { key: "nostr", label: "Nostr", icon: "🌐" },
+];
+
+const COPY: Record<FeedMode, { title: string; subtitle: string; empty: string }> = {
+  grow: {
+    title: "Grow Feed",
+    subtitle: "All posts from the Nostr garden community",
+    empty: "No grow posts on your relays right now. Add more relays and the feed fills up.",
+  },
+  nostr: {
+    title: "Nostr Feed",
+    subtitle: "Everything your enabled relays are sharing right now",
+    empty: "Your relays did not return any notes right now.",
+  },
+};
+
 export function GrowFeed({
   expanded,
   onToggleExpand,
@@ -103,42 +121,88 @@ export function GrowFeed({
   expanded: boolean;
   onToggleExpand: () => void;
 }) {
-  const posts = useFeedStore((s) => s.posts);
-  const status = useFeedStore((s) => s.status);
-  const error = useFeedStore((s) => s.error);
+  const mode = useFeedStore((s) => s.mode);
+  const lane = useFeedStore((s) => s[s.mode]);
+  const setMode = useFeedStore((s) => s.setMode);
   const load = useFeedStore((s) => s.load);
+  const loadMore = useFeedStore((s) => s.loadMore);
+
+  const { posts, status, error, exhausted } = lane;
+  const copy = COPY[mode];
+
+  // Independent scroll position per feed mode.
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const offsets = useRef<Record<FeedMode, number>>({ grow: 0, nostr: 0 });
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = offsets.current[mode] ?? 0;
+  }, [mode]);
+
+  const switchMode = (next: FeedMode) => {
+    if (next === mode) return;
+    offsets.current[mode] = scrollRef.current?.scrollTop ?? 0;
+    setMode(next);
+  };
+
+  const visible = expanded ? posts : posts.slice(0, 12);
 
   return (
     <section
       className={`flex flex-col overflow-hidden rounded-[1.5rem] border border-forest-soft/50 bg-forest/50 ${
         expanded ? "h-full" : "lg:max-h-[calc(100vh-8rem)]"
       }`}
-      aria-label="Grow Feed"
+      aria-label={copy.title}
     >
       <header className="flex items-start justify-between gap-3 border-b border-forest-soft/40 px-5 py-4">
-        <div>
+        <div className="min-w-0">
           <h2 className="text-base font-semibold text-cream" style={{ fontFamily: "var(--font-display)" }}>
-            Grow Feed
+            {copy.title}
           </h2>
-          <p className="text-xs text-cream/50">All posts from the Nostr garden community</p>
+          <p className="truncate text-xs text-cream/50">{copy.subtitle}</p>
         </div>
-        <button
-          type="button"
-          onClick={onToggleExpand}
-          aria-label={expanded ? "Back to dashboard" : "Expand feed"}
-          className="rounded-full border border-forest-soft/60 px-2.5 py-1 text-xs text-cream/70 hover:text-cream"
-        >
-          {expanded ? "✕" : "⤢"}
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <div
+            role="tablist"
+            aria-label="Feed mode"
+            className="flex items-center rounded-full border border-forest-soft/60 bg-forest-deep/40 p-0.5"
+          >
+            {MODES.map((m) => (
+              <button
+                key={m.key}
+                type="button"
+                role="tab"
+                aria-selected={mode === m.key}
+                onClick={() => switchMode(m.key)}
+                className={`rounded-full px-2.5 py-1 text-[0.7rem] transition-colors ${
+                  mode === m.key ? "bg-leaf/20 text-leaf" : "text-cream/55 hover:text-cream"
+                }`}
+              >
+                <span aria-hidden className="mr-1">
+                  {m.icon}
+                </span>
+                {m.label}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={onToggleExpand}
+            aria-label={expanded ? "Back to dashboard" : "Expand feed"}
+            className="rounded-full border border-forest-soft/60 px-2.5 py-1 text-xs text-cream/70 hover:text-cream"
+          >
+            {expanded ? "✕" : "⤢"}
+          </button>
+        </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
         {status === "loading" && posts.length === 0 ? (
-          <p className="px-1 text-sm text-cream/55">Reading the community feed from the relays…</p>
+          <p className="px-1 text-sm text-cream/55">Reading the feed from the relays…</p>
         ) : status === "error" ? (
           <div className="grid gap-3 px-1">
             <p className="text-sm text-cream/60">{error ?? "The relays did not answer."}</p>
@@ -151,15 +215,25 @@ export function GrowFeed({
             </button>
           </div>
         ) : posts.length === 0 ? (
-          <p className="px-1 text-sm text-cream/55">
-            No grow posts on your relays right now. Add more relays and the feed fills up.
-          </p>
+          <p className="px-1 text-sm text-cream/55">{copy.empty}</p>
         ) : (
-          <div className={`grid gap-3 ${expanded ? "sm:grid-cols-2 xl:grid-cols-3" : ""}`}>
-            {(expanded ? posts : posts.slice(0, 12)).map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
+          <>
+            <div className={`grid gap-3 ${expanded ? "sm:grid-cols-2 xl:grid-cols-3" : ""}`}>
+              {visible.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </div>
+            {expanded && !exhausted ? (
+              <button
+                type="button"
+                onClick={() => void loadMore()}
+                disabled={status === "loadingMore"}
+                className="mx-auto mt-4 block rounded-full border border-forest-soft/60 px-4 py-1.5 text-xs text-cream/70 hover:text-cream disabled:opacity-50"
+              >
+                {status === "loadingMore" ? "Loading…" : "Load older posts"}
+              </button>
+            ) : null}
+          </>
         )}
       </div>
 
