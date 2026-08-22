@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## 2026-08-22 — Grow / Nostr feed switch
+
+### Added
+- Segmented `Grow | Nostr` control in the Grow Feed header. Grow keeps the
+  hashtag-filtered garden feed; Nostr shows the broad kind-1 stream from the
+  enabled relays (no `#t` filter).
+- `fetchFeedPage(mode, limit, until)` in `src/nostr/feed.ts` with `until`-based
+  pagination (`oldestCreatedAt - 1`) and a "Load older posts" action in the
+  expanded feed.
+- Local relevance/spam gate `isRelevantGrowNote()`: requires a real grow `t`
+  tag on the event, rejects tag stuffing (>12 tags), link dumps (>3 URLs),
+  hashtag walls (>8), all-caps content and posts with no meaningful body text.
+
+### Changed
+- `useFeedStore` now caches the two feeds independently (`mode`, `grow`,
+  `nostr` lanes with posts/status/error/cursor); switching modes does not
+  refetch a lane that already has data. Scroll position is kept per mode.
+- Grow tag list extended with livingsoil, notill/no-till, soil, compost,
+  regenerative.
+
+### Unchanged
+- Like / Zap / Reply / Repost stay inert. Real write support still needs
+  NIP-25 (kind 7), NIP-10 replies, NIP-18 (kind 6) and NIP-57 zaps.
+
 ## 2026-08-21 — Dashboard as the post-login home + Nostr sign-up
 
 ### Added

@@ -212,3 +212,19 @@ is `src/ui/DiaryComposer.tsx`. Next phase per plan: P3 routes (`/garden`,
 - The key-backup panel is one-shot per tab; `forgetFreshNsec()` clears it.
 - Adding NIP-46 (bunker) is the right next step for durable write sessions.
 
+
+## Feed modes (2026-08-22)
+
+- `src/nostr/feed.ts` owns both feeds. `fetchFeedPage(mode, limit, until)` is
+  the only entry point; `fetchFeed()` is a thin grow-mode wrapper.
+- Grow mode filters by `#t` at the relay AND re-validates locally with
+  `isRelevantGrowNote()` — relays return tag spam, so never drop that gate.
+  Tune the thresholds there, do not add a second filter in the UI.
+- Nostr mode is deliberately unfiltered by topic; it is "what the enabled
+  relays show", not all of Nostr.
+- Pagination is `until: oldestCreatedAt - 1`; `useFeedStore` dedupes by event id
+  and marks a lane exhausted when the cursor stops moving.
+- `useFeedStore` has one lane per mode. Never collapse them back into a single
+  posts array — switching modes must not refetch cached data.
+- Feed interaction buttons stay disabled until NIP-25/NIP-10/NIP-18/NIP-57 are
+  implemented.

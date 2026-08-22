@@ -340,3 +340,10 @@ confirmation before continuing. Optional display name publishes a kind 0 event.
 Limitations: no NIP-46 / no encrypted key storage, so a refresh drops write access
 back to read-only until the grower signs in again (extension recommended).
 
+
+## Feed modes (2026-08-22)
+
+The left dashboard panel has a `Grow | Nostr` switch. Grow = hashtag-filtered
+garden posts with a local spam/relevance gate; Nostr = broad kind-1 notes from
+the enabled relays with `until`-based pagination. Both lanes are cached
+separately in `useFeedStore`; social interactions remain inert placeholders.
