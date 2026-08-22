@@ -5,10 +5,12 @@ import { getEnabledRelayUrls } from "./relays";
 import type { NostrEvent, Profile } from "./types";
 
 /**
- * Public grow feed: kind-1 notes from the wider growing community, read-only.
- * Protocol code stays here; UI never touches relays directly and the 3D frame
- * loop never calls into this module.
+ * Read-only feeds: kind-1 notes from the enabled relays. Protocol code stays
+ * here; UI never touches relays directly and the 3D frame loop never calls
+ * into this module.
  */
+
+export type FeedMode = "grow" | "nostr";
 
 export type FeedPost = {
   id: string;
@@ -19,7 +21,13 @@ export type FeedPost = {
   author?: Profile | undefined;
 };
 
-/** Hashtags growers already use; keeps the feed on-topic without a backend. */
+export type FeedPage = {
+  posts: FeedPost[];
+  /** created_at of the oldest event seen, for the next `until` cursor. */
+  cursor: number | null;
+};
+
+/** Hashtags growers already use; keeps the grow feed on-topic without a backend. */
 const FEED_TAGS = [
   "weedoshi-diary",
   "weedoshi",
@@ -30,7 +38,66 @@ const FEED_TAGS = [
   "gardening",
   "plants",
   "homegrow",
+  "livingsoil",
+  "notill",
+  "no-till",
+  "soil",
+  "compost",
+  "regenerative",
 ];
+
+const GROW_TAG_SET = new Set(FEED_TAGS.map((t) => t.toLowerCase()));
+
+const GROW_WORDS =
+  /\b(grow|grown|growing|garden|gardening|plant|plants|seed|seedling|soil|compost|harvest|flower|flowering|veg|leaf|leaves|root|roots|water|watering|nutrient|nutrients|pot|repot|sprout|bloom|cultivar|strain|trichome|canopy|tent|light cycle|photoperiod|autoflower|terp|cure|trim)\b/i;
+
+const URL_RE = /https?:\/\/\S+/gi;
+const HASHTAG_RE = /(^|\s)#[\p{L}\p{N}_]+/gu;
+
+/** Local relevance/spam gate: relay `#t` filtering alone lets tag spam through. */
+export function isRelevantGrowNote(event: NostrEvent): boolean {
+  const content = (event.content ?? "").trim();
+  if (!content) return false;
+
+  const tags = event.tags.filter((t) => t[0] === "t").map((t) => (t[1] ?? "").toLowerCase());
+  // The relay claimed a match; make sure the event really carries a grow tag.
+  if (!tags.some((t) => GROW_TAG_SET.has(t))) return false;
+
+  // Tag stuffing: a handful of topics is normal, a wall of them is spam.
+  if (tags.length > 12) return false;
+
+  const urls = content.match(URL_RE) ?? [];
+  if (urls.length > 3) return false;
+
+  const hashtags = content.match(HASHTAG_RE) ?? [];
+  if (hashtags.length > 8) return false;
+
+  // Text left once links and hashtags are stripped.
+  const body = content.replace(URL_RE, " ").replace(HASHTAG_RE, " ").replace(/\s+/g, " ").trim();
+  if (body.length < 12) return false;
+  if (hashtags.length > 0 && body.length < hashtags.length * 8) return false;
+
+  const letters = body.replace(/[^\p{L}]/gu, "");
+  if (letters.length >= 24) {
+    const caps = body.replace(/[^\p{Lu}]/gu, "").length;
+    if (caps / letters.length > 0.7) return false;
+  }
+
+  // Some grow signal must survive: either a topical word or a real sentence.
+  if (!GROW_WORDS.test(body) && body.length < 60) return false;
+
+  return true;
+}
+
+/** Generic low-effort spam gate for the broad Nostr feed. */
+function isReadableNote(event: NostrEvent): boolean {
+  const content = (event.content ?? "").trim();
+  if (!content) return false;
+  const hashtags = content.match(HASHTAG_RE) ?? [];
+  if (hashtags.length > 12) return false;
+  const body = content.replace(URL_RE, " ").replace(HASHTAG_RE, " ").replace(/\s+/g, " ").trim();
+  return body.length >= 4;
+}
 
 function toProfile(event: NostrEvent): Profile {
   try {
@@ -48,34 +115,62 @@ function toProfile(event: NostrEvent): Profile {
   }
 }
 
-export async function fetchFeed(limit = 40): Promise<FeedPost[]> {
-  const relays = getEnabledRelayUrls();
-  const notes = await query(relays, { kinds: [KIND_NOTE], "#t": FEED_TAGS, limit }, 7000);
+function toPost(note: NostrEvent): FeedPost {
+  return {
+    id: note.id,
+    pubkey: note.pubkey,
+    createdAt: note.created_at,
+    text: preview(note.content ?? "", 420),
+    images: extractImageUrls(note.content ?? ""),
+  };
+}
 
-  const posts: FeedPost[] = notes
-    .filter((note) => (note.content ?? "").trim().length > 0)
-    .slice(0, limit)
-    .map((note) => ({
-      id: note.id,
-      pubkey: note.pubkey,
-      createdAt: note.created_at,
-      text: preview(note.content ?? "", 420),
-      images: extractImageUrls(note.content ?? ""),
-    }));
-
+async function hydrateAuthors(relays: string[], posts: FeedPost[]): Promise<void> {
   const authors = [...new Set(posts.map((p) => p.pubkey))].slice(0, 60);
-  if (authors.length > 0) {
-    const metas = await query(relays, { kinds: [KIND_PROFILE], authors, limit: authors.length * 2 }, 5000);
-    const newest = new Map<string, NostrEvent>();
-    for (const event of metas) {
-      const current = newest.get(event.pubkey);
-      if (!current || current.created_at < event.created_at) newest.set(event.pubkey, event);
-    }
-    for (const post of posts) {
-      const meta = newest.get(post.pubkey);
-      if (meta) post.author = toProfile(meta);
-    }
+  if (authors.length === 0) return;
+  const metas = await query(relays, { kinds: [KIND_PROFILE], authors, limit: authors.length * 2 }, 5000);
+  const newest = new Map<string, NostrEvent>();
+  for (const event of metas) {
+    const current = newest.get(event.pubkey);
+    if (!current || current.created_at < event.created_at) newest.set(event.pubkey, event);
   }
+  for (const post of posts) {
+    const meta = newest.get(post.pubkey);
+    if (meta) post.author = toProfile(meta);
+  }
+}
 
-  return posts.sort((a, b) => b.createdAt - a.createdAt);
+/**
+ * One page of either feed. `until` continues an existing feed
+ * (`oldestCreatedAt - 1`); omit it for the first page.
+ */
+export async function fetchFeedPage(
+  mode: FeedMode,
+  limit = 40,
+  until?: number,
+): Promise<FeedPage> {
+  const relays = getEnabledRelayUrls();
+  const notes = await query(
+    relays,
+    {
+      kinds: [KIND_NOTE],
+      limit,
+      ...(mode === "grow" ? { "#t": FEED_TAGS } : {}),
+      ...(until ? { until } : {}),
+    },
+    7000,
+  );
+
+  const cursor = notes.length > 0 ? Math.min(...notes.map((n) => n.created_at)) : null;
+
+  const keep = mode === "grow" ? isRelevantGrowNote : isReadableNote;
+  const posts = notes.filter(keep).map(toPost);
+
+  await hydrateAuthors(relays, posts);
+
+  return { posts: posts.sort((a, b) => b.createdAt - a.createdAt), cursor };
+}
+
+export async function fetchFeed(limit = 40): Promise<FeedPost[]> {
+  return (await fetchFeedPage("grow", limit)).posts;
 }
