@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## 2026-08-24 — Mobile responsive polish (signed-in dashboard)
+
+### Fixed
+- Horizontal overflow on phones: the dashboard grid tracks and the Grow Feed
+  panel inherited `min-width: auto`, so the non-shrinkable feed subtitle forced
+  the document to ~447px. Added `min-w-0` on the two-column grid, both columns,
+  the hero grid, the card grids and the feed panel/article wrappers — no global
+  `overflow-x: hidden` guard needed.
+- Mobile nav no longer scrolls or clips: the four items (Garden, Diaries,
+  Missions, Community) sit in an even `grid-cols-4` with stacked icon + label.
+- Grow Feed action row (Like / Zap / Reply / Repost) is icon-only under 380px
+  and icon + label above, with tighter gaps and larger tap height, so labels no
+  longer truncate with ellipses.
+- Secondary text contrast raised one step across the dashboard and feed
+  (cream/40-65 -> cream/55-80), keeping the muted hierarchy.
+- Consistent 16px mobile side padding on cards; hero heading, hero artwork
+  height and the Gardener Level chip scale down on narrow screens.
+
+Verified with zero horizontal scroll at 375 / 390 / 430px and unchanged desktop
+layout at 1280px.
+
 ## 2026-08-22 — Grow / Nostr feed switch
 
 ### Added

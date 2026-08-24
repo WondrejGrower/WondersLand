@@ -228,3 +228,12 @@ is `src/ui/DiaryComposer.tsx`. Next phase per plan: P3 routes (`/garden`,
   posts array — switching modes must not refetch cached data.
 - Feed interaction buttons stay disabled until NIP-25/NIP-10/NIP-18/NIP-57 are
   implemented.
+
+## Mobile polish (2026-08-24)
+
+The signed-in dashboard is verified overflow-free at 375/390/430px. The fix is
+structural: every grid/flex wrapper in `HomeDashboard.tsx` and `GrowFeed.tsx`
+carries `min-w-0` so truncating text cannot inflate a track. Mobile nav is a
+4-column grid; feed action buttons are icon-only below 380px and stay inert
+placeholders (NIP-25/10/18/57 still unimplemented). Secondary cream opacities
+were raised one step for contrast. Desktop/tablet composition is unchanged.
