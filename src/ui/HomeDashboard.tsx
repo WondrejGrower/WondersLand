@@ -196,7 +196,15 @@ export function HomeDashboard() {
   const [composer, setComposer] = useState<ComposerMode | null>(null);
   const [section, setSection] = useState<Section>("garden");
   const [feedExpanded, setFeedExpanded] = useState(false);
+  const [openDiaryId, setOpenDiaryId] = useState<string | null>(null);
   const writable = canPublish(method);
+
+  const openDiary = (diary: Diary) => {
+    setSection("diaries");
+    setFeedExpanded(false);
+    setOpenDiaryId(diary.id);
+  };
+
 
   const sorted = useMemo(() => [...diaries].sort((a, b) => b.updatedAt - a.updatedAt), [diaries]);
   const growth = useMemo(() => computeGrowth(diaries), [diaries]);
