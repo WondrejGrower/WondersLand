@@ -247,8 +247,19 @@ export function HomeDashboard() {
     setFeedExpanded(false);
     setShowHidden(false);
     setOpenDiaryId(diary.id);
-    setToast(kind === "entry" ? "Entry published to Nostr" : "Published to Nostr");
+    // `sorted` still holds the pre-publish list in this closure, so an empty
+    // one means this publish is what completed the first-diary mission.
+    const firstDiary = kind === "create" && sorted.length === 0;
+    if (firstDiary) setMissionAdvanced(true);
+    setToast(
+      firstDiary
+        ? "✓ First diary created — next: add your first entry"
+        : kind === "entry"
+          ? "Entry published to Nostr"
+          : "Published to Nostr",
+    );
   };
+
 
 
 
