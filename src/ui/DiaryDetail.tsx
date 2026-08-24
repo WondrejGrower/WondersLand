@@ -29,18 +29,26 @@ function Meta({ label, value }: { label: string; value: string }) {
 export function DiaryDetail({
   diary,
   writable,
+  hidden,
   onBack,
   onAddEntry,
   onEdit,
+  onHide,
+  onUnhide,
 }: {
   diary: Diary;
   writable: boolean;
+  hidden: boolean;
   onBack: () => void;
   onAddEntry: (diary: Diary) => void;
   onEdit: (diary: Diary) => void;
+  onHide: (diary: Diary) => void;
+  onUnhide: (diary: Diary) => void;
 }) {
   const [entries, setEntries] = useState<DiaryEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [confirmHide, setConfirmHide] = useState(false);
+
 
   useEffect(() => {
     let alive = true;
