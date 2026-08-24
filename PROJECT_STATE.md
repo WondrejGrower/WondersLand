@@ -390,3 +390,21 @@ instead. The Diaries tab gets a `Hidden diaries (n)` toggle listing hidden cards
 with per-card restore. Hiding the open diary returns to the diaries list.
 Limitation: the preference is per browser/device and does not sync between
 devices, by design.
+
+## Publish-ready diaries flow (2026-08-24)
+
+The Diaries tab now leads with a `+ New diary` CTA (Hidden diaries stays
+secondary). Read-only sessions no longer hit dead actions: tapping a publishing
+action opens `Unlock publishing` (`src/ui/PublishUnlock.tsx`), which upgrades
+the *current* identity via NIP-07 or an in-memory nsec. A key for a different
+pubkey is refused with a clear message. After unlocking, the original intent
+(new diary, or add-entry on that diary) opens automatically.
+
+Creating a diary opens its reader immediately and shows a transient
+"Published to Nostr" acknowledgement; adding an entry keeps the reader open and
+refreshes it. Failures keep the draft and show a plain error. Entries are text +
+optional phase only until Blossom lands. The Weedoshi format is unchanged:
+kind:30078 diary + referenced kind:1 notes, written exactly as before.
+
+Private keys are still memory-only and never persisted; the stored session
+remains a read-only npub.

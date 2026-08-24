@@ -352,3 +352,17 @@ garden dashboard right ~70%); the signed-out marketing landing is untouched.
 
 Pending Nostr work: reactions (kind 7), replies, reposts (kind 6) and zaps
 (NIP-57) are UI-only placeholders — no write path exists for them yet.
+
+## Publish-ready diaries flow (2026-08-24)
+
+- Added `src/ui/PublishUnlock.tsx` and `unlockWithNsec` / `unlockWithExtension`
+  in `src/state/useNostrStore.ts` — upgrade the current read-only session to a
+  writable one, with an explicit pubkey-mismatch guard. Nothing new is persisted.
+- `HomeDashboard`: `+ New diary` CTA on the Diaries tab, pending-intent replay
+  after unlock, auto-open the reader after a successful create, and a transient
+  "Published to Nostr" toast.
+- `DiaryComposer`: labelled mobile-friendly fields, larger tap targets,
+  scrollable sheet, `onPublished` callback, draft retained on relay failure, and
+  the paste-image-URL copy removed ahead of Blossom.
+- `DiaryDetail`: read-only sessions get an `Unlock publishing` action instead of
+  a dead-end note.
