@@ -152,6 +152,56 @@ export function DiaryDetail({
               Read-only session — sign in with an extension or nsec to add entries.
             </p>
           )}
+
+          <div className="min-w-0 border-t border-forest-soft/40 pt-4">
+            {hidden ? (
+              <div className="grid min-w-0 gap-2">
+                <p className="text-xs text-cream/70">
+                  This diary is hidden in WondersLand on this device. It is still on your relays.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onUnhide(diary)}
+                  className="inline-flex min-h-11 w-fit items-center gap-2 rounded-xl border border-leaf/40 px-4 py-2.5 text-sm font-medium text-leaf"
+                >
+                  <RotateCcw className="h-4 w-4" aria-hidden /> Restore diary
+                </button>
+              </div>
+            ) : confirmHide ? (
+              <div className="grid min-w-0 gap-3 rounded-xl border border-amber-400/30 bg-amber-400/5 p-3">
+                <p className="text-xs leading-relaxed text-cream/85">
+                  Hide “{diary.title}”? It is only hidden in WondersLand on this device and browser.
+                  Nothing is deleted from Nostr — the diary and its entries stay on your relays and
+                  you can restore it any time from Hidden diaries.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onHide(diary)}
+                    className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-400/50 px-4 py-2.5 text-sm font-medium text-amber-300"
+                  >
+                    <EyeOff className="h-4 w-4" aria-hidden /> Yes, hide it
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmHide(false)}
+                    className="inline-flex min-h-11 items-center rounded-xl border border-forest-soft/60 px-4 py-2.5 text-sm text-cream/85"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmHide(true)}
+                className="inline-flex min-h-11 w-fit items-center gap-2 rounded-xl px-3 py-2.5 text-xs text-cream/65 hover:text-cream"
+              >
+                <EyeOff className="h-4 w-4" aria-hidden /> Hide diary
+              </button>
+            )}
+          </div>
+
         </div>
       </article>
 
