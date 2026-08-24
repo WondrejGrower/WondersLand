@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BookOpen,
   ExternalLink,
@@ -10,6 +10,8 @@ import {
   Users,
   CheckCircle2,
   LayoutGrid,
+  EyeOff,
+  RotateCcw,
 } from "lucide-react";
 import { useNostrStore } from "../state/useNostrStore";
 import { useGardenStore } from "../state/useGardenStore";
@@ -23,6 +25,7 @@ import { NostrSignIn } from "./NostrSignIn";
 import { DiaryComposer, type ComposerMode } from "./DiaryComposer";
 import { GrowFeed } from "./GrowFeed";
 import { DiaryDetail } from "./DiaryDetail";
+import { useHiddenDiaries } from "../state/useHiddenDiaries";
 import { canPublish } from "../nostr/signers";
 import { computeGrowth, nextStep } from "../progression/growth";
 import heroArt from "../assets/garden-island.png";
@@ -237,7 +240,7 @@ export function HomeDashboard() {
 
   const name = profileLabel(profile, pubkey);
   const latest = sorted[0];
-  const opened = openDiaryId ? sorted.find((d) => d.id === openDiaryId) : undefined;
+  const opened = openDiaryId ? all.find((d) => d.id === openDiaryId) : undefined;
   const latestCover = latest ? (latest.coverImage ?? latest.items.map(firstImage).find(Boolean)) : undefined;
 
   const showFeedFull = feedExpanded || section === "community";
@@ -334,7 +337,7 @@ export function HomeDashboard() {
             className="mt-2 text-3xl font-semibold leading-[1.08] tracking-tight sm:text-5xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            {diaries.length > 0 ? (
+            {sorted.length > 0 ? (
               <>
                 Your garden
                 <br />
@@ -428,7 +431,7 @@ export function HomeDashboard() {
           <Ring value={growthPercent} />
           <div className="grid gap-1">
             <p className="text-sm text-cream/80">
-              {diaries.length > 0 ? "Your garden is thriving." : "Your garden is just starting."}
+              {sorted.length > 0 ? "Your garden is thriving." : "Your garden is just starting."}
             </p>
             <p className="text-xs text-cream/70">
               {growth.nextStage
