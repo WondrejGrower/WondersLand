@@ -393,19 +393,14 @@ export function HomeDashboard() {
             >
               <Leaf className="h-4 w-4" aria-hidden /> Enter Garden
             </button>
-            {writable ? (
-              <button
-                type="button"
-                onClick={() => setComposer({ kind: "create" })}
-                className="inline-flex items-center gap-2 rounded-xl border border-forest-soft/60 px-5 py-3 text-sm font-medium text-cream/85"
-              >
-                + New Diary
-              </button>
-            ) : (
-              <span className="text-xs text-cream/60">
-                Read-only session — sign in with an extension or nsec to publish.
-              </span>
-            )}
+            <button
+              type="button"
+              onClick={() => requestComposer({ kind: "create" })}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-forest-soft/60 px-5 py-3 text-sm font-medium text-cream/85"
+            >
+              + New Diary
+            </button>
+
           </div>
 
           {growth.signals.activeDays > 0 ? (
