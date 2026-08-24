@@ -210,6 +210,8 @@ export function HomeDashboard() {
   const [pendingIntent, setPendingIntent] = useState<ComposerMode | null>(null);
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [missionAdvanced, setMissionAdvanced] = useState(false);
+
   const [section, setSection] = useState<Section>("garden");
   const [feedExpanded, setFeedExpanded] = useState(false);
   const [openDiaryId, setOpenDiaryId] = useState<string | null>(null);
@@ -225,6 +227,13 @@ export function HomeDashboard() {
     const id = window.setTimeout(() => setToast(null), 4000);
     return () => window.clearTimeout(id);
   }, [toast]);
+
+  useEffect(() => {
+    if (!missionAdvanced) return;
+    const id = window.setTimeout(() => setMissionAdvanced(false), 10000);
+    return () => window.clearTimeout(id);
+  }, [missionAdvanced]);
+
 
   const openDiary = (diary: Diary) => {
     setSection("diaries");
@@ -247,8 +256,19 @@ export function HomeDashboard() {
     setFeedExpanded(false);
     setShowHidden(false);
     setOpenDiaryId(diary.id);
-    setToast(kind === "entry" ? "Entry published to Nostr" : "Published to Nostr");
+    // `sorted` still holds the pre-publish list in this closure, so an empty
+    // one means this publish is what completed the first-diary mission.
+    const firstDiary = kind === "create" && sorted.length === 0;
+    if (firstDiary) setMissionAdvanced(true);
+    setToast(
+      firstDiary
+        ? "✓ First diary created — next: add your first entry"
+        : kind === "entry"
+          ? "Entry published to Nostr"
+          : "Published to Nostr",
+    );
   };
+
 
 
 
@@ -511,8 +531,16 @@ export function HomeDashboard() {
       </Panel>
 
       <Panel title="Mission" Icon={Star}>
-        <p className="text-sm font-semibold text-cream">{suggestion.title}</p>
+        {missionAdvanced ? (
+          <p className="rounded-xl border border-leaf/40 bg-leaf/10 px-2.5 py-2 text-xs font-semibold text-leaf">
+            ✓ First diary created — mission complete
+          </p>
+        ) : null}
+        <p className="text-sm font-semibold text-cream">
+          {missionAdvanced ? `Next: ${suggestion.title}` : suggestion.title}
+        </p>
         <p className="text-xs text-cream/75">{suggestion.body}</p>
+
         {stale.length > 0 ? (
           <p className="text-xs text-cream/55">
             {stale.length} {stale.length === 1 ? "diary has" : "diaries have"} been quiet for{" "}

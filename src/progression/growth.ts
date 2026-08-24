@@ -130,7 +130,7 @@ export function nextStep(diaries: Diary[]): Suggestion {
   if (s.entries === 0) {
     return {
       title: "Add your first entry",
-      body: "A photo and one line about how the plant looks today is already a good entry.",
+      body: "One line about what changed today is already a good entry.",
     };
   }
   if (s.species < 3) {

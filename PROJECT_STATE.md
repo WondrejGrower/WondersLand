@@ -408,3 +408,13 @@ kind:30078 diary + referenced kind:1 notes, written exactly as before.
 
 Private keys are still memory-only and never persisted; the stored session
 remains a read-only npub.
+
+Diary creation is a guided picker rather than a form: plant is chosen from the
+existing Weedoshi plant catalog with category shortcuts and search (custom
+plants still allowed and still produce `custom:` slugs), phase is a chip set,
+and cultivar/breeder offer one-tap suggestions derived from the user's own
+diaries. The composer stores exactly the same diary fields as before.
+
+The Mission card surfaces first-diary completion as a transient acknowledgement
+computed from the successful publish; progression scoring in
+`src/progression/growth.ts` is unchanged apart from the photo wording.

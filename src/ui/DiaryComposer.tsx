@@ -1,17 +1,37 @@
 // Create-diary / add-entry composer. Pure DOM UI: it only calls the Nostr
 // write path and hands the resulting diary back to the store.
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { getSigner } from "../nostr/signers";
 import { addEntry, createDiary, updateDiary, type DiaryInput } from "../nostr/writeDiaries";
 import { useNostrStore } from "../state/useNostrStore";
+import { PhaseChips, PlantPicker, SuggestInput, fieldClass, labelClass } from "./DiaryFields";
 import type { Diary } from "../nostr/types";
 
 type Mode = { kind: "create" } | { kind: "entry"; diary: Diary } | { kind: "edit"; diary: Diary };
 
-const field =
-  "w-full min-w-0 min-h-11 rounded-xl border border-forest-soft/60 bg-forest-deep/60 px-3 py-2.5 text-base text-cream placeholder:text-cream/40 outline-none focus:border-leaf/70 sm:text-sm";
+/** Distinct values the user already typed in their own diaries, newest first. */
+function recentValues(diaries: Diary[], pick: (d: Diary) => string | undefined): string[] {
+  const seen: string[] = [];
+  for (const diary of [...diaries].sort((a, b) => b.updatedAt - a.updatedAt)) {
+    const value = pick(diary)?.trim();
+    if (value && !seen.includes(value)) seen.push(value);
+  }
+  return seen;
+}
 
-const label = "text-[0.7rem] uppercase tracking-wide text-cream/55";
+function Group({ step, title, children }: { step: number; title: string; children: React.ReactNode }) {
+  return (
+    <section className="grid min-w-0 gap-2.5 rounded-2xl border border-forest-soft/40 bg-forest-deep/30 p-3">
+      <h3 className="flex min-w-0 items-center gap-2 text-sm font-semibold text-cream">
+        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-leaf/20 text-[0.65rem] text-leaf">
+          {step}
+        </span>
+        <span className="truncate">{title}</span>
+      </h3>
+      {children}
+    </section>
+  );
+}
 
 export function DiaryComposer({
   mode,
@@ -24,6 +44,7 @@ export function DiaryComposer({
   onPublished?: (diary: Diary, kind: Mode["kind"]) => void;
 }) {
   const method = useNostrStore((s) => s.method);
+  const diaries = useNostrStore((s) => s.diaries);
   const upsertDiary = useNostrStore((s) => s.upsertDiary);
   const existing = mode.kind === "create" ? null : mode.diary;
 
@@ -36,9 +57,13 @@ export function DiaryComposer({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const cultivars = useMemo(() => recentValues(diaries, (d) => d.cultivar), [diaries]);
+  const breeders = useMemo(() => recentValues(diaries, (d) => d.breeder), [diaries]);
+
   const isEntry = mode.kind === "entry";
   const heading =
     mode.kind === "create" ? "New diary" : isEntry ? `Add entry — ${existing?.title}` : "Edit diary";
+  const titleHint = !title.trim() && cultivar.trim() ? cultivar.trim() : null;
 
   async function submit() {
     const signer = getSigner(method);
@@ -73,8 +98,8 @@ export function DiaryComposer({
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-end bg-forest-deep/80 p-3 backdrop-blur-sm sm:place-items-center sm:p-4">
-      <div className="max-h-[90dvh] w-full min-w-0 max-w-lg overflow-y-auto rounded-2xl border border-forest-soft/60 bg-forest p-4 text-cream shadow-2xl sm:p-5">
-        <div className="flex items-start justify-between gap-3">
+      <div className="flex max-h-[90dvh] w-full min-w-0 max-w-lg flex-col rounded-2xl border border-forest-soft/60 bg-forest text-cream shadow-2xl">
+        <div className="flex items-start justify-between gap-3 border-b border-forest-soft/40 p-4">
           <h2 className="min-w-0 break-words text-base font-semibold" style={{ fontFamily: "var(--font-display)" }}>
             {heading}
           </h2>
@@ -88,11 +113,11 @@ export function DiaryComposer({
           </button>
         </div>
 
-        <div className="mt-4 grid min-w-0 gap-3.5">
+        <div className="grid min-w-0 flex-1 gap-3 overflow-y-auto p-4">
           {isEntry ? (
             <>
               <div className="grid min-w-0 gap-1.5">
-                <label htmlFor="entry-text" className={label}>
+                <label htmlFor="entry-text" className={labelClass}>
                   Entry
                 </label>
                 <textarea
@@ -100,88 +125,72 @@ export function DiaryComposer({
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   rows={6}
-                  placeholder="What happened in the garden today?"
-                  className={field}
+                  placeholder="What changed in the garden today?"
+                  className={fieldClass}
                 />
               </div>
               <div className="grid min-w-0 gap-1.5">
-                <label htmlFor="entry-phase" className={label}>
-                  Phase (optional)
-                </label>
-                <input
-                  id="entry-phase"
-                  value={phase}
-                  onChange={(e) => setPhase(e.target.value)}
-                  placeholder="seedling, veg, flower, harvest…"
-                  className={field}
-                />
+                <span className={labelClass}>Current phase (optional)</span>
+                <PhaseChips value={phase} onChange={setPhase} />
               </div>
-              <p className="text-[0.7rem] text-cream/55">Photos are coming soon.</p>
             </>
           ) : (
             <>
-              <div className="grid min-w-0 gap-1.5">
-                <label htmlFor="diary-title" className={label}>
-                  Title
-                </label>
+              <Group step={1} title="What are you growing?">
+                <PlantPicker value={plant} onChange={setPlant} />
+              </Group>
+
+              <Group step={2} title="Variety details">
+                <div className="grid min-w-0 gap-3">
+                  <div className="grid min-w-0 gap-1.5">
+                    <label htmlFor="diary-cultivar" className={labelClass}>
+                      Cultivar
+                    </label>
+                    <SuggestInput
+                      id="diary-cultivar"
+                      value={cultivar}
+                      onChange={setCultivar}
+                      placeholder="Optional"
+                      suggestions={cultivars}
+                    />
+                  </div>
+                  <div className="grid min-w-0 gap-1.5">
+                    <label htmlFor="diary-breeder" className={labelClass}>
+                      Breeder
+                    </label>
+                    <SuggestInput
+                      id="diary-breeder"
+                      value={breeder}
+                      onChange={setBreeder}
+                      placeholder="Optional"
+                      suggestions={breeders}
+                    />
+                  </div>
+                </div>
+              </Group>
+
+              <Group step={3} title="Current phase">
+                <PhaseChips value={phase} onChange={setPhase} />
+              </Group>
+
+              <Group step={4} title="Diary name">
                 <input
                   id="diary-title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="My first grow"
-                  className={field}
+                  className={fieldClass}
                 />
-              </div>
-              <div className="grid min-w-0 gap-1.5">
-                <label htmlFor="diary-plant" className={label}>
-                  Plant or species
-                </label>
-                <input
-                  id="diary-plant"
-                  value={plant}
-                  onChange={(e) => setPlant(e.target.value)}
-                  placeholder="Cannabis sativa L."
-                  className={field}
-                />
-              </div>
-              <div className="grid min-w-0 gap-3.5 sm:grid-cols-2">
-                <div className="grid min-w-0 gap-1.5">
-                  <label htmlFor="diary-cultivar" className={label}>
-                    Cultivar
-                  </label>
-                  <input
-                    id="diary-cultivar"
-                    value={cultivar}
-                    onChange={(e) => setCultivar(e.target.value)}
-                    placeholder="Optional"
-                    className={field}
-                  />
-                </div>
-                <div className="grid min-w-0 gap-1.5">
-                  <label htmlFor="diary-breeder" className={label}>
-                    Breeder
-                  </label>
-                  <input
-                    id="diary-breeder"
-                    value={breeder}
-                    onChange={(e) => setBreeder(e.target.value)}
-                    placeholder="Optional"
-                    className={field}
-                  />
-                </div>
-              </div>
-              <div className="grid min-w-0 gap-1.5">
-                <label htmlFor="diary-phase" className={label}>
-                  Phase
-                </label>
-                <input
-                  id="diary-phase"
-                  value={phase}
-                  onChange={(e) => setPhase(e.target.value)}
-                  placeholder="seedling, veg, flower…"
-                  className={field}
-                />
-              </div>
+                {titleHint ? (
+                  <button
+                    type="button"
+                    onClick={() => setTitle(titleHint)}
+                    className="justify-self-start rounded-full border border-forest-soft/60 px-3 py-1.5 text-xs text-cream/75"
+                  >
+                    Use “{titleHint}”
+                  </button>
+                ) : null}
+              </Group>
             </>
           )}
 
@@ -190,24 +199,24 @@ export function DiaryComposer({
               {error}
             </p>
           ) : null}
+        </div>
 
-          <div className="mt-1 flex flex-wrap justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="min-h-11 rounded-xl px-4 py-2.5 text-sm text-cream/70"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => void submit()}
-              disabled={busy || (isEntry ? !text.trim() : !title.trim())}
-              className="min-h-11 rounded-xl bg-leaf px-5 py-2.5 text-sm font-semibold text-forest-deep disabled:opacity-50"
-            >
-              {busy ? "Publishing…" : isEntry ? "Publish entry" : existing ? "Save diary" : "Create diary"}
-            </button>
-          </div>
+        <div className="flex flex-wrap justify-end gap-2 border-t border-forest-soft/40 bg-forest p-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="min-h-11 rounded-xl px-4 py-2.5 text-sm text-cream/70"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => void submit()}
+            disabled={busy || (isEntry ? !text.trim() : !title.trim())}
+            className="min-h-11 rounded-xl bg-leaf px-5 py-2.5 text-sm font-semibold text-forest-deep disabled:opacity-50"
+          >
+            {busy ? "Publishing…" : isEntry ? "Publish entry" : existing ? "Save diary" : "Create diary"}
+          </button>
         </div>
       </div>
     </div>
