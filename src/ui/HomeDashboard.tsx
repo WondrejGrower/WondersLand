@@ -111,7 +111,7 @@ function Card({
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="grid h-full place-items-center text-xs text-cream/40">No photo yet</div>
+          <div className="grid h-full place-items-center text-xs text-cream/55">No photo yet</div>
         )}
       </div>
       <div className="grid gap-1.5 p-4">
@@ -124,9 +124,9 @@ function Card({
           ) : null}
         </div>
         {subtitle(diary) ? (
-          <p className="truncate text-xs text-cream/60">{subtitle(diary)}</p>
+          <p className="truncate text-xs text-cream/75">{subtitle(diary)}</p>
         ) : null}
-        <p className="text-xs text-cream/45">
+        <p className="text-xs text-cream/60">
           {diary.items.length} {diary.items.length === 1 ? "entry" : "entries"} · updated{" "}
           {relative(diary.updatedAt)}
         </p>
@@ -154,7 +154,7 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="grid content-start gap-3 rounded-2xl border border-forest-soft/50 bg-forest/60 p-5">
+    <section className="grid min-w-0 content-start gap-3 rounded-2xl border border-forest-soft/50 bg-forest/60 p-4 sm:p-5">
       <h3 className="flex items-center gap-2 text-sm font-semibold text-cream">
         <Icon className="h-4 w-4 text-leaf" aria-hidden />
         {title}
@@ -211,7 +211,7 @@ export function HomeDashboard() {
 
   const header = (
     <header className="sticky top-0 z-20 border-b border-forest-soft/40 bg-forest-deep/85 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-[110rem] items-center gap-4 px-4 py-3 sm:px-8">
+      <div className="mx-auto flex w-full min-w-0 max-w-[110rem] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-8">
         <span
           className="flex items-center gap-2 text-base font-semibold tracking-tight sm:text-xl"
           style={{ fontFamily: "var(--font-display)" }}
@@ -232,10 +232,10 @@ export function HomeDashboard() {
               className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm transition-colors ${
                 section === id
                   ? "border border-leaf/25 bg-leaf/10 font-semibold text-cream"
-                  : "text-cream/60 hover:text-cream"
+                  : "text-cream/75 hover:text-cream"
               }`}
             >
-              <Icon className={`h-4 w-4 ${section === id ? "text-leaf" : "text-cream/50"}`} aria-hidden />
+              <Icon className={`h-4 w-4 ${section === id ? "text-leaf" : "text-cream/65"}`} aria-hidden />
               {label}
             </button>
           ))}
@@ -244,7 +244,7 @@ export function HomeDashboard() {
           <NostrSignIn />
         </div>
       </div>
-      <nav className="flex items-center gap-1 overflow-x-auto px-4 pb-3 md:hidden">
+      <nav className="grid grid-cols-4 gap-1 px-3 pb-3 md:hidden">
         {NAV.map(({ id, label, Icon }) => (
           <button
             key={id}
@@ -253,12 +253,14 @@ export function HomeDashboard() {
               setSection(id);
               if (id !== "community") setFeedExpanded(false);
             }}
-            className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs ${
-              section === id ? "bg-leaf/10 font-semibold text-cream" : "text-cream/60"
+            className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1.5 text-[0.7rem] ${
+              section === id
+                ? "border border-leaf/25 bg-leaf/10 font-semibold text-cream"
+                : "text-cream/75"
             }`}
           >
-            <Icon className="h-3.5 w-3.5 text-leaf" aria-hidden />
-            {label}
+            <Icon className="h-4 w-4 text-leaf" aria-hidden />
+            <span className="truncate">{label}</span>
           </button>
         ))}
       </nav>
@@ -269,7 +271,7 @@ export function HomeDashboard() {
     return (
       <div className="flex min-h-screen flex-col bg-forest-deep text-cream">
         {header}
-        <main className="mx-auto flex w-full max-w-[90rem] flex-1 flex-col px-4 py-6 sm:px-8">
+        <main className="mx-auto flex w-full min-w-0 max-w-[90rem] flex-1 flex-col px-4 py-6 sm:px-8">
           <h1 className="sr-only">Grow Feed</h1>
           <GrowFeed
             expanded
@@ -285,13 +287,13 @@ export function HomeDashboard() {
 
   const hero = (
     <section className="relative overflow-hidden rounded-[1.75rem] border border-forest-soft/50 bg-forest shadow-[0_30px_80px_-45px_rgba(0,0,0,0.9)]">
-      <div className="grid items-center gap-4 lg:grid-cols-[1fr_1fr]">
-        <div className="relative z-10 p-6 sm:p-9">
+      <div className="grid min-w-0 items-center gap-4 lg:grid-cols-[1fr_1fr]">
+        <div className="relative z-10 min-w-0 p-5 sm:p-9">
           <p className="flex items-center gap-2 text-sm text-cream/70">
             <Sprout className="h-4 w-4 text-leaf" aria-hidden /> Welcome back, {name}
           </p>
           <h2
-            className="mt-2 text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl"
+            className="mt-2 text-3xl font-semibold leading-[1.08] tracking-tight sm:text-5xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
             {diaries.length > 0 ? (
@@ -308,7 +310,7 @@ export function HomeDashboard() {
               </>
             )}
           </h2>
-          <p className="mt-4 max-w-sm text-sm text-cream/65">
+          <p className="mt-4 max-w-sm text-sm text-cream/80">
             A cozy space for your grow-diaries, memories, and moments that grow.
           </p>
 
@@ -329,7 +331,7 @@ export function HomeDashboard() {
                 + New Diary
               </button>
             ) : (
-              <span className="text-xs text-cream/45">
+              <span className="text-xs text-cream/60">
                 Read-only session — sign in with an extension or nsec to publish.
               </span>
             )}
@@ -347,7 +349,7 @@ export function HomeDashboard() {
           ) : null}
         </div>
 
-        <div className="relative min-h-[15rem] lg:min-h-[22rem]">
+        <div className="relative min-w-0 min-h-[13rem] sm:min-h-[15rem] lg:min-h-[22rem]">
           <img
             src={heroArt}
             alt="A cozy isometric garden island with a cottage, tree and pond"
@@ -356,12 +358,12 @@ export function HomeDashboard() {
             className="h-full w-full object-contain"
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-forest via-transparent to-transparent" />
-          <div className="absolute right-4 top-4 w-40 rounded-2xl border border-forest-soft/50 bg-forest-deep/85 px-4 py-3 backdrop-blur">
-            <p className="flex items-center gap-1.5 text-[0.7rem] text-cream/60">
+          <div className="absolute right-3 top-3 w-[8.5rem] rounded-2xl border border-forest-soft/50 bg-forest-deep/85 px-3 py-2.5 backdrop-blur sm:right-4 sm:top-4 sm:w-40 sm:px-4 sm:py-3">
+            <p className="flex items-center gap-1.5 text-[0.7rem] text-cream/75">
               <Leaf className="h-3 w-3 text-leaf" aria-hidden /> Gardener Level
             </p>
             <p className="mt-1 flex items-baseline gap-2">
-              <span className="text-3xl font-semibold text-cream" style={{ fontFamily: "var(--font-display)" }}>
+              <span className="text-2xl font-semibold text-cream sm:text-3xl" style={{ fontFamily: "var(--font-display)" }}>
                 {growth.level}
               </span>
               <span className="text-xs text-leaf">{growth.stage}</span>
@@ -372,7 +374,7 @@ export function HomeDashboard() {
                 style={{ width: `${Math.round(growth.progress * 100)}%` }}
               />
             </div>
-            <p className="mt-1.5 text-[0.65rem] text-cream/45">
+            <p className="mt-1.5 text-[0.65rem] text-cream/60">
               {growth.nextStage ? `next: ${growth.nextStage}` : "ecosystem reached"}
             </p>
           </div>
@@ -382,7 +384,7 @@ export function HomeDashboard() {
   );
 
   const cards = (
-    <div className="grid gap-4 lg:grid-cols-3">
+    <div className="grid min-w-0 gap-4 lg:grid-cols-3">
       <Panel title="Garden growth" Icon={Sprout}>
         <div className="flex items-center gap-4">
           <Ring value={growthPercent} />
@@ -390,7 +392,7 @@ export function HomeDashboard() {
             <p className="text-sm text-cream/80">
               {diaries.length > 0 ? "Your garden is thriving." : "Your garden is just starting."}
             </p>
-            <p className="text-xs text-cream/55">
+            <p className="text-xs text-cream/70">
               {growth.nextStage
                 ? `${growth.pointsToNext} growth points to ${growth.nextStage}.`
                 : "Full ecosystem reached."}
@@ -413,14 +415,14 @@ export function HomeDashboard() {
               {latestCover ? (
                 <img src={latestCover} alt="" loading="lazy" className="h-full w-full object-cover" />
               ) : (
-                <div className="grid h-full place-items-center text-xs text-cream/40">No photo yet</div>
+                <div className="grid h-full place-items-center text-xs text-cream/55">No photo yet</div>
               )}
             </div>
             <p className="truncate text-lg font-semibold text-cream" style={{ fontFamily: "var(--font-display)" }}>
               {latest.title}
             </p>
             <div className="flex items-center justify-between gap-2">
-              <p className="truncate text-xs text-cream/50">
+              <p className="truncate text-xs text-cream/65">
                 {relative(latest.updatedAt)} · {latest.items.length}{" "}
                 {latest.items.length === 1 ? "entry" : "entries"}
               </p>
@@ -436,15 +438,15 @@ export function HomeDashboard() {
             </div>
           </>
         ) : (
-          <p className="text-sm text-cream/55">No diaries on your relays yet.</p>
+          <p className="text-sm text-cream/70">No diaries on your relays yet.</p>
         )}
       </Panel>
 
       <Panel title="Mission" Icon={Star}>
         <p className="text-sm font-semibold text-cream">{suggestion.title}</p>
-        <p className="text-xs text-cream/60">{suggestion.body}</p>
+        <p className="text-xs text-cream/75">{suggestion.body}</p>
         {stale.length > 0 ? (
-          <p className="text-xs text-cream/40">
+          <p className="text-xs text-cream/55">
             {stale.length} {stale.length === 1 ? "diary has" : "diaries have"} been quiet for{" "}
             {STALE_DAYS}+ days. No rush.
           </p>
@@ -472,18 +474,18 @@ export function HomeDashboard() {
   ];
 
   const gardenStatusCard = (
-    <section className="rounded-2xl border border-forest-soft/50 bg-forest/60 p-5">
+    <section className="min-w-0 rounded-2xl border border-forest-soft/50 bg-forest/60 p-4 sm:p-5">
       <h3 className="flex items-center gap-2 text-sm font-semibold text-cream">
         <Sprout className="h-4 w-4 text-leaf" aria-hidden /> Garden status
       </h3>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-center">
+      <div className="mt-4 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-center">
         {statusItems.map(({ label, value, Icon }) => (
-          <div key={label} className="flex items-center gap-3">
+          <div key={label} className="flex min-w-0 items-center gap-3">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-leaf/10">
               <Icon className="h-4 w-4 text-leaf" aria-hidden />
             </span>
             <span className="min-w-0">
-              <span className="block text-xs text-cream/50">{label}</span>
+              <span className="block text-xs text-cream/65">{label}</span>
               <span className="block truncate text-sm text-cream/85">{value}</span>
             </span>
           </div>
@@ -503,22 +505,22 @@ export function HomeDashboard() {
     <div className="min-h-screen bg-forest-deep text-cream">
       {header}
 
-      <main className="mx-auto w-full max-w-[110rem] px-4 pb-16 pt-6 sm:px-8">
+      <main className="mx-auto w-full min-w-0 max-w-[110rem] px-4 pb-16 pt-6 sm:px-8">
         <h1 className="sr-only">Your WondersLand garden</h1>
 
-        <div className="grid gap-6 lg:grid-cols-[30fr_70fr] lg:items-start">
+        <div className="grid min-w-0 gap-6 lg:grid-cols-[30fr_70fr] lg:items-start">
           {/* Left — compact grow feed (order flips on mobile: garden first) */}
-          <div className="order-2 lg:order-1 lg:sticky lg:top-24">
+          <div className="order-2 min-w-0 lg:order-1 lg:sticky lg:top-24">
             <GrowFeed expanded={false} onToggleExpand={() => setFeedExpanded(true)} />
           </div>
 
           {/* Right — the user's own garden dashboard */}
-          <div className="order-1 grid gap-6 lg:order-2">
+          <div className="order-1 grid min-w-0 gap-6 lg:order-2">
             {section === "diaries" ? (
               <section className="grid gap-3">
                 <h2 className="text-sm font-semibold text-cream/80">Your diaries</h2>
                 {sorted.length === 0 ? (
-                  <p className="rounded-2xl border border-forest-soft/50 bg-forest/60 p-6 text-sm text-cream/65">
+                  <p className="rounded-2xl border border-forest-soft/50 bg-forest/60 p-6 text-sm text-cream/80">
                     {status === "loading"
                       ? "Reading your diaries from the relays…"
                       : "No diaries found on your relays yet."}
@@ -539,11 +541,11 @@ export function HomeDashboard() {
               <>
                 {cards}
                 <Panel title="Missions" Icon={Sparkles}>
-                  <p className="text-sm text-cream/65">
+                  <p className="text-sm text-cream/80">
                     Missions grow out of real documentation: new species, entries on real days and
                     completed grows. Nothing here expires and nothing punishes you for being away.
                   </p>
-                  <p className="text-xs text-cream/45">
+                  <p className="text-xs text-cream/60">
                     {growth.signals.species} species · {growth.signals.activeDays} active days ·{" "}
                     {growth.signals.completed} completed grows
                   </p>
