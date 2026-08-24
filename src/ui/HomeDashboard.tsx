@@ -203,6 +203,9 @@ export function HomeDashboard() {
   const hideDiary = useHiddenDiaries((s) => s.hide);
   const unhideDiary = useHiddenDiaries((s) => s.unhide);
   const [composer, setComposer] = useState<ComposerMode | null>(null);
+  const [pendingIntent, setPendingIntent] = useState<ComposerMode | null>(null);
+  const [unlockOpen, setUnlockOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const [section, setSection] = useState<Section>("garden");
   const [feedExpanded, setFeedExpanded] = useState(false);
   const [openDiaryId, setOpenDiaryId] = useState<string | null>(null);
@@ -213,11 +216,37 @@ export function HomeDashboard() {
     if (pubkey) void loadHidden(pubkey);
   }, [pubkey, loadHidden]);
 
+  useEffect(() => {
+    if (!toast) return;
+    const id = window.setTimeout(() => setToast(null), 4000);
+    return () => window.clearTimeout(id);
+  }, [toast]);
+
   const openDiary = (diary: Diary) => {
     setSection("diaries");
     setFeedExpanded(false);
     setOpenDiaryId(diary.id);
   };
+
+  /** Publishing intents funnel through here so read-only never dead-ends. */
+  const requestComposer = (mode: ComposerMode) => {
+    if (writable) {
+      setComposer(mode);
+      return;
+    }
+    setPendingIntent(mode);
+    setUnlockOpen(true);
+  };
+
+  const handlePublished = (diary: Diary, kind: ComposerMode["kind"]) => {
+    setSection("diaries");
+    setFeedExpanded(false);
+    setShowHidden(false);
+    setOpenDiaryId(diary.id);
+    setToast(kind === "entry" ? "Entry published to Nostr" : "Published to Nostr");
+  };
+
+
 
 
 
