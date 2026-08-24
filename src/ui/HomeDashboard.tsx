@@ -194,17 +194,27 @@ export function HomeDashboard() {
   const feedStatus = useFeedStore((s) => s[s.mode].status);
   const enter = useWorldStore((s) => s.enter);
   const method = useNostrStore((s) => s.method);
+  const hiddenIds = useHiddenDiaries((s) => s.ids);
+  const loadHidden = useHiddenDiaries((s) => s.load);
+  const hideDiary = useHiddenDiaries((s) => s.hide);
+  const unhideDiary = useHiddenDiaries((s) => s.unhide);
   const [composer, setComposer] = useState<ComposerMode | null>(null);
   const [section, setSection] = useState<Section>("garden");
   const [feedExpanded, setFeedExpanded] = useState(false);
   const [openDiaryId, setOpenDiaryId] = useState<string | null>(null);
+  const [showHidden, setShowHidden] = useState(false);
   const writable = canPublish(method);
+
+  useEffect(() => {
+    if (pubkey) void loadHidden(pubkey);
+  }, [pubkey, loadHidden]);
 
   const openDiary = (diary: Diary) => {
     setSection("diaries");
     setFeedExpanded(false);
     setOpenDiaryId(diary.id);
   };
+
 
 
   const all = useMemo(() => [...diaries].sort((a, b) => b.updatedAt - a.updatedAt), [diaries]);
