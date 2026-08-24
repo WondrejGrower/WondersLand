@@ -207,14 +207,17 @@ export function HomeDashboard() {
   };
 
 
-  const sorted = useMemo(() => [...diaries].sort((a, b) => b.updatedAt - a.updatedAt), [diaries]);
-  const growth = useMemo(() => computeGrowth(diaries), [diaries]);
-  const suggestion = useMemo(() => nextStep(diaries), [diaries]);
+  const all = useMemo(() => [...diaries].sort((a, b) => b.updatedAt - a.updatedAt), [diaries]);
+  const sorted = useMemo(() => all.filter((d) => !hiddenIds.includes(d.id)), [all, hiddenIds]);
+  const hiddenList = useMemo(() => all.filter((d) => hiddenIds.includes(d.id)), [all, hiddenIds]);
+  const growth = useMemo(() => computeGrowth(sorted), [sorted]);
+  const suggestion = useMemo(() => nextStep(sorted), [sorted]);
 
   const stale = useMemo(
     () => sorted.filter((d) => Date.now() - d.updatedAt * 1000 > STALE_DAYS * DAY),
     [sorted],
   );
+
 
   const zones = useMemo(() => {
     const counts = new Map<ZoneId, number>();
