@@ -54,6 +54,8 @@ export function DiaryDetail({
     let alive = true;
     setEntries(null);
     setError(null);
+    setConfirmHide(false);
+
     if (diary.items.length === 0) {
       setEntries([]);
       return () => {
