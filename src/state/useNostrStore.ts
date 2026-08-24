@@ -35,9 +35,16 @@ type NostrState = {
   signInWithExtension: () => Promise<void>;
   signInWithNpub: (npub: string) => Promise<void>;
   signInWithNsec: (nsec: string) => Promise<void>;
+  /**
+   * Upgrade the CURRENT read-only session to a writable one without switching
+   * identity. Throws on a pubkey mismatch instead of silently re-logging in.
+   */
+  unlockWithNsec: (nsec: string) => Promise<void>;
+  unlockWithExtension: () => Promise<void>;
   upsertDiary: (diary: Diary) => void;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
+
 };
 
 const SESSION_KEY = "session";
@@ -178,6 +185,41 @@ export const useNostrStore = create<NostrState>((set, get) => {
         set({ status: "error", error: err instanceof Error ? err.message : "Invalid nsec" });
       }
     },
+
+    // --- Unlock publishing on the identity that is already signed in ---------
+    // No new session, no re-fetch, no persistence change: the persisted session
+    // stays a read-only npub, the key stays in memory in signers/local.ts.
+    unlockWithNsec: async (nsec) => {
+      const current = get().pubkey;
+      if (!current) throw new Error("Sign in first");
+      let derived: string;
+      try {
+        derived = unlockLocalSigner(nsec);
+      } catch (err) {
+        clearLocalSigner();
+        throw err instanceof Error ? err : new Error("Invalid nsec");
+      }
+      if (derived !== current) {
+        clearLocalSigner();
+        throw new Error(
+          "That key belongs to a different Nostr account. Sign out and sign in with it instead.",
+        );
+      }
+      set({ method: "nsec", error: null });
+    },
+
+    unlockWithExtension: async () => {
+      const current = get().pubkey;
+      if (!current) throw new Error("Sign in first");
+      const derived = await getNip07PublicKey();
+      if (derived !== current) {
+        throw new Error(
+          "Your extension holds a different Nostr account. Sign out and sign in with it instead.",
+        );
+      }
+      set({ method: "nip07", error: null });
+    },
+
 
     upsertDiary: (diary) => {
       const diaries = get().diaries.filter((d) => d.id !== diary.id);

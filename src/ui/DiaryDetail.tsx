@@ -1,7 +1,7 @@
 // 2D diary reader. Pure DOM UI inside the authenticated shell: it reads a diary
 // (kind 30078) plus its referenced kind:1 entries and renders them chronologically.
 import { useEffect, useState } from "react";
-import { ArrowLeft, CalendarDays, EyeOff, ImageOff, Pencil, Plus, RotateCcw } from "lucide-react";
+import { ArrowLeft, CalendarDays, EyeOff, ImageOff, KeyRound, Pencil, Plus, RotateCcw } from "lucide-react";
 
 import { fetchDiaryEntries, type DiaryEntry } from "../nostr/diaryEntries";
 import { firstImage } from "../nostr/media";
@@ -35,6 +35,7 @@ export function DiaryDetail({
   onEdit,
   onHide,
   onUnhide,
+  onUnlock,
 }: {
   diary: Diary;
   writable: boolean;
@@ -44,7 +45,9 @@ export function DiaryDetail({
   onEdit: (diary: Diary) => void;
   onHide: (diary: Diary) => void;
   onUnhide: (diary: Diary) => void;
+  onUnlock: (diary: Diary) => void;
 }) {
+
   const [entries, setEntries] = useState<DiaryEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirmHide, setConfirmHide] = useState(false);
@@ -150,10 +153,21 @@ export function DiaryDetail({
               </button>
             </div>
           ) : (
-            <p className="text-xs text-cream/60">
-              Read-only session — sign in with an extension or nsec to add entries.
-            </p>
+            <div className="grid min-w-0 gap-2 rounded-xl border border-leaf/25 bg-leaf/5 p-3">
+              <p className="text-xs text-cream/80">
+                This session is read-only. Unlock publishing to add an entry — your key stays in
+                this tab only.
+              </p>
+              <button
+                type="button"
+                onClick={() => onUnlock(diary)}
+                className="inline-flex min-h-11 w-fit items-center gap-2 rounded-xl border border-leaf/50 px-4 py-2.5 text-sm font-semibold text-leaf"
+              >
+                <KeyRound className="h-4 w-4" aria-hidden /> Unlock publishing
+              </button>
+            </div>
           )}
+
 
           <div className="min-w-0 border-t border-forest-soft/40 pt-4">
             {hidden ? (
@@ -217,7 +231,7 @@ export function DiaryDetail({
         ) : entries.length === 0 ? (
           <p className="rounded-2xl border border-forest-soft/50 bg-forest/60 p-5 text-sm text-cream/75">
             This diary has no entries yet. {writable
-              ? "Add the first one whenever you like — a single photo or line is enough."
+              ? "Add the first one whenever you like — a single line is enough."
               : "Nothing has been published to it so far."}
           </p>
         ) : (

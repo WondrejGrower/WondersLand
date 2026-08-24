@@ -271,3 +271,32 @@ instead. The Diaries tab gets a `Hidden diaries (n)` toggle listing hidden cards
 with per-card restore. Hiding the open diary returns to the diaries list.
 Limitation: the preference is per browser/device and does not sync between
 devices, by design.
+
+## Publish-ready diaries flow (2026-08-24)
+
+Read-only → writable happens without a new session. `useNostrStore` gained
+`unlockWithNsec` and `unlockWithExtension`: both derive the pubkey, compare it
+to the pubkey already signed in and throw a clear mismatch error instead of
+silently switching identity. On success they only flip `method` to `nsec` /
+`nip07`; the persisted session record stays the read-only npub, so a refresh
+still drops write access by design. The private key never leaves the in-memory
+module `src/nostr/signers/local.ts` — it is not written to IndexedDB,
+localStorage, Zustand or any log.
+
+`src/ui/PublishUnlock.tsx` is the small modal for this. Every publishing intent
+in `HomeDashboard` goes through `requestComposer(mode)`: writable sessions open
+`DiaryComposer` directly, read-only sessions store the intent in
+`pendingIntent`, open the unlock modal and replay the exact intent (new diary,
+or add-entry for that same diary) once unlocked.
+
+`DiaryComposer` now reports success through `onPublished(diary, kind)`, fired
+only after `writeDiaries` confirmed at least one relay accepted the event. The
+dashboard then opens that diary's reader and shows a transient
+"Published to Nostr" toast. On failure the composer keeps the draft and shows a
+plain-language error — no relay, no success. The Diaries tab has a prominent
+`+ New diary` CTA with `Hidden diaries (n)` kept secondary. Entry composing is
+text + optional phase only; the paste-an-image-URL copy was removed ahead of
+Blossom.
+
+Limitations: no media upload yet, entries are still refetched per reader open,
+and the unlock is per tab.

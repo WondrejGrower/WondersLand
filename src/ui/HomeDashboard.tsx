@@ -13,7 +13,9 @@ import {
   LayoutGrid,
   EyeOff,
   RotateCcw,
+  Plus,
 } from "lucide-react";
+
 import { useNostrStore } from "../state/useNostrStore";
 import { useGardenStore } from "../state/useGardenStore";
 import { useWorldStore } from "../state/useWorldStore";
@@ -27,6 +29,8 @@ import { DiaryComposer, type ComposerMode } from "./DiaryComposer";
 import { GrowFeed } from "./GrowFeed";
 import { DiaryDetail } from "./DiaryDetail";
 import { useHiddenDiaries } from "../state/useHiddenDiaries";
+import { PublishUnlock } from "./PublishUnlock";
+
 import { canPublish } from "../nostr/signers";
 import { computeGrowth, nextStep } from "../progression/growth";
 import heroArt from "../assets/garden-island.png";
@@ -203,6 +207,9 @@ export function HomeDashboard() {
   const hideDiary = useHiddenDiaries((s) => s.hide);
   const unhideDiary = useHiddenDiaries((s) => s.unhide);
   const [composer, setComposer] = useState<ComposerMode | null>(null);
+  const [pendingIntent, setPendingIntent] = useState<ComposerMode | null>(null);
+  const [unlockOpen, setUnlockOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const [section, setSection] = useState<Section>("garden");
   const [feedExpanded, setFeedExpanded] = useState(false);
   const [openDiaryId, setOpenDiaryId] = useState<string | null>(null);
@@ -213,11 +220,37 @@ export function HomeDashboard() {
     if (pubkey) void loadHidden(pubkey);
   }, [pubkey, loadHidden]);
 
+  useEffect(() => {
+    if (!toast) return;
+    const id = window.setTimeout(() => setToast(null), 4000);
+    return () => window.clearTimeout(id);
+  }, [toast]);
+
   const openDiary = (diary: Diary) => {
     setSection("diaries");
     setFeedExpanded(false);
     setOpenDiaryId(diary.id);
   };
+
+  /** Publishing intents funnel through here so read-only never dead-ends. */
+  const requestComposer = (mode: ComposerMode) => {
+    if (writable) {
+      setComposer(mode);
+      return;
+    }
+    setPendingIntent(mode);
+    setUnlockOpen(true);
+  };
+
+  const handlePublished = (diary: Diary, kind: ComposerMode["kind"]) => {
+    setSection("diaries");
+    setFeedExpanded(false);
+    setShowHidden(false);
+    setOpenDiaryId(diary.id);
+    setToast(kind === "entry" ? "Entry published to Nostr" : "Published to Nostr");
+  };
+
+
 
 
 
@@ -364,19 +397,14 @@ export function HomeDashboard() {
             >
               <Leaf className="h-4 w-4" aria-hidden /> Enter Garden
             </button>
-            {writable ? (
-              <button
-                type="button"
-                onClick={() => setComposer({ kind: "create" })}
-                className="inline-flex items-center gap-2 rounded-xl border border-forest-soft/60 px-5 py-3 text-sm font-medium text-cream/85"
-              >
-                + New Diary
-              </button>
-            ) : (
-              <span className="text-xs text-cream/60">
-                Read-only session — sign in with an extension or nsec to publish.
-              </span>
-            )}
+            <button
+              type="button"
+              onClick={() => requestComposer({ kind: "create" })}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-forest-soft/60 px-5 py-3 text-sm font-medium text-cream/85"
+            >
+              + New Diary
+            </button>
+
           </div>
 
           {growth.signals.activeDays > 0 ? (
@@ -562,14 +590,15 @@ export function HomeDashboard() {
                 writable={writable}
                 hidden={hiddenIds.includes(opened.id)}
                 onBack={() => setOpenDiaryId(null)}
-                onAddEntry={(d) => setComposer({ kind: "entry", diary: d })}
-                onEdit={(d) => setComposer({ kind: "edit", diary: d })}
+                onAddEntry={(d) => requestComposer({ kind: "entry", diary: d })}
+                onEdit={(d) => requestComposer({ kind: "edit", diary: d })}
                 onHide={(d) => {
                   void hideDiary(d.id);
                   setOpenDiaryId(null);
                   setShowHidden(false);
                 }}
                 onUnhide={(d) => void unhideDiary(d.id)}
+                onUnlock={(d) => requestComposer({ kind: "entry", diary: d })}
               />
             ) : section === "diaries" ? (
               <section className="grid min-w-0 gap-3">
@@ -595,6 +624,24 @@ export function HomeDashboard() {
                     </button>
                   ) : null}
                 </div>
+
+                {showHidden ? null : (
+                  <div className="grid min-w-0 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => requestComposer({ kind: "create" })}
+                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-leaf px-5 py-3 text-sm font-semibold text-forest-deep shadow-lg shadow-leaf/20 sm:w-fit"
+                    >
+                      <Plus className="h-4 w-4" aria-hidden /> New diary
+                    </button>
+                    {!writable ? (
+                      <p className="text-xs text-cream/65">
+                        Read-only session — you&rsquo;ll be asked to unlock publishing first.
+                      </p>
+                    ) : null}
+                  </div>
+                )}
+
 
                 {showHidden ? (
                   <>
@@ -631,7 +678,7 @@ export function HomeDashboard() {
                         key={diary.id}
                         diary={diary}
                         onOpen={openDiary}
-                        onAddEntry={writable ? (d) => setComposer({ kind: "entry", diary: d }) : null}
+                        onAddEntry={(d) => requestComposer({ kind: "entry", diary: d })}
                       />
                     ))}
                   </div>
@@ -663,7 +710,40 @@ export function HomeDashboard() {
         </div>
       </main>
 
-      {composer ? <DiaryComposer mode={composer} onClose={() => setComposer(null)} /> : null}
+      {composer ? (
+        <DiaryComposer
+          mode={composer}
+          onClose={() => setComposer(null)}
+          onPublished={handlePublished}
+        />
+      ) : null}
+
+      {unlockOpen ? (
+        <PublishUnlock
+          onUnlocked={() => {
+            setUnlockOpen(false);
+            if (pendingIntent) setComposer(pendingIntent);
+            setPendingIntent(null);
+          }}
+          onClose={() => {
+            setUnlockOpen(false);
+            setPendingIntent(null);
+          }}
+        />
+      ) : null}
+
+      {toast ? (
+        <div
+          role="status"
+          className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4"
+        >
+          <p className="inline-flex max-w-full items-center gap-2 rounded-full border border-leaf/40 bg-forest-deep/95 px-4 py-2.5 text-sm text-cream shadow-2xl backdrop-blur">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-leaf" aria-hidden />
+            <span className="truncate">{toast}</span>
+          </p>
+        </div>
+      ) : null}
     </div>
+
   );
 }
