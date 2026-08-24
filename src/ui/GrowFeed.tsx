@@ -37,7 +37,7 @@ function PostCard({ post }: { post: FeedPost }) {
   const name = post.author?.displayName || post.author?.name || "Grower";
   const image = post.images[0];
   return (
-    <article className="rounded-2xl border border-forest-soft/40 bg-forest/60 p-4">
+    <article className="min-w-0 rounded-2xl border border-forest-soft/40 bg-forest/60 p-3.5 sm:p-4">
       <header className="flex items-center gap-3">
         {post.author?.picture ? (
           <img
@@ -56,9 +56,9 @@ function PostCard({ post }: { post: FeedPost }) {
         )}
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-cream">{name}</p>
-          <p className="truncate text-[0.7rem] text-cream/45">{shortNpub(post.pubkey)}</p>
+          <p className="truncate text-[0.7rem] text-cream/60">{shortNpub(post.pubkey)}</p>
         </div>
-        <span className="shrink-0 text-[0.7rem] text-cream/40">{ago(post.createdAt)}</span>
+        <span className="shrink-0 text-[0.7rem] text-cream/55">{ago(post.createdAt)}</span>
       </header>
 
       {post.text ? (
@@ -76,19 +76,20 @@ function PostCard({ post }: { post: FeedPost }) {
         />
       ) : null}
 
-      <div className="mt-3 grid grid-cols-4 gap-2">
+      <div className="mt-3 grid grid-cols-4 gap-1.5 sm:gap-2">
         {ACTIONS.map((action) => (
           <button
             key={action.key}
             type="button"
             disabled
             title={`${action.label} — coming with Nostr write support`}
-            className="flex items-center justify-center gap-1.5 rounded-xl border border-forest-soft/40 bg-forest-deep/40 px-2 py-1.5 text-[0.7rem] text-cream/45 disabled:cursor-not-allowed"
+            aria-label={action.label}
+            className="flex min-w-0 items-center justify-center gap-1 rounded-xl border border-forest-soft/40 bg-forest-deep/40 px-1.5 py-2 text-[0.7rem] text-cream/75 disabled:cursor-not-allowed sm:gap-1.5 sm:px-2 sm:py-1.5"
           >
-            <span aria-hidden className="text-leaf/70">
+            <span aria-hidden className="text-sm text-leaf/80">
               {action.icon}
             </span>
-            <span className="truncate">{action.label}</span>
+            <span className="hidden min-[380px]:inline">{action.label}</span>
           </button>
         ))}
       </div>
@@ -153,17 +154,17 @@ export function GrowFeed({
 
   return (
     <section
-      className={`flex flex-col overflow-hidden rounded-[1.5rem] border border-forest-soft/50 bg-forest/50 ${
+      className={`flex w-full min-w-0 flex-col overflow-hidden rounded-[1.5rem] border border-forest-soft/50 bg-forest/50 ${
         expanded ? "h-full" : "lg:max-h-[calc(100vh-8rem)]"
       }`}
       aria-label={copy.title}
     >
-      <header className="flex items-start justify-between gap-3 border-b border-forest-soft/40 px-5 py-4">
-        <div className="min-w-0">
+      <header className="flex min-w-0 items-start justify-between gap-2 border-b border-forest-soft/40 px-4 py-4 sm:gap-3 sm:px-5">
+        <div className="min-w-0 flex-1">
           <h2 className="text-base font-semibold text-cream" style={{ fontFamily: "var(--font-display)" }}>
             {copy.title}
           </h2>
-          <p className="truncate text-xs text-cream/50">{copy.subtitle}</p>
+          <p className="text-xs leading-snug text-cream/65 sm:truncate">{copy.subtitle}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <div
@@ -179,7 +180,7 @@ export function GrowFeed({
                 aria-selected={mode === m.key}
                 onClick={() => switchMode(m.key)}
                 className={`rounded-full px-2.5 py-1 text-[0.7rem] transition-colors ${
-                  mode === m.key ? "bg-leaf/20 text-leaf" : "text-cream/55 hover:text-cream"
+                  mode === m.key ? "bg-leaf/20 text-leaf" : "text-cream/70 hover:text-cream"
                 }`}
               >
                 <span aria-hidden className="mr-1">
@@ -200,12 +201,12 @@ export function GrowFeed({
         </div>
       </header>
 
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+      <div ref={scrollRef} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-3.5 py-4 sm:px-4">
         {status === "loading" && posts.length === 0 ? (
-          <p className="px-1 text-sm text-cream/55">Reading the feed from the relays…</p>
+          <p className="px-1 text-sm text-cream/70">Reading the feed from the relays…</p>
         ) : status === "error" ? (
           <div className="grid gap-3 px-1">
-            <p className="text-sm text-cream/60">{error ?? "The relays did not answer."}</p>
+            <p className="text-sm text-cream/75">{error ?? "The relays did not answer."}</p>
             <button
               type="button"
               onClick={() => void load(true)}
@@ -215,10 +216,10 @@ export function GrowFeed({
             </button>
           </div>
         ) : posts.length === 0 ? (
-          <p className="px-1 text-sm text-cream/55">{copy.empty}</p>
+          <p className="px-1 text-sm text-cream/70">{copy.empty}</p>
         ) : (
           <>
-            <div className={`grid gap-3 ${expanded ? "sm:grid-cols-2 xl:grid-cols-3" : ""}`}>
+            <div className={`grid min-w-0 gap-3 ${expanded ? "sm:grid-cols-2 xl:grid-cols-3" : ""}`}>
               {visible.map((post) => (
                 <PostCard key={post.id} post={post} />
               ))}

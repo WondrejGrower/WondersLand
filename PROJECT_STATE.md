@@ -347,3 +347,12 @@ The left dashboard panel has a `Grow | Nostr` switch. Grow = hashtag-filtered
 garden posts with a local spam/relevance gate; Nostr = broad kind-1 notes from
 the enabled relays with `until`-based pagination. Both lanes are cached
 separately in `useFeedStore`; social interactions remain inert placeholders.
+
+## Mobile polish (2026-08-24)
+
+The signed-in dashboard is verified overflow-free at 375/390/430px. The fix is
+structural: every grid/flex wrapper in `HomeDashboard.tsx` and `GrowFeed.tsx`
+carries `min-w-0` so truncating text cannot inflate a track. Mobile nav is a
+4-column grid; feed action buttons are icon-only below 380px and stay inert
+placeholders (NIP-25/10/18/57 still unimplemented). Secondary cream opacities
+were raised one step for contrast. Desktop/tablet composition is unchanged.
