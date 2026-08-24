@@ -237,3 +237,16 @@ carries `min-w-0` so truncating text cannot inflate a track. Mobile nav is a
 4-column grid; feed action buttons are icon-only below 380px and stay inert
 placeholders (NIP-25/10/18/57 still unimplemented). Secondary cream opacities
 were raised one step for contrast. Desktop/tablet composition is unchanged.
+
+## Diary reader (2026-08-24)
+
+Diaries are readable without write access. `DiaryDetail.tsx` renders one diary;
+opening it calls `fetchDiaryEntries()` in `src/nostr/diaryEntries.ts`, which
+queries the referenced kind:1 note ids on the enabled relays and returns full
+text + media (previews on the item ref are the fallback). Entries stay kind:1
+notes referenced by the kind:30078 diary — nothing was migrated into the diary
+event and Weedoshi compatibility (`d: diary-<id>`, `t: weedoshi-diary`, e-tags)
+is untouched. Reader state is local dashboard state (`openDiaryId`), no new
+route. Writable sessions get `+ Add entry` / `Edit diary` via `DiaryComposer`.
+Limitation: entry fetching is one query per open with a 7s timeout and no cache,
+and media still comes from URLs inside the note (Blossom upload is not wired).
