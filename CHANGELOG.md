@@ -366,3 +366,19 @@ Pending Nostr work: reactions (kind 7), replies, reposts (kind 6) and zaps
   the paste-image-URL copy removed ahead of Blossom.
 - `DiaryDetail`: read-only sessions get an `Unlock publishing` action instead of
   a dead-end note.
+
+## Diary creation UX pass
+
+- New `src/ui/DiaryFields.tsx`: `PlantPicker` (category shortcuts + catalog
+  search over `src/nostr/plants/catalogData.ts`, classified through
+  `categorizePlant`, custom free text preserved), `PhaseChips` (Germination,
+  Seedling, Vegetative, Flowering, Harvested, Drying, Curing, Finished, Other)
+  and `SuggestInput` (recent cultivar/breeder values from the user's own
+  diaries).
+- `DiaryComposer`: grouped into four steps — what are you growing, variety
+  details, current phase, diary name — with a sticky action bar and an optional
+  "use the cultivar name" title suggestion. Fields, write path and stored
+  values are unchanged.
+- Mission card shows a transient "✓ First diary created — mission complete" and
+  "Next: …" state derived from a successful publish; no persistent mission flag.
+- Zero-entry mission copy no longer mentions photos (Blossom is not wired).

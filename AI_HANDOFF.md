@@ -300,3 +300,13 @@ Blossom.
 
 Limitations: no media upload yet, entries are still refetched per reader open,
 and the unlock is per tab.
+
+Composer pickers live in `src/ui/DiaryFields.tsx` and are UI-only. They reuse
+`plantCatalogData` and `categorizePlant`; do not introduce a second catalog.
+Recent cultivar/breeder suggestions are derived at render time from
+`useNostrStore().diaries` — nothing is persisted for them. Mission completion
+feedback is a 10s transient state in `HomeDashboard`, set when a create publish
+succeeds while the visible diary list was empty; it is not a stored flag.
+
+Limitations: no media upload, plant picker lists the first 24 matches, and the
+mission acknowledgement is per session.
