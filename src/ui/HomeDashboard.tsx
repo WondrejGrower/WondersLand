@@ -228,6 +228,13 @@ export function HomeDashboard() {
     return () => window.clearTimeout(id);
   }, [toast]);
 
+  useEffect(() => {
+    if (!missionAdvanced) return;
+    const id = window.setTimeout(() => setMissionAdvanced(false), 10000);
+    return () => window.clearTimeout(id);
+  }, [missionAdvanced]);
+
+
   const openDiary = (diary: Diary) => {
     setSection("diaries");
     setFeedExpanded(false);
