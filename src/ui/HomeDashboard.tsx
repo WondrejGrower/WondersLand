@@ -13,7 +13,9 @@ import {
   LayoutGrid,
   EyeOff,
   RotateCcw,
+  Plus,
 } from "lucide-react";
+
 import { useNostrStore } from "../state/useNostrStore";
 import { useGardenStore } from "../state/useGardenStore";
 import { useWorldStore } from "../state/useWorldStore";
@@ -27,6 +29,8 @@ import { DiaryComposer, type ComposerMode } from "./DiaryComposer";
 import { GrowFeed } from "./GrowFeed";
 import { DiaryDetail } from "./DiaryDetail";
 import { useHiddenDiaries } from "../state/useHiddenDiaries";
+import { PublishUnlock } from "./PublishUnlock";
+
 import { canPublish } from "../nostr/signers";
 import { computeGrowth, nextStep } from "../progression/growth";
 import heroArt from "../assets/garden-island.png";
