@@ -586,14 +586,15 @@ export function HomeDashboard() {
                 writable={writable}
                 hidden={hiddenIds.includes(opened.id)}
                 onBack={() => setOpenDiaryId(null)}
-                onAddEntry={(d) => setComposer({ kind: "entry", diary: d })}
-                onEdit={(d) => setComposer({ kind: "edit", diary: d })}
+                onAddEntry={(d) => requestComposer({ kind: "entry", diary: d })}
+                onEdit={(d) => requestComposer({ kind: "edit", diary: d })}
                 onHide={(d) => {
                   void hideDiary(d.id);
                   setOpenDiaryId(null);
                   setShowHidden(false);
                 }}
                 onUnhide={(d) => void unhideDiary(d.id)}
+                onUnlock={(d) => requestComposer({ kind: "entry", diary: d })}
               />
             ) : section === "diaries" ? (
               <section className="grid min-w-0 gap-3">
@@ -619,6 +620,24 @@ export function HomeDashboard() {
                     </button>
                   ) : null}
                 </div>
+
+                {showHidden ? null : (
+                  <div className="grid min-w-0 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => requestComposer({ kind: "create" })}
+                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-leaf px-5 py-3 text-sm font-semibold text-forest-deep shadow-lg shadow-leaf/20 sm:w-fit"
+                    >
+                      <Plus className="h-4 w-4" aria-hidden /> New diary
+                    </button>
+                    {!writable ? (
+                      <p className="text-xs text-cream/65">
+                        Read-only session — you&rsquo;ll be asked to unlock publishing first.
+                      </p>
+                    ) : null}
+                  </div>
+                )}
+
 
                 {showHidden ? (
                   <>
