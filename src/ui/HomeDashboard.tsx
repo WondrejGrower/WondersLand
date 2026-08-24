@@ -94,55 +94,67 @@ function Ring({ value }: { value: number }) {
 
 function Card({
   diary,
-  onUpdate,
+  onOpen,
+  onAddEntry,
 }: {
   diary: Diary;
-  onUpdate: ((diary: Diary) => void) | null;
+  onOpen: (diary: Diary) => void;
+  onAddEntry: ((diary: Diary) => void) | null;
 }) {
   const cover = diary.coverImage ?? diary.items.map(firstImage).find(Boolean);
   return (
-    <article className="overflow-hidden rounded-2xl border border-forest-soft/50 bg-forest/70 text-left">
-      <div className="aspect-[16/10] w-full bg-forest-deep/70">
-        {cover ? (
-          <img
-            src={cover}
-            alt={`Cover photo of ${diary.title}`}
-            loading="lazy"
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="grid h-full place-items-center text-xs text-cream/55">No photo yet</div>
-        )}
-      </div>
-      <div className="grid gap-1.5 p-4">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="truncate text-sm font-semibold text-cream">{diary.title}</h3>
-          {diary.phase ? (
-            <span className="shrink-0 rounded-full bg-leaf/15 px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-wide text-leaf">
-              {diary.phase}
-            </span>
-          ) : null}
+    <article className="min-w-0 overflow-hidden rounded-2xl border border-forest-soft/50 bg-forest/70 text-left transition-colors hover:border-leaf/40">
+      <button
+        type="button"
+        onClick={() => onOpen(diary)}
+        className="block w-full min-w-0 text-left"
+        aria-label={`Open diary ${diary.title}`}
+      >
+        <div className="aspect-[16/10] w-full bg-forest-deep/70">
+          {cover ? (
+            <img
+              src={cover}
+              alt={`Cover photo of ${diary.title}`}
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="grid h-full place-items-center text-xs text-cream/55">No photo yet</div>
+          )}
         </div>
-        {subtitle(diary) ? (
-          <p className="truncate text-xs text-cream/75">{subtitle(diary)}</p>
-        ) : null}
-        <p className="text-xs text-cream/60">
-          {diary.items.length} {diary.items.length === 1 ? "entry" : "entries"} · updated{" "}
-          {relative(diary.updatedAt)}
-        </p>
-        {onUpdate ? (
+        <div className="grid min-w-0 gap-1.5 p-4">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="truncate text-sm font-semibold text-cream">{diary.title}</h3>
+            {diary.phase ? (
+              <span className="shrink-0 rounded-full bg-leaf/15 px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-wide text-leaf">
+                {diary.phase}
+              </span>
+            ) : null}
+          </div>
+          {subtitle(diary) ? (
+            <p className="truncate text-xs text-cream/75">{subtitle(diary)}</p>
+          ) : null}
+          <p className="text-xs text-cream/60">
+            {diary.items.length} {diary.items.length === 1 ? "entry" : "entries"} · updated{" "}
+            {relative(diary.updatedAt)}
+          </p>
+        </div>
+      </button>
+      {onAddEntry ? (
+        <div className="px-4 pb-4">
           <button
             type="button"
-            onClick={() => onUpdate(diary)}
-            className="mt-2 justify-self-start rounded-full border border-leaf/40 px-3 py-1 text-xs font-medium text-leaf"
+            onClick={() => onAddEntry(diary)}
+            className="inline-flex min-h-9 items-center rounded-full border border-leaf/40 px-3 py-1 text-xs font-medium text-leaf"
           >
-            Update
+            Add entry
           </button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </article>
   );
 }
+
 
 function Panel({
   title,
