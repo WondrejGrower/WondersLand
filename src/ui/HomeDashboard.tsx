@@ -22,6 +22,7 @@ import type { Diary } from "../nostr/types";
 import { NostrSignIn } from "./NostrSignIn";
 import { DiaryComposer, type ComposerMode } from "./DiaryComposer";
 import { GrowFeed } from "./GrowFeed";
+import { DiaryDetail } from "./DiaryDetail";
 import { canPublish } from "../nostr/signers";
 import { computeGrowth, nextStep } from "../progression/growth";
 import heroArt from "../assets/garden-island.png";
@@ -248,6 +249,7 @@ export function HomeDashboard() {
               type="button"
               onClick={() => {
                 setSection(id);
+                setOpenDiaryId(null);
                 if (id !== "community") setFeedExpanded(false);
               }}
               aria-current={section === id ? "page" : undefined}
@@ -273,6 +275,7 @@ export function HomeDashboard() {
             type="button"
             onClick={() => {
               setSection(id);
+              setOpenDiaryId(null);
               if (id !== "community") setFeedExpanded(false);
             }}
             className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1.5 text-[0.7rem] ${
@@ -450,9 +453,7 @@ export function HomeDashboard() {
               </p>
               <button
                 type="button"
-                onClick={() =>
-                  writable ? setComposer({ kind: "entry", diary: latest }) : setSection("diaries")
-                }
+                onClick={() => openDiary(latest)}
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-forest-soft/60 px-3 py-1.5 text-xs text-cream/85"
               >
                 Open diary <ExternalLink className="h-3 w-3" aria-hidden />
@@ -538,7 +539,15 @@ export function HomeDashboard() {
 
           {/* Right — the user's own garden dashboard */}
           <div className="order-1 grid min-w-0 gap-6 lg:order-2">
-            {section === "diaries" ? (
+            {section === "diaries" && opened ? (
+              <DiaryDetail
+                diary={opened}
+                writable={writable}
+                onBack={() => setOpenDiaryId(null)}
+                onAddEntry={(d) => setComposer({ kind: "entry", diary: d })}
+                onEdit={(d) => setComposer({ kind: "edit", diary: d })}
+              />
+            ) : section === "diaries" ? (
               <section className="grid gap-3">
                 <h2 className="text-sm font-semibold text-cream/80">Your diaries</h2>
                 {sorted.length === 0 ? (
@@ -553,7 +562,8 @@ export function HomeDashboard() {
                       <Card
                         key={diary.id}
                         diary={diary}
-                        onUpdate={writable ? (d) => setComposer({ kind: "entry", diary: d }) : null}
+                        onOpen={openDiary}
+                        onAddEntry={writable ? (d) => setComposer({ kind: "entry", diary: d }) : null}
                       />
                     ))}
                   </div>
