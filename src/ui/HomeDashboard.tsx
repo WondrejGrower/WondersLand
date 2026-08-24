@@ -674,7 +674,7 @@ export function HomeDashboard() {
                         key={diary.id}
                         diary={diary}
                         onOpen={openDiary}
-                        onAddEntry={writable ? (d) => setComposer({ kind: "entry", diary: d }) : null}
+                        onAddEntry={(d) => requestComposer({ kind: "entry", diary: d })}
                       />
                     ))}
                   </div>
@@ -706,7 +706,40 @@ export function HomeDashboard() {
         </div>
       </main>
 
-      {composer ? <DiaryComposer mode={composer} onClose={() => setComposer(null)} /> : null}
+      {composer ? (
+        <DiaryComposer
+          mode={composer}
+          onClose={() => setComposer(null)}
+          onPublished={handlePublished}
+        />
+      ) : null}
+
+      {unlockOpen ? (
+        <PublishUnlock
+          onUnlocked={() => {
+            setUnlockOpen(false);
+            if (pendingIntent) setComposer(pendingIntent);
+            setPendingIntent(null);
+          }}
+          onClose={() => {
+            setUnlockOpen(false);
+            setPendingIntent(null);
+          }}
+        />
+      ) : null}
+
+      {toast ? (
+        <div
+          role="status"
+          className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4"
+        >
+          <p className="inline-flex max-w-full items-center gap-2 rounded-full border border-leaf/40 bg-forest-deep/95 px-4 py-2.5 text-sm text-cream shadow-2xl backdrop-blur">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-leaf" aria-hidden />
+            <span className="truncate">{toast}</span>
+          </p>
+        </div>
+      ) : null}
     </div>
+
   );
 }
