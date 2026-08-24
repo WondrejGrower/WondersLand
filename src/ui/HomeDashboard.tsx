@@ -22,6 +22,7 @@ import type { Diary } from "../nostr/types";
 import { NostrSignIn } from "./NostrSignIn";
 import { DiaryComposer, type ComposerMode } from "./DiaryComposer";
 import { GrowFeed } from "./GrowFeed";
+import { DiaryDetail } from "./DiaryDetail";
 import { canPublish } from "../nostr/signers";
 import { computeGrowth, nextStep } from "../progression/growth";
 import heroArt from "../assets/garden-island.png";
@@ -94,55 +95,67 @@ function Ring({ value }: { value: number }) {
 
 function Card({
   diary,
-  onUpdate,
+  onOpen,
+  onAddEntry,
 }: {
   diary: Diary;
-  onUpdate: ((diary: Diary) => void) | null;
+  onOpen: (diary: Diary) => void;
+  onAddEntry: ((diary: Diary) => void) | null;
 }) {
   const cover = diary.coverImage ?? diary.items.map(firstImage).find(Boolean);
   return (
-    <article className="overflow-hidden rounded-2xl border border-forest-soft/50 bg-forest/70 text-left">
-      <div className="aspect-[16/10] w-full bg-forest-deep/70">
-        {cover ? (
-          <img
-            src={cover}
-            alt={`Cover photo of ${diary.title}`}
-            loading="lazy"
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="grid h-full place-items-center text-xs text-cream/55">No photo yet</div>
-        )}
-      </div>
-      <div className="grid gap-1.5 p-4">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="truncate text-sm font-semibold text-cream">{diary.title}</h3>
-          {diary.phase ? (
-            <span className="shrink-0 rounded-full bg-leaf/15 px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-wide text-leaf">
-              {diary.phase}
-            </span>
-          ) : null}
+    <article className="min-w-0 overflow-hidden rounded-2xl border border-forest-soft/50 bg-forest/70 text-left transition-colors hover:border-leaf/40">
+      <button
+        type="button"
+        onClick={() => onOpen(diary)}
+        className="block w-full min-w-0 text-left"
+        aria-label={`Open diary ${diary.title}`}
+      >
+        <div className="aspect-[16/10] w-full bg-forest-deep/70">
+          {cover ? (
+            <img
+              src={cover}
+              alt={`Cover photo of ${diary.title}`}
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="grid h-full place-items-center text-xs text-cream/55">No photo yet</div>
+          )}
         </div>
-        {subtitle(diary) ? (
-          <p className="truncate text-xs text-cream/75">{subtitle(diary)}</p>
-        ) : null}
-        <p className="text-xs text-cream/60">
-          {diary.items.length} {diary.items.length === 1 ? "entry" : "entries"} · updated{" "}
-          {relative(diary.updatedAt)}
-        </p>
-        {onUpdate ? (
+        <div className="grid min-w-0 gap-1.5 p-4">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="truncate text-sm font-semibold text-cream">{diary.title}</h3>
+            {diary.phase ? (
+              <span className="shrink-0 rounded-full bg-leaf/15 px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-wide text-leaf">
+                {diary.phase}
+              </span>
+            ) : null}
+          </div>
+          {subtitle(diary) ? (
+            <p className="truncate text-xs text-cream/75">{subtitle(diary)}</p>
+          ) : null}
+          <p className="text-xs text-cream/60">
+            {diary.items.length} {diary.items.length === 1 ? "entry" : "entries"} · updated{" "}
+            {relative(diary.updatedAt)}
+          </p>
+        </div>
+      </button>
+      {onAddEntry ? (
+        <div className="px-4 pb-4">
           <button
             type="button"
-            onClick={() => onUpdate(diary)}
-            className="mt-2 justify-self-start rounded-full border border-leaf/40 px-3 py-1 text-xs font-medium text-leaf"
+            onClick={() => onAddEntry(diary)}
+            className="inline-flex min-h-9 items-center rounded-full border border-leaf/40 px-3 py-1 text-xs font-medium text-leaf"
           >
-            Update
+            Add entry
           </button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </article>
   );
 }
+
 
 function Panel({
   title,
@@ -184,7 +197,15 @@ export function HomeDashboard() {
   const [composer, setComposer] = useState<ComposerMode | null>(null);
   const [section, setSection] = useState<Section>("garden");
   const [feedExpanded, setFeedExpanded] = useState(false);
+  const [openDiaryId, setOpenDiaryId] = useState<string | null>(null);
   const writable = canPublish(method);
+
+  const openDiary = (diary: Diary) => {
+    setSection("diaries");
+    setFeedExpanded(false);
+    setOpenDiaryId(diary.id);
+  };
+
 
   const sorted = useMemo(() => [...diaries].sort((a, b) => b.updatedAt - a.updatedAt), [diaries]);
   const growth = useMemo(() => computeGrowth(diaries), [diaries]);
@@ -203,7 +224,9 @@ export function HomeDashboard() {
 
   const name = profileLabel(profile, pubkey);
   const latest = sorted[0];
+  const opened = openDiaryId ? sorted.find((d) => d.id === openDiaryId) : undefined;
   const latestCover = latest ? (latest.coverImage ?? latest.items.map(firstImage).find(Boolean)) : undefined;
+
   const showFeedFull = feedExpanded || section === "community";
   const growthPercent = Math.round(
     ((growth.level - 1 + growth.progress) / 6) * 100,
@@ -226,6 +249,7 @@ export function HomeDashboard() {
               type="button"
               onClick={() => {
                 setSection(id);
+                setOpenDiaryId(null);
                 if (id !== "community") setFeedExpanded(false);
               }}
               aria-current={section === id ? "page" : undefined}
@@ -251,6 +275,7 @@ export function HomeDashboard() {
             type="button"
             onClick={() => {
               setSection(id);
+              setOpenDiaryId(null);
               if (id !== "community") setFeedExpanded(false);
             }}
             className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1.5 text-[0.7rem] ${
@@ -428,9 +453,7 @@ export function HomeDashboard() {
               </p>
               <button
                 type="button"
-                onClick={() =>
-                  writable ? setComposer({ kind: "entry", diary: latest }) : setSection("diaries")
-                }
+                onClick={() => openDiary(latest)}
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-forest-soft/60 px-3 py-1.5 text-xs text-cream/85"
               >
                 Open diary <ExternalLink className="h-3 w-3" aria-hidden />
@@ -516,7 +539,15 @@ export function HomeDashboard() {
 
           {/* Right — the user's own garden dashboard */}
           <div className="order-1 grid min-w-0 gap-6 lg:order-2">
-            {section === "diaries" ? (
+            {section === "diaries" && opened ? (
+              <DiaryDetail
+                diary={opened}
+                writable={writable}
+                onBack={() => setOpenDiaryId(null)}
+                onAddEntry={(d) => setComposer({ kind: "entry", diary: d })}
+                onEdit={(d) => setComposer({ kind: "edit", diary: d })}
+              />
+            ) : section === "diaries" ? (
               <section className="grid gap-3">
                 <h2 className="text-sm font-semibold text-cream/80">Your diaries</h2>
                 {sorted.length === 0 ? (
@@ -531,7 +562,8 @@ export function HomeDashboard() {
                       <Card
                         key={diary.id}
                         diary={diary}
-                        onUpdate={writable ? (d) => setComposer({ kind: "entry", diary: d }) : null}
+                        onOpen={openDiary}
+                        onAddEntry={writable ? (d) => setComposer({ kind: "entry", diary: d }) : null}
                       />
                     ))}
                   </div>

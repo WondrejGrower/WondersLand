@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## 2026-08-24 — Diary reader
+
+### Added
+- `src/nostr/diaryEntries.ts` — read-only helper that resolves a diary's item
+  refs (`e` tags / `items[]`) to the referenced kind:1 notes and returns full
+  text plus extracted media. Falls back to the cached `contentPreview` when a
+  note cannot be fetched. The persisted diary schema is unchanged.
+- `src/ui/DiaryDetail.tsx` — 2D diary reader inside the authenticated shell:
+  cover (or empty state), title, plant/cultivar/breeder/phase metadata,
+  created/updated stamps, chronological entry timeline with date, phase label,
+  full text and images, plus an empty state for diaries with no entries.
+
+### Changed
+- Diary cards are fully clickable/keyboard-focusable and open the reader in
+  read-only and writable sessions alike. The ambiguous "Update" button is now a
+  secondary "Add entry" action shown only to writable sessions.
+- Dashboard "Latest diary → Open diary" opens the reader instead of the entry
+  composer.
+- The reader's `+ Add entry` / `Edit diary` reuse `DiaryComposer`; after
+  publishing, the reader re-reads the diary from the store by id, so it reflects
+  the update immediately.
+
 ## 2026-08-24 — Mobile responsive polish (signed-in dashboard)
 
 ### Fixed
