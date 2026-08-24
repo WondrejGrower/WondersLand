@@ -369,3 +369,24 @@ is untouched. Reader state is local dashboard state (`openDiaryId`), no new
 route. Writable sessions get `+ Add entry` / `Edit diary` via `DiaryComposer`.
 Limitation: entry fetching is one query per open with a 7s timeout and no cache,
 and media still comes from URLs inside the note (Blossom upload is not wired).
+
+## Hide diary (2026-08-24)
+
+Hiding a diary is a client-only presentation preference. `src/state/useHiddenDiaries.ts`
+keeps an array of diary ids per pubkey, persisted with the existing storage helper
+(`getJson`/`setJson`, IndexedDB with a localStorage fallback) under
+`wl:hidden-diaries:<pubkey>`. Nothing is published: no tombstone, no `hidden`
+flag, no change to the kind:30078 diary or its kind:1 entries, and the `Diary`
+type is untouched. Hidden ids are cleared from memory on sign-out but stay on
+disk for that pubkey.
+
+Filtering happens in `HomeDashboard.tsx` only: the visible list, Latest diary,
+Garden growth/Gardener level, missions/next step and the stale-diary count all
+read the filtered array, while `all` (unfiltered) still backs the reader so a
+hidden diary remains openable. `DiaryDetail` shows a subtle `Hide diary` action
+with an inline confirmation stating the diary is hidden only in WondersLand on
+this device and is not deleted from Nostr; hidden diaries show `Restore diary`
+instead. The Diaries tab gets a `Hidden diaries (n)` toggle listing hidden cards
+with per-card restore. Hiding the open diary returns to the diaries list.
+Limitation: the preference is per browser/device and does not sync between
+devices, by design.

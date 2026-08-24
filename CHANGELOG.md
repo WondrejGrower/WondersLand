@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 2026-08-24 — Hide diary (client-only)
+
+### Added
+- `src/state/useHiddenDiaries.ts` — per-pubkey list of hidden diary ids,
+  persisted locally via the existing storage helper. No relay writes.
+- `Hide diary` action with inline confirmation in the diary reader, and a
+  `Hidden diaries (n)` view on the Diaries tab with `Restore diary`.
+
+### Changed
+- The diaries list, Latest diary, Garden growth, missions and the stale-diary
+  count exclude hidden diaries. Hidden diaries stay readable from the hidden
+  list; the Nostr data (kind:30078 diaries, kind:1 entries) is untouched.
+
 ## 2026-08-24 — Diary reader
 
 ### Added

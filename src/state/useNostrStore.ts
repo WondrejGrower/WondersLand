@@ -11,6 +11,7 @@ import { loadRelays } from "../nostr/relays";
 import { getJson, removeKey, setJson } from "../nostr/storage";
 import type { AuthMethod, Diary, Profile } from "../nostr/types";
 import { useGardenStore } from "./useGardenStore";
+import { useHiddenDiaries } from "./useHiddenDiaries";
 import { nip19 } from "nostr-tools";
 
 type Session = { pubkey: string; method: AuthMethod };
@@ -194,6 +195,7 @@ export const useNostrStore = create<NostrState>((set, get) => {
       clearLocalSigner();
       await removeKey(SESSION_KEY);
       useGardenStore.getState().reset();
+      useHiddenDiaries.getState().reset();
       set({ pubkey: null, method: null, profile: null, diaries: [], status: "idle", error: null, keyBackupPending: false });
     },
   };

@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+  ArrowLeft,
   BookOpen,
   ExternalLink,
   Leaf,
@@ -10,6 +11,8 @@ import {
   Users,
   CheckCircle2,
   LayoutGrid,
+  EyeOff,
+  RotateCcw,
 } from "lucide-react";
 import { useNostrStore } from "../state/useNostrStore";
 import { useGardenStore } from "../state/useGardenStore";
@@ -23,6 +26,7 @@ import { NostrSignIn } from "./NostrSignIn";
 import { DiaryComposer, type ComposerMode } from "./DiaryComposer";
 import { GrowFeed } from "./GrowFeed";
 import { DiaryDetail } from "./DiaryDetail";
+import { useHiddenDiaries } from "../state/useHiddenDiaries";
 import { canPublish } from "../nostr/signers";
 import { computeGrowth, nextStep } from "../progression/growth";
 import heroArt from "../assets/garden-island.png";
@@ -194,11 +198,20 @@ export function HomeDashboard() {
   const feedStatus = useFeedStore((s) => s[s.mode].status);
   const enter = useWorldStore((s) => s.enter);
   const method = useNostrStore((s) => s.method);
+  const hiddenIds = useHiddenDiaries((s) => s.ids);
+  const loadHidden = useHiddenDiaries((s) => s.load);
+  const hideDiary = useHiddenDiaries((s) => s.hide);
+  const unhideDiary = useHiddenDiaries((s) => s.unhide);
   const [composer, setComposer] = useState<ComposerMode | null>(null);
   const [section, setSection] = useState<Section>("garden");
   const [feedExpanded, setFeedExpanded] = useState(false);
   const [openDiaryId, setOpenDiaryId] = useState<string | null>(null);
+  const [showHidden, setShowHidden] = useState(false);
   const writable = canPublish(method);
+
+  useEffect(() => {
+    if (pubkey) void loadHidden(pubkey);
+  }, [pubkey, loadHidden]);
 
   const openDiary = (diary: Diary) => {
     setSection("diaries");
@@ -207,14 +220,18 @@ export function HomeDashboard() {
   };
 
 
-  const sorted = useMemo(() => [...diaries].sort((a, b) => b.updatedAt - a.updatedAt), [diaries]);
-  const growth = useMemo(() => computeGrowth(diaries), [diaries]);
-  const suggestion = useMemo(() => nextStep(diaries), [diaries]);
+
+  const all = useMemo(() => [...diaries].sort((a, b) => b.updatedAt - a.updatedAt), [diaries]);
+  const sorted = useMemo(() => all.filter((d) => !hiddenIds.includes(d.id)), [all, hiddenIds]);
+  const hiddenList = useMemo(() => all.filter((d) => hiddenIds.includes(d.id)), [all, hiddenIds]);
+  const growth = useMemo(() => computeGrowth(sorted), [sorted]);
+  const suggestion = useMemo(() => nextStep(sorted), [sorted]);
 
   const stale = useMemo(
     () => sorted.filter((d) => Date.now() - d.updatedAt * 1000 > STALE_DAYS * DAY),
     [sorted],
   );
+
 
   const zones = useMemo(() => {
     const counts = new Map<ZoneId, number>();
@@ -224,7 +241,7 @@ export function HomeDashboard() {
 
   const name = profileLabel(profile, pubkey);
   const latest = sorted[0];
-  const opened = openDiaryId ? sorted.find((d) => d.id === openDiaryId) : undefined;
+  const opened = openDiaryId ? all.find((d) => d.id === openDiaryId) : undefined;
   const latestCover = latest ? (latest.coverImage ?? latest.items.map(firstImage).find(Boolean)) : undefined;
 
   const showFeedFull = feedExpanded || section === "community";
@@ -321,7 +338,7 @@ export function HomeDashboard() {
             className="mt-2 text-3xl font-semibold leading-[1.08] tracking-tight sm:text-5xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            {diaries.length > 0 ? (
+            {sorted.length > 0 ? (
               <>
                 Your garden
                 <br />
@@ -415,7 +432,7 @@ export function HomeDashboard() {
           <Ring value={growthPercent} />
           <div className="grid gap-1">
             <p className="text-sm text-cream/80">
-              {diaries.length > 0 ? "Your garden is thriving." : "Your garden is just starting."}
+              {sorted.length > 0 ? "Your garden is thriving." : "Your garden is just starting."}
             </p>
             <p className="text-xs text-cream/70">
               {growth.nextStage
@@ -543,21 +560,72 @@ export function HomeDashboard() {
               <DiaryDetail
                 diary={opened}
                 writable={writable}
+                hidden={hiddenIds.includes(opened.id)}
                 onBack={() => setOpenDiaryId(null)}
                 onAddEntry={(d) => setComposer({ kind: "entry", diary: d })}
                 onEdit={(d) => setComposer({ kind: "edit", diary: d })}
+                onHide={(d) => {
+                  void hideDiary(d.id);
+                  setOpenDiaryId(null);
+                  setShowHidden(false);
+                }}
+                onUnhide={(d) => void unhideDiary(d.id)}
               />
             ) : section === "diaries" ? (
-              <section className="grid gap-3">
-                <h2 className="text-sm font-semibold text-cream/80">Your diaries</h2>
-                {sorted.length === 0 ? (
+              <section className="grid min-w-0 gap-3">
+                <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+                  <h2 className="text-sm font-semibold text-cream/80">
+                    {showHidden ? "Hidden diaries" : "Your diaries"}
+                  </h2>
+                  {showHidden ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowHidden(false)}
+                      className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-forest-soft/60 px-3 py-1.5 text-xs text-cream/85"
+                    >
+                      <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> Back to diaries
+                    </button>
+                  ) : hiddenList.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowHidden(true)}
+                      className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-forest-soft/60 px-3 py-1.5 text-xs text-cream/75"
+                    >
+                      <EyeOff className="h-3.5 w-3.5" aria-hidden /> Hidden diaries ({hiddenList.length})
+                    </button>
+                  ) : null}
+                </div>
+
+                {showHidden ? (
+                  <>
+                    <p className="text-xs text-cream/65">
+                      Hidden only in WondersLand on this device — nothing was deleted from Nostr.
+                    </p>
+                    <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                      {hiddenList.map((diary) => (
+                        <div key={diary.id} className="grid min-w-0 gap-2">
+                          <Card diary={diary} onOpen={openDiary} onAddEntry={null} />
+                          <button
+                            type="button"
+                            onClick={() => void unhideDiary(diary.id)}
+                            className="inline-flex min-h-11 w-fit items-center gap-2 rounded-xl border border-leaf/40 px-4 py-2.5 text-sm font-medium text-leaf"
+                          >
+                            <RotateCcw className="h-4 w-4" aria-hidden /> Restore diary
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : sorted.length === 0 ? (
                   <p className="rounded-2xl border border-forest-soft/50 bg-forest/60 p-6 text-sm text-cream/80">
                     {status === "loading"
                       ? "Reading your diaries from the relays…"
-                      : "No diaries found on your relays yet."}
+                      : hiddenList.length > 0
+                        ? "All of your diaries are hidden on this device."
+                        : "No diaries found on your relays yet."}
                   </p>
                 ) : (
-                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {sorted.map((diary) => (
                       <Card
                         key={diary.id}
@@ -569,6 +637,7 @@ export function HomeDashboard() {
                   </div>
                 )}
               </section>
+
             ) : section === "missions" ? (
               <>
                 {cards}
