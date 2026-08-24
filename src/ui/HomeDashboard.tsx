@@ -223,7 +223,9 @@ export function HomeDashboard() {
 
   const name = profileLabel(profile, pubkey);
   const latest = sorted[0];
+  const opened = openDiaryId ? sorted.find((d) => d.id === openDiaryId) : undefined;
   const latestCover = latest ? (latest.coverImage ?? latest.items.map(firstImage).find(Boolean)) : undefined;
+
   const showFeedFull = feedExpanded || section === "community";
   const growthPercent = Math.round(
     ((growth.level - 1 + growth.progress) / 6) * 100,
