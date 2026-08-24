@@ -35,9 +35,16 @@ type NostrState = {
   signInWithExtension: () => Promise<void>;
   signInWithNpub: (npub: string) => Promise<void>;
   signInWithNsec: (nsec: string) => Promise<void>;
+  /**
+   * Upgrade the CURRENT read-only session to a writable one without switching
+   * identity. Throws on a pubkey mismatch instead of silently re-logging in.
+   */
+  unlockWithNsec: (nsec: string) => Promise<void>;
+  unlockWithExtension: () => Promise<void>;
   upsertDiary: (diary: Diary) => void;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
+
 };
 
 const SESSION_KEY = "session";
