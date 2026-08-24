@@ -231,7 +231,7 @@ export function DiaryDetail({
         ) : entries.length === 0 ? (
           <p className="rounded-2xl border border-forest-soft/50 bg-forest/60 p-5 text-sm text-cream/75">
             This diary has no entries yet. {writable
-              ? "Add the first one whenever you like — a single photo or line is enough."
+              ? "Add the first one whenever you like — a single line is enough."
               : "Nothing has been published to it so far."}
           </p>
         ) : (
