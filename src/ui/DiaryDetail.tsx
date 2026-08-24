@@ -150,10 +150,21 @@ export function DiaryDetail({
               </button>
             </div>
           ) : (
-            <p className="text-xs text-cream/60">
-              Read-only session — sign in with an extension or nsec to add entries.
-            </p>
+            <div className="grid min-w-0 gap-2 rounded-xl border border-leaf/25 bg-leaf/5 p-3">
+              <p className="text-xs text-cream/80">
+                This session is read-only. Unlock publishing to add an entry — your key stays in
+                this tab only.
+              </p>
+              <button
+                type="button"
+                onClick={() => onUnlock(diary)}
+                className="inline-flex min-h-11 w-fit items-center gap-2 rounded-xl border border-leaf/50 px-4 py-2.5 text-sm font-semibold text-leaf"
+              >
+                <KeyRound className="h-4 w-4" aria-hidden /> Unlock publishing
+              </button>
+            </div>
           )}
+
 
           <div className="min-w-0 border-t border-forest-soft/40 pt-4">
             {hidden ? (
