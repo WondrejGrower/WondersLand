@@ -210,6 +210,8 @@ export function HomeDashboard() {
   const [pendingIntent, setPendingIntent] = useState<ComposerMode | null>(null);
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [missionAdvanced, setMissionAdvanced] = useState(false);
+
   const [section, setSection] = useState<Section>("garden");
   const [feedExpanded, setFeedExpanded] = useState(false);
   const [openDiaryId, setOpenDiaryId] = useState<string | null>(null);
