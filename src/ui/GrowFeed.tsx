@@ -164,7 +164,7 @@ export function GrowFeed({
           <h2 className="text-base font-semibold text-cream" style={{ fontFamily: "var(--font-display)" }}>
             {copy.title}
           </h2>
-          <p className="truncate text-xs text-cream/65">{copy.subtitle}</p>
+          <p className="text-xs leading-snug text-cream/65 sm:truncate">{copy.subtitle}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <div
