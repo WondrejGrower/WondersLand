@@ -531,8 +531,16 @@ export function HomeDashboard() {
       </Panel>
 
       <Panel title="Mission" Icon={Star}>
-        <p className="text-sm font-semibold text-cream">{suggestion.title}</p>
+        {missionAdvanced ? (
+          <p className="rounded-xl border border-leaf/40 bg-leaf/10 px-2.5 py-2 text-xs font-semibold text-leaf">
+            ✓ First diary created — mission complete
+          </p>
+        ) : null}
+        <p className="text-sm font-semibold text-cream">
+          {missionAdvanced ? `Next: ${suggestion.title}` : suggestion.title}
+        </p>
         <p className="text-xs text-cream/75">{suggestion.body}</p>
+
         {stale.length > 0 ? (
           <p className="text-xs text-cream/55">
             {stale.length} {stale.length === 1 ? "diary has" : "diaries have"} been quiet for{" "}
