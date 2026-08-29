@@ -25,9 +25,12 @@ export default function World() {
       <Sky />
       <Ground />
       <Plaza />
+      <GrowBeds />
+      <Portals />
       <Cottage />
       <WelcomeSign />
       <GardenPlants />
+      <FocusRing />
       <Player />
     </Canvas>
   );
