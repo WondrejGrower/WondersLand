@@ -1,8 +1,14 @@
 // Create-diary / add-entry composer. Pure DOM UI: it only calls the Nostr
 // write path and hands the resulting diary back to the store.
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getSigner } from "../nostr/signers";
-import { addEntry, createDiary, updateDiary, type DiaryInput } from "../nostr/writeDiaries";
+import {
+  addEntry,
+  createDiary,
+  updateDiary,
+  uploadMedia,
+  type DiaryInput,
+} from "../nostr/writeDiaries";
 import { useNostrStore } from "../state/useNostrStore";
 import { PhaseChips, PlantPicker, SuggestInput, fieldClass, labelClass } from "./DiaryFields";
 import type { Diary } from "../nostr/types";
