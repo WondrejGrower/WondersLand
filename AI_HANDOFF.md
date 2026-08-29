@@ -326,3 +326,18 @@ to the diary schema — the image URL lives in the kind:1 note text on purpose.
 Limitations: one image per entry, no compression/crop, no list/delete/mirror, no
 NIP-94, no server picker, and `blossom.wondersland.online` did not resolve from
 the build environment, so the real endpoint is still unverified end to end.
+
+World layout: edit `src/world/interactables.ts`, never hardcode positions in
+scene components. `WORLD_INTERACTABLES` drives rendering anchors, proximity
+selection in `Player.tsx`, prompts in `InteractionPrompt.tsx`, the focus ring
+and the collider list in `collision.ts`; `nearInteractable` keeps decorations
+clear. Adding an interactable = one entry there plus a `WorldAction` handler.
+
+The world→UI boundary is still `useWorldStore` only: `target` (`plant`/`world`),
+`aboutOpen`, `indoorOpen`, `comingSoon`. Overlays freeze player input.
+
+Limitations: portals are placeholders (no destination), grow beds are decorative
+(plants still render from the garden store), and headless verification of the
+walk-to-house flow is unreliable because the sandbox WebGL context is lost on
+long sessions — validate movement changes with a small math simulation or in a
+real browser.
