@@ -191,9 +191,11 @@ export async function addEntry(
 }
 
 /**
- * Media seam for Blossom. Today the composer only accepts URLs; when Blossom
- * lands, this is the only function that changes.
+ * Media seam for Blossom. Uploads one image through the signer boundary and
+ * returns its public URL; callers append that URL to the entry text so the
+ * existing `extractImageUrls` path keeps working unchanged.
  */
-export async function uploadMedia(_file: File): Promise<string> {
-  throw new Error("Media upload is not available yet — paste an image URL instead");
+export async function uploadMedia(signer: Signer, file: File): Promise<string> {
+  const blob = await uploadBlob(signer, file);
+  return blob.url;
 }
