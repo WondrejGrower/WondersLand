@@ -6,6 +6,9 @@ import { GardenPlants } from "./GardenPlants";
 import { Player } from "./Player";
 import { Cottage } from "./Cottage";
 import { WelcomeSign } from "./WelcomeSign";
+import { Portals } from "./Portals";
+import { GrowBeds } from "./GrowBeds";
+import { FocusRing } from "./FocusRing";
 import { palette } from "./palette";
 
 export default function World() {
@@ -22,9 +25,12 @@ export default function World() {
       <Sky />
       <Ground />
       <Plaza />
+      <GrowBeds />
+      <Portals />
       <Cottage />
       <WelcomeSign />
       <GardenPlants />
+      <FocusRing />
       <Player />
     </Canvas>
   );

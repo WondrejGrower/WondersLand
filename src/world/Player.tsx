@@ -8,7 +8,7 @@ const INTERACT_RADIUS = 4;
 import { GARDEN_RADIUS } from "./Ground";
 import { palette } from "./palette";
 import { CharacterAvatar } from "./CharacterAvatar";
-import { COTTAGE_INTERACT_RADIUS, COTTAGE_POSITION } from "./Cottage";
+import { SPAWN, WORLD_INTERACTABLES } from "./interactables";
 import {
   WORLD_COLLIDERS,
   assertSpawnClear,
@@ -23,8 +23,6 @@ const CAMERA_DISTANCE = 6;
 const CAMERA_HEIGHT = 3.1;
 /** Diary plants are solid too, but slim enough to walk right up to. */
 const PLANT_COLLIDER_RADIUS = 0.45;
-/** On the straight stone walkway, facing the cottage. */
-const SPAWN: [number, number] = [2.25, 8];
 
 
 // Scratch objects — never allocate inside useFrame.
@@ -161,7 +159,7 @@ export function Player() {
   useFrame((state, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05);
     const store = useWorldStore.getState();
-    const frozen = store.journalOpen || store.indoorOpen || store.aboutOpen;
+    const frozen = store.journalOpen || store.indoorOpen || store.aboutOpen || store.comingSoon !== null;
 
     if (frozen) {
       clearKeyboardInput();
@@ -213,32 +211,38 @@ export function Player() {
     lookAt.set(pos.current.x, 1.2, pos.current.z);
     state.camera.lookAt(lookAt);
 
-    // Proximity: the cottage wins over plants so its door isn't fighting the
-    // flower beds. Only write to the store when the target actually changes.
-    candidate.set(COTTAGE_POSITION[0], 0, COTTAGE_POSITION[2]);
-    const cottageDist = pos.current.distanceTo(candidate);
-
+    // Proximity: pick the target the player is deepest inside, so the house
+    // wins over the flower beds at its door. Only write on an actual change.
     let key: string | null = null;
-    if (cottageDist < COTTAGE_INTERACT_RADIUS) {
-      key = "cottage";
-    } else {
-      let best = INTERACT_RADIUS;
-      for (const plant of useGardenStore.getState().plants) {
-        candidate.set(plant.position[0], 0, plant.position[2]);
-        const dist = pos.current.distanceTo(candidate);
-        if (dist < best) {
-          best = dist;
-          key = plant.id;
-        }
+    let bestScore = 1;
+    for (const it of WORLD_INTERACTABLES) {
+      candidate.set(it.position[0], 0, it.position[1]);
+      const score = pos.current.distanceTo(candidate) / it.radius;
+      if (score < bestScore) {
+        bestScore = score;
+        key = `world:${it.id}`;
+      }
+    }
+    for (const plant of useGardenStore.getState().plants) {
+      candidate.set(plant.position[0], 0, plant.position[2]);
+      const score = pos.current.distanceTo(candidate) / INTERACT_RADIUS;
+      if (score < bestScore) {
+        bestScore = score;
+        key = `plant:${plant.id}`;
       }
     }
 
     if (key !== near.current) {
       near.current = key;
       store.setTarget(
-        key === null ? null : key === "cottage" ? { kind: "cottage" } : { kind: "plant", id: key },
+        key === null
+          ? null
+          : key.startsWith("world:")
+            ? { kind: "world", id: key.slice(6) }
+            : { kind: "plant", id: key.slice(6) },
       );
     }
+
   });
 
   return (

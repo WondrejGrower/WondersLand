@@ -6,6 +6,7 @@
  * Plain data, no Three.js imports.
  */
 import { nearPath } from "./Plaza";
+import { nearInteractable } from "./interactables";
 
 export const GARDEN_RADIUS = 19;
 
@@ -46,6 +47,7 @@ export function scatter(
     const s = 0.6 + random() * 0.9;
     const sy = s * (0.7 + random() * 0.8);
     if (clearance > 0 && nearPath(x, z, clearance)) continue;
+    if (nearInteractable(x, z, clearance > 0 ? 0.4 : 0)) continue;
     list.push({ x, z, rot, scale: s, scaleY: sy });
   }
   return list;
