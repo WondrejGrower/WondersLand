@@ -10,6 +10,8 @@ type WorldState = {
   target: InteractionTarget;
   journalOpen: boolean;
   indoorOpen: boolean;
+  /** "What is WondersLand" overlay opened from the 3D welcome sign. */
+  aboutOpen: boolean;
   enter: () => void;
   setFocusedPlant: (id: string | null) => void;
   setTarget: (target: InteractionTarget) => void;
@@ -17,6 +19,8 @@ type WorldState = {
   closeJournal: () => void;
   openIndoor: () => void;
   closeIndoor: () => void;
+  openAbout: () => void;
+  closeAbout: () => void;
 };
 
 export const useWorldStore = create<WorldState>((set) => ({
@@ -25,6 +29,7 @@ export const useWorldStore = create<WorldState>((set) => ({
   target: null,
   journalOpen: false,
   indoorOpen: false,
+  aboutOpen: false,
   enter: () => set({ entered: true }),
   setFocusedPlant: (id) => set({ focusedPlantId: id }),
   setTarget: (target) =>
@@ -33,4 +38,6 @@ export const useWorldStore = create<WorldState>((set) => ({
   closeJournal: () => set({ journalOpen: false }),
   openIndoor: () => set({ indoorOpen: true }),
   closeIndoor: () => set({ indoorOpen: false }),
+  openAbout: () => set({ aboutOpen: true }),
+  closeAbout: () => set({ aboutOpen: false }),
 }));

@@ -5,6 +5,7 @@ import { Plaza } from "./Plaza";
 import { GardenPlants } from "./GardenPlants";
 import { Player } from "./Player";
 import { Cottage } from "./Cottage";
+import { WelcomeSign } from "./WelcomeSign";
 import { palette } from "./palette";
 
 export default function World() {
@@ -22,6 +23,7 @@ export default function World() {
       <Ground />
       <Plaza />
       <Cottage />
+      <WelcomeSign />
       <GardenPlants />
       <Player />
     </Canvas>

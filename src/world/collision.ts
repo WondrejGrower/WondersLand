@@ -21,6 +21,7 @@ import {
   PLAZA_ROCKS,
 } from "./Plaza";
 import { COTTAGE_POSITION, COTTAGE_ROTATION_Y, COTTAGE_HALF } from "./Cottage";
+import { SIGN_POSITION, SIGN_COLLIDER_RADIUS } from "./WelcomeSign";
 
 export const PLAYER_RADIUS = 0.42;
 
@@ -53,6 +54,9 @@ export const WORLD_COLLIDERS: Collider[] = (() => {
     hd: GREENHOUSE_HALF[1],
     rot: GREENHOUSE_ROTATION_Y,
   });
+
+  // Welcome sign near spawn.
+  list.push(circle(SIGN_POSITION[0], SIGN_POSITION[2], SIGN_COLLIDER_RADIUS));
 
   // Central planted island.
   list.push(circle(ISLAND_CENTER[0], ISLAND_CENTER[1], ISLAND_RADIUS));

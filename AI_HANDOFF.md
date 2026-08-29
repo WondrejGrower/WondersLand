@@ -46,6 +46,15 @@ shadows). `Plaza.tsx` exports `nearPath(x, z, clearance)`; `Ground.tsx` uses it
 to keep grass and rocks off the walkable route. Any new scenery goes in
 `Plaza.tsx` until it is large enough to split.
 
+2026-08-29 addition: the user-supplied Meshy "Woodland Library Sign" GLB lives
+in `src/world/WelcomeSign.tsx` (optimized to 2.6 MB, served as a Lovable CDN
+asset). It sits at (2.1, 0, 6.4) beside the spawn path with a circle collider
+in `collision.ts`; click/tap sets `aboutOpen` in the world store, which
+`src/ui/AboutSign.tsx` renders as the "Welcome to WondersLand" overlay (Esc/X
+to close, player frozen while open). This is an explicit user-requested
+exception to the no-imported-models rule.
+
+
 ## Store contract
 
 ```ts

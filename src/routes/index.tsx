@@ -9,6 +9,7 @@ import { HomeDashboard } from "../ui/HomeDashboard";
 
 import { Journal } from "../ui/Journal";
 import { IndoorGarden } from "../ui/IndoorGarden";
+import { AboutSign } from "../ui/AboutSign";
 import { InteractionPrompt } from "../ui/InteractionPrompt";
 import { TouchControls } from "../ui/TouchControls";
 
@@ -65,6 +66,7 @@ function Index() {
       entered: false,
       journalOpen: false,
       indoorOpen: false,
+      aboutOpen: false,
       target: null,
       focusedPlantId: null,
     });
@@ -90,6 +92,7 @@ function Index() {
       <InteractionPrompt />
       <Journal />
       <IndoorGarden />
+      <AboutSign />
     </main>
   );
 }

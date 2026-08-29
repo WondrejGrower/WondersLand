@@ -159,7 +159,7 @@ export function Player() {
   useFrame((state, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05);
     const store = useWorldStore.getState();
-    const frozen = store.journalOpen || store.indoorOpen;
+    const frozen = store.journalOpen || store.indoorOpen || store.aboutOpen;
 
     if (frozen) {
       clearKeyboardInput();
