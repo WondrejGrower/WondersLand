@@ -80,10 +80,13 @@ export async function uploadBlob(
   const bytes = await file.arrayBuffer();
   const hash = await sha256Hex(bytes);
   const server = baseUrl.replace(/\/+$/, "");
+  // BUD-11: target servers (e.g. hzrd149) validate the auth `server` tag
+  // against the bare hostname — no scheme, path or port.
+  const serverHostname = new URL(server).hostname;
 
   let auth: string;
   try {
-    auth = await uploadAuthHeader(signer, hash, server);
+    auth = await uploadAuthHeader(signer, hash, serverHostname);
   } catch {
     throw new Error("The upload was not authorized — try signing again.");
   }
@@ -95,7 +98,9 @@ export async function uploadBlob(
       headers: {
         Authorization: auth,
         "Content-Type": file.type || "application/octet-stream",
-        "Content-Length": String(file.size),
+        // Optional BUD-02 integrity hint. Content-Length is a forbidden
+        // header in browsers — fetch supplies it from the body.
+        "X-SHA-256": hash,
       },
       body: bytes,
     });
