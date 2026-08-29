@@ -285,10 +285,18 @@ export function DiaryComposer({
           <button
             type="button"
             onClick={() => void submit()}
-            disabled={busy || (isEntry ? !text.trim() : !title.trim())}
+            disabled={busy || (isEntry ? !text.trim() && !file : !title.trim())}
             className="min-h-11 rounded-xl bg-leaf px-5 py-2.5 text-sm font-semibold text-forest-deep disabled:opacity-50"
           >
-            {busy ? "Publishing…" : isEntry ? "Publish entry" : existing ? "Save diary" : "Create diary"}
+            {stage === "uploading"
+              ? "Uploading photo…"
+              : busy
+                ? "Publishing…"
+                : isEntry
+                  ? "Publish entry"
+                  : existing
+                    ? "Save diary"
+                    : "Create diary"}
           </button>
         </div>
       </div>
