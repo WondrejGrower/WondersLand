@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "asset_id": "79d08001-04d9-4c8d-a1e3-ee2a99167374",
+  "asset_id": "a7c54d2f-297f-4516-bf69-edb228470e69",
   "project_id": "aeab09c7-521f-4f32-858c-ea6805ff5fa6",
-  "url": "/__l5e/assets-v1/79d08001-04d9-4c8d-a1e3-ee2a99167374/stone-tile.glb",
-  "r2_key": "a/v1/aeab09c7-521f-4f32-858c-ea6805ff5fa6/79d08001-04d9-4c8d-a1e3-ee2a99167374/stone-tile.glb",
+  "url": "/__l5e/assets-v1/a7c54d2f-297f-4516-bf69-edb228470e69/stone-tile.glb",
+  "r2_key": "a/v1/aeab09c7-521f-4f32-858c-ea6805ff5fa6/a7c54d2f-297f-4516-bf69-edb228470e69/stone-tile.glb",
   "original_filename": "stone-tile.glb",
-  "size": 656884,
+  "size": 312444,
   "content_type": "model/gltf-binary",
-  "created_at": "2026-08-29T20:33:18Z"
+  "created_at": "2026-08-29T20:34:04Z"
 }
