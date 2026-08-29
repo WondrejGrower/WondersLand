@@ -310,3 +310,10 @@ succeeds while the visible diary list was empty; it is not a stored flag.
 
 Limitations: no media upload, plant picker lists the first 24 matches, and the
 mission acknowledgement is per session.
+
+Blossom: `src/nostr/blossom.ts` is the only place that talks to the media
+server, and `uploadMedia` is the only seam the UI uses. Do not add media fields
+to the diary schema — the image URL lives in the kind:1 note text on purpose.
+Limitations: one image per entry, no compression/crop, no list/delete/mirror, no
+NIP-94, no server picker, and `blossom.wondersland.online` did not resolve from
+the build environment, so the real endpoint is still unverified end to end.

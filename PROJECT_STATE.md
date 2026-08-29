@@ -418,3 +418,11 @@ diaries. The composer stores exactly the same diary fields as before.
 The Mission card surfaces first-diary completion as a transient acknowledgement
 computed from the successful publish; progression scoring in
 `src/progression/growth.ts` is unchanged apart from the photo wording.
+
+Add entry can now attach one photo. It is uploaded to the configured Blossom
+server (`BLOSSOM_BASE_URL`) before the note is published, and the returned URL
+is appended to the kind:1 entry text. Nothing about the Weedoshi format
+changed: diaries are still kind:30078 with `items[]` + e-tags, and the image is
+discovered by the existing `extractImageUrls` path. Uploads are authorized with
+a short-lived kind:24242 event signed through the existing signer; private keys
+stay memory-only.
