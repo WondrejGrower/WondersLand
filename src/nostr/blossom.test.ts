@@ -29,7 +29,7 @@ describe("uploadBlob", () => {
     const blob = await uploadBlob(signer, image(), "https://blossom.example");
     expect(blob.url).toBe("https://blossom.example/abc.jpg");
 
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe("https://blossom.example/upload");
     expect(init.method).toBe("PUT");
     const auth = String((init.headers as Record<string, string>)["Authorization"]);
