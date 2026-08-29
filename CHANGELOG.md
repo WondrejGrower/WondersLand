@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 2026-08-29 — Welcome sign with "What is WondersLand" overlay
+
+### Added
+- `src/world/WelcomeSign.tsx` — Meshy "Woodland Library Sign" GLB placed just
+  off the spawn path at (2.1, 0, 6.4), facing the player. Click/tap opens the
+  about overlay; hover shows a pointer cursor and a subtle scale-up. The GLB
+  was simplified from 81 MB / ~2M triangles to 2.6 MB / ~60k triangles
+  (gltf-transform: weld, simplify 3%, 1024px WebP textures, quantization) and
+  is served as a Lovable CDN asset (`src/assets/woodland-sign.glb.asset.json`).
+- `src/ui/AboutSign.tsx` — "Welcome to WondersLand" overlay explaining what
+  the world is, the controls, Nostr identity, and what's coming. Closes via
+  Esc / X / backdrop / "Start exploring" button; label adapts to coarse
+  pointers.
+- `aboutOpen` + `openAbout`/`closeAbout` in `useWorldStore`; the player
+  freezes while the overlay is open; the sign has a small circle collider so
+  the walking route stays clear.
+
+
 ## 2026-08-24 — Hide diary (client-only)
 
 ### Added
