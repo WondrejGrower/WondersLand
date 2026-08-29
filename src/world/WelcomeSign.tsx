@@ -9,10 +9,11 @@ import model from "../assets/woodland-sign.glb.asset.json";
  * "What is WondersLand" overlay — the world layer only flips a store flag.
  */
 const TARGET_HEIGHT = 2.1;
-/** Just ahead of spawn (0, 8), off the walking line so the path stays clear. */
-const POSITION: [number, number, number] = [2.1, 0, 6.4];
-/** Face back toward the player standing at spawn. */
-const ROTATION_Y = 0.45;
+/** Beside the straight stone walkway, so the path stays clear. */
+const POSITION: [number, number, number] = [4.9, 0, 6.6];
+/** Face back toward the player walking up the path. */
+const ROTATION_Y = 0.75;
+
 export const SIGN_POSITION = POSITION;
 export const SIGN_COLLIDER_RADIUS = 0.55;
 
