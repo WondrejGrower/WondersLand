@@ -12,7 +12,7 @@ const TARGET_HEIGHT = 2.1;
 /** Just ahead of spawn (0, 8), off the walking line so the path stays clear. */
 const POSITION: [number, number, number] = [2.1, 0, 6.4];
 /** Face back toward the player standing at spawn. */
-const ROTATION_Y = Math.PI + 0.45;
+const ROTATION_Y = 0.45;
 export const SIGN_POSITION = POSITION;
 export const SIGN_COLLIDER_RADIUS = 0.55;
 
