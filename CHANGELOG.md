@@ -382,3 +382,22 @@ Pending Nostr work: reactions (kind 7), replies, reposts (kind 6) and zaps
 - Mission card shows a transient "✓ First diary created — mission complete" and
   "Next: …" state derived from a successful publish; no persistent mission flag.
 - Zero-entry mission copy no longer mentions photos (Blossom is not wired).
+
+## Blossom image-upload MVP (Add entry)
+
+- New `src/nostr/blossom.ts`: protocol-only BUD-02 upload client. Binary
+  `PUT <BLOSSOM_BASE_URL>/upload` with the exact bytes, `Content-Type`,
+  `Content-Length` (dropped by browsers where forbidden) and a BUD-11
+  `Authorization: Nostr <base64 kind:24242>` header signed through the existing
+  `Signer` — scoped to `t=upload`, the blob `x` hash and the configured
+  `server`, expiring after 120s. Human-readable errors for unreachable server,
+  refused auth, oversized/unsupported file and malformed replies.
+- `uploadMedia(signer, file)` in `src/nostr/writeDiaries.ts` is now real and
+  returns the blob URL. No token, bytes or key material is persisted.
+- `DiaryComposer` entry mode: optional single `image/*` picker with thumbnail,
+  filename and Remove; publish stays disabled while working and shows
+  "Uploading photo…" then "Publishing…"; photo-only entries are allowed. The
+  URL is appended to the entry text on a new line, so the existing
+  `extractImageUrls` / `mediaUrls` / cover fallback / reader path is unchanged.
+- Upload failure keeps both the text and the picked file and publishes nothing.
+- Tests: `src/nostr/blossom.test.ts` mocks only the HTTP transport.

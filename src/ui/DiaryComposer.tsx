@@ -1,8 +1,14 @@
 // Create-diary / add-entry composer. Pure DOM UI: it only calls the Nostr
 // write path and hands the resulting diary back to the store.
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getSigner } from "../nostr/signers";
-import { addEntry, createDiary, updateDiary, type DiaryInput } from "../nostr/writeDiaries";
+import {
+  addEntry,
+  createDiary,
+  updateDiary,
+  uploadMedia,
+  type DiaryInput,
+} from "../nostr/writeDiaries";
 import { useNostrStore } from "../state/useNostrStore";
 import { PhaseChips, PlantPicker, SuggestInput, fieldClass, labelClass } from "./DiaryFields";
 import type { Diary } from "../nostr/types";
@@ -55,7 +61,21 @@ export function DiaryComposer({
   const [phase, setPhase] = useState(existing?.phase ?? "");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [stage, setStage] = useState<"idle" | "uploading" | "publishing">("idle");
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!file) {
+      setPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
 
   const cultivars = useMemo(() => recentValues(diaries, (d) => d.cultivar), [diaries]);
   const breeders = useMemo(() => recentValues(diaries, (d) => d.breeder), [diaries]);
@@ -64,6 +84,11 @@ export function DiaryComposer({
   const heading =
     mode.kind === "create" ? "New diary" : isEntry ? `Add entry — ${existing?.title}` : "Edit diary";
   const titleHint = !title.trim() && cultivar.trim() ? cultivar.trim() : null;
+
+  function clearFile() {
+    setFile(null);
+    if (fileInput.current) fileInput.current.value = "";
+  }
 
   async function submit() {
     const signer = getSigner(method);
@@ -74,9 +99,18 @@ export function DiaryComposer({
     setBusy(true);
     setError(null);
     try {
+      let body = text.trim();
+      if (isEntry && file) {
+        setStage("uploading");
+        // Upload first: if this throws, both the text and the picked file stay
+        // in the composer and no kind:1 note is published.
+        const url = await uploadMedia(signer, file);
+        body = body ? `${body}\n${url}` : url;
+      }
+      setStage("publishing");
       const input: DiaryInput = { title, plant, cultivar, breeder, phase };
       const result = isEntry && existing
-        ? await addEntry(signer, existing, { text, phaseLabel: phase })
+        ? await addEntry(signer, existing, { text: body, phaseLabel: phase })
         : existing
           ? await updateDiary(signer, existing, input)
           : await createDiary(signer, input);
@@ -92,6 +126,7 @@ export function DiaryComposer({
           : "Publishing failed — your draft is still here, try again.",
       );
     } finally {
+      setStage("idle");
       setBusy(false);
     }
   }
@@ -128,6 +163,44 @@ export function DiaryComposer({
                   placeholder="What changed in the garden today?"
                   className={fieldClass}
                 />
+              </div>
+              <div className="grid min-w-0 gap-2">
+                <span className={labelClass}>Photo (optional)</span>
+                <input
+                  ref={fileInput}
+                  id="entry-photo"
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                />
+                {file ? (
+                  <div className="flex min-w-0 items-center gap-3 rounded-xl border border-forest-soft/50 bg-forest-deep/30 p-2">
+                    {preview ? (
+                      <img
+                        src={preview}
+                        alt=""
+                        className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                      />
+                    ) : null}
+                    <span className="min-w-0 flex-1 truncate text-xs text-cream/75">{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={clearFile}
+                      disabled={busy}
+                      className="min-h-9 shrink-0 rounded-lg px-3 text-xs text-cream/70 disabled:opacity-50"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="entry-photo"
+                    className="flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-dashed border-forest-soft/60 px-4 text-sm text-cream/70"
+                  >
+                    Add a photo
+                  </label>
+                )}
               </div>
               <div className="grid min-w-0 gap-1.5">
                 <span className={labelClass}>Current phase (optional)</span>
@@ -212,10 +285,18 @@ export function DiaryComposer({
           <button
             type="button"
             onClick={() => void submit()}
-            disabled={busy || (isEntry ? !text.trim() : !title.trim())}
+            disabled={busy || (isEntry ? !text.trim() && !file : !title.trim())}
             className="min-h-11 rounded-xl bg-leaf px-5 py-2.5 text-sm font-semibold text-forest-deep disabled:opacity-50"
           >
-            {busy ? "Publishing…" : isEntry ? "Publish entry" : existing ? "Save diary" : "Create diary"}
+            {stage === "uploading"
+              ? "Uploading photo…"
+              : busy
+                ? "Publishing…"
+                : isEntry
+                  ? "Publish entry"
+                  : existing
+                    ? "Save diary"
+                    : "Create diary"}
           </button>
         </div>
       </div>
