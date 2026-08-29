@@ -135,10 +135,12 @@ function EntranceArch() {
   );
 }
 
-// Shared path curve so vegetation can keep clear of the walkable route.
+// Shared path line so vegetation can keep clear of the walkable route.
+// The route is deliberately straight: PATH_MID is the exact midpoint, so the
+// quadratic curve below degenerates into a line from the arch to the plant.
 const PATH_FROM = { x: 0, z: 16 };
-const PATH_MID = { x: -1.4, z: 3 };
 const PATH_TO = { x: 5.4, z: -3.2 };
+const PATH_MID = { x: (PATH_FROM.x + PATH_TO.x) / 2, z: (PATH_FROM.z + PATH_TO.z) / 2 };
 
 function pathPoint(t: number) {
   const x =
@@ -156,32 +158,34 @@ export function nearPath(x: number, z: number, clearance: number) {
   return false;
 }
 
-// A short curved path: reused flat quads stepped along a spline-ish curve.
+// Flat stone slabs stepped along the straight route.
 function Path() {
-  const steps = useMemo(() => {
-    const list: { p: [number, number, number]; r: number }[] = [];
-    const count = 22;
-    let prev = PATH_FROM;
+  const points = useMemo(() => {
+    const heading = Math.atan2(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z);
+    const count = 14;
+    const list: { x: number; z: number; rot: number }[] = [];
     for (let i = 0; i <= count; i++) {
       const { x, z } = pathPoint(i / count);
-      const r = Math.atan2(x - prev.x, z - prev.z);
-      list.push({ p: [x, 0.02, z], r: i === 0 ? 0 : r });
-      prev = { x, z };
+      list.push({ x, z, rot: -heading });
     }
     return list;
   }, []);
 
   return (
     <group>
-      {steps.map(({ p, r }, i) => (
-        <mesh key={i} position={p} rotation={[-Math.PI / 2, 0, -r]}>
-          <planeGeometry args={[2.4, 1.6]} />
-          <meshLambertMaterial color={palette.path} />
-        </mesh>
-      ))}
+      {/* soil strip so no gap shows between slabs */}
+      <mesh
+        rotation={[-Math.PI / 2, 0, -Math.atan2(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z)]}
+        position={[PATH_MID.x, 0.012, PATH_MID.z]}
+      >
+        <planeGeometry args={[2.3, Math.hypot(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z)]} />
+        <meshLambertMaterial color={palette.path} />
+      </mesh>
+      <StonePath points={points} />
     </group>
   );
 }
+
 
 // Central planted island the path curves around.
 function GardenIsland() {
