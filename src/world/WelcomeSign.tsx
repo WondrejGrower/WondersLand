@@ -10,9 +10,10 @@ import model from "../assets/woodland-sign.glb.asset.json";
  */
 const TARGET_HEIGHT = 2.1;
 /** Beside the straight stone walkway, so the path stays clear. */
-const POSITION: [number, number, number] = [4.9, 0, 6.6];
+const POSITION: [number, number, number] = [0.3, 0, 6.0];
 /** Face back toward the player walking up the path. */
-const ROTATION_Y = 0.75;
+const ROTATION_Y = 0.5;
+
 
 export const SIGN_POSITION = POSITION;
 export const SIGN_COLLIDER_RADIUS = 0.55;
