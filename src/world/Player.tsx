@@ -23,7 +23,9 @@ const CAMERA_DISTANCE = 6;
 const CAMERA_HEIGHT = 3.1;
 /** Diary plants are solid too, but slim enough to walk right up to. */
 const PLANT_COLLIDER_RADIUS = 0.45;
-const SPAWN: [number, number] = [0, 8];
+/** On the straight stone walkway, facing the cottage. */
+const SPAWN: [number, number] = [2.25, 8];
+
 
 // Scratch objects — never allocate inside useFrame.
 const move = new Vector3();
