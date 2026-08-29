@@ -36,6 +36,12 @@ describe("uploadBlob", () => {
     const event = JSON.parse(atob(auth.replace("Nostr ", "")));
     expect(event.kind).toBe(24242);
     expect(event.tags).toContainEqual(["t", "upload"]);
+    // BUD-11: bare hostname, not the full base URL.
+    expect(event.tags).toContainEqual(["server", "blossom.example"]);
+    // BUD-02 integrity hint; Content-Length must not be set manually.
+    const headers = init.headers as Record<string, string>;
+    expect(headers["X-SHA-256"]).toMatch(/^[0-9a-f]{64}$/);
+    expect(headers["Content-Length"]).toBeUndefined();
   });
 
   it("fails clearly when the server rejects the upload", async () => {
