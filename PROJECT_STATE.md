@@ -432,3 +432,24 @@ changed: diaries are still kind:30078 with `items[]` + e-tags, and the image is
 discovered by the existing `extractImageUrls` path. Uploads are authorized with
 a short-lived kind:24242 event signed through the existing signer; private keys
 stay memory-only.
+
+## World consolidation (3D MVP)
+
+The 3D world is now organized around one flow: spawn → welcome sign → stone
+path → My Garden house (opens the existing Indoor Garden diary panel). Outdoor
+raised grow beds sit west of the path, and two clearly placeholder portals
+(Plaza, Visit a friend) open a Coming Soon modal.
+
+Layout data (spawn, zones, interactable positions/radii/labels/actions,
+colliders, clearance) lives only in `src/world/interactables.ts`. Collisions
+stay the lightweight XZ approach. In-range interactables show a contextual
+prompt (`Press E` on desktop, `Tap` on touch) plus a pulsing focus ring.
+
+The welcome sign mesh carries no text; all onboarding copy is in the 2D modal.
+Nostr auth, diaries, GardenConfig, dashboard/feed, avatar, joystick and camera
+are untouched.
+
+Limitations: portals are visual placeholders only, and the sandbox browser
+loses its software WebGL context on long sessions, so the walk-to-house flow
+was verified by simulating the movement/collision/proximity math rather than by
+a full recorded playthrough.

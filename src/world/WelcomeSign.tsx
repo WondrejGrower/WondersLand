@@ -3,20 +3,20 @@ import { Box3, Vector3 } from "three";
 import { useGLTF } from "@react-three/drei";
 import { useWorldStore } from "../state/useWorldStore";
 import model from "../assets/woodland-sign.glb.asset.json";
+import { getInteractable } from "./interactables";
 
 /**
  * Woodland sign just off the spawn path. Clicking / tapping it opens the
  * "What is WondersLand" overlay — the world layer only flips a store flag.
  */
 const TARGET_HEIGHT = 2.1;
-/** Beside the straight stone walkway, so the path stays clear. */
-const POSITION: [number, number, number] = [0.3, 0, 6.0];
+/** Position comes from the shared interactable data, so it cannot drift. */
+const SIGN = getInteractable("welcome-sign")!;
+const POSITION: [number, number, number] = [SIGN.position[0], 0, SIGN.position[1]];
 /** Face back toward the player walking up the path. */
 const ROTATION_Y = 0.5;
 
 
-export const SIGN_POSITION = POSITION;
-export const SIGN_COLLIDER_RADIUS = 0.55;
 
 export function WelcomeSign() {
   const gltf = useGLTF(model.url, true);

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { CanvasTexture, Color, InstancedMesh, Matrix4, Object3D } from "three";
 import { palette } from "./palette";
+import { nearInteractable } from "./interactables";
 import { StonePath } from "./StonePath";
 
 
@@ -89,7 +90,7 @@ export const GREENHOUSE_HALF: [number, number] = [3.5, 2.2];
 export const PLAZA_ROCKS: [number, number, number][] = [
   [-5.2, -1.6, 0.7],
   [4.2, 6.4, 0.55],
-  [-9, -6, 0.9],
+  [-11.4, -8.6, 0.9],
   [8.6, 0.5, 0.45],
 ];
 
@@ -286,7 +287,7 @@ function Scatter() {
       const r = 5 + random() * 11;
       const x = Math.cos(a) * r;
       const z = Math.sin(a) * r;
-      if (nearPath(x, z, 2.6)) continue;
+      if (nearPath(x, z, 2.6) || nearInteractable(x, z, 0.4)) continue;
       dummy.position.set(x, 0.35, z);
       dummy.rotation.set(0, random() * Math.PI, 0);
       const s = 0.4 + random() * 0.5;
@@ -306,7 +307,7 @@ function Scatter() {
       const r = 4 + random() * 12;
       const x = Math.cos(a) * r;
       const z = Math.sin(a) * r;
-      if (nearPath(x, z, 1.9)) continue;
+      if (nearPath(x, z, 1.9) || nearInteractable(x, z)) continue;
       dummy.position.set(x, 0.25 + random() * 0.1, z);
       dummy.rotation.set(0, random() * Math.PI, 0);
       dummy.scale.setScalar(0.11 + random() * 0.08);

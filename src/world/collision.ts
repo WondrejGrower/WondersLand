@@ -21,7 +21,7 @@ import {
   PLAZA_ROCKS,
 } from "./Plaza";
 import { COTTAGE_POSITION, COTTAGE_ROTATION_Y, COTTAGE_HALF } from "./Cottage";
-import { SIGN_POSITION, SIGN_COLLIDER_RADIUS } from "./WelcomeSign";
+import { GROW_BEDS_CENTER, GROW_BEDS_HALF, WORLD_INTERACTABLES } from "./interactables";
 
 export const PLAYER_RADIUS = 0.42;
 
@@ -55,8 +55,23 @@ export const WORLD_COLLIDERS: Collider[] = (() => {
     rot: GREENHOUSE_ROTATION_Y,
   });
 
-  // Welcome sign near spawn.
-  list.push(circle(SIGN_POSITION[0], SIGN_POSITION[2], SIGN_COLLIDER_RADIUS));
+  // Welcome sign and the two portals: solid circles from the shared data.
+  for (const it of WORLD_INTERACTABLES) {
+    if (it.collider) list.push(circle(it.position[0], it.position[1], it.collider));
+  }
+
+  // Raised grow beds: the two long timber rims. The ends stay open so the
+  // player can still step between the beds and reach the plants.
+  for (const dz of [-1, 1]) {
+    list.push({
+      kind: "box",
+      x: GROW_BEDS_CENTER[0],
+      z: GROW_BEDS_CENTER[1] + dz * GROW_BEDS_HALF[1],
+      hw: GROW_BEDS_HALF[0],
+      hd: 0.14,
+      rot: 0,
+    });
+  }
 
   // Central planted island.
   list.push(circle(ISLAND_CENTER[0], ISLAND_CENTER[1], ISLAND_RADIUS));

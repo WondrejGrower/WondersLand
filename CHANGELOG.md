@@ -419,3 +419,21 @@ Pending Nostr work: reactions (kind 7), replies, reposts (kind 6) and zaps
   `extractImageUrls` / `mediaUrls` / cover fallback / reader path is unchanged.
 - Upload failure keeps both the text and the picked file and publishes nothing.
 - Tests: `src/nostr/blossom.test.ts` mocks only the HTTP transport.
+
+## World consolidation pass (3D MVP layout)
+
+- New `src/world/interactables.ts` is the single deterministic source for spawn,
+  zone anchors, interactable positions/radii/labels/actions, portal copy,
+  colliders and decoration clearance.
+- New scene modules: `Portals.tsx` (Plaza + Visit-a-Friend placeholders),
+  `GrowBeds.tsx` (outdoor raised beds at the existing `raised-beds` zone) and
+  `FocusRing.tsx` (pulsing in-range cue, ref-only animation).
+- New `src/ui/ComingSoon.tsx` modal for both portal placeholders.
+- `useWorldStore` now tracks a generic interaction target (`plant` | `world`)
+  plus `comingSoon`; `InteractionPrompt` renders one contextual prompt
+  (desktop `Press E`, coarse pointer `Tap`) for every interactable.
+- `Player` picks the nearest target by normalized distance and freezes movement
+  while any overlay is open; `collision.ts` now derives sign, portal, house and
+  bed colliders from the central layout; `Plaza`/`layout` keep decorations out
+  of interactable clearance.
+- No new packages, no physics engine, no post-processing, no per-frame state.
