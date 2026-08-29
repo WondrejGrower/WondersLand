@@ -164,6 +164,44 @@ export function DiaryComposer({
                   className={fieldClass}
                 />
               </div>
+              <div className="grid min-w-0 gap-2">
+                <span className={labelClass}>Photo (optional)</span>
+                <input
+                  ref={fileInput}
+                  id="entry-photo"
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                />
+                {file ? (
+                  <div className="flex min-w-0 items-center gap-3 rounded-xl border border-forest-soft/50 bg-forest-deep/30 p-2">
+                    {preview ? (
+                      <img
+                        src={preview}
+                        alt=""
+                        className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                      />
+                    ) : null}
+                    <span className="min-w-0 flex-1 truncate text-xs text-cream/75">{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={clearFile}
+                      disabled={busy}
+                      className="min-h-9 shrink-0 rounded-lg px-3 text-xs text-cream/70 disabled:opacity-50"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="entry-photo"
+                    className="flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-dashed border-forest-soft/60 px-4 text-sm text-cream/70"
+                  >
+                    Add a photo
+                  </label>
+                )}
+              </div>
               <div className="grid min-w-0 gap-1.5">
                 <span className={labelClass}>Current phase (optional)</span>
                 <PhaseChips value={phase} onChange={setPhase} />
