@@ -2,7 +2,7 @@
 
 Snapshot of what actually exists. Update this with every change.
 
-**Last updated:** 2026-08-12 (entrance plaza)
+**Last updated:** 2026-08-29 (welcome sign + about overlay)
 **Current phase:** Milestone 1 implemented and verified in a browser.
 
 ## Built and working
@@ -43,6 +43,12 @@ prompt → read journal → close.
   the button closes it. Movement input is zeroed while it is open.
 - **Content** (`src/content/plants.ts`): static typed data for the one plant.
 - **State** (`src/state/useWorldStore.ts`): `entered`, `focusedPlantId`,
+  `target`, `journalOpen`, `indoorOpen`, `aboutOpen`.
+- **Welcome sign** (`src/world/WelcomeSign.tsx` + `src/ui/AboutSign.tsx`):
+  the uploaded Meshy woodland sign GLB (optimized 81 MB → 2.6 MB, CDN asset)
+  stands just off the spawn path at (2.1, 0, 6.4) with a small collider.
+  Click/tap opens a "Welcome to WondersLand" overlay explaining the world,
+  controls and Nostr identity; Esc / X closes it; the player freezes while open.
   `journalOpen` and their three setters. Nothing else.
 - **Per-frame input** (`src/state/input.ts`): a plain mutable object read inside
   `useFrame` — never React state. Keyboard and touch are separate internal
