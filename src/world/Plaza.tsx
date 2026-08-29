@@ -180,7 +180,7 @@ function Path() {
         rotation={[-Math.PI / 2, 0, -Math.atan2(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z)]}
         position={[PATH_MID.x, 0.012, PATH_MID.z]}
       >
-        <planeGeometry args={[2.3, Math.hypot(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z)]} />
+        <planeGeometry args={[2.75, Math.hypot(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z)]} />
         <meshLambertMaterial color={palette.path} />
       </mesh>
       <StonePath points={points} />
