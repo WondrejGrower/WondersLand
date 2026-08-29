@@ -61,7 +61,21 @@ export function DiaryComposer({
   const [phase, setPhase] = useState(existing?.phase ?? "");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [stage, setStage] = useState<"idle" | "uploading" | "publishing">("idle");
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!file) {
+      setPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
 
   const cultivars = useMemo(() => recentValues(diaries, (d) => d.cultivar), [diaries]);
   const breeders = useMemo(() => recentValues(diaries, (d) => d.breeder), [diaries]);
@@ -70,6 +84,11 @@ export function DiaryComposer({
   const heading =
     mode.kind === "create" ? "New diary" : isEntry ? `Add entry — ${existing?.title}` : "Edit diary";
   const titleHint = !title.trim() && cultivar.trim() ? cultivar.trim() : null;
+
+  function clearFile() {
+    setFile(null);
+    if (fileInput.current) fileInput.current.value = "";
+  }
 
   async function submit() {
     const signer = getSigner(method);
@@ -80,9 +99,18 @@ export function DiaryComposer({
     setBusy(true);
     setError(null);
     try {
+      let body = text.trim();
+      if (isEntry && file) {
+        setStage("uploading");
+        // Upload first: if this throws, both the text and the picked file stay
+        // in the composer and no kind:1 note is published.
+        const url = await uploadMedia(signer, file);
+        body = body ? `${body}\n${url}` : url;
+      }
+      setStage("publishing");
       const input: DiaryInput = { title, plant, cultivar, breeder, phase };
       const result = isEntry && existing
-        ? await addEntry(signer, existing, { text, phaseLabel: phase })
+        ? await addEntry(signer, existing, { text: body, phaseLabel: phase })
         : existing
           ? await updateDiary(signer, existing, input)
           : await createDiary(signer, input);
@@ -98,6 +126,7 @@ export function DiaryComposer({
           : "Publishing failed — your draft is still here, try again.",
       );
     } finally {
+      setStage("idle");
       setBusy(false);
     }
   }
