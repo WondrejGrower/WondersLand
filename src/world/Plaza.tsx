@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { CanvasTexture, Color, InstancedMesh, Matrix4, Object3D } from "three";
 import { palette } from "./palette";
+import { StonePath } from "./StonePath";
+
 
 // Deterministic pseudo-random: same plaza every visit, no data shipped.
 function rng(seed: number) {
