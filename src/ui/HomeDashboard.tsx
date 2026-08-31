@@ -31,7 +31,9 @@ import { DiaryDetail } from "./DiaryDetail";
 import { useHiddenDiaries } from "../state/useHiddenDiaries";
 import { PublishUnlock } from "./PublishUnlock";
 
-import { canPublish } from "../nostr/signers";
+import { canPublish, getSigner } from "../nostr/signers";
+import { deleteDiary } from "../nostr/writeDiaries";
+
 import { computeGrowth, nextStep } from "../progression/growth";
 import heroArt from "../assets/garden-island.png";
 
@@ -206,7 +208,9 @@ export function HomeDashboard() {
   const loadHidden = useHiddenDiaries((s) => s.load);
   const hideDiary = useHiddenDiaries((s) => s.hide);
   const unhideDiary = useHiddenDiaries((s) => s.unhide);
+  const removeDiary = useNostrStore((s) => s.removeDiary);
   const [composer, setComposer] = useState<ComposerMode | null>(null);
+
   const [pendingIntent, setPendingIntent] = useState<ComposerMode | null>(null);
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -268,6 +272,20 @@ export function HomeDashboard() {
           : "Published to Nostr",
     );
   };
+
+  /** Permanent removal: NIP-09 deletion request + local state/cache cleanup. */
+  const handleDelete = async (diary: Diary) => {
+    const signer = getSigner(method);
+    if (!signer) throw new Error("Unlock publishing first");
+    await deleteDiary(signer, diary);
+    await removeDiary(diary.id);
+    await unhideDiary(diary.id);
+    setOpenDiaryId(null);
+    setShowHidden(false);
+    setToast("Diary deleted");
+  };
+
+
 
 
 
@@ -627,6 +645,8 @@ export function HomeDashboard() {
                 }}
                 onUnhide={(d) => void unhideDiary(d.id)}
                 onUnlock={(d) => requestComposer({ kind: "entry", diary: d })}
+                onDelete={handleDelete}
+
               />
             ) : section === "diaries" ? (
               <section className="grid min-w-0 gap-3">

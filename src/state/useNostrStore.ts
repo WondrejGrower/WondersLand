@@ -42,6 +42,9 @@ type NostrState = {
   unlockWithNsec: (nsec: string) => Promise<void>;
   unlockWithExtension: () => Promise<void>;
   upsertDiary: (diary: Diary) => void;
+  /** Drop a diary from local state and the local cache after a deletion. */
+  removeDiary: (id: string) => Promise<void>;
+
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
 
@@ -227,6 +230,16 @@ export const useNostrStore = create<NostrState>((set, get) => {
       set({ diaries: next });
       useGardenStore.getState().setDiaries(next);
     },
+
+    removeDiary: async (id) => {
+      const next = get().diaries.filter((d) => d.id !== id);
+      set({ diaries: next });
+      useGardenStore.getState().setDiaries(next);
+      const { pubkey } = get();
+      // Keep the offline cache consistent so a refresh cannot resurrect it.
+      if (pubkey) await setJson(`diaries:${pubkey}`, next);
+    },
+
 
     refresh: async () => {
       const { pubkey } = get();

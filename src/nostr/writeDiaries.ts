@@ -7,7 +7,7 @@
 // referenced from the diary event (`items[]` + an `e` tag). Entry text never
 // moves inside the diary event.
 import { uploadBlob } from "./blossom";
-import { DIARY_TAG, KIND_DIARY, KIND_NOTE } from "./kinds";
+import { DIARY_TAG, KIND_DELETE, KIND_DIARY, KIND_NOTE } from "./kinds";
 import { extractImageUrls, preview } from "./media";
 import { getPlantBySlug } from "./plants/catalog";
 import { publish, type PublishResult } from "./pool";
@@ -189,6 +189,29 @@ export async function addEntry(
 
   const { results } = await publishSigned(signer, diaryEventTemplate(diary));
   return { diary, results: [...note.results, ...results] };
+}
+
+/**
+ * NIP-09 deletion request for a whole diary: the addressable kind 30078 event
+ * plus every kind 1 entry note it references. Relays honour it at their own
+ * discretion, so callers must also drop the diary from local state.
+ */
+export async function deleteDiary(signer: Signer, diary: Diary): Promise<PublishResult[]> {
+  const pubkey = await signer.getPublicKey();
+  const tags: string[][] = [
+    ["a", `${KIND_DIARY}:${pubkey}:diary-${diary.id}`],
+    ["k", String(KIND_DIARY)],
+  ];
+  for (const item of diary.items) tags.push(["e", item.eventId]);
+  if (diary.items.length > 0) tags.push(["k", String(KIND_NOTE)]);
+
+  const event = await signer.signEvent({
+    kind: KIND_DELETE,
+    created_at: now(),
+    tags,
+    content: "Diary deleted from WondersLand",
+  });
+  return await publish(getEnabledRelayUrls(), event);
 }
 
 /**
