@@ -42,6 +42,9 @@ type NostrState = {
   unlockWithNsec: (nsec: string) => Promise<void>;
   unlockWithExtension: () => Promise<void>;
   upsertDiary: (diary: Diary) => void;
+  /** Drop a diary from local state and the local cache after a deletion. */
+  removeDiary: (id: string) => Promise<void>;
+
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
 
