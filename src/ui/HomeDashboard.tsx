@@ -627,6 +627,8 @@ export function HomeDashboard() {
                 }}
                 onUnhide={(d) => void unhideDiary(d.id)}
                 onUnlock={(d) => requestComposer({ kind: "entry", diary: d })}
+                onDelete={handleDelete}
+
               />
             ) : section === "diaries" ? (
               <section className="grid min-w-0 gap-3">
