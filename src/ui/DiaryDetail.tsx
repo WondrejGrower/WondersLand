@@ -65,6 +65,9 @@ export function DiaryDetail({
     setEntries(null);
     setError(null);
     setConfirmHide(false);
+    setConfirmDelete(false);
+    setDeleteError(null);
+
 
     if (diary.items.length === 0) {
       setEntries([]);
