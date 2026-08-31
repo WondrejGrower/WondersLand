@@ -12,17 +12,16 @@ Cíl: ve 3D zahradě umožnit rychlý návrat do dashboardu (Nostr klient) kláv
 ## Mobil / dotyk
 
 - V 3D světě: malé plovoucí tlačítko vpravo nahoře (mimo joystick a interakční prvky), ikona + popisek „Nostr“, dostatečný tap target (min. 44px), `aria-label` „Přepnout na Nostr klienta“.
-- V dashboardu: existující „Enter Garden“ zůstává hlavní cestou; navíc se přidá stejná ikona do spodní mobilní navigace jako „Garden“ přepínač, pokud tam ještě není duplicitní.
+- V dashboardu žádné nové tlačítko — vstup do 3D světa řeší pouze existující „Enter Garden“.
 - Tlačítko se zobrazuje pouze při `pointer: coarse` (stejná detekce, jaká už se používá v TouchControls/InteractionPrompt).
 
 ## Technické detaily
 
-- `src/state/useWorldStore.ts`: přidat `exit()` a `toggleEntered()`; `entered` zůstává jediný zdroj pravdy.
-- Nový `src/ui/WorldSwitch.tsx`: sdílený hook/komponenta, která
-  - registruje globální `keydown` na `KeyC` s guardem na `input/textarea/[contenteditable]` a na otevřené overlaye (`journalOpen`, `indoorOpen`, `aboutOpen`, `comingSoon`),
+- `src/state/useWorldStore.ts`: přidat `exit()`; `entered` zůstává jediný zdroj pravdy.
+- Nový `src/ui/ExitWorldSwitch.tsx`, renderovaný pouze ve 3D větvi, který
+  - registruje `keydown` na `KeyC` (s guardem na otevřené overlaye `journalOpen`, `indoorOpen`, `aboutOpen`, `comingSoon`) a volá `exit()`,
   - vykreslí dotykové tlačítko při coarse pointeru.
-- `src/routes/index.tsx`: `WorldSwitch` renderovat v obou větvích (dashboard i 3D), aby klávesa fungovala všude.
-- `src/ui/HomeDashboard.tsx`: pouze doplnit hint „C“ vedle tlačítka Enter Garden (bez redesignu).
+- `src/routes/index.tsx`: `ExitWorldSwitch` pouze uvnitř větve se 3D světem; dashboard beze změny.
 - Žádné změny v `Player.tsx`, Avatar, kolizích, Nostr vrstvě ani datovém modelu.
 
 ## Ověření
