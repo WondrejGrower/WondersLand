@@ -2,7 +2,7 @@
 
 Snapshot of what actually exists. Update this with every change.
 
-**Last updated:** 2026-08-29 (welcome sign + about overlay)
+**Last updated:** 2026-08-31 (C key / touch button exits the world to the Nostr client)
 **Current phase:** Milestone 1 implemented and verified in a browser.
 
 ## Built and working
