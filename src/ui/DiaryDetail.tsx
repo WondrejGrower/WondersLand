@@ -37,6 +37,7 @@ export function DiaryDetail({
   onHide,
   onUnhide,
   onUnlock,
+  onDelete,
 }: {
   diary: Diary;
   writable: boolean;
@@ -47,11 +48,16 @@ export function DiaryDetail({
   onHide: (diary: Diary) => void;
   onUnhide: (diary: Diary) => void;
   onUnlock: (diary: Diary) => void;
+  onDelete: (diary: Diary) => Promise<void>;
 }) {
 
   const [entries, setEntries] = useState<DiaryEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirmHide, setConfirmHide] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
 
 
   useEffect(() => {
