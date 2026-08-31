@@ -231,6 +231,16 @@ export const useNostrStore = create<NostrState>((set, get) => {
       useGardenStore.getState().setDiaries(next);
     },
 
+    removeDiary: async (id) => {
+      const next = get().diaries.filter((d) => d.id !== id);
+      set({ diaries: next });
+      useGardenStore.getState().setDiaries(next);
+      const { pubkey } = get();
+      // Keep the offline cache consistent so a refresh cannot resurrect it.
+      if (pubkey) await setJson(`diaries:${pubkey}`, next);
+    },
+
+
     refresh: async () => {
       const { pubkey } = get();
       if (pubkey) await load(pubkey);
