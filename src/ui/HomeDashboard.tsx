@@ -208,7 +208,9 @@ export function HomeDashboard() {
   const loadHidden = useHiddenDiaries((s) => s.load);
   const hideDiary = useHiddenDiaries((s) => s.hide);
   const unhideDiary = useHiddenDiaries((s) => s.unhide);
+  const removeDiary = useNostrStore((s) => s.removeDiary);
   const [composer, setComposer] = useState<ComposerMode | null>(null);
+
   const [pendingIntent, setPendingIntent] = useState<ComposerMode | null>(null);
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
