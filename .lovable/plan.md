@@ -27,6 +27,6 @@ Cíl: ve 3D zahradě umožnit rychlý návrat do dashboardu (Nostr klient) kláv
 ## Ověření
 
 - Typecheck + build.
-- Playwright: desktop 1280px — `C` tam a zpět; při otevřeném deníku `C` nic nedělá; psaní „c“ v composeru nepřepne.
+- Playwright: desktop 1280px — `C` ve 3D vrací do dashboardu; při otevřeném deníku `C` nic nedělá; v dashboardu `C` nic nedělá.
 - Playwright 390px — dotykové tlačítko viditelné, nepřekrývá joystick, přepne do dashboardu.
 - Aktualizace `PROJECT_STATE.md`, `AI_HANDOFF.md`, `ROADMAP.md`, `CHANGELOG.md`.
