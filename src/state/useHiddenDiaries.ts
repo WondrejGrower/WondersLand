@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { getJson, setJson } from "../nostr/storage";
+import { useGardenStore } from "./useGardenStore";
 
 /**
  * Client-only presentation preference: which diaries the visitor has hidden
@@ -16,6 +17,11 @@ type HiddenState = {
   reset: () => void;
 };
 
+/** Hidden diaries must also disappear from the 3D garden. */
+function sync(ids: string[]) {
+  useGardenStore.getState().setHiddenIds(ids);
+}
+
 const key = (pubkey: string) => `hidden-diaries:${pubkey}`;
 
 export const useHiddenDiaries = create<HiddenState>((set, get) => ({
@@ -25,7 +31,9 @@ export const useHiddenDiaries = create<HiddenState>((set, get) => ({
   load: async (pubkey) => {
     if (get().pubkey === pubkey) return;
     const stored = await getJson<string[]>(key(pubkey));
-    set({ pubkey, ids: Array.isArray(stored) ? stored : [] });
+    const ids = Array.isArray(stored) ? stored : [];
+    set({ pubkey, ids });
+    sync(ids);
   },
 
   hide: async (id) => {
@@ -33,6 +41,7 @@ export const useHiddenDiaries = create<HiddenState>((set, get) => ({
     if (ids.includes(id)) return;
     const next = [...ids, id];
     set({ ids: next });
+    sync(next);
     if (pubkey) await setJson(key(pubkey), next);
   },
 
@@ -40,8 +49,12 @@ export const useHiddenDiaries = create<HiddenState>((set, get) => ({
     const { pubkey, ids } = get();
     const next = ids.filter((x) => x !== id);
     set({ ids: next });
+    sync(next);
     if (pubkey) await setJson(key(pubkey), next);
   },
 
-  reset: () => set({ pubkey: null, ids: [] }),
+  reset: () => {
+    set({ pubkey: null, ids: [] });
+    sync([]);
+  },
 }));

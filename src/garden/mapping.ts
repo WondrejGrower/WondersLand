@@ -4,7 +4,9 @@ import { categorizePlant, getGrowthStage, type GrowthStage, type PlantCategory }
 import type { GardenConfig, PlantPlacement } from "./config";
 import { unitHash } from "./defaults";
 import { resolveModel, type ModelChoice } from "./models";
+import { PLANT_SLOTS } from "./slots";
 import { slotPosition, ZONES, zoneForPlant, type ZoneId } from "./zones";
+
 
 export type GardenPlant = {
   /** Diary id — also the focus id used by the interaction system. */
@@ -17,10 +19,13 @@ export type GardenPlant = {
   zone: ZoneId;
   model: ModelChoice;
   position: [number, number, number];
+  /** Index of the fixed planting spot this plant occupies. */
+  slotIndex: number;
   /** Stable per-plant variation so identical models don't look cloned. */
   rotation: number;
   scale: number;
 };
+
 
 function describe(diary: Diary) {
   const category = categorizePlant({
@@ -51,6 +56,7 @@ function toPlant(diary: Diary, placement: PlantPlacement): GardenPlant {
     zone,
     model,
     position: placement.position ?? slotPosition(ZONES[zone], placement.slot),
+    slotIndex: placement.slot,
     rotation: placement.rotationY ?? variation * Math.PI * 2,
     scale: placement.scale ?? 0.88 + variation * 0.28,
   };
@@ -67,6 +73,28 @@ export function mapConfigToGarden(config: GardenConfig, diaries: Diary[]): Garde
   }
   return plants;
 }
+
+/**
+ * The world mapping: visible diaries fill the fixed planting spots in order.
+ * Oldest diary first, so existing plants keep their spot and a new diary takes
+ * the first free one. Deleting or hiding a diary frees its spot again.
+ */
+export function mapDiariesToSlots(diaries: Diary[]): GardenPlant[] {
+  return [...diaries]
+    .sort((a, b) => a.createdAt - b.createdAt)
+    .slice(0, PLANT_SLOTS.length)
+    .map((diary, index) => {
+      const slot = PLANT_SLOTS[index]!;
+      const plant = toPlant(diary, { diaryId: diary.id, zone: "open-garden", slot: index });
+      return {
+        ...plant,
+        position: [...slot.position] as [number, number, number],
+        slotIndex: slot.id,
+        rotation: slot.rotationY,
+      };
+    });
+}
+
 
 /**
  * Placement-free fallback used before a config exists (and by tests): plants
