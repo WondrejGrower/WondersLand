@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 2026-08-31 — Exit the world with C (or a touch button)
+
+### Added
+- `src/ui/ExitWorldSwitch.tsx` — quick exit from the 3D world back to the
+  Nostr client: `C` key on desktop, a floating "← Nostr" button top-right on
+  coarse-pointer devices. Disabled while any overlay is open.
+- `useWorldStore.exit()` — resets `entered` and clears open overlays/targets.
+  Entering the world still happens only via "Enter Garden"; `C` does nothing
+  in the dashboard.
+
 ## 2026-08-29 — Welcome sign with "What is WondersLand" overlay
 
 ### Added

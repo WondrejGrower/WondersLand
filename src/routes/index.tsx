@@ -13,6 +13,7 @@ import { AboutSign } from "../ui/AboutSign";
 import { ComingSoon } from "../ui/ComingSoon";
 import { InteractionPrompt } from "../ui/InteractionPrompt";
 import { TouchControls } from "../ui/TouchControls";
+import { ExitWorldSwitch } from "../ui/ExitWorldSwitch";
 
 // Three.js is browser-only: the module itself must not load during SSR.
 const World = lazy(() => import("../world/World"));
@@ -91,6 +92,7 @@ function Index() {
         </Suspense>
       </ClientOnly>
       <TouchControls />
+      <ExitWorldSwitch />
       <InteractionPrompt />
       <Journal />
       <IndoorGarden />
