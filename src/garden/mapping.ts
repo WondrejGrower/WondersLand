@@ -19,10 +19,13 @@ export type GardenPlant = {
   zone: ZoneId;
   model: ModelChoice;
   position: [number, number, number];
+  /** Index of the fixed planting spot this plant occupies. */
+  slotIndex: number;
   /** Stable per-plant variation so identical models don't look cloned. */
   rotation: number;
   scale: number;
 };
+
 
 function describe(diary: Diary) {
   const category = categorizePlant({
