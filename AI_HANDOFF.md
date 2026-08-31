@@ -11,7 +11,9 @@ Read this first if you are an AI agent picking up WondersLand.
 ## The one-sentence brief
 
 WondersLand is a cozy browser 3D botanical world where a visitor walks around,
-approaches one cannabis plant, and reads its journal — nothing more.
+approaches one cannabis plant, and reads its journal — nothing more. Inside the
+world, `C` (desktop) or the "← Nostr" touch button exits back to the client;
+entering the world is only via "Enter Garden".
 
 ## Planned file layout (Milestone 1)
 

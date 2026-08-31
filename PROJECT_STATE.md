@@ -32,6 +32,10 @@ prompt → read journal → close.
   no physics engine.
 - **Touch controls** (`src/ui/TouchControls.tsx`): on-screen joystick shown
   only on coarse-pointer devices; drag elsewhere still rotates the camera.
+- **World exit switch** (`src/ui/ExitWorldSwitch.tsx`): `C` on desktop or a
+  floating "← Nostr" button (top-right, coarse pointers) leaves the world back
+  to the Nostr client via `useWorldStore.exit()`. Inert while any overlay is
+  open; the dashboard has no `C` shortcut — entering stays on "Enter Garden".
 - **The plant** (`src/world/plants/CannabisPlant.tsx`): one procedural
   cannabis plant — soil mound, stem, four nodes of paired seven-leaflet fan
   leaves, a top cola — with a gentle sway driven in `useFrame`.
