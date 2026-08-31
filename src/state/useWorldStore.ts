@@ -20,6 +20,8 @@ type WorldState = {
   /** Placeholder overlay for portals that are not built yet. */
   comingSoon: ComingSoon;
   enter: () => void;
+  /** Leave the 3D world back to the Nostr client (C key / touch button). */
+  exit: () => void;
   setFocusedPlant: (id: string | null) => void;
   setTarget: (target: InteractionTarget) => void;
   openJournal: () => void;
@@ -41,6 +43,16 @@ export const useWorldStore = create<WorldState>((set) => ({
   aboutOpen: false,
   comingSoon: null,
   enter: () => set({ entered: true }),
+  exit: () =>
+    set({
+      entered: false,
+      journalOpen: false,
+      indoorOpen: false,
+      aboutOpen: false,
+      comingSoon: null,
+      target: null,
+      focusedPlantId: null,
+    }),
   setFocusedPlant: (id) => set({ focusedPlantId: id }),
   setTarget: (target) =>
     set({ target, focusedPlantId: target?.kind === "plant" ? target.id : null }),
