@@ -1,7 +1,8 @@
 // 2D diary reader. Pure DOM UI inside the authenticated shell: it reads a diary
 // (kind 30078) plus its referenced kind:1 entries and renders them chronologically.
 import { useEffect, useState } from "react";
-import { ArrowLeft, CalendarDays, EyeOff, ImageOff, KeyRound, Pencil, Plus, RotateCcw } from "lucide-react";
+import { ArrowLeft, CalendarDays, EyeOff, ImageOff, KeyRound, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
+
 
 import { fetchDiaryEntries, type DiaryEntry } from "../nostr/diaryEntries";
 import { firstImage } from "../nostr/media";
