@@ -453,3 +453,15 @@ Limitations: portals are visual placeholders only, and the sandbox browser
 loses its software WebGL context on long sessions, so the walk-to-house flow
 was verified by simulating the movement/collision/proximity math rather than by
 a full recorded playthrough.
+
+## Garden plant slots (2026-08-31)
+
+The 3D garden now uses a fixed set of six planting spots (`src/garden/slots.ts`,
+laid out inside the grow beds). Visible diaries fill the spots in creation
+order via `mapDiariesToSlots`; deleted or hidden diaries free their spot
+immediately, and `useGardenStore` clears any stale plant target/journal so the
+prompt, focus ring and collider disappear with the plant. Unfilled spots render
+a subtle "empty spot" marker (soil circle + small stake) instead of random
+decorative plants. `useHiddenDiaries` pushes its id list into the garden store.
+Limitation: plants reflow to the first free spots after a deletion — there is
+no per-diary pinned spot yet.
