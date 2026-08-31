@@ -15,6 +15,7 @@ import {
 import type { PublishResult } from "../nostr/pool";
 import { getSigner } from "../nostr/signers";
 import type { AuthMethod, Diary, NostrEvent } from "../nostr/types";
+import { useWorldStore } from "./useWorldStore";
 
 const AUTOSAVE_DEBOUNCE_MS = 1000;
 
@@ -50,7 +51,16 @@ let publishing = false;
 
 export const useGardenStore = create<GardenState>((set, get) => {
   function visiblePlants(diaries = get().diaries, hidden = get().hiddenIds) {
-    return mapDiariesToSlots(diaries.filter((d) => !hidden.includes(d.id)));
+    const plants = mapDiariesToSlots(diaries.filter((d) => !hidden.includes(d.id)));
+    // A plant that no longer exists must not keep the prompt, focus ring or
+    // journal alive.
+    const world = useWorldStore.getState();
+    const target = world.target;
+    if (target?.kind === "plant" && !plants.some((p) => p.id === target.id)) {
+      world.setTarget(null);
+      world.closeJournal();
+    }
+    return plants;
   }
 
   function apply(config: GardenConfig) {
