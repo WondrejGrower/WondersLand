@@ -7,7 +7,7 @@
 // referenced from the diary event (`items[]` + an `e` tag). Entry text never
 // moves inside the diary event.
 import { uploadBlob } from "./blossom";
-import { DIARY_TAG, KIND_DIARY, KIND_NOTE } from "./kinds";
+import { DIARY_TAG, KIND_DELETE, KIND_DIARY, KIND_NOTE } from "./kinds";
 import { extractImageUrls, preview } from "./media";
 import { getPlantBySlug } from "./plants/catalog";
 import { publish, type PublishResult } from "./pool";
