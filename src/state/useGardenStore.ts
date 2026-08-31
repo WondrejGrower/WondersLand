@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { GardenConfig, GardenSyncStatus, PlantPlacement } from "../garden/config";
 import { buildDefaultConfig, reconcileDiaries } from "../garden/defaults";
-import { mapConfigToGarden, type GardenPlant } from "../garden/mapping";
+import { mapDiariesToSlots, type GardenPlant } from "../garden/mapping";
 import {
   fetchGardenConfig,
   getCachedGarden,
@@ -25,6 +25,8 @@ type GardenState = {
   /** Last signed event we know about — the base for ordering and conflicts. */
   baseEvent: NostrEvent | null;
   diaries: Diary[];
+  /** Client-only: diaries the visitor hid — never planted in the world. */
+  hiddenIds: string[];
   plants: GardenPlant[];
   status: GardenSyncStatus;
   dirty: boolean;
@@ -36,6 +38,7 @@ type GardenState = {
 
   load: (pubkey: string, method: AuthMethod, diaries: Diary[]) => Promise<void>;
   setDiaries: (diaries: Diary[]) => void;
+  setHiddenIds: (ids: string[]) => void;
   setPlacement: (diaryId: string, patch: Partial<PlantPlacement>) => void;
   save: () => Promise<void>;
   resolveConflict: (choice: "mine" | "theirs") => void;
@@ -46,8 +49,12 @@ let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
 let publishing = false;
 
 export const useGardenStore = create<GardenState>((set, get) => {
+  function visiblePlants(diaries = get().diaries, hidden = get().hiddenIds) {
+    return mapDiariesToSlots(diaries.filter((d) => !hidden.includes(d.id)));
+  }
+
   function apply(config: GardenConfig) {
-    set({ config, plants: mapConfigToGarden(config, get().diaries) });
+    set({ config, plants: visiblePlants() });
   }
 
   function queueAutosave() {
@@ -72,6 +79,7 @@ export const useGardenStore = create<GardenState>((set, get) => {
     config: null,
     baseEvent: null,
     diaries: [],
+    hiddenIds: [],
     plants: [],
     status: "idle",
     dirty: false,
@@ -128,10 +136,12 @@ export const useGardenStore = create<GardenState>((set, get) => {
 
     setDiaries: (diaries) => {
       const { pubkey, config } = get();
-      set({ diaries });
+      set({ diaries, plants: visiblePlants(diaries) });
       if (!pubkey || !config) return;
       apply(reconcileDiaries(config, pubkey, diaries));
     },
+
+    setHiddenIds: (ids) => set({ hiddenIds: ids, plants: visiblePlants(undefined, ids) }),
 
     setPlacement: (diaryId, patch) => {
       const { config, canEdit } = get();
@@ -199,6 +209,7 @@ export const useGardenStore = create<GardenState>((set, get) => {
         config: null,
         baseEvent: null,
         diaries: [],
+        hiddenIds: [],
         plants: [],
         status: "idle",
         dirty: false,
