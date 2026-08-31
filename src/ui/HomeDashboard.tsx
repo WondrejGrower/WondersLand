@@ -269,6 +269,20 @@ export function HomeDashboard() {
     );
   };
 
+  /** Permanent removal: NIP-09 deletion request + local state/cache cleanup. */
+  const handleDelete = async (diary: Diary) => {
+    const signer = getSigner(method);
+    if (!signer) throw new Error("Unlock publishing first");
+    await deleteDiary(signer, diary);
+    await removeDiary(diary.id);
+    await unhideDiary(diary.id);
+    setOpenDiaryId(null);
+    setShowHidden(false);
+    setToast("Diary deleted");
+  };
+
+
+
 
 
 
