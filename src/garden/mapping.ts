@@ -4,7 +4,9 @@ import { categorizePlant, getGrowthStage, type GrowthStage, type PlantCategory }
 import type { GardenConfig, PlantPlacement } from "./config";
 import { unitHash } from "./defaults";
 import { resolveModel, type ModelChoice } from "./models";
+import { PLANT_SLOTS } from "./slots";
 import { slotPosition, ZONES, zoneForPlant, type ZoneId } from "./zones";
+
 
 export type GardenPlant = {
   /** Diary id — also the focus id used by the interaction system. */
