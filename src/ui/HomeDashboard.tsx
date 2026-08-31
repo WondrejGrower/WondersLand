@@ -31,7 +31,9 @@ import { DiaryDetail } from "./DiaryDetail";
 import { useHiddenDiaries } from "../state/useHiddenDiaries";
 import { PublishUnlock } from "./PublishUnlock";
 
-import { canPublish } from "../nostr/signers";
+import { canPublish, getSigner } from "../nostr/signers";
+import { deleteDiary } from "../nostr/writeDiaries";
+
 import { computeGrowth, nextStep } from "../progression/growth";
 import heroArt from "../assets/garden-island.png";
 
