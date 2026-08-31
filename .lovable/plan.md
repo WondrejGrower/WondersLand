@@ -1,13 +1,13 @@
-# Přepínání mezi 3D světem a Nostr klientem (klávesa C + mobilní tlačítko)
+# Návrat z 3D světa do Nostr klienta (klávesa C + mobilní tlačítko)
 
-Cíl: jedním stiskem `C` (desktop) nebo jedním tlačítkem (mobil) přepínat mezi 3D zahradou a 2D Nostr klientem (dashboard), bez ztráty stavu a bez zásahu do Nostr dat, 3D obsahu nebo ovládání.
+Cíl: ve 3D zahradě umožnit rychlý návrat do dashboardu (Nostr klient) klávesou `C` na desktopu a speciálním tlačítkem na mobilu. Cesta do 3D světa zůstává jediná — tlačítko „Enter Garden“ v dashboardu; `C` v dashboardu nefunguje a nic nepřepíná.
 
 ## Chování
 
-- `C` v 3D světě → zpět do dashboardu (Nostr klient).
-- `C` v dashboardu → skok do 3D světa (stejné jako "Enter Garden"), ale jen když uživatel právě nepíše do inputu/textarea a není otevřený žádný modal (deník, composer, reader, About, Coming soon, Indoor).
-- Ve 3D světě `C` neaktivuje, když je otevřený nějaký overlay — tam Esc/X zůstávají beze změny.
-- Přepnutí je jen změna pohledu: přihlášení, deníky, feed i pozice hráče v rámci session zůstávají. (Pozice hráče se resetuje na spawn pouze pokud už se tak dnes chová; nový save systém nepřidáváme.)
+- `C` ve 3D světě → zpět do dashboardu (Nostr klient).
+- `C` v dashboardu → bez efektu; do 3D světa vede pouze „Enter Garden“.
+- Ve 3D světě `C` neaktivuje, když je otevřený nějaký overlay (deník, Indoor, About, Coming soon) — tam Esc/X zůstávají beze změny.
+- Přepnutí je jen změna pohledu: přihlášení, deníky a feed zůstávají. Nový save systém nepřidáváme.
 
 ## Mobil / dotyk
 
