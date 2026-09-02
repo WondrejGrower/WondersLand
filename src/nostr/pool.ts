@@ -4,7 +4,11 @@ import type { NostrEvent } from "./types";
 let pool: SimplePool | null = null;
 
 function getPool(): SimplePool {
-  if (!pool) pool = new SimplePool();
+  if (!pool) {
+    pool = new SimplePool();
+    // Lets us tell the user which relay actually served an event.
+    pool.trackRelays = true;
+  }
   return pool;
 }
 
@@ -25,7 +29,6 @@ export async function queryWithSources(
   if (relays.length === 0) return { events: [], sources: new Map() };
   const p = getPool();
   const seen = new Map<string, NostrEvent>();
-  const sources: EventSources = new Map();
 
   await new Promise<void>((resolve) => {
     let done = false;
@@ -44,20 +47,23 @@ export async function queryWithSources(
     const sub = p.subscribeMany(relays, filter, {
       onevent: (event) => {
         seen.set(event.id, event as NostrEvent);
-        const from = (event as NostrEvent & { relay?: { url?: string } }).relay?.url;
-        const list = sources.get(event.id) ?? [];
-        if (from && !list.includes(from)) list.push(from);
-        sources.set(event.id, list);
       },
       oneose: finish,
     });
   });
+
+  const sources: EventSources = new Map();
+  for (const id of seen.keys()) {
+    const urls = [...(p.seenOn.get(id) ?? [])].map((relay) => relay.url);
+    if (urls.length > 0) sources.set(id, urls);
+  }
 
   return {
     events: [...seen.values()].sort((a, b) => b.created_at - a.created_at),
     sources,
   };
 }
+
 
 /** Backwards-compatible wrapper: events only. */
 export async function query(
