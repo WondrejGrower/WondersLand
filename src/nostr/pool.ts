@@ -74,6 +74,41 @@ export async function query(
   return (await queryWithSources(relays, filter, maxWaitMs)).events;
 }
 
+/**
+ * Same filter sent to each relay separately. A merged query lets the fastest
+ * relay fill the whole limit; per-relay queries guarantee every reachable
+ * relay contributes. Returns per-relay event lists (deduplicated globally)
+ * plus provenance for each surviving event.
+ */
+export async function queryPerRelay(
+  relays: string[],
+  filter: Filter,
+  maxWaitMs = 6000,
+): Promise<{ perRelay: Map<string, NostrEvent[]>; sources: EventSources }> {
+  const perRelay = new Map<string, NostrEvent[]>();
+  const sources: EventSources = new Map();
+  if (relays.length === 0) return { perRelay, sources };
+
+  const results = await Promise.all(
+    relays.map((url) => queryWithSources([url], filter, maxWaitMs)),
+  );
+
+  const seenIds = new Set<string>();
+  results.forEach((result, index) => {
+    const url = relays[index] ?? "";
+    const events: NostrEvent[] = [];
+    for (const event of result.events) {
+      if (seenIds.has(event.id)) continue;
+      seenIds.add(event.id);
+      events.push(event);
+      sources.set(event.id, result.sources.get(event.id) ?? [url]);
+    }
+    perRelay.set(url, events);
+  });
+
+  return { perRelay, sources };
+}
+
 
 export type PublishResult = { relay: string; ok: boolean; error?: string };
 
