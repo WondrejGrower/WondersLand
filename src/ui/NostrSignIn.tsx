@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+
 import { forgetFreshNsec, peekFreshNsec } from "../nostr/signers/local";
 import { useNostrStore } from "../state/useNostrStore";
 import { profileLabel } from "../nostr/profile";
@@ -237,13 +239,17 @@ function KeyBackup({
   onDone: () => void;
 }) {
   const [confirmed, setConfirmed] = useState(false);
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-label="Save your secret key"
-      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/80 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/85 p-4 backdrop-blur-sm"
     >
+
       <div className="w-full max-w-md rounded-2xl border border-leaf/30 bg-forest-deep/95 p-6 text-left shadow-2xl">
       <p className="text-lg font-semibold text-leaf">Save your secret key</p>
 
@@ -285,7 +291,9 @@ function KeyBackup({
         Continue to my garden
       </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
+
 }
 
