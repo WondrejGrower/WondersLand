@@ -33,9 +33,32 @@ import { PublishUnlock } from "./PublishUnlock";
 
 import { canPublish, getSigner } from "../nostr/signers";
 import { deleteDiary } from "../nostr/writeDiaries";
+import { relayHost } from "../nostr/hosts";
+import type { PublishResult } from "../nostr/pool";
 
 import { computeGrowth, nextStep } from "../progression/growth";
 import heroArt from "../assets/garden-island.png";
+
+/** "accepted by 3 of 4 relays" — never claim more than the relays confirmed. */
+function deletionSummary(results: PublishResult[]): string {
+  const ok = results.filter((r) => r.ok).length;
+  if (results.length === 0) return "no relay was reachable";
+  return `deletion accepted by ${ok} of ${results.length} relays`;
+}
+
+function deletionReport(results: PublishResult[]): string {
+  if (results.length === 0) return "No relay was reachable.";
+  const lines = results.map(
+    (r) => `${r.ok ? "✓" : "✕"} ${relayHost(r.relay)}${r.ok ? " accepted" : ` — ${r.error ?? "refused"}`}`,
+  );
+  const refused = results.filter((r) => !r.ok);
+  const tail = refused.length
+    ? "\nRelays that refuse a deletion keep serving the event. That is how Nostr works — WondersLand cannot force them."
+    : "\nEvery relay accepted the request.";
+  return lines.join("\n") + tail;
+}
+
+
 
 const DAY = 86_400_000;
 const STALE_DAYS = 14;
@@ -277,12 +300,23 @@ export function HomeDashboard() {
   const handleDelete = async (diary: Diary) => {
     const signer = getSigner(method);
     if (!signer) throw new Error("Unlock publishing first");
-    await deleteDiary(signer, diary);
+    const results = await deleteDiary(signer, diary);
     await removeDiary(diary.id);
     await unhideDiary(diary.id);
     setOpenDiaryId(null);
     setShowHidden(false);
-    setToast("Diary deleted");
+    setToast(`Diary deleted — ${deletionSummary(results)}`);
+  };
+
+  /**
+   * Relays may ignore a deletion request. This asks them again without touching
+   * local state, and reports what each relay answered.
+   */
+  const handleResendDelete = async (diary: Diary) => {
+    const signer = getSigner(method);
+    if (!signer) throw new Error("Unlock publishing first");
+    const results = await deleteDiary(signer, diary);
+    return deletionReport(results);
   };
 
 
@@ -646,6 +680,7 @@ export function HomeDashboard() {
                 onUnhide={(d) => void unhideDiary(d.id)}
                 onUnlock={(d) => requestComposer({ kind: "entry", diary: d })}
                 onDelete={handleDelete}
+                onResendDelete={handleResendDelete}
 
               />
             ) : section === "diaries" ? (
