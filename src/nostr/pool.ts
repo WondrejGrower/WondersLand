@@ -8,15 +8,24 @@ function getPool(): SimplePool {
   return pool;
 }
 
-/** One-shot query across relays with a hard timeout so the UI never hangs. */
-export async function query(
+/** Which relays delivered a given event id. */
+export type EventSources = Map<string, string[]>;
+
+export type QueryResult = { events: NostrEvent[]; sources: EventSources };
+
+/**
+ * One-shot query across relays with a hard timeout, keeping track of which
+ * relay delivered each event so the UI can show provenance.
+ */
+export async function queryWithSources(
   relays: string[],
   filter: Filter,
   maxWaitMs = 6000,
-): Promise<NostrEvent[]> {
-  if (relays.length === 0) return [];
+): Promise<QueryResult> {
+  if (relays.length === 0) return { events: [], sources: new Map() };
   const p = getPool();
   const seen = new Map<string, NostrEvent>();
+  const sources: EventSources = new Map();
 
   await new Promise<void>((resolve) => {
     let done = false;
@@ -35,13 +44,30 @@ export async function query(
     const sub = p.subscribeMany(relays, filter, {
       onevent: (event) => {
         seen.set(event.id, event as NostrEvent);
+        const from = (event as NostrEvent & { relay?: { url?: string } }).relay?.url;
+        const list = sources.get(event.id) ?? [];
+        if (from && !list.includes(from)) list.push(from);
+        sources.set(event.id, list);
       },
       oneose: finish,
     });
   });
 
-  return [...seen.values()].sort((a, b) => b.created_at - a.created_at);
+  return {
+    events: [...seen.values()].sort((a, b) => b.created_at - a.created_at),
+    sources,
+  };
 }
+
+/** Backwards-compatible wrapper: events only. */
+export async function query(
+  relays: string[],
+  filter: Filter,
+  maxWaitMs = 6000,
+): Promise<NostrEvent[]> {
+  return (await queryWithSources(relays, filter, maxWaitMs)).events;
+}
+
 
 export type PublishResult = { relay: string; ok: boolean; error?: string };
 
