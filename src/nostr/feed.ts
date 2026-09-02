@@ -153,21 +153,40 @@ export async function fetchFeedPage(
   until?: number,
 ): Promise<FeedPage> {
   const relays = getEnabledRelayUrls();
-  const { events: notes, sources } = await queryWithSources(
+  // Query each relay separately and take a fair slice from each: a single
+  // merged query lets the fastest relay (usually nos.lol) fill the whole
+  // limit before slower relays answer.
+  const perRelayLimit = Math.max(8, Math.ceil(limit / Math.max(1, relays.length)));
+  const { perRelay, sources } = await queryPerRelay(
     relays,
     {
       kinds: [KIND_NOTE],
-      limit,
+      limit: perRelayLimit,
       ...(mode === "grow" ? { "#t": FEED_TAGS } : {}),
       ...(until ? { until } : {}),
     },
     7000,
   );
 
-  const cursor = notes.length > 0 ? Math.min(...notes.map((n) => n.created_at)) : null;
-
   const keep = mode === "grow" ? isRelevantGrowNote : isReadableNote;
-  const posts = notes.filter(keep).map((note) => toPost(note, sources));
+  // Round-robin across relays so one fast relay cannot dominate the page.
+  const queues = [...perRelay.values()].map((events) => events.filter(keep));
+  const notes: NostrEvent[] = [];
+  let progressed = true;
+  while (notes.length < limit && progressed) {
+    progressed = false;
+    for (const queue of queues) {
+      const next = queue.shift();
+      if (next) {
+        notes.push(next);
+        progressed = true;
+        if (notes.length >= limit) break;
+      }
+    }
+  }
+
+  const cursor = notes.length > 0 ? Math.min(...notes.map((n) => n.created_at)) : null;
+  const posts = notes.map((note) => toPost(note, sources));
 
   await hydrateAuthors(relays, posts);
 
