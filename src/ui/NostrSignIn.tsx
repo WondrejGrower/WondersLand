@@ -238,8 +238,15 @@ function KeyBackup({
 }) {
   const [confirmed, setConfirmed] = useState(false);
   return (
-    <div className="absolute right-0 top-full z-40 mt-2 w-80 rounded-2xl border border-leaf/30 bg-forest-deep/95 p-4 text-left shadow-2xl backdrop-blur">
-      <p className="text-sm font-semibold text-leaf">Save your secret key</p>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Save your secret key"
+      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/80 p-4 backdrop-blur-sm"
+    >
+      <div className="w-full max-w-md rounded-2xl border border-leaf/30 bg-forest-deep/95 p-6 text-left shadow-2xl">
+      <p className="text-lg font-semibold text-leaf">Save your secret key</p>
+
       <p className="mt-1 text-xs leading-snug text-white/70">
         This is the only copy of your key. Anyone who has it controls your account, and nobody —
         including WondersLand — can recover it for you. Store it in a password manager.
@@ -273,10 +280,12 @@ function KeyBackup({
         type="button"
         disabled={!confirmed}
         onClick={onDone}
-        className="mt-3 w-full rounded-xl bg-leaf px-3 py-2 text-sm font-semibold text-forest-deep disabled:opacity-50"
+        className="mt-4 w-full rounded-xl bg-leaf px-3 py-3 text-sm font-semibold text-forest-deep disabled:opacity-50"
       >
         Continue to my garden
       </button>
+      </div>
     </div>
   );
 }
+
