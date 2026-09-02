@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { nip19 } from "nostr-tools";
 import { useFeedStore } from "../state/useFeedStore";
 import type { FeedMode, FeedPost } from "../nostr/feed";
+import { MediaChips, RelayChips } from "./SourceChips";
 
 function shortNpub(pubkey: string): string {
   try {
@@ -75,6 +76,11 @@ function PostCard({ post }: { post: FeedPost }) {
           className="mt-3 max-h-56 w-full rounded-xl object-cover"
         />
       ) : null}
+
+      <div className="mt-3 grid gap-1">
+        <RelayChips relays={post.relays} label="Relay" />
+        <MediaChips urls={post.images} />
+      </div>
 
       <div className="mt-3 grid grid-cols-4 gap-1.5 sm:gap-2">
         {ACTIONS.map((action) => (
