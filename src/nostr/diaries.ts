@@ -1,7 +1,7 @@
 import { DIARY_TAG, DIARY_TAG_LEGACY, KIND_DIARY, KIND_NOTE } from "./kinds";
 import { extractImageUrls, firstImage, preview } from "./media";
 import { decodeCustomPlantSlug, getPlantBySlug } from "./plants/catalog";
-import { query } from "./pool";
+import { query, queryWithSources } from "./pool";
 import { getEnabledRelayUrls } from "./relays";
 import { getJson, setJson } from "./storage";
 import type { Diary, DiaryItemRef, NostrEvent } from "./types";
@@ -112,7 +112,11 @@ async function hydrateItems(diaries: Diary[]): Promise<void> {
 
 export async function fetchDiaries(pubkey: string): Promise<Diary[]> {
   const cacheKey = `diaries:${pubkey}`;
-  const events = await query(getEnabledRelayUrls(), { kinds: [KIND_DIARY], authors: [pubkey], limit: 120 }, 7000);
+  const { events, sources } = await queryWithSources(
+    getEnabledRelayUrls(),
+    { kinds: [KIND_DIARY], authors: [pubkey], limit: 120 },
+    7000,
+  );
 
   const latest = new Map<string, NostrEvent>();
   for (const event of events) {
@@ -125,7 +129,7 @@ export async function fetchDiaries(pubkey: string): Promise<Diary[]> {
   const diaries: Diary[] = [];
   for (const event of latest.values()) {
     const diary = parseDiary(event, pubkey);
-    if (diary) diaries.push(diary);
+    if (diary) diaries.push({ ...diary, seenOn: sources.get(event.id) ?? [] });
   }
   diaries.sort((a, b) => b.updatedAt - a.updatedAt);
 

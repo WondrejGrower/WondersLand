@@ -343,3 +343,11 @@ Limitations: portals are placeholders (no destination), grow beds are decorative
 walk-to-house flow is unreliable because the sandbox WebGL context is lost on
 long sessions — validate movement changes with a small math simulation or in a
 real browser.
+
+
+Provenance: never fetch relay-by-relay to find an event's origin — use
+`queryWithSources` and pass the resulting `sources` map into the display type
+(`Diary.seenOn`, `DiaryEntry.relays`, `FeedPost.relays`). These are display-only
+fields and must never be written into a published event: `diaryEventTemplate`
+builds its JSON explicitly, keep it that way. Blossom/media hosts are derived
+from image URLs in `src/nostr/hosts.ts`, with no extra requests.

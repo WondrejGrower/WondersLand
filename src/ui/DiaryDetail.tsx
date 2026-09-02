@@ -1,11 +1,12 @@
 // 2D diary reader. Pure DOM UI inside the authenticated shell: it reads a diary
 // (kind 30078) plus its referenced kind:1 entries and renders them chronologically.
 import { useEffect, useState } from "react";
-import { ArrowLeft, CalendarDays, EyeOff, ImageOff, KeyRound, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { ArrowLeft, CalendarDays, EyeOff, ImageOff, KeyRound, Pencil, Plus, RotateCcw, Send, Trash2 } from "lucide-react";
 
 
 import { fetchDiaryEntries, type DiaryEntry } from "../nostr/diaryEntries";
 import { firstImage } from "../nostr/media";
+import { MediaChips, RelayChips } from "./SourceChips";
 import type { Diary } from "../nostr/types";
 
 function dateLabel(seconds: number): string {
@@ -38,6 +39,7 @@ export function DiaryDetail({
   onUnhide,
   onUnlock,
   onDelete,
+  onResendDelete,
 }: {
   diary: Diary;
   writable: boolean;
@@ -49,6 +51,7 @@ export function DiaryDetail({
   onUnhide: (diary: Diary) => void;
   onUnlock: (diary: Diary) => void;
   onDelete: (diary: Diary) => Promise<void>;
+  onResendDelete: (diary: Diary) => Promise<string>;
 }) {
 
   const [entries, setEntries] = useState<DiaryEntry[] | null>(null);
@@ -57,6 +60,8 @@ export function DiaryDetail({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+  const [resendReport, setResendReport] = useState<string | null>(null);
 
 
 
@@ -67,7 +72,7 @@ export function DiaryDetail({
     setConfirmHide(false);
     setConfirmDelete(false);
     setDeleteError(null);
-
+    setResendReport(null);
 
     if (diary.items.length === 0) {
       setEntries([]);
@@ -135,6 +140,12 @@ export function DiaryDetail({
               created {dateLabel(diary.createdAt)} · updated {dateLabel(diary.updatedAt)} ·{" "}
               {diary.items.length} {diary.items.length === 1 ? "entry" : "entries"}
             </p>
+            <div className="mt-1">
+              <RelayChips
+                relays={diary.seenOn}
+                fallback="Loaded from this device's cache — relay unknown until the next refresh."
+              />
+            </div>
           </div>
 
           {meta.length > 0 ? (
@@ -240,6 +251,34 @@ export function DiaryDetail({
               >
                 <Trash2 className="h-4 w-4" aria-hidden /> Delete diary
               </button>
+              <button
+                type="button"
+                disabled={resending}
+                onClick={() => {
+                  setResending(true);
+                  setResendReport(null);
+                  void onResendDelete(diary)
+                    .then((report) => setResendReport(report))
+                    .catch((err: unknown) =>
+                      setResendReport(
+                        err instanceof Error ? err.message : "Could not reach the relays",
+                      ),
+                    )
+                    .finally(() => setResending(false));
+                }}
+                className="ml-1 inline-flex min-h-11 w-fit items-center gap-2 rounded-xl px-3 py-2.5 text-xs text-cream/65 hover:text-cream disabled:opacity-60"
+              >
+                <Send className="h-4 w-4" aria-hidden />
+                {resending ? "Re-sending…" : "Re-send deletion"}
+              </button>
+              <p className="mt-2 text-[0.7rem] leading-relaxed text-cream/55">
+                Relays decide for themselves whether to honour a deletion. If a diary keeps coming
+                back, it is still being served by one of the relays listed above — re-sending asks
+                them again.
+              </p>
+              {resendReport ? (
+                <p className="mt-2 whitespace-pre-wrap text-xs text-cream/80">{resendReport}</p>
+              ) : null}
               {deleteError ? <p className="mt-2 text-xs text-amber-300">{deleteError}</p> : null}
             </div>
           ) : null}
@@ -338,6 +377,10 @@ export function DiaryDetail({
                     {entry.missing ? "This note could not be read from the relays." : "No text in this entry."}
                   </p>
                 )}
+                <div className="mt-2 grid gap-1">
+                  <RelayChips relays={entry.relays} />
+                  <MediaChips urls={entry.images} />
+                </div>
                 {entry.images.length > 0 ? (
                   <div className="mt-3 grid min-w-0 gap-2 sm:grid-cols-2">
                     {entry.images.map((url) => (

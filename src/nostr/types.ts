@@ -38,5 +38,7 @@ export type Diary = {
   coverImage?: string | undefined;
   createdAt: number;
   updatedAt: number;
+  /** Relay URLs that served this diary event on the last successful fetch. Display only. */
+  seenOn?: string[] | undefined;
   items: DiaryItemRef[];
 };
