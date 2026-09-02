@@ -280,10 +280,12 @@ function KeyBackup({
         type="button"
         disabled={!confirmed}
         onClick={onDone}
-        className="mt-3 w-full rounded-xl bg-leaf px-3 py-2 text-sm font-semibold text-forest-deep disabled:opacity-50"
+        className="mt-4 w-full rounded-xl bg-leaf px-3 py-3 text-sm font-semibold text-forest-deep disabled:opacity-50"
       >
         Continue to my garden
       </button>
+      </div>
     </div>
   );
 }
+
