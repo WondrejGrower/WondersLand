@@ -1,6 +1,6 @@
 import { KIND_NOTE, KIND_PROFILE } from "./kinds";
 import { extractImageUrls, preview } from "./media";
-import { query, queryWithSources } from "./pool";
+import { query, queryPerRelay } from "./pool";
 import { getEnabledRelayUrls } from "./relays";
 import type { NostrEvent, Profile } from "./types";
 
@@ -33,19 +33,19 @@ export type FeedPage = {
 const FEED_TAGS = [
   "weedoshi-diary",
   "weedoshi",
-  "grow",
   "growmie",
   "growing",
   "garden",
   "gardening",
-  "plants",
   "homegrow",
   "livingsoil",
   "notill",
   "no-till",
-  "soil",
   "compost",
   "regenerative",
+  "cannabis",
+  "microgrowery",
+  "autoflower",
 ];
 
 const GROW_TAG_SET = new Set(FEED_TAGS.map((t) => t.toLowerCase()));
