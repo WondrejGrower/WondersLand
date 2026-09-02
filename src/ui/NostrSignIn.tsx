@@ -289,7 +289,9 @@ function KeyBackup({
         Continue to my garden
       </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
+
 }
 
