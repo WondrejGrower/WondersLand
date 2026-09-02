@@ -465,3 +465,5 @@ Pending Nostr work: reactions (kind 7), replies, reposts (kind 6) and zaps
   bed colliders from the central layout; `Plaza`/`layout` keep decorations out
   of interactable clearance.
 - No new packages, no physics engine, no post-processing, no per-frame state.
+
+- Grow feed: per-relay queries with fair round-robin merge (was: fastest relay, usually nos.lol, filled the whole page). New pool helper `queryPerRelay()`. Added relays relay.nos.social + nostr.mom (NIP-11 verified); tuned `#t` tags (dropped generic grow/plants/soil, added cannabis/microgrowery/autoflower). Verified live: damus 7, snort 7, nos.lol 7, nos.social 5, nostr.mom 2 events per page.
