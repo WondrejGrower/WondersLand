@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 2026-09-02 — Relay & Blossom provenance on every post
+
+### Added
+- `src/nostr/pool.ts` — `queryWithSources()` uses SimplePool `trackRelays` /
+  `seenOn` to report which relay served each event; `query()` stays as a thin
+  wrapper so existing callers are untouched.
+- `src/nostr/hosts.ts` — host helpers for relay and media (Blossom) URLs.
+- `src/ui/SourceChips.tsx` — muted `RelayChips` / `MediaChips` chips.
+- Provenance shown in the diary reader header ("Seen on"), on every entry, and
+  on feed cards; image hosts (Blossom) shown next to entries and feed posts.
+- Delete now reports per-relay results, and the diary reader has a
+  "Re-send deletion" action that republishes the NIP-09 request and prints
+  what each relay answered.
+
+### Notes
+- `Diary.seenOn`, `DiaryEntry.relays` and `FeedPost.relays` are display-only
+  fields; the published Weedoshi/Nostr format is unchanged.
+
 ## 2026-08-31 — Exit the world with C (or a touch button)
 
 ### Added

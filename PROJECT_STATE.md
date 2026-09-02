@@ -469,3 +469,22 @@ a subtle "empty spot" marker (soil circle + small stake) instead of random
 decorative plants. `useHiddenDiaries` pushes its id list into the garden store.
 Limitation: plants reflow to the first free spots after a deletion — there is
 no per-diary pinned spot yet.
+
+
+## Relay & Blossom provenance (2026-09-02)
+
+Every fetched event now carries the relays that served it. `queryWithSources`
+in `src/nostr/pool.ts` reads SimplePool's `seenOn` map (the pool runs with
+`trackRelays = true`) and returns `{ events, sources }`. Diaries store it as
+`Diary.seenOn` (also cached locally), entries as `DiaryEntry.relays`, feed posts
+as `FeedPost.relays`. `src/ui/SourceChips.tsx` renders muted host chips for the
+relay origin and for the media host (Blossom) derived from image URLs.
+
+Deletion is now honest: `handleDelete` reports "accepted by N of M relays" and
+the reader offers "Re-send deletion", which republishes the NIP-09 request and
+lists each relay's answer. Relays that refuse deletion keep serving the event —
+that is stated in the UI rather than hidden.
+
+Limitations: provenance reflects the last successful fetch only; a diary loaded
+from the local cache shows "relay unknown until the next refresh". Media chips
+show the URL host, they do not verify the blob exists on that server.
