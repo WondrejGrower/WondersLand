@@ -3,7 +3,7 @@
 // and media for display. Nothing here writes or changes the persisted schema.
 import { KIND_NOTE } from "./kinds";
 import { extractImageUrls } from "./media";
-import { query } from "./pool";
+import { queryWithSources } from "./pool";
 import { getEnabledRelayUrls } from "./relays";
 import type { Diary, DiaryItemRef } from "./types";
 
@@ -17,6 +17,8 @@ export type DiaryEntry = {
   phaseLabel?: string | undefined;
   /** True when the referenced note could not be read from the relays. */
   missing: boolean;
+  /** Relay URLs that served this note. Empty when it came from the local cache. */
+  relays: string[];
 };
 
 function stripImages(content: string): string {
@@ -35,6 +37,7 @@ function fromRef(ref: DiaryItemRef): DiaryEntry {
     images: ref.mediaUrls ?? (ref.image ? [ref.image] : []),
     phaseLabel: ref.phaseLabel,
     missing: true,
+    relays: [],
   };
 }
 
@@ -48,9 +51,11 @@ export async function fetchDiaryEntries(diary: Diary): Promise<DiaryEntry[]> {
 
   const ids = refs.map((ref) => ref.eventId).slice(0, 300);
   let byId = new Map<string, { content: string; created_at: number }>();
+  let sources = new Map<string, string[]>();
   try {
-    const notes = await query(getEnabledRelayUrls(), { kinds: [KIND_NOTE], ids }, 7000);
-    byId = new Map(notes.map((note) => [note.id, note]));
+    const result = await queryWithSources(getEnabledRelayUrls(), { kinds: [KIND_NOTE], ids }, 7000);
+    byId = new Map(result.events.map((note) => [note.id, note]));
+    sources = result.sources;
   } catch {
     byId = new Map();
   }
@@ -67,6 +72,7 @@ export async function fetchDiaryEntries(diary: Diary): Promise<DiaryEntry[]> {
       images: images.length > 0 ? images : (ref.mediaUrls ?? (ref.image ? [ref.image] : [])),
       phaseLabel: ref.phaseLabel,
       missing: false,
+      relays: sources.get(ref.eventId) ?? [],
     };
   });
 }

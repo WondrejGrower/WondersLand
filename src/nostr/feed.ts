@@ -1,6 +1,6 @@
 import { KIND_NOTE, KIND_PROFILE } from "./kinds";
 import { extractImageUrls, preview } from "./media";
-import { query } from "./pool";
+import { query, queryWithSources } from "./pool";
 import { getEnabledRelayUrls } from "./relays";
 import type { NostrEvent, Profile } from "./types";
 
@@ -18,6 +18,8 @@ export type FeedPost = {
   createdAt: number;
   text: string;
   images: string[];
+  /** Relay URLs that served this note. Display only. */
+  relays: string[];
   author?: Profile | undefined;
 };
 
@@ -115,8 +117,9 @@ function toProfile(event: NostrEvent): Profile {
   }
 }
 
-function toPost(note: NostrEvent): FeedPost {
+function toPost(note: NostrEvent, sources?: Map<string, string[]>): FeedPost {
   return {
+    relays: sources?.get(note.id) ?? [],
     id: note.id,
     pubkey: note.pubkey,
     createdAt: note.created_at,
@@ -150,7 +153,7 @@ export async function fetchFeedPage(
   until?: number,
 ): Promise<FeedPage> {
   const relays = getEnabledRelayUrls();
-  const notes = await query(
+  const { events: notes, sources } = await queryWithSources(
     relays,
     {
       kinds: [KIND_NOTE],
@@ -164,7 +167,7 @@ export async function fetchFeedPage(
   const cursor = notes.length > 0 ? Math.min(...notes.map((n) => n.created_at)) : null;
 
   const keep = mode === "grow" ? isRelevantGrowNote : isReadableNote;
-  const posts = notes.filter(keep).map(toPost);
+  const posts = notes.filter(keep).map((note) => toPost(note, sources));
 
   await hydrateAuthors(relays, posts);
 
