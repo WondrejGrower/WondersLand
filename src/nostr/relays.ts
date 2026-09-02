@@ -9,6 +9,10 @@ const DEFAULTS: Relay[] = [
   { url: "wss://relay.snort.social", enabled: true },
   { url: "wss://relay.nostr.band", enabled: true },
   { url: "wss://nos.lol", enabled: true },
+  // Smaller community relays where grow/weedoshi content lives; verified
+  // reachable via NIP-11 and responsive to `#t` filters.
+  { url: "wss://relay.nos.social", enabled: true },
+  { url: "wss://nostr.mom", enabled: true },
   { url: "wss://nostr-pub.wellorder.net", enabled: false },
   // Future WondersLand relay: listed but off until it is reachable.
   { url: WONDERSLAND_RELAY_URL, enabled: WONDERSLAND_RELAY_ENABLED },
