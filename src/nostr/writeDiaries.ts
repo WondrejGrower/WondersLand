@@ -105,18 +105,23 @@ async function publishSigned(signer: Signer, template: EventTemplate): Promise<{
 
 function applyInput(diary: Diary, input: DiaryInput): Diary {
   const plant = input.plant?.trim() || undefined;
+  // Clearing the plant field must clear the slug too, otherwise the old
+  // species would keep driving the catalog lookup and the 3D garden model.
+  const cover =
+    input.coverImage === undefined ? diary.coverImage : input.coverImage.trim() || undefined;
   return {
     ...diary,
     title: input.title.trim() || diary.title,
     plant,
-    plantSlug: plantSlugFor(plant) ?? diary.plantSlug,
+    plantSlug: plant ? plantSlugFor(plant) : undefined,
     cultivar: input.cultivar?.trim() || undefined,
     breeder: input.breeder?.trim() || undefined,
     phase: input.phase?.trim() || undefined,
-    coverImage: input.coverImage?.trim() || diary.coverImage,
+    coverImage: cover,
     updatedAt: now(),
   };
 }
+
 
 export async function createDiary(signer: Signer, input: DiaryInput): Promise<WriteResult> {
   const pubkey = await signer.getPublicKey();
