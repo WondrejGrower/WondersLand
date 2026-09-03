@@ -503,3 +503,9 @@ show the URL host, they do not verify the blob exists on that server.
   sessions get the existing PublishUnlock sheet. Zap and Repost stay disabled.
 - Limitations: no NIP-57 zaps, no NIP-18 reposts, no kind 31990 handler event
   yet (so the client tag uses the bare name form), counts are not live-updated.
+
+## Photo upload servers
+Diary entry photos upload over Blossom (BUD-02/BUD-11) to public keyless servers,
+tried in order: blossom.primal.net, blossom.band, nostr.download. Configured in
+src/nostr/endpoints.ts (BLOSSOM_SERVERS); fallback lives in uploadToAnyServer.
+Limitation: one image per entry; upload failure never loses the entry text.

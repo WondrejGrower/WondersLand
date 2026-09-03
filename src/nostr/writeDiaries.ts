@@ -6,7 +6,7 @@
 // `t: weedoshi-diary`; an entry is a kind 1 note published first, then
 // referenced from the diary event (`items[]` + an `e` tag). Entry text never
 // moves inside the diary event.
-import { uploadBlob } from "./blossom";
+import { uploadToAnyServer } from "./blossom";
 import { withClientTag } from "./clientTag";
 import { DIARY_TAG, KIND_DELETE, KIND_DIARY, KIND_NOTE } from "./kinds";
 import { extractImageUrls, preview } from "./media";
@@ -228,6 +228,6 @@ export async function deleteDiary(signer: Signer, diary: Diary): Promise<Publish
  * existing `extractImageUrls` path keeps working unchanged.
  */
 export async function uploadMedia(signer: Signer, file: File): Promise<string> {
-  const blob = await uploadBlob(signer, file);
+  const blob = await uploadToAnyServer(signer, file);
   return blob.url;
 }

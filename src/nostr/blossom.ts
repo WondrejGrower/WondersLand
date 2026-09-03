@@ -4,7 +4,7 @@
 // kind 24242 event signed through the existing Signer boundary, short-lived
 // and scoped to `t=upload`, the exact blob hash (`x`) and the configured
 // server. Nothing is persisted — no token, no bytes, no secret.
-import { BLOSSOM_BASE_URL } from "./endpoints";
+import { BLOSSOM_BASE_URL, BLOSSOM_SERVERS } from "./endpoints";
 import type { Signer } from "./signers";
 
 export const KIND_BLOSSOM_AUTH = 24242;
@@ -127,4 +127,30 @@ export async function uploadBlob(
   const descriptor = descriptorFrom(payload, hash, file.size);
   if (!descriptor) throw new Error("The photo server sent an unexpected reply.");
   return descriptor;
+}
+
+/**
+ * Upload to the first server that accepts the blob. Each attempt signs its own
+ * BUD-11 auth because the `server` tag is host-specific. A "too large" refusal
+ * is final — retrying elsewhere would only fail again.
+ */
+export async function uploadToAnyServer(
+  signer: Signer,
+  file: File,
+  servers: readonly string[] = BLOSSOM_SERVERS,
+): Promise<BlobDescriptor> {
+  let last: Error | null = null;
+  for (const server of servers) {
+    try {
+      return await uploadBlob(signer, file, server);
+    } catch (err) {
+      last = err instanceof Error ? err : new Error("Upload failed");
+      if (/too large|not an image/i.test(last.message)) throw last;
+    }
+  }
+  throw new Error(
+    last
+      ? "No photo server accepted this image. Your entry text is safe — publish it without the photo."
+      : "No photo server is configured.",
+  );
 }
