@@ -76,8 +76,9 @@ describe("uploadToAnyServer", () => {
     expect(blob.url).toBe("https://b.example/x.jpg");
     expect(calls).toEqual(["https://a.example/upload", "https://b.example/upload"]);
 
-    const servers = fetchMock.mock.calls.map(([, init]) => {
-      const auth = String((init as RequestInit & { headers: Record<string, string> }).headers["Authorization"]);
+    const servers = fetchMock.mock.calls.map((call) => {
+      const init = (call as unknown as [string, RequestInit])[1];
+      const auth = String((init.headers as Record<string, string>)["Authorization"]);
       return JSON.parse(atob(auth.replace("Nostr ", ""))).tags.find((t: string[]) => t[0] === "server")[1];
     });
     expect(servers).toEqual(["a.example", "b.example"]);
