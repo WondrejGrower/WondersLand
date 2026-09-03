@@ -72,21 +72,29 @@ export function PlantPicker({
   value: string;
   onChange: (plant: string) => void;
 }) {
-  const [category, setCategory] = useState<PlantCategory | "all">("all");
+  const [category, setCategory] = useState<PlantCategory | "all">(
+    CANNABIS_ONLY ? "cannabis" : "all",
+  );
   const [query, setQuery] = useState("");
 
   const results = useMemo(() => {
-    const q = query.trim();
+    const q = query.trim().toLowerCase();
+    if (CANNABIS_ONLY) {
+      const items = q
+        ? CANNABIS_OPTIONS.filter((name) => name.toLowerCase().includes(q))
+        : CANNABIS_OPTIONS;
+      return items.map((name) => ({ id: name, text: name }));
+    }
     let items = plantCatalogData.items;
     if (category !== "all") items = items.filter((item) => categoryOf(item) === category);
     if (q) items = items.filter((item) => matches(item, q));
-    return items.slice(0, 24);
+    return items.slice(0, 24).map((item) => ({ id: item.id, text: label(item) }));
   }, [category, query]);
 
   return (
     <div className="grid min-w-0 gap-2.5">
       <div className="flex min-w-0 flex-wrap gap-1.5">
-        {CATEGORIES.map((c) => (
+        {(CANNABIS_ONLY ? CATEGORIES.filter((c) => c.id === "cannabis") : CATEGORIES).map((c) => (
           <button
             key={c.id}
             type="button"
@@ -102,7 +110,7 @@ export function PlantPicker({
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search plants…"
+        placeholder={CANNABIS_ONLY ? "Search cannabis types…" : "Search plants…"}
         aria-label="Search plants"
         className={fieldClass}
       />
@@ -110,12 +118,12 @@ export function PlantPicker({
       <div className="max-h-44 min-w-0 overflow-y-auto rounded-xl border border-forest-soft/40">
         {results.length === 0 ? (
           <p className="p-3 text-xs text-cream/60">
-            Nothing in the catalog matches. Type your own plant name below.
+            Nothing here matches. Type your own plant name below.
           </p>
         ) : (
           <ul className="divide-y divide-forest-soft/30">
             {results.map((item) => {
-              const text = label(item);
+              const text = item.text;
               const selected = value.trim().toLowerCase() === text.toLowerCase();
               return (
                 <li key={item.id}>
@@ -134,6 +142,7 @@ export function PlantPicker({
           </ul>
         )}
       </div>
+
 
       <input
         value={value}
