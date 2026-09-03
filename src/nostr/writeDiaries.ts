@@ -228,6 +228,6 @@ export async function deleteDiary(signer: Signer, diary: Diary): Promise<Publish
  * existing `extractImageUrls` path keeps working unchanged.
  */
 export async function uploadMedia(signer: Signer, file: File): Promise<string> {
-  const blob = await uploadBlob(signer, file);
+  const blob = await uploadToAnyServer(signer, file);
   return blob.url;
 }
