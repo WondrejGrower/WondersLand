@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { uploadBlob } from "./blossom";
+import { uploadBlob, uploadToAnyServer } from "./blossom";
 import type { Signer } from "./signers";
 
 const signer: Signer = {
@@ -59,5 +59,34 @@ describe("uploadBlob", () => {
   it("rejects non-images", async () => {
     const doc = new File(["x"], "a.pdf", { type: "application/pdf" });
     await expect(uploadBlob(signer, doc, "https://blossom.example")).rejects.toThrow(/not an image/);
+  });
+});
+
+describe("uploadToAnyServer", () => {
+  it("falls back to the next server and re-signs per host", async () => {
+    const calls: string[] = [];
+    const fetchMock = vi.fn(async (url: string) => {
+      calls.push(url);
+      if (url.startsWith("https://a.example")) return new Response("boom", { status: 500 });
+      return new Response(JSON.stringify({ url: "https://b.example/x.jpg" }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const blob = await uploadToAnyServer(signer, image(), ["https://a.example", "https://b.example"]);
+    expect(blob.url).toBe("https://b.example/x.jpg");
+    expect(calls).toEqual(["https://a.example/upload", "https://b.example/upload"]);
+
+    const servers = fetchMock.mock.calls.map(([, init]) => {
+      const auth = String((init as RequestInit & { headers: Record<string, string> }).headers["Authorization"]);
+      return JSON.parse(atob(auth.replace("Nostr ", ""))).tags.find((t: string[]) => t[0] === "server")[1];
+    });
+    expect(servers).toEqual(["a.example", "b.example"]);
+  });
+
+  it("reports a clear message when every server refuses", async () => {
+    vi.stubGlobal("fetch", async () => new Response("no", { status: 500 }));
+    await expect(uploadToAnyServer(signer, image(), ["https://a.example"])).rejects.toThrow(
+      /entry text is safe/,
+    );
   });
 });

@@ -6,7 +6,7 @@
 // `t: weedoshi-diary`; an entry is a kind 1 note published first, then
 // referenced from the diary event (`items[]` + an `e` tag). Entry text never
 // moves inside the diary event.
-import { uploadBlob } from "./blossom";
+import { uploadToAnyServer } from "./blossom";
 import { withClientTag } from "./clientTag";
 import { DIARY_TAG, KIND_DELETE, KIND_DIARY, KIND_NOTE } from "./kinds";
 import { extractImageUrls, preview } from "./media";
