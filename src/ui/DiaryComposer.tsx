@@ -122,7 +122,9 @@ export function DiaryComposer({
         body = body ? `${body}\n${url}` : url;
       }
       setStage("publishing");
-      const input: DiaryInput = { title, plant, cultivar, breeder, phase };
+      const input: DiaryInput = isEdit
+        ? { title, plant, cultivar, breeder, phase, coverImage: cover }
+        : { title, plant, cultivar, breeder, phase };
       const result = isEntry && existing
         ? await addEntry(signer, existing, { text: body, phaseLabel: phase })
         : existing
@@ -131,8 +133,9 @@ export function DiaryComposer({
       upsertDiary(result.diary);
       // Draft state is intentionally left untouched on failure so a relay
       // problem never costs the user their text.
-      onPublished?.(result.diary, mode.kind);
+      onPublished?.(result.diary, mode.kind, result.results.filter((r) => r.ok).length);
       onClose();
+
     } catch (err) {
       setError(
         err instanceof Error
