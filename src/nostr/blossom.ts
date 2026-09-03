@@ -128,3 +128,29 @@ export async function uploadBlob(
   if (!descriptor) throw new Error("The photo server sent an unexpected reply.");
   return descriptor;
 }
+
+/**
+ * Upload to the first server that accepts the blob. Each attempt signs its own
+ * BUD-11 auth because the `server` tag is host-specific. A "too large" refusal
+ * is final — retrying elsewhere would only fail again.
+ */
+export async function uploadToAnyServer(
+  signer: Signer,
+  file: File,
+  servers: readonly string[] = BLOSSOM_SERVERS,
+): Promise<BlobDescriptor> {
+  let last: Error | null = null;
+  for (const server of servers) {
+    try {
+      return await uploadBlob(signer, file, server);
+    } catch (err) {
+      last = err instanceof Error ? err : new Error("Upload failed");
+      if (/too large|not an image/i.test(last.message)) throw last;
+    }
+  }
+  throw new Error(
+    last
+      ? "No photo server accepted this image. Your entry text is safe — publish it without the photo."
+      : "No photo server is configured.",
+  );
+}
