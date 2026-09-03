@@ -59,7 +59,9 @@ export function DiaryComposer({
   const [cultivar, setCultivar] = useState(existing?.cultivar ?? "");
   const [breeder, setBreeder] = useState(existing?.breeder ?? "");
   const [phase, setPhase] = useState(existing?.phase ?? "");
+  const [cover, setCover] = useState(existing?.coverImage ?? "");
   const [text, setText] = useState("");
+
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState<"idle" | "uploading" | "publishing">("idle");
   const [file, setFile] = useState<File | null>(null);
