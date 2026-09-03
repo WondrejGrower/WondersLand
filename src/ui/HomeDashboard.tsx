@@ -130,11 +130,14 @@ function Card({
   diary,
   onOpen,
   onAddEntry,
+  onEdit,
 }: {
   diary: Diary;
   onOpen: (diary: Diary) => void;
   onAddEntry: ((diary: Diary) => void) | null;
+  onEdit?: ((diary: Diary) => void) | null;
 }) {
+
   const cover = diary.coverImage ?? diary.items.map(firstImage).find(Boolean);
   return (
     <article className="min-w-0 overflow-hidden rounded-2xl border border-forest-soft/50 bg-forest/70 text-left transition-colors hover:border-leaf/40">
