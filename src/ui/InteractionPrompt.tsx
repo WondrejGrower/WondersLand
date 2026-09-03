@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useWorldStore } from "../state/useWorldStore";
 import { useGardenStore } from "../state/useGardenStore";
 import { getInteractable } from "../world/interactables";
+import { growTimer } from "../progression/timer";
 
 function useCoarsePointer(): boolean {
   const [coarse, setCoarse] = useState(false);
@@ -56,7 +57,9 @@ export function InteractionPrompt() {
 
   if (blocked || !target || (!world && !plant)) return null;
 
-  const name = world ? world.label : (plant?.label ?? "Plant");
+  const base = world ? world.label : (plant?.label ?? "Plant");
+  const clock = plant ? growTimer(plant.diary, now).short : null;
+  const name = clock ? `${base} · ${clock}` : base;
   const verb = world ? world.verb : "read";
   const label = coarse ? `${name} · Tap to ${verb}` : `${name} · Press E to ${verb}`;
 

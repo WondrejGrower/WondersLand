@@ -140,6 +140,9 @@ export function DiaryDetail({
               created {dateLabel(diary.createdAt)} · updated {dateLabel(diary.updatedAt)} ·{" "}
               {diary.items.length} {diary.items.length === 1 ? "entry" : "entries"}
             </p>
+            <p className="mt-0.5">
+              <GrowClock diary={diary} />
+            </p>
             <div className="mt-1">
               <RelayChips
                 relays={diary.seenOn}
