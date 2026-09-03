@@ -7,6 +7,7 @@ import { ArrowLeft, CalendarDays, EyeOff, ImageOff, KeyRound, Pencil, Plus, Rota
 import { fetchDiaryEntries, type DiaryEntry } from "../nostr/diaryEntries";
 import { firstImage } from "../nostr/media";
 import { MediaChips, RelayChips } from "./SourceChips";
+import { GrowClock } from "./GrowClock";
 import type { Diary } from "../nostr/types";
 
 function dateLabel(seconds: number): string {
@@ -139,6 +140,9 @@ export function DiaryDetail({
               <CalendarDays className="h-3.5 w-3.5" aria-hidden />
               created {dateLabel(diary.createdAt)} · updated {dateLabel(diary.updatedAt)} ·{" "}
               {diary.items.length} {diary.items.length === 1 ? "entry" : "entries"}
+            </p>
+            <p className="mt-0.5">
+              <GrowClock diary={diary} />
             </p>
             <div className="mt-1">
               <RelayChips

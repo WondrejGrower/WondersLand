@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useWorldStore } from "../state/useWorldStore";
 import { useGardenStore } from "../state/useGardenStore";
 import { getInteractable } from "../world/interactables";
+import { growTimer } from "../progression/timer";
 
 function useCoarsePointer(): boolean {
   const [coarse, setCoarse] = useState(false);
@@ -15,6 +16,17 @@ function useCoarsePointer(): boolean {
   return coarse;
 }
 
+/** Coarse 30s tick: the in-world prompt only needs the day number. */
+function useSlowNow(): number {
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    setNow(Date.now());
+    const id = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
+  return now;
+}
+
 /** One contextual prompt for every interaction target, desktop and touch. */
 export function InteractionPrompt() {
   const target = useWorldStore((s) => s.target);
@@ -24,6 +36,7 @@ export function InteractionPrompt() {
   const comingSoon = useWorldStore((s) => s.comingSoon);
   const plants = useGardenStore((s) => s.plants);
   const coarse = useCoarsePointer();
+  const now = useSlowNow();
 
   const blocked = journalOpen || indoorOpen || aboutOpen || comingSoon !== null;
 
@@ -56,7 +69,9 @@ export function InteractionPrompt() {
 
   if (blocked || !target || (!world && !plant)) return null;
 
-  const name = world ? world.label : (plant?.label ?? "Plant");
+  const base = world ? world.label : (plant?.label ?? "Plant");
+  const clock = plant ? growTimer(plant.diary, now || Date.now()).short : null;
+  const name = clock ? `${base} · ${clock}` : base;
   const verb = world ? world.verb : "read";
   const label = coarse ? `${name} · Tap to ${verb}` : `${name} · Press E to ${verb}`;
 

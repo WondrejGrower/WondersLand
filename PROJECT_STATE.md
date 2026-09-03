@@ -509,3 +509,11 @@ Diary entry photos upload over Blossom (BUD-02/BUD-11) to public keyless servers
 tried in order: blossom.primal.net, blossom.band, nostr.download. Configured in
 src/nostr/endpoints.ts (BLOSSOM_SERVERS); fallback lives in uploadToAnyServer.
 Limitation: one image per entry; upload failure never loses the entry text.
+
+### 2026-09-03 — Grow timer
+
+Each diary now shows a live grow timer (`src/progression/timer.ts`, `useGrowTimer`,
+`GrowClock`). It starts at the diary's `createdAt` and stops on a harvest/cure/finished
+phase; the world prompt shows the day count only. The diary plant picker is limited to
+cannabis types while testing (`CANNABIS_ONLY` in `src/ui/DiaryFields.tsx`); existing
+non-cannabis diaries keep displaying their stored plant and free text entry still works.
