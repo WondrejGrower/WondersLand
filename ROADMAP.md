@@ -98,3 +98,9 @@ Approved 2026-09-03. Nostr client work only; the 3D world is untouched.
 - NIP-89 `client` tag on every event WondersLand signs, so other clients
   show "from WondersLand"; incoming `client` tags are shown as a chip.
 - Zaps (NIP-57) and reposts (NIP-18) stay visibly disabled until a later pass.
+
+## Authorized pass — 2026-09-03: Live grow timer + cannabis-only plant list
+
+- Live grow timer derived from diary createdAt, stopped by harvest/cure/finished phase.
+- Timer visible in diary reader, diary cards, Latest diary and the in-world interaction prompt.
+- Plant picker temporarily limited to cannabis types (flag-gated, catalog untouched).

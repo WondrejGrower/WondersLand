@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 2026-09-03 — Live grow timer + cannabis-only plant list
+
+- Added `src/progression/timer.ts`: a pure grow timer derived from `diary.createdAt`,
+  stopped by a harvest/cure/finished phase (newest finishing entry wins, otherwise
+  `updatedAt`). Nothing new is stored or published.
+- `GrowClock` chip shows `Day N · hh:mm:ss` (live) or `Finished · N days` in the diary
+  reader, diary cards and the Latest diary panel; the 3D interaction prompt shows
+  `Plant · Day N` via the existing DOM overlay (no 3D text, no per-frame work).
+- Diary composer plant picker is temporarily limited to cannabis options
+  (ruderalis / indica dominant / sativa dominant / hybrid / sativa L. / indica / sativa)
+  behind a single `CANNABIS_ONLY` flag in `src/ui/DiaryFields.tsx`. Free text still works.
+
 ## 2026-09-02 — Relay & Blossom provenance on every post
 
 ### Added
