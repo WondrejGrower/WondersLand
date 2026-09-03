@@ -298,9 +298,17 @@ export function GrowFeed({
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const offsets = useRef<Record<FeedMode, number>>({ grow: 0, nostr: 0 });
 
+  const hydrateInteractions = useInteractionsStore((s) => s.hydrate);
+
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Likes/comments for the notes currently on screen, fetched once per note.
+  useEffect(() => {
+    if (posts.length === 0) return;
+    void hydrateInteractions(posts.slice(0, 30).map((p) => p.id));
+  }, [posts, hydrateInteractions]);
 
   useEffect(() => {
     const el = scrollRef.current;

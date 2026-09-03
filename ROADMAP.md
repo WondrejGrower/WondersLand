@@ -87,3 +87,14 @@ should exist.
       colliders with sliding resolution for cottage, greenhouse, garden island,
       arch posts, substantial rocks, tree trunks and diary plants. Shared
       deterministic layout source. No physics engine, no camera collision.
+
+
+## Authorized pass — Nostr interactions (likes, comments) + client stamp
+
+Approved 2026-09-03. Nostr client work only; the 3D world is untouched.
+
+- NIP-25 likes and NIP-10 comments on Grow Feed posts, published with the
+  existing in-memory signer (read-only npub sessions get the unlock sheet).
+- NIP-89 `client` tag on every event WondersLand signs, so other clients
+  show "from WondersLand"; incoming `client` tags are shown as a chip.
+- Zaps (NIP-57) and reposts (NIP-18) stay visibly disabled until a later pass.
