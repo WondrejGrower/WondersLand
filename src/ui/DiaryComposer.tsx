@@ -83,9 +83,21 @@ export function DiaryComposer({
   const breeders = useMemo(() => recentValues(diaries, (d) => d.breeder), [diaries]);
 
   const isEntry = mode.kind === "entry";
+  const isEdit = mode.kind === "edit";
   const heading =
     mode.kind === "create" ? "New diary" : isEntry ? `Add entry — ${existing?.title}` : "Edit diary";
   const titleHint = !title.trim() && cultivar.trim() ? cultivar.trim() : null;
+  /** Cover candidates come from photos already published in this diary. */
+  const covers = useMemo(() => {
+    const urls = new Set<string>();
+    if (existing?.coverImage) urls.add(existing.coverImage);
+    for (const item of existing?.items ?? []) {
+      for (const url of item.mediaUrls ?? []) urls.add(url);
+      if (item.image) urls.add(item.image);
+    }
+    return [...urls];
+  }, [existing]);
+
 
   function clearFile() {
     setFile(null);
