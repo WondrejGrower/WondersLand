@@ -22,8 +22,10 @@ export type DiaryInput = {
   cultivar?: string | undefined;
   breeder?: string | undefined;
   phase?: string | undefined;
+  /** `undefined` keeps the current cover, `""` clears it, a URL replaces it. */
   coverImage?: string | undefined;
 };
+
 
 export type WriteResult = { diary: Diary; results: PublishResult[] };
 
