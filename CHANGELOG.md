@@ -467,3 +467,10 @@ Pending Nostr work: reactions (kind 7), replies, reposts (kind 6) and zaps
 - No new packages, no physics engine, no post-processing, no per-frame state.
 
 - Grow feed: per-relay queries with fair round-robin merge (was: fastest relay, usually nos.lol, filled the whole page). New pool helper `queryPerRelay()`. Added relays relay.nos.social + nostr.mom (NIP-11 verified); tuned `#t` tags (dropped generic grow/plants/soil, added cannabis/microgrowery/autoflower). Verified live: damus 7, snort 7, nos.lol 7, nos.social 5, nostr.mom 2 events per page.
+
+- Diary editing: rename a diary and change plant/species, cultivar, breeder, phase and
+  cover photo. On Nostr this republishes the same addressable kind 30078 event (`d: diary-<id>`),
+  so relays replace the old version — no deletion, no schema change, entries untouched.
+  Edit is now reachable from diary cards and the Latest diary panel (was: detail view only);
+  clearing the plant field also clears `plantSlug` (3D garden picks up the new species),
+  and the save toast reports how many relays accepted the update.

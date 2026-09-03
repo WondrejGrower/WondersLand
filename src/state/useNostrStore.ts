@@ -229,7 +229,11 @@ export const useNostrStore = create<NostrState>((set, get) => {
       const next = [diary, ...diaries].sort((a, b) => b.updatedAt - a.updatedAt);
       set({ diaries: next });
       useGardenStore.getState().setDiaries(next);
+      // Keep the offline cache in step so a refresh cannot show the old title.
+      const { pubkey } = get();
+      if (pubkey) void setJson(`diaries:${pubkey}`, next);
     },
+
 
     removeDiary: async (id) => {
       const next = get().diaries.filter((d) => d.id !== id);

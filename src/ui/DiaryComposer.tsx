@@ -47,7 +47,7 @@ export function DiaryComposer({
   mode: Mode;
   onClose: () => void;
   /** Fired only after at least one relay accepted the event. */
-  onPublished?: (diary: Diary, kind: Mode["kind"]) => void;
+  onPublished?: (diary: Diary, kind: Mode["kind"], acceptedRelays: number) => void;
 }) {
   const method = useNostrStore((s) => s.method);
   const diaries = useNostrStore((s) => s.diaries);
@@ -59,7 +59,9 @@ export function DiaryComposer({
   const [cultivar, setCultivar] = useState(existing?.cultivar ?? "");
   const [breeder, setBreeder] = useState(existing?.breeder ?? "");
   const [phase, setPhase] = useState(existing?.phase ?? "");
+  const [cover, setCover] = useState(existing?.coverImage ?? "");
   const [text, setText] = useState("");
+
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState<"idle" | "uploading" | "publishing">("idle");
   const [file, setFile] = useState<File | null>(null);
@@ -81,9 +83,21 @@ export function DiaryComposer({
   const breeders = useMemo(() => recentValues(diaries, (d) => d.breeder), [diaries]);
 
   const isEntry = mode.kind === "entry";
+  const isEdit = mode.kind === "edit";
   const heading =
     mode.kind === "create" ? "New diary" : isEntry ? `Add entry — ${existing?.title}` : "Edit diary";
   const titleHint = !title.trim() && cultivar.trim() ? cultivar.trim() : null;
+  /** Cover candidates come from photos already published in this diary. */
+  const covers = useMemo(() => {
+    const urls = new Set<string>();
+    if (existing?.coverImage) urls.add(existing.coverImage);
+    for (const item of existing?.items ?? []) {
+      for (const url of item.mediaUrls ?? []) urls.add(url);
+      if (item.image) urls.add(item.image);
+    }
+    return [...urls];
+  }, [existing]);
+
 
   function clearFile() {
     setFile(null);
@@ -108,7 +122,9 @@ export function DiaryComposer({
         body = body ? `${body}\n${url}` : url;
       }
       setStage("publishing");
-      const input: DiaryInput = { title, plant, cultivar, breeder, phase };
+      const input: DiaryInput = isEdit
+        ? { title, plant, cultivar, breeder, phase, coverImage: cover }
+        : { title, plant, cultivar, breeder, phase };
       const result = isEntry && existing
         ? await addEntry(signer, existing, { text: body, phaseLabel: phase })
         : existing
@@ -117,8 +133,9 @@ export function DiaryComposer({
       upsertDiary(result.diary);
       // Draft state is intentionally left untouched on failure so a relay
       // problem never costs the user their text.
-      onPublished?.(result.diary, mode.kind);
+      onPublished?.(result.diary, mode.kind, result.results.filter((r) => r.ok).length);
       onClose();
+
     } catch (err) {
       setError(
         err instanceof Error
@@ -207,8 +224,97 @@ export function DiaryComposer({
                 <PhaseChips value={phase} onChange={setPhase} />
               </div>
             </>
+          ) : isEdit ? (
+            <>
+              <div className="grid min-w-0 gap-1.5">
+                <label htmlFor="diary-title" className={labelClass}>
+                  Diary name
+                </label>
+                <input
+                  id="diary-title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className={fieldClass}
+                />
+              </div>
+
+              <div className="grid min-w-0 gap-1.5">
+                <span className={labelClass}>Plant or species</span>
+                <PlantPicker value={plant} onChange={setPlant} />
+              </div>
+
+              <div className="grid min-w-0 gap-1.5">
+                <label htmlFor="diary-cultivar" className={labelClass}>
+                  Cultivar
+                </label>
+                <SuggestInput
+                  id="diary-cultivar"
+                  value={cultivar}
+                  onChange={setCultivar}
+                  placeholder="Optional"
+                  suggestions={cultivars}
+                />
+              </div>
+
+              <div className="grid min-w-0 gap-1.5">
+                <label htmlFor="diary-breeder" className={labelClass}>
+                  Breeder
+                </label>
+                <SuggestInput
+                  id="diary-breeder"
+                  value={breeder}
+                  onChange={setBreeder}
+                  placeholder="Optional"
+                  suggestions={breeders}
+                />
+              </div>
+
+              <div className="grid min-w-0 gap-1.5">
+                <span className={labelClass}>Current phase</span>
+                <PhaseChips value={phase} onChange={setPhase} />
+              </div>
+
+              {covers.length > 0 ? (
+                <div className="grid min-w-0 gap-2">
+                  <span className={labelClass}>Cover photo</span>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setCover("")}
+                      aria-pressed={cover === ""}
+                      className={`min-h-11 rounded-xl border px-3 text-xs ${
+                        cover === "" ? "border-leaf text-leaf" : "border-forest-soft/60 text-cream/70"
+                      }`}
+                    >
+                      No cover
+                    </button>
+                    {covers.map((url) => (
+                      <button
+                        key={url}
+                        type="button"
+                        onClick={() => setCover(url)}
+                        aria-pressed={cover === url}
+                        aria-label="Use this photo as the cover"
+                        className={`h-16 w-16 overflow-hidden rounded-xl border ${
+                          cover === url ? "border-leaf" : "border-forest-soft/60"
+                        }`}
+                      >
+                        <img src={url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              <p className="text-xs text-cream/60">
+                Editing republishes the same diary event — your {existing?.items.length ?? 0}{" "}
+                entries stay untouched. A relay that refuses the update may keep serving the old
+                version.
+              </p>
+            </>
           ) : (
             <>
+
               <Group step={1} title="What are you growing?">
                 <PlantPicker value={plant} onChange={setPlant} />
               </Group>
@@ -291,12 +397,15 @@ export function DiaryComposer({
             {stage === "uploading"
               ? "Uploading photo…"
               : busy
-                ? "Publishing…"
+                ? isEdit
+                  ? "Saving…"
+                  : "Publishing…"
                 : isEntry
                   ? "Publish entry"
-                  : existing
-                    ? "Save diary"
+                  : isEdit
+                    ? "Save changes"
                     : "Create diary"}
+
           </button>
         </div>
       </div>

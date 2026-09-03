@@ -14,6 +14,8 @@ import {
   EyeOff,
   RotateCcw,
   Plus,
+  Pencil,
+
 } from "lucide-react";
 
 import { useNostrStore } from "../state/useNostrStore";
@@ -130,11 +132,14 @@ function Card({
   diary,
   onOpen,
   onAddEntry,
+  onEdit,
 }: {
   diary: Diary;
   onOpen: (diary: Diary) => void;
   onAddEntry: ((diary: Diary) => void) | null;
+  onEdit?: ((diary: Diary) => void) | null;
 }) {
+
   const cover = diary.coverImage ?? diary.items.map(firstImage).find(Boolean);
   return (
     <article className="min-w-0 overflow-hidden rounded-2xl border border-forest-soft/50 bg-forest/70 text-left transition-colors hover:border-leaf/40">
@@ -174,17 +179,30 @@ function Card({
           </p>
         </div>
       </button>
-      {onAddEntry ? (
-        <div className="px-4 pb-4">
-          <button
-            type="button"
-            onClick={() => onAddEntry(diary)}
-            className="inline-flex min-h-9 items-center rounded-full border border-leaf/40 px-3 py-1 text-xs font-medium text-leaf"
-          >
-            Add entry
-          </button>
+      {onAddEntry || onEdit ? (
+        <div className="flex flex-wrap items-center gap-2 px-4 pb-4">
+          {onAddEntry ? (
+            <button
+              type="button"
+              onClick={() => onAddEntry(diary)}
+              className="inline-flex min-h-9 items-center rounded-full border border-leaf/40 px-3 py-1 text-xs font-medium text-leaf"
+            >
+              Add entry
+            </button>
+          ) : null}
+          {onEdit ? (
+            <button
+              type="button"
+              onClick={() => onEdit(diary)}
+              aria-label={`Edit diary ${diary.title}`}
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-forest-soft/60 px-3 py-1 text-xs text-cream/75"
+            >
+              <Pencil className="h-3.5 w-3.5" aria-hidden /> Edit
+            </button>
+          ) : null}
         </div>
       ) : null}
+
     </article>
   );
 }
@@ -278,7 +296,11 @@ export function HomeDashboard() {
     setUnlockOpen(true);
   };
 
-  const handlePublished = (diary: Diary, kind: ComposerMode["kind"]) => {
+  const handlePublished = (
+    diary: Diary,
+    kind: ComposerMode["kind"],
+    acceptedRelays: number,
+  ) => {
     setSection("diaries");
     setFeedExpanded(false);
     setShowHidden(false);
@@ -287,14 +309,18 @@ export function HomeDashboard() {
     // one means this publish is what completed the first-diary mission.
     const firstDiary = kind === "create" && sorted.length === 0;
     if (firstDiary) setMissionAdvanced(true);
+    const relays = acceptedRelays === 1 ? "1 relay" : `${acceptedRelays} relays`;
     setToast(
       firstDiary
         ? "✓ First diary created — next: add your first entry"
         : kind === "entry"
-          ? "Entry published to Nostr"
-          : "Published to Nostr",
+          ? `Entry published · ${relays}`
+          : kind === "edit"
+            ? `Diary updated · ${relays}`
+            : `Published to Nostr · ${relays}`,
     );
   };
+
 
   /** Permanent removal: NIP-09 deletion request + local state/cache cleanup. */
   const handleDelete = async (diary: Diary) => {
@@ -568,13 +594,23 @@ export function HomeDashboard() {
                 {relative(latest.updatedAt)} · {latest.items.length}{" "}
                 {latest.items.length === 1 ? "entry" : "entries"}
               </p>
-              <button
-                type="button"
-                onClick={() => openDiary(latest)}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-forest-soft/60 px-3 py-1.5 text-xs text-cream/85"
-              >
-                Open diary <ExternalLink className="h-3 w-3" aria-hidden />
-              </button>
+              <span className="flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => requestComposer({ kind: "edit", diary: latest })}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-forest-soft/60 px-3 py-1.5 text-xs text-cream/85"
+                >
+                  <Pencil className="h-3 w-3" aria-hidden /> Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openDiary(latest)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-forest-soft/60 px-3 py-1.5 text-xs text-cream/85"
+                >
+                  Open diary <ExternalLink className="h-3 w-3" aria-hidden />
+                </button>
+              </span>
+
             </div>
           </>
         ) : (
@@ -762,6 +798,8 @@ export function HomeDashboard() {
                         diary={diary}
                         onOpen={openDiary}
                         onAddEntry={(d) => requestComposer({ kind: "entry", diary: d })}
+                        onEdit={(d) => requestComposer({ kind: "edit", diary: d })}
+
                       />
                     ))}
                   </div>
