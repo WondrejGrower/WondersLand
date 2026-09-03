@@ -1,3 +1,4 @@
+import { clientOf } from "./clientTag";
 import { KIND_NOTE, KIND_PROFILE } from "./kinds";
 import { extractImageUrls, preview } from "./media";
 import { query, queryPerRelay } from "./pool";
@@ -20,6 +21,8 @@ export type FeedPost = {
   images: string[];
   /** Relay URLs that served this note. Display only. */
   relays: string[];
+  /** NIP-89 client attribution from the note's `client` tag. Display only. */
+  client?: string | undefined;
   author?: Profile | undefined;
 };
 
@@ -123,6 +126,7 @@ function toPost(note: NostrEvent, sources?: Map<string, string[]>): FeedPost {
     id: note.id,
     pubkey: note.pubkey,
     createdAt: note.created_at,
+    client: clientOf(note.tags),
     text: preview(note.content ?? "", 420),
     images: extractImageUrls(note.content ?? ""),
   };

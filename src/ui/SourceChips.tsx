@@ -1,6 +1,6 @@
 // Small, muted provenance chips: which relay served an event, and which host
 // (e.g. a Blossom server) serves its images. Display only — no network calls.
-import { Radio, Image as ImageIcon } from "lucide-react";
+import { Radio, Image as ImageIcon, Sparkles } from "lucide-react";
 
 import { mediaHosts, relayHosts } from "../nostr/hosts";
 
@@ -51,4 +51,14 @@ export function RelayChips({
 /** Hosts serving the media of an event (Blossom or any other server). */
 export function MediaChips({ urls, label = "Media" }: { urls: string[] | undefined; label?: string }) {
   return <Chips icon={ImageIcon} label={label} hosts={mediaHosts(urls)} />;
+}
+
+/** NIP-89 attribution: which client published an event ("from WondersLand"). */
+export function ClientChip({ client }: { client: string | undefined }) {
+  if (!client) return null;
+  return (
+    <span className="inline-flex max-w-full items-center gap-1 truncate rounded-full border border-forest-soft/50 bg-forest-deep/40 px-2 py-0.5 text-[0.65rem] text-cream/60">
+      <Sparkles className="h-3 w-3 shrink-0" aria-hidden /> from {client}
+    </span>
+  );
 }

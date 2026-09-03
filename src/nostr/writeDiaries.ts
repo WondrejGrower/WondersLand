@@ -7,6 +7,7 @@
 // referenced from the diary event (`items[]` + an `e` tag). Entry text never
 // moves inside the diary event.
 import { uploadBlob } from "./blossom";
+import { withClientTag } from "./clientTag";
 import { DIARY_TAG, KIND_DELETE, KIND_DIARY, KIND_NOTE } from "./kinds";
 import { extractImageUrls, preview } from "./media";
 import { getPlantBySlug } from "./plants/catalog";
@@ -92,7 +93,7 @@ async function publishSigned(signer: Signer, template: EventTemplate): Promise<{
   event: NostrEvent;
   results: PublishResult[];
 }> {
-  const event = await signer.signEvent(template);
+  const event = await signer.signEvent(withClientTag(template));
   const results = await publish(getEnabledRelayUrls(), event);
   if (results.length > 0 && !results.some((r) => r.ok)) {
     throw new Error("No relay accepted the event — your draft is kept locally");
@@ -205,12 +206,12 @@ export async function deleteDiary(signer: Signer, diary: Diary): Promise<Publish
   for (const item of diary.items) tags.push(["e", item.eventId]);
   if (diary.items.length > 0) tags.push(["k", String(KIND_NOTE)]);
 
-  const event = await signer.signEvent({
+  const event = await signer.signEvent(withClientTag({
     kind: KIND_DELETE,
     created_at: now(),
     tags,
     content: "Diary deleted from WondersLand",
-  });
+  }));
   return await publish(getEnabledRelayUrls(), event);
 }
 

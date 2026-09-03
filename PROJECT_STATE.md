@@ -488,3 +488,18 @@ that is stated in the UI rather than hidden.
 Limitations: provenance reflects the last successful fetch only; a diary loaded
 from the local cache shows "relay unknown until the next refresh". Media chips
 show the URL host, they do not verify the blob exists on that server.
+
+
+## Nostr interactions (2026-09-03)
+
+- `src/nostr/interactions.ts` — NIP-25 likes (kind 7, `+`) and NIP-10 comments
+  (kind 1 with `e` root + `p`), plus `fetchInteractions()` for counts.
+- `src/state/useInteractionsStore.ts` — per-note counts/replies, optimistic like
+  with rollback, one relay read per note id.
+- `src/nostr/clientTag.ts` — NIP-89 `client` tag ("WondersLand") added to every
+  event we sign (diaries, entries, deletions, likes, comments); `clientOf()`
+  reads the tag of incoming events and `ClientChip` renders "from <client>".
+- Grow Feed: Like and Reply are live for writable sessions; read-only npub
+  sessions get the existing PublishUnlock sheet. Zap and Repost stay disabled.
+- Limitations: no NIP-57 zaps, no NIP-18 reposts, no kind 31990 handler event
+  yet (so the client tag uses the bare name form), counts are not live-updated.
