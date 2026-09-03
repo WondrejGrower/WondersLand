@@ -8,3 +8,7 @@ export const KIND_DIARY = 30078;
 export const DIARY_TAG = "weedoshi-diary";
 export const DIARY_TAG_LEGACY = "weedoshi";
 export const GROWMIES_D_TAG = "growmies";
+
+// NIP-18 repost / NIP-25 reaction. Read+write, same events every client uses.
+export const KIND_REPOST = 6;
+export const KIND_REACTION = 7;
