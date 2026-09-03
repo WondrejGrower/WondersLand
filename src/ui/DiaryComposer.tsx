@@ -224,8 +224,97 @@ export function DiaryComposer({
                 <PhaseChips value={phase} onChange={setPhase} />
               </div>
             </>
+          ) : isEdit ? (
+            <>
+              <div className="grid min-w-0 gap-1.5">
+                <label htmlFor="diary-title" className={labelClass}>
+                  Diary name
+                </label>
+                <input
+                  id="diary-title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className={fieldClass}
+                />
+              </div>
+
+              <div className="grid min-w-0 gap-1.5">
+                <span className={labelClass}>Plant or species</span>
+                <PlantPicker value={plant} onChange={setPlant} />
+              </div>
+
+              <div className="grid min-w-0 gap-1.5">
+                <label htmlFor="diary-cultivar" className={labelClass}>
+                  Cultivar
+                </label>
+                <SuggestInput
+                  id="diary-cultivar"
+                  value={cultivar}
+                  onChange={setCultivar}
+                  placeholder="Optional"
+                  suggestions={cultivars}
+                />
+              </div>
+
+              <div className="grid min-w-0 gap-1.5">
+                <label htmlFor="diary-breeder" className={labelClass}>
+                  Breeder
+                </label>
+                <SuggestInput
+                  id="diary-breeder"
+                  value={breeder}
+                  onChange={setBreeder}
+                  placeholder="Optional"
+                  suggestions={breeders}
+                />
+              </div>
+
+              <div className="grid min-w-0 gap-1.5">
+                <span className={labelClass}>Current phase</span>
+                <PhaseChips value={phase} onChange={setPhase} />
+              </div>
+
+              {covers.length > 0 ? (
+                <div className="grid min-w-0 gap-2">
+                  <span className={labelClass}>Cover photo</span>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setCover("")}
+                      aria-pressed={cover === ""}
+                      className={`min-h-11 rounded-xl border px-3 text-xs ${
+                        cover === "" ? "border-leaf text-leaf" : "border-forest-soft/60 text-cream/70"
+                      }`}
+                    >
+                      No cover
+                    </button>
+                    {covers.map((url) => (
+                      <button
+                        key={url}
+                        type="button"
+                        onClick={() => setCover(url)}
+                        aria-pressed={cover === url}
+                        aria-label="Use this photo as the cover"
+                        className={`h-16 w-16 overflow-hidden rounded-xl border ${
+                          cover === url ? "border-leaf" : "border-forest-soft/60"
+                        }`}
+                      >
+                        <img src={url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              <p className="text-xs text-cream/60">
+                Editing republishes the same diary event — your {existing?.items.length ?? 0}{" "}
+                entries stay untouched. A relay that refuses the update may keep serving the old
+                version.
+              </p>
+            </>
           ) : (
             <>
+
               <Group step={1} title="What are you growing?">
                 <PlantPicker value={plant} onChange={setPlant} />
               </Group>
