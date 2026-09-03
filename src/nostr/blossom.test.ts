@@ -65,7 +65,7 @@ describe("uploadBlob", () => {
 describe("uploadToAnyServer", () => {
   it("falls back to the next server and re-signs per host", async () => {
     const calls: string[] = [];
-    const fetchMock = vi.fn(async (url: string) => {
+    const fetchMock = vi.fn(async (url: string, _init?: RequestInit) => {
       calls.push(url);
       if (url.startsWith("https://a.example")) return new Response("boom", { status: 500 });
       return new Response(JSON.stringify({ url: "https://b.example/x.jpg" }), { status: 200 });
