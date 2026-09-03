@@ -586,13 +586,23 @@ export function HomeDashboard() {
                 {relative(latest.updatedAt)} · {latest.items.length}{" "}
                 {latest.items.length === 1 ? "entry" : "entries"}
               </p>
-              <button
-                type="button"
-                onClick={() => openDiary(latest)}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-forest-soft/60 px-3 py-1.5 text-xs text-cream/85"
-              >
-                Open diary <ExternalLink className="h-3 w-3" aria-hidden />
-              </button>
+              <span className="flex shrink-0 items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => requestComposer({ kind: "edit", diary: latest })}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-forest-soft/60 px-3 py-1.5 text-xs text-cream/85"
+                >
+                  <Pencil className="h-3 w-3" aria-hidden /> Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openDiary(latest)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-forest-soft/60 px-3 py-1.5 text-xs text-cream/85"
+                >
+                  Open diary <ExternalLink className="h-3 w-3" aria-hidden />
+                </button>
+              </span>
+
             </div>
           </>
         ) : (
