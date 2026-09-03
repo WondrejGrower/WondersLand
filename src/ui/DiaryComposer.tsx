@@ -47,7 +47,7 @@ export function DiaryComposer({
   mode: Mode;
   onClose: () => void;
   /** Fired only after at least one relay accepted the event. */
-  onPublished?: (diary: Diary, kind: Mode["kind"]) => void;
+  onPublished?: (diary: Diary, kind: Mode["kind"], acceptedRelays: number) => void;
 }) {
   const method = useNostrStore((s) => s.method);
   const diaries = useNostrStore((s) => s.diaries);
