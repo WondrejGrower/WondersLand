@@ -14,6 +14,8 @@ import {
   EyeOff,
   RotateCcw,
   Plus,
+  Pencil,
+
 } from "lucide-react";
 
 import { useNostrStore } from "../state/useNostrStore";
