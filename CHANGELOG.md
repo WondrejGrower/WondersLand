@@ -474,3 +474,6 @@ Pending Nostr work: reactions (kind 7), replies, reposts (kind 6) and zaps
   Edit is now reachable from diary cards and the Latest diary panel (was: detail view only);
   clearing the plant field also clears `plantSlug` (3D garden picks up the new species),
   and the save toast reports how many relays accepted the update.
+
+## Photo upload (2026-09-03)
+- Blossom uploads now use public servers with fallback: blossom.primal.net -> blossom.band -> nostr.download. The old blossom.wondersland.online host did not resolve, which caused the "media server unreachable" error. satellite.earth is not Blossom (own NIP-98 API, paid credits) so it was not used.
