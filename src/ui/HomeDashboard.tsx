@@ -296,7 +296,11 @@ export function HomeDashboard() {
     setUnlockOpen(true);
   };
 
-  const handlePublished = (diary: Diary, kind: ComposerMode["kind"]) => {
+  const handlePublished = (
+    diary: Diary,
+    kind: ComposerMode["kind"],
+    acceptedRelays: number,
+  ) => {
     setSection("diaries");
     setFeedExpanded(false);
     setShowHidden(false);
@@ -305,14 +309,18 @@ export function HomeDashboard() {
     // one means this publish is what completed the first-diary mission.
     const firstDiary = kind === "create" && sorted.length === 0;
     if (firstDiary) setMissionAdvanced(true);
+    const relays = acceptedRelays === 1 ? "1 relay" : `${acceptedRelays} relays`;
     setToast(
       firstDiary
         ? "✓ First diary created — next: add your first entry"
         : kind === "entry"
-          ? "Entry published to Nostr"
-          : "Published to Nostr",
+          ? `Entry published · ${relays}`
+          : kind === "edit"
+            ? `Diary updated · ${relays}`
+            : `Published to Nostr · ${relays}`,
     );
   };
+
 
   /** Permanent removal: NIP-09 deletion request + local state/cache cleanup. */
   const handleDelete = async (diary: Diary) => {
