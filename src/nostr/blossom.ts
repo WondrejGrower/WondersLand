@@ -4,7 +4,7 @@
 // kind 24242 event signed through the existing Signer boundary, short-lived
 // and scoped to `t=upload`, the exact blob hash (`x`) and the configured
 // server. Nothing is persisted — no token, no bytes, no secret.
-import { BLOSSOM_BASE_URL } from "./endpoints";
+import { BLOSSOM_BASE_URL, BLOSSOM_SERVERS } from "./endpoints";
 import type { Signer } from "./signers";
 
 export const KIND_BLOSSOM_AUTH = 24242;
