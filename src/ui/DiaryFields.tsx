@@ -17,6 +17,23 @@ export const labelClass = "text-[0.7rem] uppercase tracking-wide text-cream/60";
 
 /* ------------------------------------------------------------------ plants */
 
+/**
+ * Temporary scope limit: only cannabis is offered while the client is being
+ * tested. Flip this to false to bring the whole catalog back.
+ */
+const CANNABIS_ONLY = true;
+
+/** Hand-written cannabis options — the shape growers actually pick from. */
+const CANNABIS_OPTIONS = [
+  "Cannabis ruderalis",
+  "Cannabis indica dominant",
+  "Cannabis sativa dominant",
+  "Cannabis hybrid",
+  "Cannabis sativa L.",
+  "Cannabis indica",
+  "Cannabis sativa",
+];
+
 const CATEGORIES: Array<{ id: PlantCategory | "all"; label: string }> = [
   { id: "all", label: "All" },
   { id: "cannabis", label: "Cannabis" },
@@ -26,6 +43,7 @@ const CATEGORIES: Array<{ id: PlantCategory | "all"; label: string }> = [
   { id: "indoor", label: "Indoor plants" },
   { id: "other", label: "Other" },
 ];
+
 
 /** Category of a catalog item, derived through the one existing classifier. */
 function categoryOf(item: PlantCatalogItem): PlantCategory {
