@@ -177,17 +177,30 @@ function Card({
           </p>
         </div>
       </button>
-      {onAddEntry ? (
-        <div className="px-4 pb-4">
-          <button
-            type="button"
-            onClick={() => onAddEntry(diary)}
-            className="inline-flex min-h-9 items-center rounded-full border border-leaf/40 px-3 py-1 text-xs font-medium text-leaf"
-          >
-            Add entry
-          </button>
+      {onAddEntry || onEdit ? (
+        <div className="flex flex-wrap items-center gap-2 px-4 pb-4">
+          {onAddEntry ? (
+            <button
+              type="button"
+              onClick={() => onAddEntry(diary)}
+              className="inline-flex min-h-9 items-center rounded-full border border-leaf/40 px-3 py-1 text-xs font-medium text-leaf"
+            >
+              Add entry
+            </button>
+          ) : null}
+          {onEdit ? (
+            <button
+              type="button"
+              onClick={() => onEdit(diary)}
+              aria-label={`Edit diary ${diary.title}`}
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-forest-soft/60 px-3 py-1 text-xs text-cream/75"
+            >
+              <Pencil className="h-3.5 w-3.5" aria-hidden /> Edit
+            </button>
+          ) : null}
         </div>
       ) : null}
+
     </article>
   );
 }
