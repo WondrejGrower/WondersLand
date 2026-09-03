@@ -780,6 +780,8 @@ export function HomeDashboard() {
                         diary={diary}
                         onOpen={openDiary}
                         onAddEntry={(d) => requestComposer({ kind: "entry", diary: d })}
+                        onEdit={(d) => requestComposer({ kind: "edit", diary: d })}
+
                       />
                     ))}
                   </div>
