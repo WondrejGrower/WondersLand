@@ -397,12 +397,15 @@ export function DiaryComposer({
             {stage === "uploading"
               ? "Uploading photo…"
               : busy
-                ? "Publishing…"
+                ? isEdit
+                  ? "Saving…"
+                  : "Publishing…"
                 : isEntry
                   ? "Publish entry"
-                  : existing
-                    ? "Save diary"
+                  : isEdit
+                    ? "Save changes"
                     : "Create diary"}
+
           </button>
         </div>
       </div>
