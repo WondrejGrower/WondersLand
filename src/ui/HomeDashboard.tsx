@@ -25,6 +25,7 @@ import { useFeedStore } from "../state/useFeedStore";
 import { profileLabel } from "../nostr/profile";
 import { firstImage } from "../nostr/media";
 import { ZONES, type ZoneId } from "../garden/zones";
+import { GrowClock } from "./GrowClock";
 import type { Diary } from "../nostr/types";
 import { NostrSignIn } from "./NostrSignIn";
 import { DiaryComposer, type ComposerMode } from "./DiaryComposer";
@@ -173,9 +174,12 @@ function Card({
           {subtitle(diary) ? (
             <p className="truncate text-xs text-cream/75">{subtitle(diary)}</p>
           ) : null}
-          <p className="text-xs text-cream/60">
-            {diary.items.length} {diary.items.length === 1 ? "entry" : "entries"} · updated{" "}
-            {relative(diary.updatedAt)}
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-cream/60">
+            <GrowClock diary={diary} compact />
+            <span>
+              {diary.items.length} {diary.items.length === 1 ? "entry" : "entries"} · updated{" "}
+              {relative(diary.updatedAt)}
+            </span>
           </p>
         </div>
       </button>
@@ -590,9 +594,12 @@ export function HomeDashboard() {
               {latest.title}
             </p>
             <div className="flex items-center justify-between gap-2">
-              <p className="truncate text-xs text-cream/65">
-                {relative(latest.updatedAt)} · {latest.items.length}{" "}
-                {latest.items.length === 1 ? "entry" : "entries"}
+              <p className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-cream/65">
+                <GrowClock diary={latest} />
+                <span className="truncate">
+                  {relative(latest.updatedAt)} · {latest.items.length}{" "}
+                  {latest.items.length === 1 ? "entry" : "entries"}
+                </span>
               </p>
               <span className="flex shrink-0 items-center gap-2">
                 <button
