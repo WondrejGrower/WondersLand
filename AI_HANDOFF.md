@@ -376,3 +376,9 @@ per-author cap. `src/nostr/feed.ts` does recall and passes a `LensContext`. UI r
 the config from `useLensStore`; nothing else may hardcode ranking rules. Add a new
 signal by extending `LENS_SIGNAL_IDS`, its label/hint and a block in `scoreNote` — the
 panel and the "why am I seeing this" list pick it up automatically.
+
+3D scene: geometry lives in `src/world/` and every static collider is derived in
+`collision.ts` from the same exported constants — remove or move geometry and its
+collider in the same edit. `vite.config.ts` contains a dev-only plugin that strips
+`data-tsd-source` from `src/world/**`; without it React Three Fiber throws in
+`applyProps` and the canvas goes blank. Do not delete it while devtools inject sources.

@@ -539,3 +539,13 @@ breakdown in the UI and the whole config exports as JSON.
 Limitations: scoring runs only over what the enabled relays return within the query
 timeout, so recall still depends on relay quality; there is no cross-session learning
 and no behavioural data of any kind. The broad "Nostr" feed is unranked on purpose.
+
+## 3D world (2026-09-06)
+The garden is deliberately sparse: ground, boundary ring, trees, entrance arch, straight
+stone path, greenhouse, shrubs, grow beds, cottage, welcome sign and the diary plants.
+No island/fountain, no grass tufts, no pebbles, no framing rocks — rendering and
+`collision.ts` were cleaned together so colliders cannot outlive removed geometry.
+Exit to the Nostr client: `C` on desktop or the always-visible top-right button.
+
+Limitation: the sandbox software renderer (SwiftShader) loses the WebGL context when a
+test script polls `getContext` repeatedly; that is a verification artefact, not app behaviour.

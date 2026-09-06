@@ -112,3 +112,8 @@ Approved 2026-09-03. Nostr client work only; the 3D world is untouched.
 - Per-post "why am I seeing this" breakdown and a user-editable lens panel with
   JSON export/import so other Nostr clients could adopt the same format.
 - No backend, no telemetry, no change to the Nostr/Weedoshi data model.
+
+## Authorized pass: 3D world cleanup + exit button (2026-09-06, done)
+- Visible exit-to-Nostr control with `C` hint, scene cleanup (island, grass, pebbles,
+  blooms, framing rocks), straight regular path, DPR/fog/far tuning.
+- Dev-only devtools source-tag strip for `src/world/**` so the canvas stops crashing.
