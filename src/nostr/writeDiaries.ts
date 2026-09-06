@@ -24,6 +24,10 @@ export type DiaryInput = {
   phase?: string | undefined;
   /** `undefined` keeps the current cover, `""` clears it, a URL replaces it. */
   coverImage?: string | undefined;
+  /** Grower-set grow start (unix seconds). `undefined` keeps the current one. */
+  startedAt?: number | undefined;
+  /** Grower-set grow end (unix seconds); `0` clears it and restarts the clock. */
+  endedAt?: number | undefined;
 };
 
 
