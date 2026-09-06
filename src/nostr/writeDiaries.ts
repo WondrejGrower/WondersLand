@@ -84,6 +84,8 @@ export function diaryEventTemplate(diary: Diary): EventTemplate {
     coverImage: diary.coverImage,
     createdAt: diary.createdAt,
     updatedAt: diary.updatedAt,
+    startedAt: diary.startedAt,
+    endedAt: diary.endedAt,
     items: diary.items.map((item) => defined({ ...item })),
   });
 
