@@ -120,12 +120,28 @@ export async function fetchDiaries(pubkey: string): Promise<Diary[]> {
     7000,
   );
 
+  // Group by the NORMALISED diary id, not by the raw `d` tag: older Weedoshi
+  // copies may spell the identifier differently and would otherwise show up as
+  // a second, stale diary next to the freshly edited one.
   const latest = new Map<string, NostrEvent>();
   for (const event of events) {
     const dTag = tagValue(event, "d") ?? "";
     if (!isDiaryEvent(event, dTag)) continue;
-    const current = latest.get(dTag);
-    if (!current || current.created_at < event.created_at) latest.set(dTag, event);
+    const key = dTag.replace(/^diary-/i, "").trim().toLowerCase();
+    if (!key) continue;
+    const current = latest.get(key);
+    if (!current) {
+      latest.set(key, event);
+      continue;
+    }
+    if (event.created_at > current.created_at) {
+      latest.set(key, event);
+    } else if (event.created_at === current.created_at) {
+      // Same second: the copy carrying more entries is the more complete one,
+      // and on a tie the later-arriving copy wins.
+      const count = (e: NostrEvent) => e.tags.filter((t) => t[0] === "e").length;
+      if (count(event) >= count(current)) latest.set(key, event);
+    }
   }
 
   const diaries: Diary[] = [];
