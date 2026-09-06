@@ -77,6 +77,8 @@ function parseDiary(event: NostrEvent, authorPubkey: string): Diary | null {
     coverImage: parsed.coverImage,
     createdAt: typeof parsed.createdAt === "number" ? parsed.createdAt : event.created_at,
     updatedAt: typeof parsed.updatedAt === "number" ? parsed.updatedAt : event.created_at,
+    startedAt: typeof parsed.startedAt === "number" ? parsed.startedAt : undefined,
+    endedAt: typeof parsed.endedAt === "number" ? parsed.endedAt : undefined,
     items: [...items.values()].sort((a, b) => a.createdAt - b.createdAt),
   };
 }
