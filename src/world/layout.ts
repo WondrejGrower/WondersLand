@@ -1,12 +1,10 @@
 /**
  * Shared deterministic world layout.
  *
- * Rendering (Trees.tsx, Ground.tsx) and collision (collision.ts) both read
- * these arrays, so a rendered trunk and its collider can never drift apart.
+ * Rendering (Trees.tsx) and collision (collision.ts) both read these arrays,
+ * so a rendered trunk and its collider can never drift apart.
  * Plain data, no Three.js imports.
  */
-import { nearPath } from "./Plaza";
-import { nearInteractable } from "./interactables";
 
 export const GARDEN_RADIUS = 19;
 
@@ -15,7 +13,7 @@ export type Instance = {
   z: number;
   rot: number;
   scale: number;
-  /** Vertical stretch, used by the scattered rocks/grass look. */
+  /** Vertical stretch. */
   scaleY: number;
 };
 
@@ -28,34 +26,6 @@ export function rng(seed: number) {
   };
 }
 
-/** Scatter used by the ground clutter (grass, rocks). */
-export function scatter(
-  count: number,
-  seed: number,
-  inner: number,
-  outer: number,
-  clearance = 0,
-): Instance[] {
-  const random = rng(seed);
-  const list: Instance[] = [];
-  for (let i = 0; i < count * 2 && list.length < count; i++) {
-    const a = random() * Math.PI * 2;
-    const r = inner + random() * (outer - inner);
-    const x = Math.cos(a) * r;
-    const z = Math.sin(a) * r;
-    const rot = random() * Math.PI * 2;
-    const s = 0.6 + random() * 0.9;
-    const sy = s * (0.7 + random() * 0.8);
-    if (clearance > 0 && nearPath(x, z, clearance)) continue;
-    if (nearInteractable(x, z, clearance > 0 ? 0.4 : 0)) continue;
-    list.push({ x, z, rot, scale: s, scaleY: sy });
-  }
-  return list;
-}
-
-/** Ground clutter. Grass is purely decorative; rocks feed collision. */
-export const GRASS_INSTANCES: Instance[] = scatter(320, 7, 1.5, GARDEN_RADIUS - 1.5, 1.6);
-export const ROCK_INSTANCES: Instance[] = scatter(28, 91, 4, GARDEN_RADIUS - 2, 2.2);
 
 /** Tree line: boundary ring plus a few closer trees framing the plaza. */
 export const TREE_INSTANCES: Instance[] = (() => {

@@ -40,7 +40,7 @@ export function ExitWorldSwitch() {
     return () => window.removeEventListener("keydown", onKey);
   }, [blocked]);
 
-  if (!coarse || blocked) return null;
+  if (blocked) return null;
 
   return (
     <button
@@ -50,6 +50,12 @@ export function ExitWorldSwitch() {
       className="absolute right-4 top-4 z-10 inline-flex min-h-11 min-w-11 items-center gap-1.5 rounded-full border border-border bg-card/85 px-3 py-2 text-xs font-medium text-card-foreground shadow-lg backdrop-blur transition-colors hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <ArrowLeft className="h-4 w-4" aria-hidden /> Nostr
+      {!coarse && (
+        <kbd className="ml-1 rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[0.65rem] text-muted-foreground">
+          C
+        </kbd>
+      )}
     </button>
   );
 }
+

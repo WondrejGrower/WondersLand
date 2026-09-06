@@ -521,3 +521,14 @@ Pending Nostr work: reactions (kind 7), replies, reposts (kind 6) and zaps
 
 ## Photo upload (2026-09-03)
 - Blossom uploads now use public servers with fallback: blossom.primal.net -> blossom.band -> nostr.download. The old blossom.wondersland.online host did not resolve, which caused the "media server unreachable" error. satellite.earth is not Blossom (own NIP-98 API, paid credits) so it was not used.
+
+## 3D world cleanup + exit button (2026-09-06)
+- Exit to the Nostr client is now a visible button in the world (desktop shows the `C` key hint,
+  mobile keeps the touch target); overlays still hide it.
+- Removed the central round island ("fountain"), the fake grass tufts, the scattered pebbles,
+  the flower blooms and the hand-placed framing rocks, plus all their colliders.
+- Straightened and regularised the stone path (fixed slab spacing/scale, narrower soil strip).
+- Performance: dpr capped at 1.5, camera far 120, fog 26-72.
+- Dev-only fix: the TanStack devtools source tagger injected `data-tsd-source` into R3F elements,
+  which threw inside `applyProps` and lost the WebGL context a few seconds after entering the world.
+  `vite.config.ts` now strips that attribute for `src/world/**` during `serve`.

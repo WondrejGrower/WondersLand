@@ -7,7 +7,13 @@ import model from "../assets/stone-tile.glb.asset.json";
  * Instanced stone slabs laid along the walkway.
  * One geometry, one material, one draw call.
  */
-export function StonePath({ points }: { points: { x: number; z: number; rot: number }[] }) {
+export function StonePath({
+  points,
+  size = 2.4,
+}: {
+  points: { x: number; z: number; rot: number }[];
+  size?: number;
+}) {
   const gltf = useGLTF(model.url, true);
 
   const { geometry, material, scale } = useMemo(() => {
@@ -20,18 +26,18 @@ export function StonePath({ points }: { points: { x: number; z: number; rot: num
       }
     });
     const box = new Box3().setFromObject(gltf.scene);
-    const size = box.getSize(new Vector3());
-    const width = Math.max(size.x, size.z) || 1;
-    return { geometry: geo, material: mat, scale: 2.6 / width };
-  }, [gltf.scene]);
+    const dims = box.getSize(new Vector3());
+    const width = Math.max(dims.x, dims.z) || 1;
+    return { geometry: geo, material: mat, scale: size / width };
+  }, [gltf.scene, size]);
 
   const matrices = useMemo(() => {
     const dummy = new Object3D();
     return points.map((p, i) => {
       const wobble = ((i * 37) % 11) / 11 - 0.5;
       dummy.position.set(p.x, 0.02, p.z);
-      dummy.rotation.set(0, p.rot + wobble * 0.12, 0);
-      dummy.scale.set(scale * (1 + wobble * 0.06), scale, scale * (1 + wobble * 0.06));
+      dummy.rotation.set(0, p.rot + wobble * 0.05, 0);
+      dummy.scale.setScalar(scale);
       dummy.updateMatrix();
       return dummy.matrix.clone();
     });
@@ -50,7 +56,6 @@ export function StonePath({ points }: { points: { x: number; z: number; rot: num
     <instancedMesh
       ref={ref}
       args={[geometry, material as Material, matrices.length]}
-      receiveShadow
     />
   );
 }

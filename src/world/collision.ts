@@ -8,7 +8,7 @@
  * Physical colliders are deliberately smaller than the matching interaction
  * radii, so the player can always stand close enough to press E / tap.
  */
-import { ROCK_INSTANCES, TREE_INSTANCES } from "./layout";
+import { TREE_INSTANCES } from "./layout";
 import {
   ARCH_POSITION,
   ARCH_POST_RADIUS,
@@ -16,9 +16,6 @@ import {
   GREENHOUSE_HALF,
   GREENHOUSE_POSITION,
   GREENHOUSE_ROTATION_Y,
-  ISLAND_CENTER,
-  ISLAND_RADIUS,
-  PLAZA_ROCKS,
 } from "./Plaza";
 import { COTTAGE_POSITION, COTTAGE_ROTATION_Y, COTTAGE_HALF } from "./Cottage";
 import { GROW_BEDS_CENTER, GROW_BEDS_HALF, WORLD_INTERACTABLES } from "./interactables";
@@ -73,21 +70,9 @@ export const WORLD_COLLIDERS: Collider[] = (() => {
     });
   }
 
-  // Central planted island.
-  list.push(circle(ISLAND_CENTER[0], ISLAND_CENTER[1], ISLAND_RADIUS));
-
   // Entrance arch posts — the gap between them stays walkable.
   for (const x of ARCH_POST_X) {
     list.push(circle(ARCH_POSITION[0] + x, ARCH_POSITION[2], ARCH_POST_RADIUS));
-  }
-
-  // Hand-placed framing rocks.
-  for (const [x, z, s] of PLAZA_ROCKS) list.push(circle(x, z, s * 0.9));
-
-  // Scattered rocks: only the substantial ones. Pebbles stay walkable.
-  for (const rock of ROCK_INSTANCES) {
-    if (rock.scale < 0.8) continue;
-    list.push(circle(rock.x, rock.z, rock.scale * 0.4));
   }
 
   // Tree trunks only — canopies overhang freely.
