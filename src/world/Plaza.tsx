@@ -81,18 +81,10 @@ function useSignTexture() {
 export const ARCH_POSITION: [number, number, number] = [0, 0, 17];
 export const ARCH_POST_X = [-2.4, 2.4];
 export const ARCH_POST_RADIUS = 0.55;
-export const ISLAND_CENTER: [number, number] = [-3.6, 2];
-export const ISLAND_RADIUS = 3.1;
 export const GREENHOUSE_POSITION: [number, number, number] = [-13, 0, -13];
 export const GREENHOUSE_ROTATION_Y = 0.7;
 /** Half-extents of the greenhouse stone base (7 x 4.4). */
 export const GREENHOUSE_HALF: [number, number] = [3.5, 2.2];
-export const PLAZA_ROCKS: [number, number, number][] = [
-  [-5.2, -1.6, 0.7],
-  [4.2, 6.4, 0.55],
-  [-11.4, -8.6, 0.9],
-  [8.6, 0.5, 0.45],
-];
 
 function EntranceArch() {
   const sign = useSignTexture();
@@ -141,6 +133,8 @@ function EntranceArch() {
 // Shared path line so vegetation can keep clear of the walkable route.
 // The route is deliberately straight: PATH_MID is the exact midpoint, so the
 // quadratic curve below degenerates into a line from the arch to the plant.
+/** Edge length of one stone slab, in world units. */
+const SLAB_SIZE = 2.4;
 const PATH_FROM = { x: 0, z: 16 };
 const PATH_TO = { x: 5.4, z: -3.2 };
 const PATH_MID = { x: (PATH_FROM.x + PATH_TO.x) / 2, z: (PATH_FROM.z + PATH_TO.z) / 2 };
@@ -165,7 +159,10 @@ export function nearPath(x: number, z: number, clearance: number) {
 function Path() {
   const points = useMemo(() => {
     const heading = Math.atan2(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z);
-    const count = 14;
+    const length = Math.hypot(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z);
+    // One slab per SLAB_SIZE of route: slabs meet edge to edge instead of
+    // stacking on top of each other (which flickered).
+    const count = Math.max(1, Math.ceil(length / SLAB_SIZE));
     const list: { x: number; z: number; rot: number }[] = [];
     for (let i = 0; i <= count; i++) {
       const { x, z } = pathPoint(i / count);
@@ -179,66 +176,16 @@ function Path() {
       {/* soil strip so no gap shows between slabs */}
       <mesh
         rotation={[-Math.PI / 2, 0, -Math.atan2(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z)]}
-        position={[PATH_MID.x, 0.012, PATH_MID.z]}
+        position={[PATH_MID.x, 0.008, PATH_MID.z]}
       >
-        <planeGeometry args={[2.75, Math.hypot(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z)]} />
+        <planeGeometry args={[SLAB_SIZE + 0.3, Math.hypot(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z)]} />
         <meshLambertMaterial color={palette.path} />
       </mesh>
-      <StonePath points={points} />
+      <StonePath points={points} size={SLAB_SIZE} />
     </group>
   );
 }
 
-
-// Central planted island the path curves around.
-function GardenIsland() {
-  const flowers = useMemo(() => {
-    const random = rng(41);
-    const dummy = new Object3D();
-    const list: Matrix4[] = [];
-    for (let i = 0; i < 54; i++) {
-      const a = random() * Math.PI * 2;
-      const r = 0.4 + random() * 2.1;
-      dummy.position.set(Math.cos(a) * r, 0.5 + random() * 0.25, Math.sin(a) * r);
-      dummy.rotation.set(0, random() * Math.PI, 0);
-      const s = 0.12 + random() * 0.1;
-      dummy.scale.setScalar(s);
-      dummy.updateMatrix();
-      list.push(dummy.matrix.clone());
-    }
-    return list;
-  }, []);
-
-  return (
-    <group position={[ISLAND_CENTER[0], 0, ISLAND_CENTER[1]]}>
-      {/* stone rim + soil */}
-      <mesh rotation-x={-Math.PI / 2} position-y={0.05}>
-        <ringGeometry args={[2.6, 3.1, 24]} />
-        <meshLambertMaterial color={palette.stone} />
-      </mesh>
-      <mesh position-y={0.18}>
-        <cylinderGeometry args={[2.7, 2.85, 0.36, 24]} />
-        <meshLambertMaterial color={palette.bedSoil} />
-      </mesh>
-      <group position-y={0.36}>
-        <Instances matrices={flowers} color={palette.flowerPink}>
-          <icosahedronGeometry args={[1, 0]} />
-        </Instances>
-      </group>
-      {/* a few taller shrubs in the bed */}
-      {([
-        [-1.2, 0.6, 0.4],
-        [0.9, 0.7, -0.9],
-        [0.2, 0.55, 1.3],
-      ] as [number, number, number][]).map(([x, s, z], i) => (
-        <mesh key={i} position={[x, 0.55 + s * 0.4, z]} scale={s}>
-          <icosahedronGeometry args={[1, 1]} />
-          <meshLambertMaterial color={i % 2 ? palette.shrub : palette.foliageB} />
-        </mesh>
-      ))}
-    </group>
-  );
-}
 
 function Greenhouse() {
   return (
@@ -298,32 +245,10 @@ function Scatter() {
     return list;
   }, []);
 
-  const blooms = useMemo(() => {
-    const random = rng(77);
-    const dummy = new Object3D();
-    const list: Matrix4[] = [];
-    for (let i = 0; i < 110 && list.length < 70; i++) {
-      const a = random() * Math.PI * 2;
-      const r = 4 + random() * 12;
-      const x = Math.cos(a) * r;
-      const z = Math.sin(a) * r;
-      if (nearPath(x, z, 1.9) || nearInteractable(x, z)) continue;
-      dummy.position.set(x, 0.25 + random() * 0.1, z);
-      dummy.rotation.set(0, random() * Math.PI, 0);
-      dummy.scale.setScalar(0.11 + random() * 0.08);
-      dummy.updateMatrix();
-      list.push(dummy.matrix.clone());
-    }
-    return list;
-  }, []);
-
   return (
     <group>
       <Instances matrices={shrubs} color={palette.shrub}>
         <icosahedronGeometry args={[1, 1]} />
-      </Instances>
-      <Instances matrices={blooms} color={palette.flowerCream}>
-        <icosahedronGeometry args={[1, 0]} />
       </Instances>
     </group>
   );
@@ -334,17 +259,8 @@ export function Plaza() {
     <group>
       <EntranceArch />
       <Path />
-      <GardenIsland />
       <Greenhouse />
       <Scatter />
-      {/* rocks framing the plaza */}
-      {PLAZA_ROCKS.map(([x, z, s], i) => (
-
-        <mesh key={i} position={[x, s * 0.5, z]} scale={s} rotation-y={i}>
-          <dodecahedronGeometry args={[1, 0]} />
-          <meshLambertMaterial color={palette.stone} />
-        </mesh>
-      ))}
       {/* soil pad + shadow under the interaction plant */}
       <ContactShadow position={[6, 0.03, -4]} radius={1.6} opacity={0.2} />
     </group>
