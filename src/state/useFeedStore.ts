@@ -57,7 +57,7 @@ export const useFeedStore = create<FeedState>((set, get) => {
       if (!force && lane.posts.length > 0) return;
       patch(target, { status: "loading", error: null });
       try {
-        const page = await fetchFeedPage(target, PAGE_SIZE);
+        const page = await fetchFeedPage(target, PAGE_SIZE, undefined, await lensOptions());
         patch(target, {
           posts: page.posts,
           cursor: page.cursor,
@@ -79,7 +79,7 @@ export const useFeedStore = create<FeedState>((set, get) => {
       if (lane.exhausted || lane.cursor === null) return;
       patch(target, { status: "loadingMore", error: null });
       try {
-        const page = await fetchFeedPage(target, PAGE_SIZE, lane.cursor - 1);
+        const page = await fetchFeedPage(target, PAGE_SIZE, lane.cursor - 1, await lensOptions());
         const seen = new Set(get()[target].posts.map((p) => p.id));
         const fresh = page.posts.filter((p) => !seen.has(p.id));
         patch(target, {
