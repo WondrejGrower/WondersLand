@@ -517,3 +517,10 @@ Each diary now shows a live grow timer (`src/progression/timer.ts`, `useGrowTime
 phase; the world prompt shows the day count only. The diary plant picker is limited to
 cannabis types while testing (`CANNABIS_ONLY` in `src/ui/DiaryFields.tsx`); existing
 non-cannabis diaries keep displaying their stored plant and free text entry still works.
+
+The grow clock can now be set by the grower: optional `startedAt` / `endedAt` values
+ride inside the existing diary content (Weedoshi-compatible, ignored by other clients)
+and override the derived start/finish. Diary reads deduplicate copies by normalised
+diary id, and every edit rewrites all descriptive fields and bumps `updatedAt`, so a
+renamed diary no longer shows its old version. Relays that refuse replacements can
+still serve an old copy — the relay chips show which one.

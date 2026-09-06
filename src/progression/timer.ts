@@ -32,6 +32,8 @@ export function isFinishedPhase(phase: string | undefined): boolean {
 
 /** When a grow stopped, if it stopped: newest finishing entry wins. */
 function endOf(diary: Diary): number | null {
+  // A grower-set finish date always wins over anything derived.
+  if (typeof diary.endedAt === "number") return diary.endedAt;
   const finishing = diary.items
     .filter((item) => isFinishedPhase(item.phaseLabel))
     .sort((a, b) => b.createdAt - a.createdAt)[0];
@@ -48,7 +50,7 @@ function pad(n: number): string {
  * @param nowMs current time in ms; pass a ticking value to animate the clock.
  */
 export function growTimer(diary: Diary, nowMs: number = Date.now()): GrowTimer {
-  const startedAt = diary.createdAt;
+  const startedAt = diary.startedAt ?? diary.createdAt;
   const endedAt = endOf(diary);
   const running = endedAt === null;
   const now = Math.floor(nowMs / 1000);

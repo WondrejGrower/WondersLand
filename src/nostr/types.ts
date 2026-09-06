@@ -38,6 +38,10 @@ export type Diary = {
   coverImage?: string | undefined;
   createdAt: number;
   updatedAt: number;
+  /** Grower-set start of the grow clock (unix seconds). Falls back to createdAt. */
+  startedAt?: number | undefined;
+  /** Grower-set end of the grow clock (unix seconds). Stops the timer. */
+  endedAt?: number | undefined;
   /** Relay URLs that served this diary event on the last successful fetch. Display only. */
   seenOn?: string[] | undefined;
   items: DiaryItemRef[];

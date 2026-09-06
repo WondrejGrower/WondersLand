@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 2026-09-06 — Diary edits win over stale copies + settable grow clock
+
+- `src/nostr/diaries.ts` groups diary copies by the NORMALISED diary id instead of the
+  raw `d` tag, so an older Weedoshi-spelled copy no longer appears as a second, stale
+  diary. Equal `created_at` now resolves to the copy with more entries, then the
+  later-arriving one.
+- `applyInput` in `src/nostr/writeDiaries.ts` rewrites every descriptive field together
+  (title / plant / plantSlug / species / cultivar / breeder / phase), so a stale
+  `species` can no longer survive a rename or plant change, and bumps `updatedAt` to at
+  least previous + 1s so an edit always wins on the relays.
+- New optional `startedAt` / `endedAt` keys inside the existing diary content: the grow
+  clock counts from a grower-set start and can be stopped with a finish date. Older
+  diaries fall back to `createdAt` and the Weedoshi format is unchanged.
+- Composer gains "Grow started" (create + edit) and "Finished on" (edit) datetime
+  fields with future-start / end-before-start validation.
+
 ## 2026-09-03 — Live grow timer + cannabis-only plant list
 
 - Added `src/progression/timer.ts`: a pure grow timer derived from `diary.createdAt`,

@@ -51,3 +51,23 @@ describe("growTimer", () => {
     expect(t.short).toBe("10 days");
   });
 });
+
+describe("growTimer with a grower-set clock", () => {
+  it("counts from a manual start date", () => {
+    const t = growTimer(
+      base({ startedAt: 1_000_000 - 86400 * 10 }),
+      (1_000_000 + 3600) * 1000,
+    );
+    expect(t.running).toBe(true);
+    expect(t.days).toBe(11);
+  });
+
+  it("stops on a manual finish date", () => {
+    const t = growTimer(
+      base({ startedAt: 1_000_000, endedAt: 1_000_000 + 86400 * 70 }),
+      (1_000_000 + 86400 * 120) * 1000,
+    );
+    expect(t.running).toBe(false);
+    expect(t.label).toBe("Finished · 70 days");
+  });
+});
