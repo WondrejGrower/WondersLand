@@ -524,3 +524,18 @@ and override the derived start/finish. Diary reads deduplicate copies by normali
 diary id, and every edit rewrites all descriptive fields and bumps `updatedAt`, so a
 renamed diary no longer shows its old version. Relays that refuse replacements can
 still serve an old copy — the relay chips show which one.
+
+### 2026-09-06 — Grow Lens
+
+The Grow feed is ranked by an open algorithm the user can read and change
+(`src/nostr/lens/`, `src/state/useLensStore.ts`, `src/ui/LensPanel.tsx`).
+Candidates come from hashtags, the viewer's contact list (kind 3) and authors of
+grow diaries (kind 30078); each note is scored by seven signals (grow words, grow
+hashtags, freshness, photo, follows, known grower, spam penalty) and filtered by a
+minimum score plus a topical gate (a grow hashtag or at least two grow words).
+Diversity caps one author at two posts per page. Every post exposes its score
+breakdown in the UI and the whole config exports as JSON.
+
+Limitations: scoring runs only over what the enabled relays return within the query
+timeout, so recall still depends on relay quality; there is no cross-session learning
+and no behavioural data of any kind. The broad "Nostr" feed is unranked on purpose.

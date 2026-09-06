@@ -104,3 +104,11 @@ Approved 2026-09-03. Nostr client work only; the 3D world is untouched.
 - Live grow timer derived from diary createdAt, stopped by harvest/cure/finished phase.
 - Timer visible in diary reader, diary cards, Latest diary and the in-world interaction prompt.
 - Plant picker temporarily limited to cannabis types (flag-gated, catalog untouched).
+
+## Authorized pass — 2026-09-06: Grow Lens (open feed algorithm)
+
+- Transparent client-side ranking for the Grow feed: recall from hashtags,
+  contacts and grow-diary authors, then scoring by inspectable signals.
+- Per-post "why am I seeing this" breakdown and a user-editable lens panel with
+  JSON export/import so other Nostr clients could adopt the same format.
+- No backend, no telemetry, no change to the Nostr/Weedoshi data model.

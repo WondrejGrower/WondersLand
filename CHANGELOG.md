@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 2026-09-06 — Grow Lens: an open, inspectable feed algorithm
+
+- New `src/nostr/lens/` module: `config.ts` (weights, sources, hashtags, thresholds,
+  JSON export/import), `signals.ts` (pure scoring signals with a human explanation for
+  each), `rank.ts` (threshold, topical gate, per-author diversity cap). Unit tests in
+  `rank.test.ts`.
+- Grow feed recall is no longer hashtags-only: candidates now also come from the
+  viewer's NIP-02 contact list and from authors who publish grow diaries, so untagged
+  grow posts can surface.
+- Every grow post shows a "Lens score · why am I seeing this" chip listing which
+  signals fired and how many points each added or removed.
+- New Grow Lens panel in the feed header (`src/ui/LensPanel.tsx`, `useLensStore`):
+  source toggles, weight sliders, minimum score, max posts per author, editable
+  hashtag / keyword lists, "only posts about growing" gate, and copy/paste JSON so
+  other clients can reuse the same lens. Stored locally; no backend, no telemetry.
+
 ## 2026-09-06 — Diary edits win over stale copies + settable grow clock
 
 - `src/nostr/diaries.ts` groups diary copies by the NORMALISED diary id instead of the
