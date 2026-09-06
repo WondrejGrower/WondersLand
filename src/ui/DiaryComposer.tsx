@@ -11,6 +11,19 @@ import {
 } from "../nostr/writeDiaries";
 import { useNostrStore } from "../state/useNostrStore";
 import { PhaseChips, PlantPicker, SuggestInput, fieldClass, labelClass } from "./DiaryFields";
+
+/** Unix seconds -> value for <input type="datetime-local"> in local time. */
+function toLocalInput(seconds: number): string {
+  const d = new Date(seconds * 1000);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function fromLocalInput(value: string): number | null {
+  if (!value) return null;
+  const ms = new Date(value).getTime();
+  return Number.isNaN(ms) ? null : Math.floor(ms / 1000);
+}
 import type { Diary } from "../nostr/types";
 
 type Mode = { kind: "create" } | { kind: "entry"; diary: Diary } | { kind: "edit"; diary: Diary };
@@ -61,6 +74,10 @@ export function DiaryComposer({
   const [phase, setPhase] = useState(existing?.phase ?? "");
   const [cover, setCover] = useState(existing?.coverImage ?? "");
   const [text, setText] = useState("");
+  const [startedAt, setStartedAt] = useState(
+    toLocalInput(existing?.startedAt ?? existing?.createdAt ?? Math.floor(Date.now() / 1000)),
+  );
+  const [endedAt, setEndedAt] = useState(existing?.endedAt ? toLocalInput(existing.endedAt) : "");
 
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState<"idle" | "uploading" | "publishing">("idle");
@@ -122,9 +139,28 @@ export function DiaryComposer({
         body = body ? `${body}\n${url}` : url;
       }
       setStage("publishing");
+      const start = fromLocalInput(startedAt);
+      const end = fromLocalInput(endedAt);
+      if (!isEntry) {
+        if (start && start > Math.floor(Date.now() / 1000) + 60) {
+          throw new Error("The grow cannot start in the future.");
+        }
+        if (start && end && end < start) {
+          throw new Error("The finish date cannot be before the start.");
+        }
+      }
       const input: DiaryInput = isEdit
-        ? { title, plant, cultivar, breeder, phase, coverImage: cover }
-        : { title, plant, cultivar, breeder, phase };
+        ? {
+            title,
+            plant,
+            cultivar,
+            breeder,
+            phase,
+            coverImage: cover,
+            startedAt: start ?? undefined,
+            endedAt: end ?? 0,
+          }
+        : { title, plant, cultivar, breeder, phase, startedAt: start ?? undefined };
       const result = isEntry && existing
         ? await addEntry(signer, existing, { text: body, phaseLabel: phase })
         : existing
@@ -306,6 +342,37 @@ export function DiaryComposer({
                 </div>
               ) : null}
 
+
+              <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+                <div className="grid min-w-0 gap-1.5">
+                  <label htmlFor="diary-started" className={labelClass}>
+                    Grow started
+                  </label>
+                  <input
+                    id="diary-started"
+                    type="datetime-local"
+                    value={startedAt}
+                    onChange={(e) => setStartedAt(e.target.value)}
+                    className={fieldClass}
+                  />
+                </div>
+                <div className="grid min-w-0 gap-1.5">
+                  <label htmlFor="diary-ended" className={labelClass}>
+                    Finished on (optional)
+                  </label>
+                  <input
+                    id="diary-ended"
+                    type="datetime-local"
+                    value={endedAt}
+                    onChange={(e) => setEndedAt(e.target.value)}
+                    className={fieldClass}
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-cream/60">
+                The grow clock counts from the start date. Set a finish date to stop it.
+              </p>
+
               <p className="text-xs text-cream/60">
                 Editing republishes the same diary event — your {existing?.items.length ?? 0}{" "}
                 entries stay untouched. A relay that refuses the update may keep serving the old
@@ -369,6 +436,24 @@ export function DiaryComposer({
                     Use “{titleHint}”
                   </button>
                 ) : null}
+              </Group>
+
+              <Group step={5} title="Grow clock">
+                <div className="grid min-w-0 gap-1.5">
+                  <label htmlFor="diary-started" className={labelClass}>
+                    Grow started
+                  </label>
+                  <input
+                    id="diary-started"
+                    type="datetime-local"
+                    value={startedAt}
+                    onChange={(e) => setStartedAt(e.target.value)}
+                    className={fieldClass}
+                  />
+                  <p className="text-xs text-cream/60">
+                    Defaults to now — set it back if the grow already started.
+                  </p>
+                </div>
               </Group>
             </>
           )}
