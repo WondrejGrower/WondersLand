@@ -366,3 +366,13 @@ from image URLs in `src/nostr/hosts.ts`, with no extra requests.
   sessions get the existing PublishUnlock sheet. Zap and Repost stay disabled.
 - Limitations: no NIP-57 zaps, no NIP-18 reposts, no kind 31990 handler event
   yet (so the client tag uses the bare name form), counts are not live-updated.
+
+## Grow Lens (2026-09-06)
+
+Feed ranking lives in `src/nostr/lens/`: `config.ts` is the single source of truth
+for weights/sources/thresholds, `signals.ts` holds pure signal functions (each returns
+points plus a human explanation), `rank.ts` applies threshold, topical gate and the
+per-author cap. `src/nostr/feed.ts` does recall and passes a `LensContext`. UI reads
+the config from `useLensStore`; nothing else may hardcode ranking rules. Add a new
+signal by extending `LENS_SIGNAL_IDS`, its label/hint and a block in `scoreNote` — the
+panel and the "why am I seeing this" list pick it up automatically.
