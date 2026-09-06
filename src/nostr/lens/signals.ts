@@ -44,10 +44,14 @@ export function isEmptyNote(event: NostrEvent): boolean {
   return !(event.content ?? "").trim();
 }
 
-export function scoreNote(event: NostrEvent, ctx: LensContext): {
+export type NoteScore = {
   score: number;
   signals: LensSignal[];
-} {
+  /** How strongly the note is about growing, before any social boost. */
+  topical: { words: number; tags: number };
+};
+
+export function scoreNote(event: NostrEvent, ctx: LensContext): NoteScore {
   const { config, now } = ctx;
   const content = (event.content ?? "").trim();
   const body = noteBody(content);
@@ -127,5 +131,5 @@ export function scoreNote(event: NostrEvent, ctx: LensContext): {
   }
 
   const score = round(signals.reduce((sum, signal) => sum + signal.points, 0));
-  return { score, signals };
+  return { score, signals, topical: { words: hits, tags: matchedTags.length } };
 }

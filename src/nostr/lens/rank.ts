@@ -17,16 +17,14 @@ export function rankNotes(events: NostrEvent[], ctx: LensContext, limit: number)
   for (const event of events) {
     if (seen.has(event.id) || isEmptyNote(event)) continue;
     seen.add(event.id);
-    const { score, signals } = scoreNote(event, ctx);
+    const { score, signals, topical } = scoreNote(event, ctx);
     if (score < ctx.config.minScore) continue;
     // A note from someone you follow is still not a grow note unless it talks
     // about growing — the social signals boost topical posts, they don't
     // qualify random ones.
-    if (
-      ctx.config.requireTopical &&
-      !signals.some((s) => (s.id === "vocabulary" || s.id === "hashtags") && s.points > 0)
-    )
-      continue;
+    // One stray word ("seed" in a bitcoin post) is not a grow note: ask for a
+    // grow hashtag or at least two grow words.
+    if (ctx.config.requireTopical && topical.tags === 0 && topical.words < 2) continue;
     scored.push({ event, score, signals });
   }
 
