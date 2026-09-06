@@ -7,6 +7,7 @@ import { canPublish } from "../nostr/signers";
 import type { FeedMode, FeedPost } from "../nostr/feed";
 import { ClientChip, MediaChips, RelayChips } from "./SourceChips";
 import { PublishUnlock } from "./PublishUnlock";
+import { LensPanel } from "./LensPanel";
 
 function shortNpub(pubkey: string): string {
   try {
@@ -40,6 +41,7 @@ function PostCard({ post }: { post: FeedPost }) {
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [replyOpen, setReplyOpen] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
+  const [showWhy, setShowWhy] = useState(false);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -119,6 +121,47 @@ function PostCard({ post }: { post: FeedPost }) {
           loading="lazy"
           className="mt-3 max-h-56 w-full rounded-xl object-cover"
         />
+      ) : null}
+
+      {typeof post.score === "number" ? (
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => setShowWhy((open) => !open)}
+            aria-expanded={showWhy}
+            className="inline-flex items-center gap-1.5 rounded-full border border-forest-soft/50 bg-forest-deep/40 px-2 py-0.5 text-[0.65rem] text-cream/70 hover:text-cream"
+          >
+            <span aria-hidden className="text-leaf/80">
+              ◎
+            </span>
+            Lens score {post.score}
+            <span className="text-cream/50">· why am I seeing this</span>
+          </button>
+          {showWhy ? (
+            <ul className="mt-2 grid gap-1 rounded-xl border border-forest-soft/40 bg-forest-deep/30 px-3 py-2">
+              {(post.signals ?? []).map((signal) => (
+                <li
+                  key={signal.id}
+                  className="flex items-baseline justify-between gap-2 text-[0.68rem] text-cream/75"
+                >
+                  <span className="min-w-0">
+                    {signal.label}
+                    <span className="block text-[0.62rem] text-cream/50">{signal.detail}</span>
+                  </span>
+                  <span
+                    className={`shrink-0 tabular-nums ${signal.points < 0 ? "text-cream/50" : "text-leaf"}`}
+                  >
+                    {signal.points > 0 ? "+" : ""}
+                    {signal.points}
+                  </span>
+                </li>
+              ))}
+              {(post.signals ?? []).length === 0 ? (
+                <li className="text-[0.68rem] text-cream/60">No signals fired for this note.</li>
+              ) : null}
+            </ul>
+          ) : null}
+        </div>
       ) : null}
 
       <div className="mt-3 grid gap-1">
@@ -299,6 +342,7 @@ export function GrowFeed({
   const offsets = useRef<Record<FeedMode, number>>({ grow: 0, nostr: 0 });
 
   const hydrateInteractions = useInteractionsStore((s) => s.hydrate);
+  const [lensOpen, setLensOpen] = useState(false);
 
   useEffect(() => {
     void load();
@@ -361,6 +405,22 @@ export function GrowFeed({
               </button>
             ))}
           </div>
+          {mode === "grow" ? (
+            <button
+              type="button"
+              onClick={() => setLensOpen((open) => !open)}
+              aria-expanded={lensOpen}
+              aria-label="Grow Lens settings"
+              title="Grow Lens — your open feed algorithm"
+              className={`rounded-full border px-2.5 py-1 text-xs ${
+                lensOpen
+                  ? "border-leaf/50 bg-leaf/20 text-leaf"
+                  : "border-forest-soft/60 text-cream/70 hover:text-cream"
+              }`}
+            >
+              ◎
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={onToggleExpand}
@@ -371,6 +431,10 @@ export function GrowFeed({
           </button>
         </div>
       </header>
+
+      {lensOpen && mode === "grow" ? (
+        <LensPanel onClose={() => setLensOpen(false)} onApply={() => void load(true, "grow")} />
+      ) : null}
 
       <div ref={scrollRef} className="min-h-0 min-w-0 flex-1 overflow-y-auto px-3.5 py-4 sm:px-4">
         {status === "loading" && posts.length === 0 ? (
