@@ -1,5 +1,13 @@
 import { create } from "zustand";
 import { fetchFeedPage, type FeedMode, type FeedPost } from "../nostr/feed";
+import { useLensStore } from "./useLensStore";
+import { useNostrStore } from "./useNostrStore";
+
+/** Grow ranking options: the user's lens plus who is signed in. */
+async function lensOptions() {
+  const config = await useLensStore.getState().ensureLoaded();
+  return { config, viewerPubkey: useNostrStore.getState().pubkey };
+}
 
 export type FeedLane = {
   posts: FeedPost[];
