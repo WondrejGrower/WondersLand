@@ -30,6 +30,8 @@ export type LensConfig = {
   keywords: string[];
   /** Notes below this score never reach the feed. */
   minScore: number;
+  /** Drop notes with no grow words and no grow hashtag, however they arrived. */
+  requireTopical: boolean;
   /** Diversity: how many notes one author may occupy on a page. */
   maxPerAuthor: number;
 };
@@ -88,6 +90,7 @@ export const DEFAULT_LENS_CONFIG: LensConfig = {
   hashtags: [...DEFAULT_HASHTAGS],
   keywords: [],
   minScore: 2,
+  requireTopical: true,
   maxPerAuthor: 2,
 };
 
@@ -127,6 +130,7 @@ export function normalizeLensConfig(input: unknown): LensConfig {
     hashtags: strings(raw.hashtags, DEFAULT_LENS_CONFIG.hashtags),
     keywords: strings(raw.keywords, DEFAULT_LENS_CONFIG.keywords),
     minScore: clampNumber(raw.minScore, DEFAULT_LENS_CONFIG.minScore, 0, 12),
+    requireTopical: raw.requireTopical !== false,
     maxPerAuthor: Math.round(clampNumber(raw.maxPerAuthor, DEFAULT_LENS_CONFIG.maxPerAuthor, 1, 10)),
   };
 }

@@ -21,6 +21,7 @@ type LensState = {
   setHashtags: (hashtags: string[]) => void;
   setKeywords: (keywords: string[]) => void;
   setMinScore: (value: number) => void;
+  setRequireTopical: (value: boolean) => void;
   setMaxPerAuthor: (value: number) => void;
   replace: (config: LensConfig) => void;
   importJson: (json: string) => void;
@@ -51,6 +52,7 @@ export const useLensStore = create<LensState>((set, get) => {
     setHashtags: (hashtags) => commit({ ...get().config, hashtags }),
     setKeywords: (keywords) => commit({ ...get().config, keywords }),
     setMinScore: (minScore) => commit({ ...get().config, minScore }),
+    setRequireTopical: (requireTopical) => commit({ ...get().config, requireTopical }),
     setMaxPerAuthor: (maxPerAuthor) => commit({ ...get().config, maxPerAuthor }),
     replace: (config) => commit(config),
     importJson: (json) => commit(importLensConfig(json)),

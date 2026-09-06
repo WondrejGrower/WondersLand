@@ -164,6 +164,21 @@ export function LensPanel({ onClose, onApply }: { onClose: () => void; onApply: 
           </label>
         </div>
 
+        <label className="flex items-start gap-2 text-xs text-cream/80">
+          <input
+            type="checkbox"
+            checked={config.requireTopical}
+            onChange={(e) => useLensStore.getState().setRequireTopical(e.target.checked)}
+            className="mt-0.5 accent-current"
+          />
+          <span className="min-w-0">
+            Only posts about growing
+            <span className="block text-[0.65rem] text-cream/55">
+              Even people you follow need a grow word or grow hashtag to appear here.
+            </span>
+          </span>
+        </label>
+
         <label className="block text-xs text-cream/80">
           Hashtags
           <textarea

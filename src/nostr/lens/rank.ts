@@ -19,6 +19,14 @@ export function rankNotes(events: NostrEvent[], ctx: LensContext, limit: number)
     seen.add(event.id);
     const { score, signals } = scoreNote(event, ctx);
     if (score < ctx.config.minScore) continue;
+    // A note from someone you follow is still not a grow note unless it talks
+    // about growing — the social signals boost topical posts, they don't
+    // qualify random ones.
+    if (
+      ctx.config.requireTopical &&
+      !signals.some((s) => (s.id === "vocabulary" || s.id === "hashtags") && s.points > 0)
+    )
+      continue;
     scored.push({ event, score, signals });
   }
 
