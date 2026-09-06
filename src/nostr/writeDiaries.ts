@@ -113,18 +113,29 @@ function applyInput(diary: Diary, input: DiaryInput): Diary {
   const plant = input.plant?.trim() || undefined;
   // Clearing the plant field must clear the slug too, otherwise the old
   // species would keep driving the catalog lookup and the 3D garden model.
+  const slug = plant ? plantSlugFor(plant) : undefined;
+  // Every descriptive field is rewritten together — a stale `species` left over
+  // from an earlier version would otherwise survive a rename or plant change.
+  const species = slug ? getPlantBySlug(slug)?.latin : undefined;
   const cover =
     input.coverImage === undefined ? diary.coverImage : input.coverImage.trim() || undefined;
+  const startedAt = input.startedAt ?? diary.startedAt;
+  const endedAt = input.endedAt === undefined ? diary.endedAt : input.endedAt || undefined;
   return {
     ...diary,
     title: input.title.trim() || diary.title,
     plant,
-    plantSlug: plant ? plantSlugFor(plant) : undefined,
+    plantSlug: slug,
+    species,
     cultivar: input.cultivar?.trim() || undefined,
     breeder: input.breeder?.trim() || undefined,
     phase: input.phase?.trim() || undefined,
     coverImage: cover,
-    updatedAt: now(),
+    startedAt,
+    endedAt,
+    // Always move forward: an edit that lands in the same second as the copy it
+    // replaces would be ignored by relays.
+    updatedAt: Math.max(now(), diary.updatedAt + 1),
   };
 }
 
