@@ -8,6 +8,8 @@ import { fetchDiaryEntries, type DiaryEntry } from "../nostr/diaryEntries";
 import { firstImage } from "../nostr/media";
 import { MediaChips, RelayChips } from "./SourceChips";
 import { GrowClock } from "./GrowClock";
+import { TimerEditor } from "./TimerEditor";
+
 import type { Diary } from "../nostr/types";
 
 function dateLabel(seconds: number): string {
@@ -141,9 +143,14 @@ export function DiaryDetail({
               created {dateLabel(diary.createdAt)} · updated {dateLabel(diary.updatedAt)} ·{" "}
               {diary.items.length} {diary.items.length === 1 ? "entry" : "entries"}
             </p>
-            <p className="mt-0.5">
-              <GrowClock diary={diary} />
-            </p>
+            <div className="mt-0.5 grid gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <GrowClock diary={diary} />
+              </div>
+              {writable ? <TimerEditor key={diary.updatedAt} diary={diary} /> : null}
+            </div>
+
+
             <div className="mt-1">
               <RelayChips
                 relays={diary.seenOn}
