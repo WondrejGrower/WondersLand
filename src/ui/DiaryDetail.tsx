@@ -8,6 +8,8 @@ import { fetchDiaryEntries, type DiaryEntry } from "../nostr/diaryEntries";
 import { firstImage } from "../nostr/media";
 import { MediaChips, RelayChips } from "./SourceChips";
 import { GrowClock } from "./GrowClock";
+import { TimerEditor } from "./TimerEditor";
+
 import type { Diary } from "../nostr/types";
 
 function dateLabel(seconds: number): string {
