@@ -141,9 +141,11 @@ export function DiaryDetail({
               created {dateLabel(diary.createdAt)} · updated {dateLabel(diary.updatedAt)} ·{" "}
               {diary.items.length} {diary.items.length === 1 ? "entry" : "entries"}
             </p>
-            <p className="mt-0.5">
+            <p className="mt-0.5 flex flex-wrap items-center gap-2">
               <GrowClock diary={diary} />
+              {writable ? <TimerEditor key={diary.updatedAt} diary={diary} /> : null}
             </p>
+
             <div className="mt-1">
               <RelayChips
                 relays={diary.seenOn}
