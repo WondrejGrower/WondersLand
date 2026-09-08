@@ -85,18 +85,30 @@ export function decodeNpub(input: string): string {
 
 
 export const useNostrStore = create<NostrState>((set, get) => {
-  async function load(pubkey: string) {
+  /**
+   * Audit F4: every sign-in/unlock/sign-out bumps this. A slow relay round-trip
+   * from an old session can therefore never restore an identity, diaries or
+   * publishing access after the user signed out or switched accounts.
+   */
+  let authSeq = 0;
+  const stale = (seq: number) => seq !== authSeq;
+
+  async function load(pubkey: string, seq: number) {
     set({ status: "loading", error: null });
     const method = get().method ?? "npub";
     const cached = await getCachedDiaries(pubkey);
+    if (stale(seq)) return;
     // Render the cached garden immediately; the relays catch up in step two.
     set({ diaries: cached });
     await useGardenStore.getState().load(pubkey, method, cached);
+    if (stale(seq)) return;
     try {
       const [profile, diaries] = await Promise.all([fetchProfile(pubkey), fetchDiaries(pubkey)]);
+      if (stale(seq)) return;
       set({ profile, diaries, status: "ready" });
       useGardenStore.getState().setDiaries(diaries);
     } catch (err) {
+      if (stale(seq)) return;
       set({
         status: cached.length > 0 ? "ready" : "error",
         error: err instanceof Error ? err.message : "Could not reach the relays",
@@ -106,16 +118,20 @@ export const useNostrStore = create<NostrState>((set, get) => {
 
 
   async function start(session: Session) {
+    const seq = ++authSeq;
     await loadRelays();
+    if (stale(seq)) return;
     // An nsec session is memory-only: persist it as a read-only npub session so
     // a refresh can never resurrect write access without the key.
     await setJson(SESSION_KEY, {
       pubkey: session.pubkey,
       method: session.method === "nsec" ? "npub" : session.method,
     });
+    if (stale(seq)) return;
     set({ pubkey: session.pubkey, method: session.method });
-    await load(session.pubkey);
+    await load(session.pubkey, seq);
   }
+
 
   return {
     pubkey: null,
