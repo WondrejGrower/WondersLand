@@ -52,16 +52,37 @@ type NostrState = {
 
 const SESSION_KEY = "session";
 
-function decodeNpub(input: string): string {
+/**
+ * Public text sign-in (audit F1). Only bech32 npub/nprofile is accepted.
+ * Raw hex is refused here even though it is a valid public-key format: a
+ * secret key pasted into this field is also 64 hex characters, and accepting
+ * it would persist it and send it to relays as an `authors` filter.
+ * Error messages never echo the input.
+ */
+export function decodeNpub(input: string): string {
   const trimmed = input.trim();
-  if (/^[0-9a-f]{64}$/i.test(trimmed)) return trimmed.toLowerCase();
-  const decoded = nip19.decode(trimmed);
+  if (/^[0-9a-fA-F]{64}$/.test(trimmed)) {
+    throw new Error(
+      "Paste your npub (it starts with npub1). Raw hex keys are not accepted here — a secret key looks identical.",
+    );
+  }
+  if (!/^(npub1|nprofile1)[02-9ac-hj-np-z]{20,}$/i.test(trimmed)) {
+    throw new Error("Enter a valid npub");
+  }
+  let decoded: ReturnType<typeof nip19.decode>;
+  try {
+    decoded = nip19.decode(trimmed.toLowerCase());
+  } catch {
+    throw new Error("Enter a valid npub");
+  }
   if (decoded.type === "npub" && typeof decoded.data === "string") return decoded.data;
   if (decoded.type === "nprofile" && typeof decoded.data === "object") {
-    return (decoded.data as { pubkey: string }).pubkey;
+    const pubkey = (decoded.data as { pubkey?: unknown }).pubkey;
+    if (typeof pubkey === "string" && /^[0-9a-f]{64}$/i.test(pubkey)) return pubkey.toLowerCase();
   }
   throw new Error("Enter a valid npub");
 }
+
 
 export const useNostrStore = create<NostrState>((set, get) => {
   async function load(pubkey: string) {
