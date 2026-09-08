@@ -1,5 +1,8 @@
 // Captures the original Error out-of-band so server.ts can recover the stack
 // when h3 has already swallowed the throw into a generic 500 Response.
+import { redactSecrets } from "../nostr/secretGuard";
+
+
 
 let lastCapturedError: { error: unknown; at: number } | undefined;
 const TTL_MS = 5_000;
@@ -28,8 +31,10 @@ export function describeError(error: unknown): string {
     parts.push(`${label}${current.stack ?? `${current.name}: ${current.message}`}${status}`);
     current = current.cause;
   }
-  return parts.join("\n").slice(0, DESCRIPTION_LENGTH_LIMIT);
+  // Audit F3: nothing key-shaped may reach the log pipeline.
+  return redactSecrets(parts.join("\n")).slice(0, DESCRIPTION_LENGTH_LIMIT);
 }
+
 
 function describeStatus(error: Error): string {
   const { status, statusCode } = error as { status?: unknown; statusCode?: unknown };
@@ -55,12 +60,15 @@ function isErrorLike(value: unknown): value is Error {
 const originalConsoleError = console.error.bind(console);
 console.error = (...args: unknown[]) => {
   const expanded = args.map((arg) => {
-    if (!isErrorLike(arg)) return arg;
-    record(arg);
-    return describeError(arg);
+    if (isErrorLike(arg)) {
+      record(arg);
+      return describeError(arg);
+    }
+    return typeof arg === "string" ? redactSecrets(arg) : arg;
   });
   originalConsoleError(...expanded);
 };
+
 
 if (typeof globalThis.addEventListener === "function") {
   globalThis.addEventListener("error", (event) => record((event as ErrorEvent).error ?? event));

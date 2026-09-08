@@ -2,8 +2,9 @@ import { create } from "zustand";
 import { fetchDiaries, getCachedDiaries } from "../nostr/diaries";
 import { getNip07PublicKey, isNip07Available } from "../nostr/signers/nip07";
 import { clearLocalSigner, createLocalIdentity, unlockLocalSigner } from "../nostr/signers/local";
-import { localSigner } from "../nostr/signers";
+import { localSigner, setExpectedNip07Pubkey } from "../nostr/signers";
 import { publish } from "../nostr/pool";
+
 import { getEnabledRelayUrls } from "../nostr/relays";
 import { KIND_PROFILE } from "../nostr/kinds";
 import { fetchProfile } from "../nostr/profile";
@@ -52,30 +53,63 @@ type NostrState = {
 
 const SESSION_KEY = "session";
 
-function decodeNpub(input: string): string {
+/**
+ * Public text sign-in (audit F1). Only bech32 npub/nprofile is accepted.
+ * Raw hex is refused here even though it is a valid public-key format: a
+ * secret key pasted into this field is also 64 hex characters, and accepting
+ * it would persist it and send it to relays as an `authors` filter.
+ * Error messages never echo the input.
+ */
+export function decodeNpub(input: string): string {
   const trimmed = input.trim();
-  if (/^[0-9a-f]{64}$/i.test(trimmed)) return trimmed.toLowerCase();
-  const decoded = nip19.decode(trimmed);
+  if (/^[0-9a-fA-F]{64}$/.test(trimmed)) {
+    throw new Error(
+      "Paste your npub (it starts with npub1). Raw hex keys are not accepted here — a secret key looks identical.",
+    );
+  }
+  if (!/^(npub1|nprofile1)[02-9ac-hj-np-z]{20,}$/i.test(trimmed)) {
+    throw new Error("Enter a valid npub");
+  }
+  let decoded: ReturnType<typeof nip19.decode>;
+  try {
+    decoded = nip19.decode(trimmed.toLowerCase());
+  } catch {
+    throw new Error("Enter a valid npub");
+  }
   if (decoded.type === "npub" && typeof decoded.data === "string") return decoded.data;
   if (decoded.type === "nprofile" && typeof decoded.data === "object") {
-    return (decoded.data as { pubkey: string }).pubkey;
+    const pubkey = (decoded.data as { pubkey?: unknown }).pubkey;
+    if (typeof pubkey === "string" && /^[0-9a-f]{64}$/i.test(pubkey)) return pubkey.toLowerCase();
   }
   throw new Error("Enter a valid npub");
 }
 
+
 export const useNostrStore = create<NostrState>((set, get) => {
-  async function load(pubkey: string) {
+  /**
+   * Audit F4: every sign-in/unlock/sign-out bumps this. A slow relay round-trip
+   * from an old session can therefore never restore an identity, diaries or
+   * publishing access after the user signed out or switched accounts.
+   */
+  let authSeq = 0;
+  const stale = (seq: number) => seq !== authSeq;
+
+  async function load(pubkey: string, seq: number) {
     set({ status: "loading", error: null });
     const method = get().method ?? "npub";
     const cached = await getCachedDiaries(pubkey);
+    if (stale(seq)) return;
     // Render the cached garden immediately; the relays catch up in step two.
     set({ diaries: cached });
     await useGardenStore.getState().load(pubkey, method, cached);
+    if (stale(seq)) return;
     try {
       const [profile, diaries] = await Promise.all([fetchProfile(pubkey), fetchDiaries(pubkey)]);
+      if (stale(seq)) return;
       set({ profile, diaries, status: "ready" });
       useGardenStore.getState().setDiaries(diaries);
     } catch (err) {
+      if (stale(seq)) return;
       set({
         status: cached.length > 0 ? "ready" : "error",
         error: err instanceof Error ? err.message : "Could not reach the relays",
@@ -85,16 +119,20 @@ export const useNostrStore = create<NostrState>((set, get) => {
 
 
   async function start(session: Session) {
+    const seq = ++authSeq;
     await loadRelays();
+    if (stale(seq)) return;
     // An nsec session is memory-only: persist it as a read-only npub session so
     // a refresh can never resurrect write access without the key.
     await setJson(SESSION_KEY, {
       pubkey: session.pubkey,
       method: session.method === "nsec" ? "npub" : session.method,
     });
+    if (stale(seq)) return;
     set({ pubkey: session.pubkey, method: session.method });
-    await load(session.pubkey);
+    await load(session.pubkey, seq);
   }
+
 
   return {
     pubkey: null,
@@ -216,10 +254,14 @@ export const useNostrStore = create<NostrState>((set, get) => {
       if (!current) throw new Error("Sign in first");
       const derived = await getNip07PublicKey();
       if (derived !== current) {
+        // Point the signer back at the signed-in account so a mismatched
+        // extension cannot sign for this session.
+        setExpectedNip07Pubkey(current);
         throw new Error(
           "Your extension holds a different Nostr account. Sign out and sign in with it instead.",
         );
       }
+
       set({ method: "nip07", error: null });
     },
 
@@ -247,15 +289,20 @@ export const useNostrStore = create<NostrState>((set, get) => {
 
     refresh: async () => {
       const { pubkey } = get();
-      if (pubkey) await load(pubkey);
+      if (pubkey) await load(pubkey, authSeq);
     },
 
     signOut: async () => {
+      // Invalidate in-flight work FIRST, so a completion that lands after this
+      // point cannot put the identity (or publishing access) back.
+      authSeq += 1;
       clearLocalSigner();
+      setExpectedNip07Pubkey(null);
       await removeKey(SESSION_KEY);
       useGardenStore.getState().reset();
       useHiddenDiaries.getState().reset();
       set({ pubkey: null, method: null, profile: null, diaries: [], status: "idle", error: null, keyBackupPending: false });
+
     },
   };
 });

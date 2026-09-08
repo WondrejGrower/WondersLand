@@ -1,5 +1,7 @@
 import { SimplePool, type Filter } from "nostr-tools";
+import { guardEvent } from "./secretGuard";
 import type { NostrEvent } from "./types";
+
 
 let pool: SimplePool | null = null;
 
@@ -118,8 +120,11 @@ export async function publish(
   event: NostrEvent,
   maxWaitMs = 8000,
 ): Promise<PublishResult[]> {
+  // Last line of defence before anything leaves the browser (audit F2).
+  guardEvent(event, "publish");
   if (relays.length === 0) return [];
   const p = getPool();
+
   const timeout = <T,>(promise: Promise<T>) =>
     Promise.race([
       promise,
