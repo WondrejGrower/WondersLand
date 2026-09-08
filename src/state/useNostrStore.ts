@@ -2,8 +2,9 @@ import { create } from "zustand";
 import { fetchDiaries, getCachedDiaries } from "../nostr/diaries";
 import { getNip07PublicKey, isNip07Available } from "../nostr/signers/nip07";
 import { clearLocalSigner, createLocalIdentity, unlockLocalSigner } from "../nostr/signers/local";
-import { localSigner } from "../nostr/signers";
+import { localSigner, setExpectedNip07Pubkey } from "../nostr/signers";
 import { publish } from "../nostr/pool";
+
 import { getEnabledRelayUrls } from "../nostr/relays";
 import { KIND_PROFILE } from "../nostr/kinds";
 import { fetchProfile } from "../nostr/profile";
@@ -284,15 +285,20 @@ export const useNostrStore = create<NostrState>((set, get) => {
 
     refresh: async () => {
       const { pubkey } = get();
-      if (pubkey) await load(pubkey);
+      if (pubkey) await load(pubkey, authSeq);
     },
 
     signOut: async () => {
+      // Invalidate in-flight work FIRST, so a completion that lands after this
+      // point cannot put the identity (or publishing access) back.
+      authSeq += 1;
       clearLocalSigner();
+      setExpectedNip07Pubkey(null);
       await removeKey(SESSION_KEY);
       useGardenStore.getState().reset();
       useHiddenDiaries.getState().reset();
       set({ pubkey: null, method: null, profile: null, diaries: [], status: "idle", error: null, keyBackupPending: false });
+
     },
   };
 });
