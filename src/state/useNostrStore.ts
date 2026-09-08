@@ -254,10 +254,14 @@ export const useNostrStore = create<NostrState>((set, get) => {
       if (!current) throw new Error("Sign in first");
       const derived = await getNip07PublicKey();
       if (derived !== current) {
+        // Point the signer back at the signed-in account so a mismatched
+        // extension cannot sign for this session.
+        setExpectedNip07Pubkey(current);
         throw new Error(
           "Your extension holds a different Nostr account. Sign out and sign in with it instead.",
         );
       }
+
       set({ method: "nip07", error: null });
     },
 
