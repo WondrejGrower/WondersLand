@@ -69,6 +69,28 @@ export async function setJson(key: string, value: unknown): Promise<void> {
   }
 }
 
+/**
+ * Delete a key from BOTH backends. `removeKey` stops at the first backend that
+ * succeeds; when we are erasing possible key material we must clear the
+ * localStorage fallback copy too.
+ */
+export async function purgeKey(key: string): Promise<void> {
+  const k = PREFIX + key;
+  if (typeof window === "undefined") return;
+  if (hasIdb()) {
+    try {
+      await idb("readwrite", (s) => s.delete(k));
+    } catch {
+      // best effort; the localStorage sweep below still runs
+    }
+  }
+  try {
+    localStorage.removeItem(k);
+  } catch {
+    // ignore
+  }
+}
+
 export async function removeKey(key: string): Promise<void> {
   const k = PREFIX + key;
   if (typeof window === "undefined") return;
