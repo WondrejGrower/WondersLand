@@ -9,7 +9,8 @@ import { getEnabledRelayUrls } from "../nostr/relays";
 import { KIND_PROFILE } from "../nostr/kinds";
 import { fetchProfile } from "../nostr/profile";
 import { loadRelays } from "../nostr/relays";
-import { getJson, removeKey, setJson } from "../nostr/storage";
+import { setJson } from "../nostr/storage";
+import { clearSession, readTrustedSession, writeSession } from "../nostr/session";
 import type { AuthMethod, Diary, Profile } from "../nostr/types";
 import { useGardenStore } from "./useGardenStore";
 import { useHiddenDiaries } from "./useHiddenDiaries";
@@ -51,7 +52,7 @@ type NostrState = {
 
 };
 
-const SESSION_KEY = "session";
+
 
 /**
  * Public text sign-in (audit F1). Only bech32 npub/nprofile is accepted.
@@ -124,7 +125,7 @@ export const useNostrStore = create<NostrState>((set, get) => {
     if (stale(seq)) return;
     // An nsec session is memory-only: persist it as a read-only npub session so
     // a refresh can never resurrect write access without the key.
-    await setJson(SESSION_KEY, {
+    await writeSession({
       pubkey: session.pubkey,
       method: session.method === "nsec" ? "npub" : session.method,
     });
@@ -156,8 +157,10 @@ export const useNostrStore = create<NostrState>((set, get) => {
         return;
       }
       try {
-        const session = await getJson<Session>(SESSION_KEY);
-        if (!session?.pubkey) return;
+        // Legacy/unversioned sessions are invalidated (and their identity
+        // caches purged) before any relay request touches their value.
+        const session = await readTrustedSession();
+        if (!session) return;
         // The identity is known here; the dashboard can paint while the relays
         // are still being read.
         set({ restoring: false });
@@ -298,7 +301,7 @@ export const useNostrStore = create<NostrState>((set, get) => {
       authSeq += 1;
       clearLocalSigner();
       setExpectedNip07Pubkey(null);
-      await removeKey(SESSION_KEY);
+      await clearSession();
       useGardenStore.getState().reset();
       useHiddenDiaries.getState().reset();
       set({ pubkey: null, method: null, profile: null, diaries: [], status: "idle", error: null, keyBackupPending: false });

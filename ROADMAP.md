@@ -117,3 +117,13 @@ Approved 2026-09-03. Nostr client work only; the 3D world is untouched.
 - Visible exit-to-Nostr control with `C` hint, scene cleanup (island, grass, pebbles,
   blooms, framing rocks), straight regular path, DPR/fog/far tuning.
 - Dev-only devtools source-tag strip for `src/world/**` so the canvas stops crashing.
+
+## 2026-09-10 — Security F1 (legacy persisted sessions)
+
+Sessions carry a version marker (`src/nostr/session.ts`, v1). Legacy/unversioned
+sessions are invalidated before any relay request and their identity caches are
+purged from IndexedDB and the localStorage fallback (`purgeKey` in
+`src/nostr/storage.ts`). Covered by `src/nostr/session.test.ts`.
+Limitation: this forces a ONE-TIME re-login for all existing users; relay-side
+diaries and unrelated local data (relay list, Grow Lens config) are preserved.
+Not deployed — pending owner review.

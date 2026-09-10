@@ -382,3 +382,13 @@ panel and the "why am I seeing this" list pick it up automatically.
 collider in the same edit. `vite.config.ts` contains a dev-only plugin that strips
 `data-tsd-source` from `src/world/**`; without it React Three Fiber throws in
 `applyProps` and the canvas goes blank. Do not delete it while devtools inject sources.
+
+## 2026-09-10 — Security F1 (legacy persisted sessions)
+
+Sessions carry a version marker (`src/nostr/session.ts`, v1). Legacy/unversioned
+sessions are invalidated before any relay request and their identity caches are
+purged from IndexedDB and the localStorage fallback (`purgeKey` in
+`src/nostr/storage.ts`). Covered by `src/nostr/session.test.ts`.
+Limitation: this forces a ONE-TIME re-login for all existing users; relay-side
+diaries and unrelated local data (relay list, Grow Lens config) are preserved.
+Not deployed — pending owner review.
