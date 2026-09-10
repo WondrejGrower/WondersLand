@@ -125,7 +125,7 @@ export const useNostrStore = create<NostrState>((set, get) => {
     if (stale(seq)) return;
     // An nsec session is memory-only: persist it as a read-only npub session so
     // a refresh can never resurrect write access without the key.
-    await setJson(SESSION_KEY, {
+    await writeSession({
       pubkey: session.pubkey,
       method: session.method === "nsec" ? "npub" : session.method,
     });
