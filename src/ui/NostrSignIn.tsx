@@ -7,8 +7,9 @@ import { profileLabel } from "../nostr/profile";
 import { SaveGarden } from "./SaveGarden";
 
 /**
- * Read-only Nostr identity: browser extension (NIP-07) or a pasted npub.
- * WondersLand never asks for, stores or handles a private key.
+ * Sign-in: browser extension (NIP-07, preferred) or a pasted npub for
+ * read-only viewing. The advanced nsec flow gives this page temporary
+ * access to the private key (memory only, cleared on refresh/sign-out).
  */
 export function NostrSignIn() {
   const [open, setOpen] = useState(false);
@@ -188,8 +189,10 @@ export function NostrSignIn() {
             {advanced ? (
               <div className="mt-2">
                 <p className="text-[0.7rem] leading-snug text-white/50">
-                  Alpha owner login. Your key is kept in memory for this tab only — never stored,
-                  never sent anywhere. Refreshing signs you out.
+                  Advanced &amp; risky: pasting your nsec gives this webpage direct access to
+                  your private key. Prefer the browser extension above. The key is kept in
+                  memory for this tab only and wiped on refresh or sign-out — but any page
+                  you give your nsec to could misuse it.
                 </p>
                 <div className="mt-2 flex gap-2">
                   <input
