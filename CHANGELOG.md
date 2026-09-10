@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## 2026-09-10 — Security: legacy sessions invalidated (audit F1, persisted leg)
+
+- New `src/nostr/session.ts`: sessions are now written with an explicit
+  `{ v: 1, pubkey, method }` format. `readTrustedSession()` accepts only that
+  format with a 64-char hex pubkey and a known sign-in method.
+- Any legacy/unversioned or malformed session is invalidated BEFORE any relay
+  request, so a raw secret hex mistakenly pasted into the old npub field can
+  never be sent as an `authors` filter. The value is never logged or echoed.
+- Identity-scoped caches for that value (`diaries:`, `profile:`, `garden:`,
+  `garden:*:draft`, `hidden-diaries:`) are purged from BOTH IndexedDB and the
+  localStorage fallback via the new `purgeKey()` in `src/nostr/storage.ts`.
+  Relay list, Grow Lens config and remote diaries on relays are untouched.
+- Regression suite `src/nostr/session.test.ts` (6 tests): a seeded old session
+  holding a disposable secret hex yields a null session, zero network calls and
+  no remaining cache key containing that value.
+- **User impact: a one-time re-login.** Everyone signed in before this build is
+  signed out once and must sign in again with their npub / extension / nsec.
+  No diary data is lost — diaries are re-fetched from the relays.
+
 ## 2026-09-06 — Grow Lens: an open, inspectable feed algorithm
 
 - New `src/nostr/lens/` module: `config.ts` (weights, sources, hashtags, thresholds,

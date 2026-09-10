@@ -549,3 +549,13 @@ Exit to the Nostr client: `C` on desktop or the always-visible top-right button.
 
 Limitation: the sandbox software renderer (SwiftShader) loses the WebGL context when a
 test script polls `getContext` repeatedly; that is a verification artefact, not app behaviour.
+
+## 2026-09-10 — Security F1 (legacy persisted sessions)
+
+Sessions carry a version marker (`src/nostr/session.ts`, v1). Legacy/unversioned
+sessions are invalidated before any relay request and their identity caches are
+purged from IndexedDB and the localStorage fallback (`purgeKey` in
+`src/nostr/storage.ts`). Covered by `src/nostr/session.test.ts`.
+Limitation: this forces a ONE-TIME re-login for all existing users; relay-side
+diaries and unrelated local data (relay list, Grow Lens config) are preserved.
+Not deployed — pending owner review.
