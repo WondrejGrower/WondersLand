@@ -157,8 +157,10 @@ export const useNostrStore = create<NostrState>((set, get) => {
         return;
       }
       try {
-        const session = await getJson<Session>(SESSION_KEY);
-        if (!session?.pubkey) return;
+        // Legacy/unversioned sessions are invalidated (and their identity
+        // caches purged) before any relay request touches their value.
+        const session = await readTrustedSession();
+        if (!session) return;
         // The identity is known here; the dashboard can paint while the relays
         // are still being read.
         set({ restoring: false });
