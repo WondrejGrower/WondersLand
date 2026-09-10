@@ -301,7 +301,7 @@ export const useNostrStore = create<NostrState>((set, get) => {
       authSeq += 1;
       clearLocalSigner();
       setExpectedNip07Pubkey(null);
-      await removeKey(SESSION_KEY);
+      await clearSession();
       useGardenStore.getState().reset();
       useHiddenDiaries.getState().reset();
       set({ pubkey: null, method: null, profile: null, diaries: [], status: "idle", error: null, keyBackupPending: false });
