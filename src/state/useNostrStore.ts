@@ -52,7 +52,7 @@ type NostrState = {
 
 };
 
-const SESSION_KEY = "session";
+
 
 /**
  * Public text sign-in (audit F1). Only bech32 npub/nprofile is accepted.
