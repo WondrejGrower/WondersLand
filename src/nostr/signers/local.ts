@@ -6,7 +6,7 @@
 // Audit F4: replacement is validate-then-atomically-swap, the previous buffer is
 // always zeroed, and every teardown path (sign-out, identity switch, pagehide)
 // wipes both the key and any pending backup string.
-import { finalizeEvent, generateSecretKey, getPublicKey, nip19 } from "nostr-tools";
+import { finalizeEvent, generateSecretKey, getPublicKey, nip19, nip44 } from "nostr-tools";
 import type { NostrEvent } from "../types";
 import { guardEvent, setLocalSecretMatcher } from "../secretGuard";
 import type { EventTemplate } from "./index";
@@ -114,6 +114,22 @@ export async function signWithLocalKey(template: EventTemplate): Promise<NostrEv
     throw new Error("Session key is gone — sign in with your nsec again");
   }
   return signed;
+}
+
+/**
+ * NIP-44 encryption to self. The conversation key is derived inside this
+ * module; the secret never leaves it and is never returned to a caller.
+ */
+export async function encryptWithLocalKey(plaintext: string): Promise<string> {
+  if (!secret || !publicKey) throw new Error("Session key is gone — sign in with your nsec again");
+  const conversation = nip44.v2.utils.getConversationKey(secret, publicKey);
+  return nip44.v2.encrypt(plaintext, conversation);
+}
+
+export async function decryptWithLocalKey(ciphertext: string): Promise<string> {
+  if (!secret || !publicKey) throw new Error("Session key is gone — sign in with your nsec again");
+  const conversation = nip44.v2.utils.getConversationKey(secret, publicKey);
+  return nip44.v2.decrypt(ciphertext, conversation);
 }
 
 /**
