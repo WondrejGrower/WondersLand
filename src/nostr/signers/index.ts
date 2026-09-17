@@ -1,5 +1,5 @@
 import type { AuthMethod, NostrEvent } from "../types";
-import { guardEvent } from "../secretGuard";
+import { assertSecretFree, guardEvent } from "../secretGuard";
 import {
   decryptWithNip07,
   encryptWithNip07,
@@ -91,6 +91,9 @@ export const localSigner: Signer = guarded({
     return pubkey;
   },
   signEvent: signWithLocalKey,
+  canEncrypt: isLocalSignerUnlocked,
+  encryptSelf: encryptWithLocalKey,
+  decryptSelf: decryptWithLocalKey,
 });
 
 /**
