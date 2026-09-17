@@ -19,6 +19,8 @@ type WorldState = {
   aboutOpen: boolean;
   /** Placeholder overlay for portals that are not built yet. */
   comingSoon: ComingSoon;
+  /** Private tasks/habits/timers board, opened from the board beside the house. */
+  tasksOpen: boolean;
   enter: () => void;
   /** Leave the 3D world back to the Nostr client (C key / touch button). */
   exit: () => void;
