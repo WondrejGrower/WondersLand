@@ -34,6 +34,7 @@ export function InteractionPrompt() {
   const indoorOpen = useWorldStore((s) => s.indoorOpen);
   const aboutOpen = useWorldStore((s) => s.aboutOpen);
   const comingSoon = useWorldStore((s) => s.comingSoon);
+  const tasksOpen = useWorldStore((s) => s.tasksOpen);
   const plants = useGardenStore((s) => s.plants);
   const coarse = useCoarsePointer();
   const now = useSlowNow();

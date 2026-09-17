@@ -12,6 +12,7 @@ import { IndoorGarden } from "../ui/IndoorGarden";
 import { AboutSign } from "../ui/AboutSign";
 import { ComingSoon } from "../ui/ComingSoon";
 import { InteractionPrompt } from "../ui/InteractionPrompt";
+import { TasksBoard } from "../features/tasks/TasksBoard";
 import { TouchControls } from "../ui/TouchControls";
 import { ExitWorldSwitch } from "../ui/ExitWorldSwitch";
 
@@ -98,6 +99,7 @@ function Index() {
       <IndoorGarden />
       <AboutSign />
       <ComingSoon />
+      <TasksBoard />
     </main>
   );
 }
