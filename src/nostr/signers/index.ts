@@ -1,12 +1,21 @@
 import type { AuthMethod, NostrEvent } from "../types";
 import { guardEvent } from "../secretGuard";
 import {
+  decryptWithNip07,
+  encryptWithNip07,
   getNip07PublicKey,
   isNip07Available,
+  nip07CanEncrypt,
   setExpectedNip07Pubkey,
   signWithNip07,
 } from "./nip07";
-import { getLocalPublicKey, isLocalSignerUnlocked, signWithLocalKey } from "./local";
+import {
+  decryptWithLocalKey,
+  encryptWithLocalKey,
+  getLocalPublicKey,
+  isLocalSignerUnlocked,
+  signWithLocalKey,
+} from "./local";
 
 export type EventTemplate = {
   kind: number;
