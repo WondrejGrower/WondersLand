@@ -22,7 +22,7 @@ export function GardenBoard() {
       </mesh>
       <mesh position={[0, 1.15, 0]}>
         <boxGeometry args={[1.15, 0.75, 0.08]} />
-        <meshLambertMaterial color={palette.woodLight} />
+        <meshLambertMaterial color={palette.sign} />
       </mesh>
     </group>
   );
