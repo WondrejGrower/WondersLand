@@ -19,6 +19,8 @@ type WorldState = {
   aboutOpen: boolean;
   /** Placeholder overlay for portals that are not built yet. */
   comingSoon: ComingSoon;
+  /** Private tasks/habits/timers board, opened from the board beside the house. */
+  tasksOpen: boolean;
   enter: () => void;
   /** Leave the 3D world back to the Nostr client (C key / touch button). */
   exit: () => void;
@@ -32,6 +34,8 @@ type WorldState = {
   closeAbout: () => void;
   openComingSoon: (info: NonNullable<ComingSoon>) => void;
   closeComingSoon: () => void;
+  openTasks: () => void;
+  closeTasks: () => void;
 };
 
 export const useWorldStore = create<WorldState>((set) => ({
@@ -42,6 +46,7 @@ export const useWorldStore = create<WorldState>((set) => ({
   indoorOpen: false,
   aboutOpen: false,
   comingSoon: null,
+  tasksOpen: false,
   enter: () => set({ entered: true }),
   exit: () =>
     set({
@@ -50,6 +55,7 @@ export const useWorldStore = create<WorldState>((set) => ({
       indoorOpen: false,
       aboutOpen: false,
       comingSoon: null,
+      tasksOpen: false,
       target: null,
       focusedPlantId: null,
     }),
@@ -64,4 +70,6 @@ export const useWorldStore = create<WorldState>((set) => ({
   closeAbout: () => set({ aboutOpen: false }),
   openComingSoon: (info) => set({ comingSoon: info }),
   closeComingSoon: () => set({ comingSoon: null }),
+  openTasks: () => set({ tasksOpen: true }),
+  closeTasks: () => set({ tasksOpen: false }),
 }));

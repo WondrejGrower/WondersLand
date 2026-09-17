@@ -13,15 +13,17 @@ export type WorldZoneId =
   | "house"
   | "grow-beds"
   | "plaza-portal"
-  | "friend-portal";
+  | "friend-portal"
+  | "garden-board";
 
-export type WorldAction = "about" | "indoor" | "coming-soon";
+export type WorldAction = "about" | "indoor" | "coming-soon" | "tasks";
 
 export type WorldInteractableId =
   | "welcome-sign"
   | "my-garden-house"
   | "plaza-portal"
-  | "friend-portal";
+  | "friend-portal"
+  | "garden-board";
 
 export type WorldInteractable = {
   id: WorldInteractableId;
@@ -73,6 +75,20 @@ export const WORLD_INTERACTABLES: readonly WorldInteractable[] = [
     verb: "enter",
     action: "indoor",
     clearance: 5,
+  },
+  {
+    // Temporary wooden board beside the house; a proper asset can replace the
+    // geometry later without touching this entry.
+    id: "garden-board",
+    zone: "house",
+    position: [3.1, -2.2],
+    radius: 2.6,
+    focusRadius: 0.9,
+    label: "Garden board",
+    verb: "open",
+    action: "tasks",
+    collider: 0.5,
+    clearance: 1.8,
   },
   {
     id: "plaza-portal",

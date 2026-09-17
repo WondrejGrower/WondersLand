@@ -392,3 +392,10 @@ purged from IndexedDB and the localStorage fallback (`purgeKey` in
 Limitation: this forces a ONE-TIME re-login for all existing users; relay-side
 diaries and unrelated local data (relay list, Grow Lens config) are preserved.
 Not deployed — pending owner review.
+
+## Garden Board
+Board data lives under `src/features/tasks`. IndexedDB is the UI source of
+truth; Nostr is sync/history only. Snapshot: kind 30078 `d=wondersland:tasks:v1`,
+NIP-44 self-encrypted. Logs: kind 78, same `d`, deduplicated by `entryId`.
+Last-write-wins by `created_at`, lowest event id breaks ties. Never publish
+plaintext board content and never touch key material outside `src/nostr/signers`.

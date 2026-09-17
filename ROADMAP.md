@@ -127,3 +127,9 @@ purged from IndexedDB and the localStorage fallback (`purgeKey` in
 Limitation: this forces a ONE-TIME re-login for all existing users; relay-side
 diaries and unrelated local data (relay list, Grow Lens config) are preserved.
 Not deployed — pending owner review.
+
+## Garden Board (tasks / habits / timers) — MVP shipped
+Local-first personal board synced to Nostr as an encrypted kind 30078 snapshot
+(`d = wondersland:tasks:v1`) plus encrypted kind 78 activity logs. Opened from a
+temporary wooden board beside the My Garden house. Next: a proper board asset,
+reordering, and weekly habit targets.

@@ -11,7 +11,35 @@ import { guardEvent } from "../secretGuard";
 type Nip07 = {
   getPublicKey(): Promise<string>;
   signEvent(event: unknown): Promise<unknown>;
+  nip44?: {
+    encrypt(pubkey: string, plaintext: string): Promise<string> | string;
+    decrypt(pubkey: string, ciphertext: string): Promise<string> | string;
+  };
 };
+
+/** True when the installed extension can do NIP-44 encryption to self. */
+export function nip07CanEncrypt(): boolean {
+  const nostr = ext();
+  return typeof nostr?.nip44?.encrypt === "function" && typeof nostr?.nip44?.decrypt === "function";
+}
+
+export async function encryptWithNip07(plaintext: string): Promise<string> {
+  const nostr = ext();
+  const pubkey = expectedPubkey ?? (await getNip07PublicKey());
+  if (!nostr?.nip44?.encrypt) throw new Error("Your Nostr extension cannot encrypt (NIP-44)");
+  const out = await nostr.nip44.encrypt(pubkey, plaintext);
+  if (typeof out !== "string" || out.length === 0) throw new Error("Encryption failed");
+  return out;
+}
+
+export async function decryptWithNip07(ciphertext: string): Promise<string> {
+  const nostr = ext();
+  const pubkey = expectedPubkey ?? (await getNip07PublicKey());
+  if (!nostr?.nip44?.decrypt) throw new Error("Your Nostr extension cannot decrypt (NIP-44)");
+  const out = await nostr.nip44.decrypt(pubkey, ciphertext);
+  if (typeof out !== "string") throw new Error("Decryption failed");
+  return out;
+}
 
 export type Nip07Template = {
   kind: number;

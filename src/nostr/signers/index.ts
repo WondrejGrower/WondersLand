@@ -1,12 +1,21 @@
 import type { AuthMethod, NostrEvent } from "../types";
-import { guardEvent } from "../secretGuard";
+import { assertSecretFree, guardEvent } from "../secretGuard";
 import {
+  decryptWithNip07,
+  encryptWithNip07,
   getNip07PublicKey,
   isNip07Available,
+  nip07CanEncrypt,
   setExpectedNip07Pubkey,
   signWithNip07,
 } from "./nip07";
-import { getLocalPublicKey, isLocalSignerUnlocked, signWithLocalKey } from "./local";
+import {
+  decryptWithLocalKey,
+  encryptWithLocalKey,
+  getLocalPublicKey,
+  isLocalSignerUnlocked,
+  signWithLocalKey,
+} from "./local";
 
 export type EventTemplate = {
   kind: number;
@@ -23,6 +32,13 @@ export type Signer = {
   method: AuthMethod;
   getPublicKey(): Promise<string>;
   signEvent(template: EventTemplate): Promise<NostrEvent>;
+  /**
+   * NIP-44 encryption to self, when the signer supports it. Key material stays
+   * inside the signer; callers only ever see ciphertext.
+   */
+  canEncrypt?(): boolean;
+  encryptSelf?(plaintext: string): Promise<string>;
+  decryptSelf?(ciphertext: string): Promise<string>;
 };
 
 /**
@@ -40,6 +56,18 @@ function guarded(signer: Signer): Signer {
       guardEvent(event, `${signer.method} signed event`);
       return event;
     },
+    ...(signer.canEncrypt ? { canEncrypt: signer.canEncrypt } : {}),
+    ...(signer.encryptSelf
+      ? {
+          async encryptSelf(plaintext: string) {
+            // Same fail-closed rule as signing: nothing key-shaped goes out,
+            // even inside an encrypted payload.
+            assertSecretFree([plaintext], `${signer.method} encrypt`);
+            return signer.encryptSelf!(plaintext);
+          },
+        }
+      : {}),
+    ...(signer.decryptSelf ? { decryptSelf: signer.decryptSelf } : {}),
   };
 }
 
@@ -47,6 +75,9 @@ export const nip07Signer: Signer = guarded({
   method: "nip07",
   getPublicKey: getNip07PublicKey,
   signEvent: signWithNip07,
+  canEncrypt: nip07CanEncrypt,
+  encryptSelf: encryptWithNip07,
+  decryptSelf: decryptWithNip07,
 });
 
 /**
@@ -60,6 +91,9 @@ export const localSigner: Signer = guarded({
     return pubkey;
   },
   signEvent: signWithLocalKey,
+  canEncrypt: isLocalSignerUnlocked,
+  encryptSelf: encryptWithLocalKey,
+  decryptSelf: decryptWithLocalKey,
 });
 
 /**
