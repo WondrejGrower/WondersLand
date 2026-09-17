@@ -39,7 +39,7 @@ export function InteractionPrompt() {
   const coarse = useCoarsePointer();
   const now = useSlowNow();
 
-  const blocked = journalOpen || indoorOpen || aboutOpen || comingSoon !== null;
+  const blocked = journalOpen || indoorOpen || aboutOpen || tasksOpen || comingSoon !== null;
 
   const world = target?.kind === "world" ? getInteractable(target.id) : undefined;
   const plant = target?.kind === "plant" ? plants.find((p) => p.id === target.id) : undefined;
@@ -62,6 +62,7 @@ export function InteractionPrompt() {
     if (world) {
       if (world.action === "about") store.openAbout();
       else if (world.action === "indoor") store.openIndoor();
+      else if (world.action === "tasks") store.openTasks();
       else if (world.comingSoon) store.openComingSoon(world.comingSoon);
       return;
     }

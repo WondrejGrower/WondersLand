@@ -5,6 +5,7 @@ import { Plaza } from "./Plaza";
 import { GardenPlants } from "./GardenPlants";
 import { Player } from "./Player";
 import { Cottage } from "./Cottage";
+import { GardenBoard } from "./GardenBoard";
 import { WelcomeSign } from "./WelcomeSign";
 import { Portals } from "./Portals";
 import { GrowBeds } from "./GrowBeds";
