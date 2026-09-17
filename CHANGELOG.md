@@ -551,3 +551,8 @@ Pending Nostr work: reactions (kind 7), replies, reposts (kind 6) and zaps
 - Dev-only fix: the TanStack devtools source tagger injected `data-tsd-source` into R3F elements,
   which threw inside `applyProps` and lost the WebGL context a few seconds after entering the world.
   `vite.config.ts` now strips that attribute for `src/world/**` during `serve`.
+
+## Garden Board MVP
+Added a private, local-first tasks/habits/timers/journey board for My Garden,
+encrypted to self with NIP-44 before syncing to Nostr, reachable from a new
+wooden board beside the house (E on desktop, tap on mobile).

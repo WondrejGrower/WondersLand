@@ -559,3 +559,15 @@ purged from IndexedDB and the localStorage fallback (`purgeKey` in
 Limitation: this forces a ONE-TIME re-login for all existing users; relay-side
 diaries and unrelated local data (relay list, Grow Lens config) are preserved.
 Not deployed — pending owner review.
+
+## Garden Board (src/features/tasks)
+- `types.ts` schema v1 + sanitizers, `storage.ts` identity-scoped IndexedDB,
+  `streaks.ts` derived streaks, `nostr.ts` encrypted transport, `sync.ts`
+  debounced offline queue, `useTasksStore.ts` state, `TasksBoard.tsx` overlay.
+- Signers gained NIP-44 encrypt/decrypt-to-self (`local.ts`, `nip07.ts`,
+  `signers/index.ts`); the outbound secret guard also screens plaintext before
+  encryption.
+- World: `garden-board` interactable + `GardenBoard.tsx` geometry; overlay state
+  `tasksOpen` in `useWorldStore`; prompt action `tasks`.
+- Limitation: extensions without NIP-44 stay "Local only" — nothing is published
+  in plaintext. Timers are derived from stored transitions, never per-second events.
