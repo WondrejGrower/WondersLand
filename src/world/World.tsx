@@ -29,6 +29,7 @@ export default function World() {
       <GrowBeds />
       <Portals />
       <Cottage />
+      <GardenBoard />
       <WelcomeSign />
       <GardenPlants />
       <FocusRing />
