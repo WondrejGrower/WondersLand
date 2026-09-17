@@ -32,6 +32,13 @@ export type Signer = {
   method: AuthMethod;
   getPublicKey(): Promise<string>;
   signEvent(template: EventTemplate): Promise<NostrEvent>;
+  /**
+   * NIP-44 encryption to self, when the signer supports it. Key material stays
+   * inside the signer; callers only ever see ciphertext.
+   */
+  canEncrypt?(): boolean;
+  encryptSelf?(plaintext: string): Promise<string>;
+  decryptSelf?(ciphertext: string): Promise<string>;
 };
 
 /**
@@ -49,6 +56,18 @@ function guarded(signer: Signer): Signer {
       guardEvent(event, `${signer.method} signed event`);
       return event;
     },
+    ...(signer.canEncrypt ? { canEncrypt: signer.canEncrypt } : {}),
+    ...(signer.encryptSelf
+      ? {
+          async encryptSelf(plaintext: string) {
+            // Same fail-closed rule as signing: nothing key-shaped goes out,
+            // even inside an encrypted payload.
+            assertSecretFree([plaintext], `${signer.method} encrypt`);
+            return signer.encryptSelf!(plaintext);
+          },
+        }
+      : {}),
+    ...(signer.decryptSelf ? { decryptSelf: signer.decryptSelf } : {}),
   };
 }
 
@@ -56,6 +75,9 @@ export const nip07Signer: Signer = guarded({
   method: "nip07",
   getPublicKey: getNip07PublicKey,
   signEvent: signWithNip07,
+  canEncrypt: nip07CanEncrypt,
+  encryptSelf: encryptWithNip07,
+  decryptSelf: decryptWithNip07,
 });
 
 /**
