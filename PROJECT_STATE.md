@@ -571,3 +571,11 @@ Not deployed — pending owner review.
   `tasksOpen` in `useWorldStore`; prompt action `tasks`.
 - Limitation: extensions without NIP-44 stay "Local only" — nothing is published
   in plaintext. Timers are derived from stored transitions, never per-second events.
+
+## 2026-09-17 — CSP fix for the 3D world
+
+The F6 security headers in `src/server.ts` blocked the glTF loaders: texture
+blob: reads and the decoder WebAssembly module were refused, so the world hung
+on the "Growing the garden…" fallback forever. CSP now allows
+`wasm-unsafe-eval` (not `unsafe-eval`), `blob:`/`data:` in connect-src, and the
+Google Fonts style/font origins. Everything else is unchanged.

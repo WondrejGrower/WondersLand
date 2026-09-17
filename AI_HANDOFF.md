@@ -399,3 +399,10 @@ truth; Nostr is sync/history only. Snapshot: kind 30078 `d=wondersland:tasks:v1`
 NIP-44 self-encrypted. Logs: kind 78, same `d`, deduplicated by `entryId`.
 Last-write-wins by `created_at`, lowest event id breaks ties. Never publish
 plaintext board content and never touch key material outside `src/nostr/signers`.
+
+## CSP and the 3D world
+
+`src/server.ts` CSP must keep `wasm-unsafe-eval` in script-src and `blob: data:`
+in connect-src. Without them the glTF loaders fail silently and the 3D route
+never leaves its loading fallback. Do not tighten these back without testing
+Enter Garden in a browser.
