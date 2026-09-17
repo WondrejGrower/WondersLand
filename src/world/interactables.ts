@@ -15,13 +15,14 @@ export type WorldZoneId =
   | "plaza-portal"
   | "friend-portal";
 
-export type WorldAction = "about" | "indoor" | "coming-soon";
+export type WorldAction = "about" | "indoor" | "coming-soon" | "tasks";
 
 export type WorldInteractableId =
   | "welcome-sign"
   | "my-garden-house"
   | "plaza-portal"
-  | "friend-portal";
+  | "friend-portal"
+  | "garden-board";
 
 export type WorldInteractable = {
   id: WorldInteractableId;
