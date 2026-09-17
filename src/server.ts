@@ -62,11 +62,15 @@ function isH3SwallowedErrorBody(body: string): boolean {
 const SECURITY_HEADERS: Record<string, string> = {
   "content-security-policy": [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline'",
-    "style-src 'self' 'unsafe-inline'",
+    // 'wasm-unsafe-eval' lets the glTF texture/geometry decoders run their
+    // WebAssembly module; plain 'unsafe-eval' stays forbidden.
+    "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: blob: https:",
-    "connect-src 'self' https: wss:",
-    "font-src 'self' data:",
+    // blob:/data: are needed by the 3D loaders, which read decoded textures
+    // back through object URLs.
+    "connect-src 'self' https: wss: blob: data:",
+    "font-src 'self' data: https://fonts.gstatic.com",
     "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
