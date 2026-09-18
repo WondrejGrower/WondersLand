@@ -28,6 +28,7 @@ import { completedToday } from "./streaks";
 import {
   dateKeyOf,
   emptyBoard,
+  MAX_TIMER_SECONDS,
   newId,
   TASKS_SCHEMA_VERSION,
   type ActivityAction,
