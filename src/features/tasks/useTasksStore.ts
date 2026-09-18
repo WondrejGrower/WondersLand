@@ -86,6 +86,32 @@ type TasksState = {
   archiveStreakGoal: (id: string) => void;
 };
 
+/** Weekly targets are 1–7 completions per week. */
+function clampTarget(value: number): number {
+  const n = Math.round(value);
+  if (!Number.isFinite(n)) return 3;
+  return Math.max(1, Math.min(7, n));
+}
+
+/**
+ * Swap an item with its neighbour and renumber `order` from zero, so the
+ * ordering is explicit in the snapshot and survives relay reconciliation.
+ */
+export function moveInList<T extends { id: string; order: number }>(
+  items: T[],
+  id: string,
+  direction: -1 | 1,
+): T[] {
+  const sorted = [...items].sort((a, b) => a.order - b.order);
+  const index = sorted.findIndex((item) => item.id === id);
+  const target = index + direction;
+  if (index < 0 || target < 0 || target >= sorted.length) return items;
+  const moved = sorted[index]!;
+  sorted[index] = sorted[target]!;
+  sorted[target] = moved;
+  return sorted.map((item, i) => ({ ...item, order: i }));
+}
+
 export const useTasksStore = create<TasksState>((set, get) => {
   function persist(board: BoardSnapshot) {
     const pubkey = get().pubkey;
