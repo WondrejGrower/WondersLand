@@ -594,3 +594,12 @@ Google Fonts style/font origins. Everything else is unchanged.
   (`MAX_TIMER_SECONDS`). Deleting a preset stops its running timer after a confirm.
 - `sanitizeBoard` no longer reseeds Focus/Break when the stored list is an empty
   array — defaults only apply to a board with no timers field at all.
+
+## 3D world performance (2026-09-18)
+
+- Cannabis plants are baked: leaflets merge into two module-level geometries,
+  so one plant is 4 meshes sharing 5 GPU resources (was ~60 meshes, each with
+  its own inline geometry and material). Do not go back to per-leaflet JSX.
+- Generic plants use MeshLambertMaterial; the scene has no PBR lighting.
+- `World.tsx` picks DPR/MSAA from `(pointer: coarse)`: phones get dpr [1,1.25]
+  and no antialias, desktop keeps [1,1.5] + antialias.
