@@ -228,7 +228,13 @@ export function Player() {
     const store = useWorldStore.getState();
     const frozen = store.journalOpen || store.indoorOpen || store.aboutOpen || store.comingSoon !== null;
 
-    if (frozen) {
+    // Safety net: if the document is not focused (another window, the editor
+    // panel, a browser dialog) no keyup will ever reach us, so never keep
+    // walking on stale key state.
+    const unfocused = typeof document !== "undefined" && !document.hasFocus();
+
+    if (frozen || unfocused) {
+
       held.current.clear();
       lookAxis.current = 0;
       clearKeyboardInput();
