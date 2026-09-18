@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 2026-09-18 — 3D world: frame-rate pass
+
+- `src/world/plants/CannabisPlant.tsx`: every leaflet is baked once at module
+  scope into two merged geometries (one per leaf tone). A plant went from ~60
+  meshes with per-instance inline geometry + material down to 4 meshes sharing
+  5 GPU resources across the whole garden. Silhouette and sway unchanged.
+- `src/world/plants/GenericPlants.tsx`: MeshStandardMaterial -> MeshLambertMaterial
+  (the scene has no PBR lighting, so the cost bought nothing).
+- `src/world/World.tsx`: on coarse-pointer devices the DPR ceiling drops to 1.25
+  and MSAA is off; desktop keeps [1, 1.5] + antialias.
+- Verified in a headless browser: world enters, renders, no console errors.
+
 ## 2026-09-10 — Security: legacy sessions invalidated (audit F1, persisted leg)
 
 - New `src/nostr/session.ts`: sessions are now written with an explicit
