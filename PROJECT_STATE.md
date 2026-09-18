@@ -630,3 +630,23 @@ Google Fonts style/font origins. Everything else is unchanged.
 - NavMesh is DEFERRED. `src/world/nav/path.ts` is a direct-line planner with one
   sidestep waypoint; replacing `planPath` with a real nav query needs no changes
   to input or controller code.
+
+### Garden Board completion pass
+- Habits support `cadence: daily | weekly` end to end. Weekly progress
+  ("3 / 4 this week") and weekly streaks are derived from activity logs only
+  (`weeklyProgress` / `weeklyStreak` in `src/features/tasks/streaks.ts`,
+  Monday-noon week anchor). No stored counters; editing a habit never deletes logs.
+- Ordering is functional: `moveItem(list, id, direction)` swaps neighbours and
+  renumbers `order` from zero for tasks, habits and timer presets. Reordering
+  writes no activity log, only the snapshot.
+- Today shows incomplete tasks first, completed below, each group keeping its
+  explicit order; "Clear completed" (confirmed) drops the rows but keeps the log.
+- Timers: manual "Complete" while running, `clockLabel()` renders HH:MM:SS from
+  one hour, deleting a running preset stops it (confirmation) and leaves no
+  orphan active timer. Deleted default presets are never recreated.
+- Journey titles are editable inline; Reset still writes one `streak_reset` event.
+- The header carries a compact sync badge (Local only / Syncing / Nostr synced /
+  Sync error) that expands to pending count and the last error.
+- Unchanged: local-first IndexedDB flow, encrypted-only NIP-44 publish, kind
+  30078 snapshot + kind 78 logs, 4 s debounce, no per-second relay writes. No
+  schema change (`TASKS_SCHEMA_VERSION` stays 1) — existing snapshots load as is.

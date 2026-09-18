@@ -57,6 +57,88 @@ export function completedToday(logs: ActivityLog[], itemId: string, now = Date.n
   return completionDays(logs, itemId).has(dateKeyOf(now));
 }
 
+// ---------------------------------------------------------------------------
+// Weekly cadence. Weeks are ISO-style: Monday 00:00 local -> Sunday 23:59.
+// Everything is derived from the completion log; no counter is ever stored.
+// ---------------------------------------------------------------------------
+
+/** Midnight of the Monday that starts the week containing `at`. */
+export function weekStart(at: number): number {
+  const d = new Date(at);
+  d.setHours(0, 0, 0, 0);
+  const dow = (d.getDay() + 6) % 7; // Monday = 0
+  d.setDate(d.getDate() - dow);
+  return d.getTime();
+}
+
+/** Stable key for a week, e.g. "2026-09-14" (its Monday). */
+export function weekKeyOf(at: number): string {
+  return dateKeyOf(weekStart(at));
+}
+
+function parseDayKey(key: string): number {
+  const [y, m, d] = key.split("-").map((n) => Number.parseInt(n, 10));
+  return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1).getTime();
+}
+
+/** Completions of a weekly habit inside the week containing `now`. */
+export function weeklyProgress(logs: ActivityLog[], itemId: string, now = Date.now()): number {
+  const week = weekKeyOf(now);
+  let count = 0;
+  for (const day of completionDays(logs, itemId)) {
+    if (weekKeyOf(parseDayKey(day)) === week) count += 1;
+  }
+  return count;
+}
+
+/**
+ * Consecutive weeks where the target was met, ending with the current week —
+ * or with last week when the current one is still in progress.
+ */
+export function weeklyStreak(
+  logs: ActivityLog[],
+  itemId: string,
+  target: number,
+  now = Date.now(),
+): number {
+  const goal = Math.max(1, Math.min(7, Math.round(target)));
+  const perWeek = new Map<string, number>();
+  for (const day of completionDays(logs, itemId)) {
+    const key = weekKeyOf(parseDayKey(day));
+    perWeek.set(key, (perWeek.get(key) ?? 0) + 1);
+  }
+  let cursor = weekStart(now);
+  if ((perWeek.get(dateKeyOf(cursor)) ?? 0) < goal) {
+    cursor = weekStart(cursor - DAY); // this week is not over yet
+  }
+  let streak = 0;
+  while ((perWeek.get(dateKeyOf(cursor)) ?? 0) >= goal) {
+    streak += 1;
+    cursor = weekStart(cursor - DAY);
+  }
+  return streak;
+}
+
+/** Remaining seconds of a timer, derived from stored transitions only. */
+export function remainingSeconds(
+  timer: { startedAt: number; pausedAt?: number; pausedMs: number; durationSeconds: number },
+  now: number,
+): number {
+  const reference = timer.pausedAt ?? now;
+  const elapsed = reference - timer.startedAt - timer.pausedMs;
+  return Math.max(0, Math.round(timer.durationSeconds - elapsed / 1000));
+}
+
+/** HH:MM:SS once an hour is involved, M:SS below that. */
+export function clockLabel(totalSeconds: number): string {
+  const total = Math.max(0, Math.round(totalSeconds));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const pad = (n: number) => `${n}`.padStart(2, "0");
+  return h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}
+
 /** Whole days since a start date, counting the start day as day 1. */
 export function dayCountSince(startedAt: number, now = Date.now()): number {
   const start = new Date(startedAt);

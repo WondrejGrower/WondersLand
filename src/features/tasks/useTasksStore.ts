@@ -54,10 +54,18 @@ type TasksState = {
   renameTask: (id: string, title: string) => void;
   toggleTask: (id: string) => void;
   archiveTask: (id: string) => void;
+  clearCompletedTasks: () => void;
 
-  addHabit: (title: string, cadence?: "daily" | "weekly") => void;
+  addHabit: (title: string, cadence?: "daily" | "weekly", target?: number) => void;
+  updateHabit: (
+    id: string,
+    patch: { title?: string; cadence?: "daily" | "weekly"; target?: number },
+  ) => void;
   toggleHabitToday: (id: string) => void;
   archiveHabit: (id: string) => void;
+
+  /** Pure reordering: persisted in the snapshot, never logged as activity. */
+  moveItem: (list: "tasks" | "habits" | "timers", id: string, direction: -1 | 1) => void;
 
   addTimerPreset: (title: string, durationSeconds: number, icon?: string) => void;
   updateTimerPreset: (
@@ -73,9 +81,36 @@ type TasksState = {
   completeTimer: (presetId: string) => void;
 
   addStreakGoal: (title: string) => void;
+  renameStreakGoal: (id: string, title: string) => void;
   resetStreakGoal: (id: string) => void;
   archiveStreakGoal: (id: string) => void;
 };
+
+/** Weekly targets are 1–7 completions per week. */
+function clampTarget(value: number): number {
+  const n = Math.round(value);
+  if (!Number.isFinite(n)) return 3;
+  return Math.max(1, Math.min(7, n));
+}
+
+/**
+ * Swap an item with its neighbour and renumber `order` from zero, so the
+ * ordering is explicit in the snapshot and survives relay reconciliation.
+ */
+export function moveInList<T extends { id: string; order: number }>(
+  items: T[],
+  id: string,
+  direction: -1 | 1,
+): T[] {
+  const sorted = [...items].sort((a, b) => a.order - b.order);
+  const index = sorted.findIndex((item) => item.id === id);
+  const target = index + direction;
+  if (index < 0 || target < 0 || target >= sorted.length) return items;
+  const moved = sorted[index]!;
+  sorted[index] = sorted[target]!;
+  sorted[target] = moved;
+  return sorted.map((item, i) => ({ ...item, order: i }));
+}
 
 export const useTasksStore = create<TasksState>((set, get) => {
   function persist(board: BoardSnapshot) {
@@ -250,8 +285,12 @@ export const useTasksStore = create<TasksState>((set, get) => {
     archiveTask: (id) =>
       mutate((board) => ({ ...board, tasks: board.tasks.filter((t) => t.id !== id) })),
 
+    /** Drops completed rows from the board. Activity history is untouched. */
+    clearCompletedTasks: () =>
+      mutate((board) => ({ ...board, tasks: board.tasks.filter((t) => !t.completed) })),
+
     // --- habits ------------------------------------------------------------
-    addHabit: (title, cadence = "daily") => {
+    addHabit: (title, cadence = "daily", target) => {
       const clean = title.trim();
       if (!clean) return;
       mutate((board) => ({
@@ -262,10 +301,32 @@ export const useTasksStore = create<TasksState>((set, get) => {
             id: newId(),
             title: clean.slice(0, 200),
             cadence,
+            ...(cadence === "weekly" ? { target: clampTarget(target ?? 3) } : {}),
             createdAt: Date.now(),
             order: nextOrder(board.habits),
           },
         ],
+      }));
+    },
+
+    /** Config only: completion logs stay exactly as they are. */
+    updateHabit: (id, patch) => {
+      mutate((board) => ({
+        ...board,
+        habits: board.habits.map((h) => {
+          if (h.id !== id) return h;
+          const title = patch.title?.trim();
+          const cadence = patch.cadence ?? h.cadence;
+          const { target: _previous, ...rest } = h;
+          const base = {
+            ...rest,
+            ...(title ? { title: title.slice(0, 200) } : {}),
+            cadence,
+          };
+          return cadence === "weekly"
+            ? { ...base, target: clampTarget(patch.target ?? h.target ?? 3) }
+            : base;
+        }),
       }));
     },
 
@@ -276,6 +337,13 @@ export const useTasksStore = create<TasksState>((set, get) => {
 
     archiveHabit: (id) =>
       mutate((board) => ({ ...board, habits: board.habits.filter((h) => h.id !== id) })),
+
+    moveItem: (list, id, direction) =>
+      mutate((board) => ({
+        ...board,
+        [list]: moveInList(board[list] as { id: string; order: number }[], id, direction),
+      })),
+
 
     // --- timers ------------------------------------------------------------
     addTimerPreset: (title, durationSeconds, icon) => {
@@ -397,6 +465,17 @@ export const useTasksStore = create<TasksState>((set, get) => {
             type: "custom",
           },
         ],
+      }));
+    },
+
+    renameStreakGoal: (id, title) => {
+      const clean = title.trim();
+      if (!clean) return;
+      mutate((board) => ({
+        ...board,
+        streakGoals: board.streakGoals.map((g) =>
+          g.id === id ? { ...g, title: clean.slice(0, 200) } : g,
+        ),
       }));
     },
 
