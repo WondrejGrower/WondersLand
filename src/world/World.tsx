@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Sky } from "./Sky";
 import { Ground } from "./Ground";
@@ -34,7 +35,9 @@ export default function World() {
       <GrowBeds />
       <Portals />
       <Cottage />
-      <GardenBoard />
+      <Suspense fallback={null}>
+        <GardenBoard />
+      </Suspense>
       <WelcomeSign />
       <GardenPlants />
       <FocusRing />
