@@ -1,5 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
-import { currentStreak, completedToday, dayCountSince, completionDays, elapsedLabel } from "./streaks";
+import {
+  clockLabel,
+  currentStreak,
+  completedToday,
+  dayCountSince,
+  completionDays,
+  elapsedLabel,
+  weekKeyOf,
+  weeklyProgress,
+  weeklyStreak,
+} from "./streaks";
+import { moveInList } from "./useTasksStore";
 import { dateKeyOf, sanitizeBoard, sanitizeLog, TASKS_SCHEMA_VERSION, type ActivityLog } from "./types";
 import { isNewer, signerCanEncrypt } from "./nostr";
 import { mergeLogs } from "./storage";
@@ -128,5 +139,73 @@ describe("journey elapsed", () => {
   it("keeps an empty timer list instead of reseeding defaults", () => {
     const board = sanitizeBoard({ schemaVersion: 1, timers: [] });
     expect(board?.timers).toHaveLength(0);
+  });
+});
+
+describe("weekly habits", () => {
+  // Anchor mid-week so the maths does not depend on "today".
+  const wednesday = new Date(2026, 8, 16, 12, 0, 0).getTime(); // Wed 16 Sep 2026
+
+  it("counts progress inside the current Monday-Sunday week", () => {
+    const logs = [
+      log("w", wednesday - 2 * DAY, "habit_completed"), // Monday
+      log("w", wednesday, "habit_completed"),
+      log("w", wednesday - 4 * DAY, "habit_completed"), // previous Saturday
+    ];
+    expect(weeklyProgress(logs, "w", wednesday)).toBe(2);
+  });
+
+  it("counts consecutive weeks that met the target", () => {
+    const logs = [
+      // previous week: 2 completions
+      log("w", wednesday - 9 * DAY, "habit_completed"),
+      log("w", wednesday - 8 * DAY, "habit_completed"),
+      // week before that: 2 completions
+      log("w", wednesday - 16 * DAY, "habit_completed"),
+      log("w", wednesday - 15 * DAY, "habit_completed"),
+      // current week so far: 1
+      log("w", wednesday, "habit_completed"),
+    ];
+    expect(weeklyStreak(logs, "w", 2, wednesday)).toBe(2);
+    expect(weeklyStreak(logs, "w", 3, wednesday)).toBe(0);
+  });
+
+  it("uses Monday as the week boundary", () => {
+    const sunday = new Date(2026, 8, 20, 22, 0, 0).getTime();
+    const monday = new Date(2026, 8, 21, 8, 0, 0).getTime();
+    expect(weekKeyOf(sunday)).toBe("2026-09-14");
+    expect(weekKeyOf(monday)).toBe("2026-09-21");
+    const logs = [log("w", sunday, "habit_completed")];
+    expect(weeklyProgress(logs, "w", monday)).toBe(0);
+    expect(weeklyProgress(logs, "w", sunday)).toBe(1);
+  });
+});
+
+describe("timer formatting", () => {
+  it("switches to HH:MM:SS at an hour", () => {
+    expect(clockLabel(59)).toBe("0:59");
+    expect(clockLabel(25 * 60)).toBe("25:00");
+    expect(clockLabel(3600)).toBe("01:00:00");
+    expect(clockLabel(4 * 3600 + 5 * 60 + 9)).toBe("04:05:09");
+  });
+});
+
+describe("reordering", () => {
+  const items = [
+    { id: "a", order: 0 },
+    { id: "b", order: 1 },
+    { id: "c", order: 2 },
+  ];
+
+  it("swaps with the neighbour and renumbers from zero", () => {
+    expect(moveInList(items, "c", -1).map((i) => i.id)).toEqual(["a", "c", "b"]);
+    expect(moveInList(items, "c", -1).map((i) => i.order)).toEqual([0, 1, 2]);
+    expect(moveInList(items, "a", 1).map((i) => i.id)).toEqual(["b", "a", "c"]);
+  });
+
+  it("is a no-op at the edges", () => {
+    expect(moveInList(items, "a", -1)).toBe(items);
+    expect(moveInList(items, "c", 1)).toBe(items);
+    expect(moveInList(items, "zz", 1)).toBe(items);
   });
 });
