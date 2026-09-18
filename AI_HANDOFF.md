@@ -406,3 +406,21 @@ plaintext board content and never touch key material outside `src/nostr/signers`
 in connect-src. Without them the glTF loaders fail silently and the 3D route
 never leaves its loading fallback. Do not tighten these back without testing
 Enter Garden in a browser.
+
+## Movement, input and settings (2026-09-18)
+
+Never move the avatar directly from a component. Input modules call
+`moveTo` / `moveDirection` / `stop` on the `character` singleton in
+`src/world/controller/CharacterController.ts`; `Player.tsx` is the only place
+that integrates motion per frame. New interactables: add an entry in
+`src/world/interactables.ts` (with `interactionPoint`/`interactionRadius`) and tag
+the R3F group with `userData={{ interactable: "<id>" }}` — do not add `onClick`
+handlers, the pointer pipeline handles picking and auto-walk.
+
+Device preferences live in `src/state/useWorldSettingsStore.ts` (versioned,
+localStorage only). They must never be published to Nostr. Read them with
+`worldSettings()` inside frame loops, never via a reactive subscription.
+
+Pathfinding is still direct-line (`src/world/nav/path.ts`). A future NavMesh
+phase should replace `planPath` only; it must keep returning waypoints and must
+never run per frame — recompute on destination change or collider invalidation.
