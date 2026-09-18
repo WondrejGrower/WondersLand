@@ -173,7 +173,7 @@ function Path() {
 
   return (
     <group>
-      {/* soil strip so no gap shows between slabs */}
+      {/* plain soil strip — the stone slab model is gone */}
       <mesh
         rotation={[-Math.PI / 2, 0, -Math.atan2(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z)]}
         position={[PATH_MID.x, 0.008, PATH_MID.z]}
@@ -181,10 +181,10 @@ function Path() {
         <planeGeometry args={[SLAB_SIZE + 0.3, Math.hypot(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z)]} />
         <meshLambertMaterial color={palette.path} />
       </mesh>
-      <StonePath points={points} size={SLAB_SIZE} />
     </group>
   );
 }
+
 
 
 function Greenhouse() {
