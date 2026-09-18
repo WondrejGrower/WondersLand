@@ -317,14 +317,15 @@ export const useTasksStore = create<TasksState>((set, get) => {
           if (h.id !== id) return h;
           const title = patch.title?.trim();
           const cadence = patch.cadence ?? h.cadence;
-          const target =
-            cadence === "weekly" ? clampTarget(patch.target ?? h.target ?? 3) : undefined;
-          return {
-            ...h,
+          const { target: _previous, ...rest } = h;
+          const base = {
+            ...rest,
             ...(title ? { title: title.slice(0, 200) } : {}),
             cadence,
-            ...(target !== undefined ? { target } : { target: undefined }),
           };
+          return cadence === "weekly"
+            ? { ...base, target: clampTarget(patch.target ?? h.target ?? 3) }
+            : base;
         }),
       }));
     },
