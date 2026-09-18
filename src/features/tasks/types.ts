@@ -40,10 +40,16 @@ export type TimerPreset = {
 export type StreakGoal = {
   id: string;
   title: string;
+  /** Exact epoch ms the journey started (reset writes a fresh value). */
   startedAt: number;
+  /** Legacy records may only carry this; used as a startedAt fallback. */
+  createdAt?: number;
   type: string;
   archived?: boolean;
 };
+
+/** Hard ceiling for a custom timer preset: 12 hours. */
+export const MAX_TIMER_SECONDS = 12 * 60 * 60;
 
 /**
  * A running timer. Never published per second: only the transitions are
@@ -200,12 +206,15 @@ export function sanitizeBoard(input: unknown): BoardSnapshot | null {
     const g = obj(item);
     const id = g && str(g["id"], 64);
     const title = g && str(g["title"], 200);
-    const startedAt = g && num(g["startedAt"]);
+    // Migration: older records may only carry createdAt.
+    const createdAt = g && num(g["createdAt"]);
+    const startedAt = (g && num(g["startedAt"])) ?? createdAt;
     if (!g || !id || !title || startedAt === null) continue;
     streakGoals.push({
       id,
       title,
       startedAt,
+      ...(createdAt !== null && createdAt !== undefined ? { createdAt } : {}),
       type: str(g["type"], 40) ?? "custom",
       archived: g["archived"] === true,
     });
