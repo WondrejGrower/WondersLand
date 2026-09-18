@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { currentStreak, completedToday, dayCountSince, completionDays } from "./streaks";
+import { currentStreak, completedToday, dayCountSince, completionDays, elapsedLabel } from "./streaks";
 import { dateKeyOf, sanitizeBoard, sanitizeLog, TASKS_SCHEMA_VERSION, type ActivityLog } from "./types";
 import { isNewer, signerCanEncrypt } from "./nostr";
 import { mergeLogs } from "./storage";
