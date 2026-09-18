@@ -240,7 +240,9 @@ export function sanitizeBoard(input: unknown): BoardSnapshot | null {
     schemaVersion: TASKS_SCHEMA_VERSION,
     tasks,
     habits,
-    timers: timers.length > 0 ? timers : emptyBoard().timers,
+    // Defaults only seed a board that never had a timers list; a user who
+    // deleted every preset keeps an empty section.
+    timers: Array.isArray(raw["timers"]) ? timers : emptyBoard().timers,
     streakGoals,
     activeTimers,
     updatedAt: num(raw["updatedAt"]) ?? Date.now(),

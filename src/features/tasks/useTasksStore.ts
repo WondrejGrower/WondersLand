@@ -389,7 +389,13 @@ export const useTasksStore = create<TasksState>((set, get) => {
         ...board,
         streakGoals: [
           ...board.streakGoals,
-          { id: newId(), title: clean.slice(0, 200), startedAt: Date.now(), type: "custom" },
+          {
+            id: newId(),
+            title: clean.slice(0, 200),
+            startedAt: Date.now(),
+            createdAt: Date.now(),
+            type: "custom",
+          },
         ],
       }));
     },
