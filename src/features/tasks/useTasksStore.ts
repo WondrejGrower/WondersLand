@@ -81,6 +81,7 @@ type TasksState = {
   completeTimer: (presetId: string) => void;
 
   addStreakGoal: (title: string) => void;
+  renameStreakGoal: (id: string, title: string) => void;
   resetStreakGoal: (id: string) => void;
   archiveStreakGoal: (id: string) => void;
 };
