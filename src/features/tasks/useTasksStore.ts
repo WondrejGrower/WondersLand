@@ -339,7 +339,10 @@ export const useTasksStore = create<TasksState>((set, get) => {
       mutate((board) => ({ ...board, habits: board.habits.filter((h) => h.id !== id) })),
 
     moveItem: (list, id, direction) =>
-      mutate((board) => ({ ...board, [list]: moveInList(board[list], id, direction) })),
+      mutate((board) => ({
+        ...board,
+        [list]: moveInList(board[list] as { id: string; order: number }[], id, direction),
+      })),
 
 
     // --- timers ------------------------------------------------------------
