@@ -464,6 +464,17 @@ export const useTasksStore = create<TasksState>((set, get) => {
       }));
     },
 
+    renameStreakGoal: (id, title) => {
+      const clean = title.trim();
+      if (!clean) return;
+      mutate((board) => ({
+        ...board,
+        streakGoals: board.streakGoals.map((g) =>
+          g.id === id ? { ...g, title: clean.slice(0, 200) } : g,
+        ),
+      }));
+    },
+
     resetStreakGoal: (id) => {
       mutate((board) => ({
         ...board,
