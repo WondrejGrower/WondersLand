@@ -12,12 +12,17 @@ import { GrowBeds } from "./GrowBeds";
 import { FocusRing } from "./FocusRing";
 import { palette } from "./palette";
 
+// Phones pay twice for pixels: lower the ceiling and drop MSAA there.
+const coarse =
+  typeof window !== "undefined" &&
+  window.matchMedia?.("(pointer: coarse)").matches === true;
+
 export default function World() {
   return (
     <Canvas
-      dpr={[1, 1.5]}
+      dpr={coarse ? [1, 1.25] : [1, 1.5]}
       camera={{ fov: 55, near: 0.1, far: 120, position: [0, 3, 14] }}
-      gl={{ antialias: true, powerPreference: "high-performance" }}
+      gl={{ antialias: !coarse, powerPreference: "high-performance" }}
       style={{ touchAction: "none" }}
     >
       <fog attach="fog" args={[palette.fog, 26, 72]} />
@@ -37,4 +42,3 @@ export default function World() {
     </Canvas>
   );
 }
-
