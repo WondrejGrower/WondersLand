@@ -8,9 +8,10 @@ import {
   elapsedLabel,
   weekKeyOf,
   weeklyProgress,
+  remainingSeconds,
   weeklyStreak,
 } from "./streaks";
-import { moveInList } from "./useTasksStore";
+import { moveInList, useTasksStore } from "./useTasksStore";
 import { dateKeyOf, sanitizeBoard, sanitizeLog, TASKS_SCHEMA_VERSION, type ActivityLog } from "./types";
 import { isNewer, signerCanEncrypt } from "./nostr";
 import { mergeLogs } from "./storage";
@@ -207,5 +208,94 @@ describe("reordering", () => {
     expect(moveInList(items, "a", -1)).toBe(items);
     expect(moveInList(items, "c", 1)).toBe(items);
     expect(moveInList(items, "zz", 1)).toBe(items);
+  });
+});
+
+describe("timer pause/resume across real time", () => {
+  const start = 1_000_000_000_000;
+
+  it("freezes while paused and resumes where it stopped", () => {
+    const preset = { startedAt: start, pausedMs: 0, durationSeconds: 600 };
+    expect(remainingSeconds(preset, start + 60_000)).toBe(540);
+    // paused after one minute; ten real minutes pass
+    const paused = { ...preset, pausedAt: start + 60_000 };
+    expect(remainingSeconds(paused, start + 660_000)).toBe(540);
+    // resumed: the paused span is excluded
+    const resumed = { ...preset, pausedMs: 600_000 };
+    expect(remainingSeconds(resumed, start + 720_000)).toBe(480);
+  });
+
+  it("never goes below zero after a long sleep", () => {
+    expect(remainingSeconds({ startedAt: start, pausedMs: 0, durationSeconds: 60 }, start + 1e9)).toBe(0);
+  });
+});
+
+describe("board actions", () => {
+  const store = useTasksStore;
+
+  it("clears completed tasks without touching the log", () => {
+    store.setState({
+      board: {
+        ...store.getState().board,
+        tasks: [
+          { id: "a", title: "open", completed: false, createdAt: 1, order: 0 },
+          { id: "b", title: "done", completed: true, createdAt: 1, order: 1 },
+        ],
+      },
+      logs: [log("b", 1, "task_completed")],
+    });
+    store.getState().clearCompletedTasks();
+    expect(store.getState().board.tasks.map((t) => t.id)).toEqual(["a"]);
+    expect(store.getState().logs).toHaveLength(1);
+  });
+
+  it("edits a habit's cadence and target without deleting logs", () => {
+    store.setState({
+      board: {
+        ...store.getState().board,
+        habits: [{ id: "h", title: "Water", cadence: "daily", createdAt: 1, order: 0 }],
+      },
+      logs: [log("h", 1, "habit_completed")],
+    });
+    store.getState().updateHabit("h", { title: "Water plants", cadence: "weekly", target: 12 });
+    const habit = store.getState().board.habits[0]!;
+    expect(habit.title).toBe("Water plants");
+    expect(habit.cadence).toBe("weekly");
+    expect(habit.target).toBe(7); // clamped to 1-7
+    expect(store.getState().logs).toHaveLength(1);
+    store.getState().updateHabit("h", { cadence: "daily" });
+    expect(store.getState().board.habits[0]!.target).toBeUndefined();
+  });
+
+  it("renames a journey and resets it with a single activity event", () => {
+    store.setState({
+      board: {
+        ...store.getState().board,
+        streakGoals: [{ id: "j", title: "Journey", startedAt: 1, createdAt: 1, type: "custom" }],
+      },
+      logs: [],
+    });
+    store.getState().renameStreakGoal("j", "Fresh start");
+    store.getState().resetStreakGoal("j");
+    const goal = store.getState().board.streakGoals[0]!;
+    expect(goal.title).toBe("Fresh start");
+    expect(goal.startedAt).toBeGreaterThan(1);
+    expect(store.getState().logs.filter((l) => l.action === "streak_reset")).toHaveLength(1);
+  });
+
+  it("keeps reordering out of the activity log", () => {
+    store.setState({
+      board: {
+        ...store.getState().board,
+        tasks: [
+          { id: "a", title: "a", createdAt: 1, order: 0 },
+          { id: "b", title: "b", createdAt: 1, order: 1 },
+        ],
+      },
+      logs: [],
+    });
+    store.getState().moveItem("tasks", "b", -1);
+    expect(store.getState().board.tasks.map((t) => t.id)).toEqual(["b", "a"]);
+    expect(store.getState().logs).toHaveLength(0);
   });
 });

@@ -119,6 +119,16 @@ export function weeklyStreak(
   return streak;
 }
 
+/** Remaining seconds of a timer, derived from stored transitions only. */
+export function remainingSeconds(
+  timer: { startedAt: number; pausedAt?: number; pausedMs: number; durationSeconds: number },
+  now: number,
+): number {
+  const reference = timer.pausedAt ?? now;
+  const elapsed = reference - timer.startedAt - timer.pausedMs;
+  return Math.max(0, Math.round(timer.durationSeconds - elapsed / 1000));
+}
+
 /** HH:MM:SS once an hour is involved, M:SS below that. */
 export function clockLabel(totalSeconds: number): string {
   const total = Math.max(0, Math.round(totalSeconds));

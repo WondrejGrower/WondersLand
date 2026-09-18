@@ -13,10 +13,11 @@ import {
   completionDays,
   elapsedLabel,
   recentDayKeys,
+  remainingSeconds,
   weeklyProgress,
   weeklyStreak,
 } from "./streaks";
-import { MAX_TIMER_SECONDS, type ActiveTimer, type Habit, type TimerPreset } from "./types";
+import { MAX_TIMER_SECONDS, type Habit, type TimerPreset } from "./types";
 
 function useTick(active: boolean, ms = 1000): number {
   const [now, setNow] = useState(0);
@@ -27,13 +28,6 @@ function useTick(active: boolean, ms = 1000): number {
     return () => window.clearInterval(id);
   }, [active, ms]);
   return now;
-}
-
-/** Remaining seconds derived from the stored transitions only. */
-function remainingSeconds(timer: ActiveTimer, now: number): number {
-  const reference = timer.pausedAt ?? now;
-  const elapsed = reference - timer.startedAt - timer.pausedMs;
-  return Math.max(0, Math.round(timer.durationSeconds - elapsed / 1000));
 }
 
 const chip =
