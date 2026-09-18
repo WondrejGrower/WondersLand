@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { currentStreak, completedToday, dayCountSince, completionDays } from "./streaks";
+import { currentStreak, completedToday, dayCountSince, completionDays, elapsedLabel } from "./streaks";
 import { dateKeyOf, sanitizeBoard, sanitizeLog, TASKS_SCHEMA_VERSION, type ActivityLog } from "./types";
 import { isNewer, signerCanEncrypt } from "./nostr";
 import { mergeLogs } from "./storage";
@@ -106,5 +106,27 @@ describe("sync helpers", () => {
         decryptSelf: vi.fn(),
       } as never),
     ).toBe(true);
+  });
+});
+
+describe("journey elapsed", () => {
+  it("shows HH:MM:SS under a day and Xd HH:MM:SS after", () => {
+    const start = 1_000_000_000_000;
+    expect(elapsedLabel(start, start + 3_723_000)).toBe("01:02:03");
+    expect(elapsedLabel(start, start + 86_400_000 + 3_723_000)).toBe("1d 01:02:03");
+    expect(elapsedLabel(start, start - 5_000)).toBe("00:00:00");
+  });
+
+  it("migrates a legacy goal that only has createdAt", () => {
+    const board = sanitizeBoard({
+      schemaVersion: 1,
+      streakGoals: [{ id: "g1", title: "Journey", createdAt: 1234, type: "custom" }],
+    });
+    expect(board?.streakGoals[0]?.startedAt).toBe(1234);
+  });
+
+  it("keeps an empty timer list instead of reseeding defaults", () => {
+    const board = sanitizeBoard({ schemaVersion: 1, timers: [] });
+    expect(board?.timers).toHaveLength(0);
   });
 });

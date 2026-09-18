@@ -579,3 +579,18 @@ blob: reads and the decoder WebAssembly module were refused, so the world hung
 on the "Growing the garden…" fallback forever. CSP now allows
 `wasm-unsafe-eval` (not `unsafe-eval`), `blob:`/`data:` in connect-src, and the
 Google Fonts style/font origins. Everything else is unchanged.
+
+## Garden Board update — Journey precision counter + custom timers (2026-09-18)
+
+- Journey rows now show a live elapsed counter derived from `Date.now() - startedAt`
+  (`elapsedLabel` in `src/features/tasks/streaks.ts`): `HH:MM:SS` under a day,
+  `Xd HH:MM:SS` after. Ticks locally once a second, publishes nothing per tick.
+  Reset still writes a fresh `startedAt` plus a single `streak_reset` log.
+- `StreakGoal.createdAt` added; sanitising falls back `startedAt ?? createdAt`
+  for legacy records.
+- Timer presets are user-editable: `addTimerPreset` / `updateTimerPreset` /
+  `removeTimerPreset` in `useTasksStore`, persisted through the same local-first
+  snapshot and encrypted kind 30078 sync. Duration bounded to 12 h
+  (`MAX_TIMER_SECONDS`). Deleting a preset stops its running timer after a confirm.
+- `sanitizeBoard` no longer reseeds Focus/Break when the stored list is an empty
+  array — defaults only apply to a board with no timers field at all.

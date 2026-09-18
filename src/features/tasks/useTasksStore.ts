@@ -28,6 +28,7 @@ import { completedToday } from "./streaks";
 import {
   dateKeyOf,
   emptyBoard,
+  MAX_TIMER_SECONDS,
   newId,
   TASKS_SCHEMA_VERSION,
   type ActivityAction,
@@ -57,6 +58,13 @@ type TasksState = {
   addHabit: (title: string, cadence?: "daily" | "weekly") => void;
   toggleHabitToday: (id: string) => void;
   archiveHabit: (id: string) => void;
+
+  addTimerPreset: (title: string, durationSeconds: number, icon?: string) => void;
+  updateTimerPreset: (
+    id: string,
+    patch: { title?: string; durationSeconds?: number; icon?: string },
+  ) => void;
+  removeTimerPreset: (id: string) => void;
 
   startTimer: (presetId: string) => void;
   pauseTimer: (presetId: string) => void;
@@ -270,6 +278,56 @@ export const useTasksStore = create<TasksState>((set, get) => {
       mutate((board) => ({ ...board, habits: board.habits.filter((h) => h.id !== id) })),
 
     // --- timers ------------------------------------------------------------
+    addTimerPreset: (title, durationSeconds, icon) => {
+      const clean = title.trim();
+      const duration = Math.round(durationSeconds);
+      if (!clean || !Number.isFinite(duration) || duration <= 0) return;
+      if (duration > MAX_TIMER_SECONDS) return;
+      const trimmedIcon = icon?.trim().slice(0, 4);
+      mutate((board) => ({
+        ...board,
+        timers: [
+          ...board.timers,
+          {
+            id: newId(),
+            title: clean.slice(0, 80),
+            durationSeconds: duration,
+            ...(trimmedIcon ? { icon: trimmedIcon } : {}),
+            order: nextOrder(board.timers),
+          },
+        ],
+      }));
+    },
+
+    updateTimerPreset: (id, patch) => {
+      mutate((board) => ({
+        ...board,
+        timers: board.timers.map((t) => {
+          if (t.id !== id) return t;
+          const title = patch.title?.trim();
+          const duration =
+            patch.durationSeconds !== undefined ? Math.round(patch.durationSeconds) : undefined;
+          const icon = patch.icon?.trim().slice(0, 4);
+          return {
+            ...t,
+            ...(title ? { title: title.slice(0, 80) } : {}),
+            ...(duration && duration > 0 && duration <= MAX_TIMER_SECONDS
+              ? { durationSeconds: duration }
+              : {}),
+            ...(patch.icon !== undefined ? { icon: icon || "" } : {}),
+          };
+        }),
+      }));
+    },
+
+    /** Deleting a preset stops any run of it, so no orphan timer is left. */
+    removeTimerPreset: (id) =>
+      mutate((board) => ({
+        ...board,
+        timers: board.timers.filter((t) => t.id !== id),
+        activeTimers: board.activeTimers.filter((t) => t.presetId !== id),
+      })),
+
     startTimer: (presetId) => {
       const preset = get().board.timers.find((t) => t.id === presetId);
       if (!preset) return;
@@ -331,7 +389,13 @@ export const useTasksStore = create<TasksState>((set, get) => {
         ...board,
         streakGoals: [
           ...board.streakGoals,
-          { id: newId(), title: clean.slice(0, 200), startedAt: Date.now(), type: "custom" },
+          {
+            id: newId(),
+            title: clean.slice(0, 200),
+            startedAt: Date.now(),
+            createdAt: Date.now(),
+            type: "custom",
+          },
         ],
       }));
     },

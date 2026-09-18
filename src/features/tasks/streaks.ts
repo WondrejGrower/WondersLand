@@ -65,3 +65,19 @@ export function dayCountSince(startedAt: number, now = Date.now()): number {
   today.setHours(0, 0, 0, 0);
   return Math.max(1, Math.floor((today.getTime() - start.getTime()) / DAY) + 1);
 }
+
+/**
+ * Exact elapsed time since a journey started. Derived from wall-clock only, so
+ * a reload, a backgrounded tab or a sleeping phone all resolve correctly.
+ * Under a day: HH:MM:SS. A day or more: "Xd HH:MM:SS".
+ */
+export function elapsedLabel(startedAt: number, now = Date.now()): string {
+  const total = Math.max(0, Math.floor((now - startedAt) / 1000));
+  const days = Math.floor(total / 86_400);
+  const h = Math.floor((total % 86_400) / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const pad = (n: number) => `${n}`.padStart(2, "0");
+  const clock = `${pad(h)}:${pad(m)}:${pad(s)}`;
+  return days > 0 ? `${days}d ${clock}` : clock;
+}
