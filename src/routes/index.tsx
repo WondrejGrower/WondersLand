@@ -15,6 +15,10 @@ import { InteractionPrompt } from "../ui/InteractionPrompt";
 import { TasksBoard } from "../features/tasks/TasksBoard";
 import { TouchControls } from "../ui/TouchControls";
 import { ExitWorldSwitch } from "../ui/ExitWorldSwitch";
+import { WorldSettingsButton } from "../ui/WorldSettingsButton";
+import { WorldSettings } from "../ui/WorldSettings";
+import { WorldHint } from "../ui/WorldHint";
+import { useWorldSettingsStore } from "../state/useWorldSettingsStore";
 
 // Three.js is browser-only: the module itself must not load during SSR.
 const World = lazy(() => import("../world/World"));
@@ -54,6 +58,8 @@ function Index() {
   const restoring = useNostrStore((s) => s.restoring);
   const restore = useNostrStore((s) => s.restore);
   const [hydrated, setHydrated] = useState(false);
+  const hudScale = useWorldSettingsStore((s) => s.interface.hudScale);
+  const largeText = useWorldSettingsStore((s) => s.accessibility.largeText);
 
   useEffect(() => setHydrated(true), []);
 
@@ -85,8 +91,14 @@ function Index() {
   if (!entered) return pubkey ? <HomeDashboard /> : <LandingScreen />;
 
 
+  // HUD size and larger text are device preferences, applied to the overlay
+  // layer only — the 3D canvas itself is untouched.
+  const steps = ["text-[0.9rem]", "text-base", "text-[1.15rem]", "text-[1.3rem]"];
+  const index = (hudScale === "small" ? 0 : hudScale === "large" ? 2 : 1) + (largeText ? 1 : 0);
+  const hudFont = steps[Math.min(index, steps.length - 1)];
+
   return (
-    <main className="relative h-screen w-screen overflow-hidden bg-background">
+    <main className={`relative h-screen w-screen overflow-hidden bg-background ${hudFont}`}>
       <ClientOnly fallback={<Loading />}>
         <Suspense fallback={<Loading />}>
           <World />
@@ -94,12 +106,15 @@ function Index() {
       </ClientOnly>
       <TouchControls />
       <ExitWorldSwitch />
+      <WorldSettingsButton />
       <InteractionPrompt />
+      <WorldHint />
       <Journal />
       <IndoorGarden />
       <AboutSign />
       <ComingSoon />
       <TasksBoard />
+      <WorldSettings />
     </main>
   );
 }

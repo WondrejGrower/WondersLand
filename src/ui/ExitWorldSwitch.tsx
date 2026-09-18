@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
-import { useWorldStore } from "../state/useWorldStore";
+import { useWorldStore, worldFrozen } from "../state/useWorldStore";
 
 function useCoarsePointer(): boolean {
   const [coarse, setCoarse] = useState(false);
@@ -21,13 +21,10 @@ function useCoarsePointer(): boolean {
  * "Enter Garden" in the dashboard.
  */
 export function ExitWorldSwitch() {
-  const journalOpen = useWorldStore((s) => s.journalOpen);
-  const indoorOpen = useWorldStore((s) => s.indoorOpen);
-  const aboutOpen = useWorldStore((s) => s.aboutOpen);
-  const comingSoon = useWorldStore((s) => s.comingSoon);
+  const store = useWorldStore();
   const coarse = useCoarsePointer();
 
-  const blocked = journalOpen || indoorOpen || aboutOpen || comingSoon !== null;
+  const blocked = worldFrozen(store);
 
   useEffect(() => {
     if (blocked) return;

@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Box3, Vector3 } from "three";
 import { useGLTF } from "@react-three/drei";
-import { useWorldStore } from "../state/useWorldStore";
 import model from "../assets/woodland-sign.glb.asset.json";
 import { getInteractable } from "./interactables";
 
@@ -38,10 +37,7 @@ export function WelcomeSign() {
     <group
       position={POSITION}
       rotation-y={ROTATION_Y}
-      onClick={(e) => {
-        e.stopPropagation();
-        useWorldStore.getState().openAbout();
-      }}
+      userData={{ interactable: "welcome-sign" }}
       onPointerOver={(e) => {
         e.stopPropagation();
         setHovered(true);

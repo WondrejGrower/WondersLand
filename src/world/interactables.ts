@@ -40,6 +40,13 @@ export type WorldInteractable = {
   action: WorldAction;
   /** Solid circle radius; omitted when a box collider lives elsewhere. */
   collider?: number;
+  /**
+   * Where the avatar should stand to use this object. Defaults to `position`,
+   * which is right for anything you can walk up to from any side.
+   */
+  interactionPoint?: [number, number];
+  /** How close counts as in range for click-to-interact. Defaults from radius. */
+  interactionRadius?: number;
   /** Decoration keeps this much distance away, so the object can breathe. */
   clearance: number;
   comingSoon?: { title: string; body: string };
@@ -75,6 +82,9 @@ export const WORLD_INTERACTABLES: readonly WorldInteractable[] = [
     verb: "enter",
     action: "indoor",
     clearance: 5,
+    // The cottage is solid: stand at its door side, not inside the wall.
+    interactionPoint: [4.1, -0.5],
+    interactionRadius: 2.4,
   },
   {
     // Temporary wooden board beside the house; a proper asset can replace the

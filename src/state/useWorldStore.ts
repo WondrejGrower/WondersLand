@@ -21,6 +21,10 @@ type WorldState = {
   comingSoon: ComingSoon;
   /** Private tasks/habits/timers board, opened from the board beside the house. */
   tasksOpen: boolean;
+  /** Device-local world settings panel. */
+  settingsOpen: boolean;
+  /** Short transient message, e.g. "Move closer to use this". */
+  hint: string | null;
   enter: () => void;
   /** Leave the 3D world back to the Nostr client (C key / touch button). */
   exit: () => void;
@@ -36,6 +40,9 @@ type WorldState = {
   closeComingSoon: () => void;
   openTasks: () => void;
   closeTasks: () => void;
+  openSettings: () => void;
+  closeSettings: () => void;
+  setHint: (hint: string | null) => void;
 };
 
 export const useWorldStore = create<WorldState>((set) => ({
@@ -47,6 +54,8 @@ export const useWorldStore = create<WorldState>((set) => ({
   aboutOpen: false,
   comingSoon: null,
   tasksOpen: false,
+  settingsOpen: false,
+  hint: null,
   enter: () => set({ entered: true }),
   exit: () =>
     set({
@@ -56,6 +65,8 @@ export const useWorldStore = create<WorldState>((set) => ({
       aboutOpen: false,
       comingSoon: null,
       tasksOpen: false,
+      settingsOpen: false,
+      hint: null,
       target: null,
       focusedPlantId: null,
     }),
@@ -72,4 +83,21 @@ export const useWorldStore = create<WorldState>((set) => ({
   closeComingSoon: () => set({ comingSoon: null }),
   openTasks: () => set({ tasksOpen: true }),
   closeTasks: () => set({ tasksOpen: false }),
+  openSettings: () => set({ settingsOpen: true, hint: null }),
+  closeSettings: () => set({ settingsOpen: false }),
+  setHint: (hint) => set({ hint }),
 }));
+
+/** True while any overlay owns the screen; the world must not react. */
+export function worldFrozen(s: {
+  journalOpen: boolean;
+  indoorOpen: boolean;
+  aboutOpen: boolean;
+  tasksOpen: boolean;
+  settingsOpen: boolean;
+  comingSoon: ComingSoon;
+}): boolean {
+  return (
+    s.journalOpen || s.indoorOpen || s.aboutOpen || s.tasksOpen || s.settingsOpen || s.comingSoon !== null
+  );
+}
