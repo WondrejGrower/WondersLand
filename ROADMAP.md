@@ -131,5 +131,12 @@ Not deployed — pending owner review.
 ## Garden Board (tasks / habits / timers) — MVP shipped
 Local-first personal board synced to Nostr as an encrypted kind 30078 snapshot
 (`d = wondersland:tasks:v1`) plus encrypted kind 78 activity logs. Opened from a
-temporary wooden board beside the My Garden house. Next: a proper board asset,
-reordering, and weekly habit targets.
+wooden board beside the My Garden house (uploaded GLB asset).
+
+### Completion pass (done)
+Weekly habits (target 1-7, Monday-Sunday ISO weeks, derived weekly streak),
+habit editing, touch-safe reordering of tasks/habits/timers, incomplete-first
+task grouping with "Clear completed", manual timer "Complete", HH:MM:SS labels
+from one hour, journey rename, and a compact sync status badge with details.
+Next: gamification (XP / levels / achievements) is NOT started and stays out of
+scope until a later phase.

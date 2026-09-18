@@ -568,3 +568,16 @@ Pending Nostr work: reactions (kind 7), replies, reposts (kind 6) and zaps
 Added a private, local-first tasks/habits/timers/journey board for My Garden,
 encrypted to self with NIP-44 before syncing to Nostr, reachable from a new
 wooden board beside the house (E on desktop, tap on mobile).
+
+## Garden Board completion pass
+- Weekly habits: Daily/Weekly cadence, 1-7 weekly target, "X / Y this week"
+  progress and a derived weekly streak over ISO Monday-Sunday weeks; habit edit
+  (rename / cadence / target) keeps all previous activity logs.
+- Reordering: Move up / down on tasks, habits and timer presets, persisted in the
+  same snapshot, no activity log noise.
+- Today: incomplete first, completed below, plus "Clear completed" with a confirm.
+- Timers: manual Complete, HH:MM:SS display from one hour, safe delete of a
+  running preset, deleted defaults stay deleted.
+- Journey: inline rename; Reset unchanged (single startedAt reset + one event).
+- Sync status is now a compact badge with an expandable details popover.
+- No schema change; 54 tests pass.

@@ -424,3 +424,9 @@ localStorage only). They must never be published to Nostr. Read them with
 Pathfinding is still direct-line (`src/world/nav/path.ts`). A future NavMesh
 phase should replace `planPath` only; it must keep returning waypoints and must
 never run per frame — recompute on destination change or collider invalidation.
+
+Garden Board derivations live in `src/features/tasks/streaks.ts` and must stay
+pure: streaks, weekly progress, remaining timer seconds and clock labels are all
+computed from `startedAt` / activity logs, never stored. Add board actions to
+`useTasksStore.ts` through `mutate()` so the snapshot sync and offline queue pick
+them up; never publish plaintext and never emit an event per tick.
