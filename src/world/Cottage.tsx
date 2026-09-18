@@ -32,7 +32,7 @@ export function Cottage() {
   }, [scene]);
 
   return (
-    <group position={POSITION} rotation-y={ROTATION_Y}>
+    <group position={POSITION} rotation-y={ROTATION_Y} userData={{ interactable: "my-garden-house" }}>
       <primitive object={scene} scale={scale} position={offset} />
     </group>
   );

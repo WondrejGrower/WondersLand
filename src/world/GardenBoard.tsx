@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Box3, Vector3 } from "three";
 import { useGLTF } from "@react-three/drei";
-import { useWorldStore } from "../state/useWorldStore";
 import model from "../assets/garden-board.glb.asset.json";
 import { getInteractable } from "./interactables";
 import { palette } from "./palette";
@@ -40,10 +39,7 @@ export function GardenBoard() {
     <group
       position={POSITION}
       rotation-y={ROTATION_Y}
-      onClick={(e) => {
-        e.stopPropagation();
-        useWorldStore.getState().openTasks();
-      }}
+      userData={{ interactable: "garden-board" }}
       onPointerOver={(e) => {
         e.stopPropagation();
         setHovered(true);

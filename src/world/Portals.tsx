@@ -2,7 +2,6 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import type { Mesh } from "three";
 import { palette } from "./palette";
-import { useWorldStore } from "../state/useWorldStore";
 import { WORLD_INTERACTABLES, type WorldInteractable } from "./interactables";
 
 /**
@@ -24,17 +23,10 @@ function Portal({ data }: { data: WorldInteractable }) {
     }
   });
 
-  const open = () => {
-    if (data.comingSoon) useWorldStore.getState().openComingSoon(data.comingSoon);
-  };
-
   return (
     <group
       position={[data.position[0], 0, data.position[1]]}
-      onClick={(e) => {
-        e.stopPropagation();
-        open();
-      }}
+      userData={{ interactable: data.id }}
       onPointerOver={(e) => {
         e.stopPropagation();
         document.body.style.cursor = "pointer";

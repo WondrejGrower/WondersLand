@@ -40,7 +40,13 @@ export function GardenPlants() {
   return (
     <group>
       {plants.map((plant) => (
-        <group key={plant.id} position={plant.position} rotation-y={plant.rotation} scale={plant.scale}>
+        <group
+          key={plant.id}
+          position={plant.position}
+          rotation-y={plant.rotation}
+          scale={plant.scale}
+          userData={{ interactable: `plant:${plant.id}` }}
+        >
           {plant.model.key === "cannabis" ? (
             <CannabisPlant position={[0, 0, 0]} />
           ) : (

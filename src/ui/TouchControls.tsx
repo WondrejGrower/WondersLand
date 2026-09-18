@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { clearTouchInput, setTouchAxes } from "../state/input";
+import { useWorldSettingsStore } from "../state/useWorldSettingsStore";
 
 
 const RADIUS = 52;
@@ -10,12 +11,15 @@ export function TouchControls() {
   const knob = useRef<HTMLDivElement>(null);
   const active = useRef<number | null>(null);
   const origin = useRef({ x: 0, y: 0 });
+  // The joystick is one of two mobile movement styles; tap-to-move is the other.
+  const mobileMovement = useWorldSettingsStore((s) => s.controls.mobileMovement);
+  const movementMode = useWorldSettingsStore((s) => s.controls.movementMode);
 
   useEffect(() => {
     setIsTouch(window.matchMedia("(pointer: coarse)").matches);
   }, []);
 
-  if (!isTouch) return null;
+  if (!isTouch || mobileMovement !== "joystick" || movementMode === "click") return null;
 
   const setKnob = (dx: number, dy: number) => {
     if (knob.current) knob.current.style.transform = `translate(${dx}px, ${dy}px)`;

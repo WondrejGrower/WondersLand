@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef } from "react";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { Vector3, type Group } from "three";
 import { clearKeyboardInput, clearTouchInput, input, setKeyboardAxes } from "../state/input";
-import { useWorldStore } from "../state/useWorldStore";
+import { useWorldStore, worldFrozen } from "../state/useWorldStore";
 import { useGardenStore } from "../state/useGardenStore";
+import { worldSettings } from "../state/useWorldSettingsStore";
 const INTERACT_RADIUS = 4;
 import { GARDEN_RADIUS } from "./Ground";
 import { palette } from "./palette";
@@ -16,13 +17,24 @@ import {
   resolved,
   type Collider,
 } from "./collision";
+import {
+  advanceWaypoint,
+  character,
+  currentWaypoint,
+  moveDirection,
+  stop,
+} from "./controller/CharacterController";
+import { setDynamicColliders } from "./nav/path";
+import { tickPendingInteraction } from "./interactions";
 
-
-const SPEED = 4.2;
+const WALK_SPEED = 4.2;
+const RUN_SPEED = 5.8;
 const CAMERA_DISTANCE = 6;
 const CAMERA_HEIGHT = 3.1;
 /** Diary plants are solid too, but slim enough to walk right up to. */
 const PLANT_COLLIDER_RADIUS = 0.45;
+/** How close to a waypoint counts as reached. */
+const ARRIVE = 0.22;
 
 /** How fast the character turns toward the direction it is walking. */
 const TURN_RATE = 9;
@@ -63,17 +75,11 @@ const lookMap: Record<string, number> = {
 
 export function Player() {
   const body = useRef<Group>(null);
-  const pos = useRef(new Vector3(SPAWN[0], 0, SPAWN[1]));
-  /** Camera orbit angle. */
-  const camYaw = useRef(0);
-  /** Character facing. */
-  const charYaw = useRef(0);
   /** Seconds left of manual camera control. */
   const manual = useRef(0);
   const lookAxis = useRef(0);
   const held = useRef<Set<string>>(new Set());
   const near = useRef<string | null>(null);
-  const gl = useThree((s) => s.gl);
 
   // Diary plants are dynamic scenery: rebuild their colliders only when the
   // list changes, never inside useFrame.
@@ -89,11 +95,21 @@ export function Player() {
       })),
     [plants],
   );
+  // Path planning must see the same obstacles the walker does.
+  useEffect(() => setDynamicColliders(plantColliders.current), [plants]);
 
+  // The controller owns the avatar position; seed it at the spawn point.
   useEffect(() => {
-    if (import.meta.env.DEV) assertSpawnClear(SPAWN[0], SPAWN[1]);
+    character.pos.set(SPAWN[0], 0, SPAWN[1]);
+    character.charYaw = 0;
+    character.camYaw = 0;
+    stop();
+    if (import.meta.env.DEV) {
+      assertSpawnClear(SPAWN[0], SPAWN[1]);
+      // Dev-only inspection hook for automated checks.
+      (window as unknown as { __wl?: typeof character }).__wl = character;
+    }
   }, []);
-
 
   useEffect(() => {
     const keys = held.current;
@@ -144,7 +160,10 @@ export function Player() {
     };
     // Manual escape hatch: Escape always stops the character dead.
     const onEscape = (e: KeyboardEvent) => {
-      if (e.code === "Escape") release();
+      if (e.code === "Escape") {
+        release();
+        stop();
+      }
     };
 
     window.addEventListener("keydown", down);
@@ -169,7 +188,6 @@ export function Player() {
     };
   }, []);
 
-
   // A lost pointerup (overlay, browser gesture, capture loss) could leave the
   // touch joystick pushed — clear it from the window as a safety net.
   useEffect(() => {
@@ -184,49 +202,11 @@ export function Player() {
     };
   }, []);
 
-
-  // Optional manual look: drag the scene (mouse or touch) to orbit the camera.
-  // It hands control back to the automatic follow shortly after you let go.
-  useEffect(() => {
-    const el = gl.domElement;
-    let dragging = false;
-    let lastX = 0;
-
-    const start = (e: PointerEvent) => {
-      dragging = true;
-      lastX = e.clientX;
-      el.setPointerCapture?.(e.pointerId);
-    };
-    const moveHandler = (e: PointerEvent) => {
-      if (!dragging) return;
-      const dx = e.clientX - lastX;
-      if (dx !== 0) {
-        input.yawDelta -= dx * 0.005;
-        manual.current = MANUAL_HOLD;
-      }
-      lastX = e.clientX;
-    };
-    const end = (e: PointerEvent) => {
-      dragging = false;
-      el.releasePointerCapture?.(e.pointerId);
-    };
-
-    el.addEventListener("pointerdown", start);
-    el.addEventListener("pointermove", moveHandler);
-    el.addEventListener("pointerup", end);
-    el.addEventListener("pointercancel", end);
-    return () => {
-      el.removeEventListener("pointerdown", start);
-      el.removeEventListener("pointermove", moveHandler);
-      el.removeEventListener("pointerup", end);
-      el.removeEventListener("pointercancel", end);
-    };
-  }, [gl]);
-
   useFrame((state, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05);
     const store = useWorldStore.getState();
-    const frozen = store.journalOpen || store.indoorOpen || store.aboutOpen || store.comingSoon !== null;
+    const settings = worldSettings();
+    const frozen = worldFrozen(store);
 
     // Safety net: if the document is not focused (another window, the editor
     // panel, a browser dialog) no keyup will ever reach us, so never keep
@@ -234,73 +214,109 @@ export function Player() {
     const unfocused = typeof document !== "undefined" && !document.hasFocus();
 
     if (frozen || unfocused) {
-
       held.current.clear();
       lookAxis.current = 0;
       clearKeyboardInput();
       clearTouchInput();
       input.yawDelta = 0;
+      if (frozen) stop();
     }
 
-    // Manual camera control: arrow keys or an active drag.
+    // ---- Camera orbit (arrow keys, drag, or automatic follow) ----
+    const sens = settings.camera.sensitivity * (settings.camera.invert ? -1 : 1);
     if (lookAxis.current !== 0) {
-      camYaw.current += lookAxis.current * LOOK_KEY_RATE * delta;
+      character.camYaw += lookAxis.current * LOOK_KEY_RATE * sens * delta;
       manual.current = MANUAL_HOLD;
     }
-    camYaw.current += input.yawDelta;
+    character.camYaw += input.yawDelta;
     input.yawDelta = 0;
     if (manual.current > 0) manual.current = Math.max(0, manual.current - delta);
 
-    const moving = input.forward !== 0 || input.strafe !== 0;
+    // ---- Direction input (WASD / joystick) ----
+    const wasdAllowed = settings.controls.movementMode !== "click";
+    const axisF = wasdAllowed ? input.forward : 0;
+    const axisS = wasdAllowed ? input.strafe : 0;
+    moveDirection(axisF, axisS);
+
+    const running = settings.controls.runMode !== "walk";
+    const speed = running ? RUN_SPEED : WALK_SPEED;
+
+    // ---- Locomotion: direction command wins, otherwise follow the path ----
+    let moving = false;
+    if (axisF !== 0 || axisS !== 0) {
+      const sin = Math.sin(character.camYaw);
+      const cos = Math.cos(character.camYaw);
+      move.set(axisS * cos - axisF * sin, 0, -axisS * sin - axisF * cos);
+      moving = move.lengthSq() > 0;
+    } else {
+      const wp = currentWaypoint();
+      if (wp) {
+        move.set(wp.x - character.pos.x, 0, wp.z - character.pos.z);
+        if (move.lengthSq() < ARRIVE * ARRIVE) {
+          advanceWaypoint();
+          moving = false;
+        } else {
+          moving = true;
+        }
+      }
+    }
 
     if (moving) {
-      const sin = Math.sin(camYaw.current);
-      const cos = Math.cos(camYaw.current);
-      move.set(
-        input.strafe * cos - input.forward * sin,
-        0,
-        -input.strafe * sin - input.forward * cos,
-      );
-      if (move.lengthSq() > 0) {
-        // Face where we are actually walking.
-        const target = Math.atan2(-move.x, -move.z);
-        charYaw.current += angleDelta(charYaw.current, target) * Math.min(1, delta * TURN_RATE);
-
-        move.normalize().multiplyScalar(SPEED * delta);
-        let nx = pos.current.x + move.x;
-        let nz = pos.current.z + move.z;
-        const dist = Math.hypot(nx, nz);
-        if (dist > GARDEN_RADIUS - 1) {
-          const k = (GARDEN_RADIUS - 1) / dist;
-          nx *= k;
-          nz *= k;
-        }
-        // Push out of solid scenery; the surviving tangential motion is the slide.
-        resolveMove(nx, nz, WORLD_COLLIDERS, plantColliders.current);
-        pos.current.x = resolved.x;
-        pos.current.z = resolved.z;
+      // Face where we are actually walking.
+      const target = Math.atan2(-move.x, -move.z);
+      if (settings.camera.rotateTowardMovement) {
+        character.charYaw +=
+          angleDelta(character.charYaw, target) * Math.min(1, delta * TURN_RATE);
+      } else {
+        character.charYaw = target;
       }
+
+      move.normalize().multiplyScalar(speed * delta);
+      let nx = character.pos.x + move.x;
+      let nz = character.pos.z + move.z;
+      const dist = Math.hypot(nx, nz);
+      if (dist > GARDEN_RADIUS - 1) {
+        const k = (GARDEN_RADIUS - 1) / dist;
+        nx *= k;
+        nz *= k;
+      }
+      // Push out of solid scenery; the surviving tangential motion is the slide.
+      resolveMove(nx, nz, WORLD_COLLIDERS, plantColliders.current);
+      character.pos.x = resolved.x;
+      character.pos.z = resolved.z;
 
       // Camera eases back behind the character unless the player is looking around.
-      if (manual.current <= 0) {
-        camYaw.current +=
-          angleDelta(camYaw.current, charYaw.current) * Math.min(1, delta * RECENTER_RATE);
+      if (settings.camera.followCharacter && manual.current <= 0) {
+        character.camYaw +=
+          angleDelta(character.camYaw, character.charYaw) *
+          Math.min(1, delta * RECENTER_RATE * (settings.accessibility.reduceCameraMotion ? 0.4 : 1));
       }
     }
 
+    // ---- Queued click-to-interact ----
+    if (!frozen) tickPendingInteraction();
 
-    if (body.current) {
-      body.current.position.copy(pos.current);
-      body.current.rotation.y = charYaw.current;
+    // ---- Transient visuals ----
+    if (character.marker.life > 0) character.marker.life -= delta;
+    if (character.highlight.life > 0) {
+      character.highlight.life -= delta;
+      if (character.highlight.life <= 0) character.highlight.id = null;
     }
 
+    if (body.current) {
+      body.current.position.copy(character.pos);
+      body.current.rotation.y = character.charYaw;
+    }
+
+    const distance = CAMERA_DISTANCE * settings.camera.distance * character.zoom;
     desiredCam.set(
-      pos.current.x + Math.sin(camYaw.current) * CAMERA_DISTANCE,
-      CAMERA_HEIGHT,
-      pos.current.z + Math.cos(camYaw.current) * CAMERA_DISTANCE,
+      character.pos.x + Math.sin(character.camYaw) * distance,
+      CAMERA_HEIGHT * (0.6 + 0.4 * settings.camera.distance * character.zoom),
+      character.pos.z + Math.cos(character.camYaw) * distance,
     );
-    state.camera.position.lerp(desiredCam, 1 - Math.pow(0.001, delta));
-    lookAt.set(pos.current.x, 1.2, pos.current.z);
+    const ease = settings.accessibility.reducedMotion ? 0.0001 : 0.001;
+    state.camera.position.lerp(desiredCam, 1 - Math.pow(ease, delta));
+    lookAt.set(character.pos.x, 1.2, character.pos.z);
     state.camera.lookAt(lookAt);
 
     // Proximity: pick the target the player is deepest inside, so the house
@@ -309,7 +325,7 @@ export function Player() {
     let bestScore = 1;
     for (const it of WORLD_INTERACTABLES) {
       candidate.set(it.position[0], 0, it.position[1]);
-      const score = pos.current.distanceTo(candidate) / it.radius;
+      const score = character.pos.distanceTo(candidate) / it.radius;
       if (score < bestScore) {
         bestScore = score;
         key = `world:${it.id}`;
@@ -317,7 +333,7 @@ export function Player() {
     }
     for (const plant of useGardenStore.getState().plants) {
       candidate.set(plant.position[0], 0, plant.position[2]);
-      const score = pos.current.distanceTo(candidate) / INTERACT_RADIUS;
+      const score = character.pos.distanceTo(candidate) / INTERACT_RADIUS;
       if (score < bestScore) {
         bestScore = score;
         key = `plant:${plant.id}`;
@@ -334,7 +350,6 @@ export function Player() {
             : { kind: "plant", id: key.slice(6) },
       );
     }
-
   });
 
   return (

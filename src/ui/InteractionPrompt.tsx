@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useWorldStore } from "../state/useWorldStore";
+import { useWorldStore, worldFrozen } from "../state/useWorldStore";
+import { useWorldSettingsStore } from "../state/useWorldSettingsStore";
 import { useGardenStore } from "../state/useGardenStore";
 import { getInteractable } from "../world/interactables";
 import { growTimer } from "../progression/timer";
@@ -29,17 +30,15 @@ function useSlowNow(): number {
 
 /** One contextual prompt for every interaction target, desktop and touch. */
 export function InteractionPrompt() {
-  const target = useWorldStore((s) => s.target);
-  const journalOpen = useWorldStore((s) => s.journalOpen);
-  const indoorOpen = useWorldStore((s) => s.indoorOpen);
-  const aboutOpen = useWorldStore((s) => s.aboutOpen);
-  const comingSoon = useWorldStore((s) => s.comingSoon);
-  const tasksOpen = useWorldStore((s) => s.tasksOpen);
+  const store = useWorldStore();
+  const target = store.target;
   const plants = useGardenStore((s) => s.plants);
+  const showPrompts = useWorldSettingsStore((s) => s.interface.prompts);
+  const tutorialHints = useWorldSettingsStore((s) => s.interface.tutorialHints);
   const coarse = useCoarsePointer();
   const now = useSlowNow();
 
-  const blocked = journalOpen || indoorOpen || aboutOpen || tasksOpen || comingSoon !== null;
+  const blocked = worldFrozen(store) || !showPrompts;
 
   const world = target?.kind === "world" ? getInteractable(target.id) : undefined;
   const plant = target?.kind === "plant" ? plants.find((p) => p.id === target.id) : undefined;
@@ -75,7 +74,11 @@ export function InteractionPrompt() {
   const clock = plant ? growTimer(plant.diary, now || Date.now()).short : null;
   const name = clock ? `${base} · ${clock}` : base;
   const verb = world ? world.verb : "read";
-  const label = coarse ? `${name} · Tap to ${verb}` : `${name} · Press E to ${verb}`;
+  const label = !tutorialHints
+    ? name
+    : coarse
+      ? `${name} · Tap to ${verb}`
+      : `${name} · Press E to ${verb}`;
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-24 z-10 flex justify-center px-4 sm:bottom-10">
