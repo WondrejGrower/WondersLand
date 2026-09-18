@@ -259,8 +259,12 @@ export const useTasksStore = create<TasksState>((set, get) => {
     archiveTask: (id) =>
       mutate((board) => ({ ...board, tasks: board.tasks.filter((t) => t.id !== id) })),
 
+    /** Drops completed rows from the board. Activity history is untouched. */
+    clearCompletedTasks: () =>
+      mutate((board) => ({ ...board, tasks: board.tasks.filter((t) => !t.completed) })),
+
     // --- habits ------------------------------------------------------------
-    addHabit: (title, cadence = "daily") => {
+    addHabit: (title, cadence = "daily", target) => {
       const clean = title.trim();
       if (!clean) return;
       mutate((board) => ({
@@ -271,10 +275,31 @@ export const useTasksStore = create<TasksState>((set, get) => {
             id: newId(),
             title: clean.slice(0, 200),
             cadence,
+            ...(cadence === "weekly" ? { target: clampTarget(target ?? 3) } : {}),
             createdAt: Date.now(),
             order: nextOrder(board.habits),
           },
         ],
+      }));
+    },
+
+    /** Config only: completion logs stay exactly as they are. */
+    updateHabit: (id, patch) => {
+      mutate((board) => ({
+        ...board,
+        habits: board.habits.map((h) => {
+          if (h.id !== id) return h;
+          const title = patch.title?.trim();
+          const cadence = patch.cadence ?? h.cadence;
+          const target =
+            cadence === "weekly" ? clampTarget(patch.target ?? h.target ?? 3) : undefined;
+          return {
+            ...h,
+            ...(title ? { title: title.slice(0, 200) } : {}),
+            cadence,
+            ...(target !== undefined ? { target } : { target: undefined }),
+          };
+        }),
       }));
     },
 
@@ -285,6 +310,10 @@ export const useTasksStore = create<TasksState>((set, get) => {
 
     archiveHabit: (id) =>
       mutate((board) => ({ ...board, habits: board.habits.filter((h) => h.id !== id) })),
+
+    moveItem: (list, id, direction) =>
+      mutate((board) => ({ ...board, [list]: moveInList(board[list], id, direction) })),
+
 
     // --- timers ------------------------------------------------------------
     addTimerPreset: (title, durationSeconds, icon) => {
