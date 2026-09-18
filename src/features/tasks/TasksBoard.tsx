@@ -277,13 +277,141 @@ function HabitsSection() {
   );
 }
 
+const numberField =
+  "w-16 min-w-0 rounded-xl border border-border bg-background px-2 py-2 text-sm tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+/** Hours / minutes / seconds form used for both new and edited presets. */
+function TimerForm({
+  initial,
+  submitLabel,
+  onSubmit,
+  onCancel,
+}: {
+  initial?: TimerPreset;
+  submitLabel: string;
+  onSubmit: (value: { title: string; durationSeconds: number; icon: string }) => void;
+  onCancel: () => void;
+}) {
+  const start = initial?.durationSeconds ?? 0;
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [icon, setIcon] = useState(initial?.icon ?? "");
+  const [h, setH] = useState(`${Math.floor(start / 3600)}`);
+  const [m, setM] = useState(`${Math.floor((start % 3600) / 60)}`);
+  const [s, setS] = useState(`${start % 60}`);
+  const [error, setError] = useState<string | null>(null);
+
+  const num = (v: string) => {
+    const n = Number.parseInt(v, 10);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  };
+
+  return (
+    <form
+      className="mt-3 space-y-3 rounded-2xl border border-border bg-background px-3 py-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const clean = title.trim();
+        const duration = num(h) * 3600 + num(m) * 60 + num(s);
+        if (!clean) {
+          setError("Give the timer a name.");
+          return;
+        }
+        if (duration <= 0) {
+          setError("Set a duration longer than zero.");
+          return;
+        }
+        if (duration > MAX_TIMER_SECONDS) {
+          setError("Keep the timer under 12 hours.");
+          return;
+        }
+        onSubmit({ title: clean, durationSeconds: duration, icon: icon.trim().slice(0, 4) });
+      }}
+    >
+      <div className="flex gap-2">
+        <input
+          value={icon}
+          onChange={(e) => setIcon(e.target.value)}
+          placeholder="🌿"
+          aria-label="Timer icon"
+          className="w-12 shrink-0 rounded-xl border border-border bg-background px-2 py-2 text-center text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        />
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Timer name"
+          aria-label="Timer name"
+          className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        />
+      </div>
+      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <label className="flex items-center gap-1">
+          <input
+            inputMode="numeric"
+            value={h}
+            onChange={(e) => setH(e.target.value)}
+            aria-label="Hours"
+            className={numberField}
+          />
+          h
+        </label>
+        <label className="flex items-center gap-1">
+          <input
+            inputMode="numeric"
+            value={m}
+            onChange={(e) => setM(e.target.value)}
+            aria-label="Minutes"
+            className={numberField}
+          />
+          m
+        </label>
+        <label className="flex items-center gap-1">
+          <input
+            inputMode="numeric"
+            value={s}
+            onChange={(e) => setS(e.target.value)}
+            aria-label="Seconds"
+            className={numberField}
+          />
+          s
+        </label>
+      </div>
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="submit"
+          className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+        >
+          {submitLabel}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-full border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-secondary"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function TimersSection() {
   const presets = useTasksStore((s) => s.board.timers);
   const active = useTasksStore((s) => s.board.activeTimers);
-  const { startTimer, pauseTimer, resumeTimer, cancelTimer, completeTimer } =
-    useTasksStore.getState();
+  const {
+    startTimer,
+    pauseTimer,
+    resumeTimer,
+    cancelTimer,
+    completeTimer,
+    addTimerPreset,
+    updateTimerPreset,
+    removeTimerPreset,
+  } = useTasksStore.getState();
   const running = active.some((t) => !t.pausedAt);
   const now = useTick(running) || Date.now();
+  const [adding, setAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // A timer that ran out while the page slept is completed on the next tick.
   useEffect(() => {
@@ -303,12 +431,27 @@ function TimersSection() {
             const left = timer
               ? remainingSeconds(timer, now)
               : Math.round(preset.durationSeconds);
+            if (editingId === preset.id) {
+              return (
+                <li key={preset.id} className="min-w-0">
+                  <TimerForm
+                    initial={preset}
+                    submitLabel="Save timer"
+                    onCancel={() => setEditingId(null)}
+                    onSubmit={(value) => {
+                      updateTimerPreset(preset.id, value);
+                      setEditingId(null);
+                    }}
+                  />
+                </li>
+              );
+            }
             return (
               <li
                 key={preset.id}
-                className="rounded-2xl border border-border bg-background px-4 py-3"
+                className="min-w-0 rounded-2xl border border-border bg-background px-4 py-3"
               >
-                <p className="text-sm font-medium">
+                <p className="truncate text-sm font-medium">
                   {preset.icon ? `${preset.icon} ` : ""}
                   {preset.title}
                 </p>
@@ -323,7 +466,7 @@ function TimersSection() {
                     <button
                       type="button"
                       onClick={() => startTimer(preset.id)}
-                      className="rounded-full bg-primary px-3 py-1 font-medium text-primary-foreground"
+                      className="min-h-8 rounded-full bg-primary px-3 py-1 font-medium text-primary-foreground"
                     >
                       Start
                     </button>
@@ -334,24 +477,66 @@ function TimersSection() {
                         onClick={() =>
                           timer.pausedAt ? resumeTimer(preset.id) : pauseTimer(preset.id)
                         }
-                        className="rounded-full border border-border px-3 py-1 text-muted-foreground hover:bg-secondary"
+                        className="min-h-8 rounded-full border border-border px-3 py-1 text-muted-foreground hover:bg-secondary"
                       >
                         {timer.pausedAt ? "Resume" : "Pause"}
                       </button>
                       <button
                         type="button"
                         onClick={() => cancelTimer(preset.id)}
-                        className="rounded-full border border-border px-3 py-1 text-muted-foreground hover:bg-secondary"
+                        className="min-h-8 rounded-full border border-border px-3 py-1 text-muted-foreground hover:bg-secondary"
                       >
                         Cancel
                       </button>
                     </>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAdding(false);
+                      setEditingId(preset.id);
+                    }}
+                    className="min-h-8 rounded-full border border-border px-3 py-1 text-muted-foreground hover:bg-secondary"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (timer && !window.confirm(`Stop and delete "${preset.title}"?`)) return;
+                      removeTimerPreset(preset.id);
+                    }}
+                    aria-label={`Delete ${preset.title}`}
+                    className="min-h-8 rounded-full border border-border px-3 py-1 text-muted-foreground hover:bg-secondary"
+                  >
+                    ✕
+                  </button>
                 </div>
               </li>
             );
           })}
       </ul>
+      {adding ? (
+        <TimerForm
+          submitLabel="Add timer"
+          onCancel={() => setAdding(false)}
+          onSubmit={(value) => {
+            addTimerPreset(value.title, value.durationSeconds, value.icon);
+            setAdding(false);
+          }}
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setEditingId(null);
+            setAdding(true);
+          }}
+          className="mt-3 min-h-10 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-secondary"
+        >
+          + Add timer
+        </button>
+      )}
     </section>
   );
 }
@@ -359,8 +544,9 @@ function TimersSection() {
 function JourneySection() {
   const goals = useTasksStore((s) => s.board.streakGoals);
   const { addStreakGoal, resetStreakGoal, archiveStreakGoal } = useTasksStore.getState();
-  const now = useTick(true, 60_000) || Date.now();
   const visible = goals.filter((g) => !g.archived);
+  // One second tick only while a journey is on screen; nothing is published.
+  const now = useTick(visible.length > 0, 1000) || Date.now();
 
   return (
     <section>
@@ -372,11 +558,11 @@ function JourneySection() {
           {visible.map((goal) => (
             <li
               key={goal.id}
-              className="flex items-center gap-3 rounded-2xl border border-border bg-background px-3 py-2"
+              className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-background px-3 py-2"
             >
               <span className="min-w-0 flex-1 truncate text-sm">{goal.title}</span>
-              <span className="shrink-0 text-sm font-medium">
-                Day {dayCountSince(goal.startedAt, now)}
+              <span className="shrink-0 text-sm font-medium tabular-nums">
+                {elapsedLabel(goal.startedAt ?? goal.createdAt ?? now, now)}
               </span>
               <button
                 type="button"
@@ -397,7 +583,7 @@ function JourneySection() {
           ))}
         </ul>
       )}
-      <AddRow placeholder="Start a journey to count days" onAdd={addStreakGoal} />
+      <AddRow placeholder="Start a journey to track time" onAdd={addStreakGoal} />
     </section>
   );
 }
