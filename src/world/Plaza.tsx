@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { CanvasTexture, Color, InstancedMesh, Matrix4, Object3D } from "three";
 import { palette } from "./palette";
 import { nearInteractable } from "./interactables";
-import { StonePath } from "./StonePath";
 
 
 // Deterministic pseudo-random: same plaza every visit, no data shipped.
