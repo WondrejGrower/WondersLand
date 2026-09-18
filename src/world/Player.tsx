@@ -117,7 +117,12 @@ export function Player() {
 
     const down = (e: KeyboardEvent) => {
       if (!keyMap[e.code] && !lookMap[e.code]) return;
-      if (e.repeat) return;
+      // Auto-repeat counts as proof the key is still physically down.
+      if (e.repeat) {
+        if (!keys.has(e.code)) keys.add(e.code);
+        apply();
+        return;
+      }
       keys.add(e.code);
       apply();
     };
@@ -137,22 +142,33 @@ export function Player() {
     const onVisibility = () => {
       if (document.visibilityState !== "visible") release();
     };
+    // Manual escape hatch: Escape always stops the character dead.
+    const onEscape = (e: KeyboardEvent) => {
+      if (e.code === "Escape") release();
+    };
 
     window.addEventListener("keydown", down);
+    window.addEventListener("keydown", onEscape, true);
     // Capture phase: a keyup can never be swallowed by a stopPropagation overlay.
     window.addEventListener("keyup", up, true);
     window.addEventListener("blur", release);
+    // Coming back to the window: we cannot know what is still held, and a keyup
+    // released while the window was away never arrived. Start from zero.
+    window.addEventListener("focus", release);
     window.addEventListener("pagehide", release);
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
       window.removeEventListener("keydown", down);
+      window.removeEventListener("keydown", onEscape, true);
       window.removeEventListener("keyup", up, true);
       window.removeEventListener("blur", release);
+      window.removeEventListener("focus", release);
       window.removeEventListener("pagehide", release);
       document.removeEventListener("visibilitychange", onVisibility);
       release();
     };
   }, []);
+
 
   // A lost pointerup (overlay, browser gesture, capture loss) could leave the
   // touch joystick pushed — clear it from the window as a safety net.
@@ -212,7 +228,13 @@ export function Player() {
     const store = useWorldStore.getState();
     const frozen = store.journalOpen || store.indoorOpen || store.aboutOpen || store.comingSoon !== null;
 
-    if (frozen) {
+    // Safety net: if the document is not focused (another window, the editor
+    // panel, a browser dialog) no keyup will ever reach us, so never keep
+    // walking on stale key state.
+    const unfocused = typeof document !== "undefined" && !document.hasFocus();
+
+    if (frozen || unfocused) {
+
       held.current.clear();
       lookAxis.current = 0;
       clearKeyboardInput();

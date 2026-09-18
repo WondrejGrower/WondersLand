@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { CanvasTexture, Color, InstancedMesh, Matrix4, Object3D } from "three";
 import { palette } from "./palette";
 import { nearInteractable } from "./interactables";
-import { StonePath } from "./StonePath";
 
 
 // Deterministic pseudo-random: same plaza every visit, no data shipped.
@@ -155,25 +154,13 @@ export function nearPath(x: number, z: number, clearance: number) {
   return false;
 }
 
-// Flat stone slabs stepped along the straight route.
+// Flat soil walkway along the straight route.
 function Path() {
-  const points = useMemo(() => {
-    const heading = Math.atan2(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z);
-    const length = Math.hypot(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z);
-    // One slab per SLAB_SIZE of route: slabs meet edge to edge instead of
-    // stacking on top of each other (which flickered).
-    const count = Math.max(1, Math.ceil(length / SLAB_SIZE));
-    const list: { x: number; z: number; rot: number }[] = [];
-    for (let i = 0; i <= count; i++) {
-      const { x, z } = pathPoint(i / count);
-      list.push({ x, z, rot: -heading });
-    }
-    return list;
-  }, []);
+
 
   return (
     <group>
-      {/* soil strip so no gap shows between slabs */}
+      {/* plain soil strip — the stone slab model is gone */}
       <mesh
         rotation={[-Math.PI / 2, 0, -Math.atan2(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z)]}
         position={[PATH_MID.x, 0.008, PATH_MID.z]}
@@ -181,10 +168,10 @@ function Path() {
         <planeGeometry args={[SLAB_SIZE + 0.3, Math.hypot(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z)]} />
         <meshLambertMaterial color={palette.path} />
       </mesh>
-      <StonePath points={points} size={SLAB_SIZE} />
     </group>
   );
 }
+
 
 
 function Greenhouse() {
