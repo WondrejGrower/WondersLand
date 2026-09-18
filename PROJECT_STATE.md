@@ -603,3 +603,30 @@ Google Fonts style/font origins. Everything else is unchanged.
 - Generic plants use MeshLambertMaterial; the scene has no PBR lighting.
 - `World.tsx` picks DPR/MSAA from `(pointer: coarse)`: phones get dpr [1,1.25]
   and no antialias, desktop keeps [1,1.5] + antialias.
+
+## Click-to-move, World Settings, Garden Board model (2026-09-18)
+
+- Movement is split into input → controller. `src/world/controller/CharacterController.ts`
+  owns position, yaw, zoom, path and pending interaction (module singleton, no
+  React state per frame). `src/world/input/WorldPointerInput.tsx` turns clicks/taps
+  into `moveTo` or `requestInteract`; `Player.tsx` keeps WASD via `moveDirection`
+  and follows the path. Default mode is `hybrid` (both work).
+- Pointer rules: drag threshold 10 px separates tap from camera drag; right/middle
+  mouse and pinch/wheel only move the camera; a tap within 0.7 units just stops.
+- Interactions are generic (`src/world/interactions.ts`): every interactable has an
+  `interactionPoint` + `interactionRadius`; in range it runs immediately, otherwise
+  it walks there when `autoInteract` is on, else shows "Move closer".
+  Objects are picked by a `userData.interactable` tag walked up the hierarchy,
+  so tall meshes (board, sign, house, portals, plants) hit correctly.
+- `src/state/useWorldSettingsStore.ts` is a versioned, local-only (localStorage)
+  device settings store — never synced to Nostr. UI in `src/ui/WorldSettings.tsx`
+  (Controls, Camera, Graphics, Interface, Accessibility, World/Recovery), opened
+  from the gear pill under the "← Nostr" button. Opening it freezes the world.
+- Camera: follows automatically, arrow keys / drag rotate and it recenters after
+  ~2.5 s. Key state is released on blur/visibility change and Esc stops the avatar
+  (this fixed the "stuck walking forward" bug). The stone-tile path model is gone.
+- Garden Board uses the uploaded GLB (`garden-board.glb.asset.json`) normalised to
+  1.1 m with two procedural legs.
+- NavMesh is DEFERRED. `src/world/nav/path.ts` is a direct-line planner with one
+  sidestep waypoint; replacing `planPath` with a real nav query needs no changes
+  to input or controller code.
