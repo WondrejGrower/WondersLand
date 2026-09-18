@@ -1,32 +1,91 @@
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import type { Group } from "three";
+import {
+  CylinderGeometry,
+  IcosahedronGeometry,
+  MeshLambertMaterial,
+  Object3D,
+  SphereGeometry,
+  type BufferGeometry,
+  type Group,
+} from "three";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { palette } from "../palette";
 
-// A fan leaf: leaflets radiating from one point, built from a shared
-// flattened sphere geometry so everything reuses one buffer.
-function FanLeaf({ scale = 1 }: { scale?: number }) {
-  const leaflets = useMemo(() => {
-    const angles = [-1.05, -0.7, -0.35, 0, 0.35, 0.7, 1.05];
-    return angles.map((a, i) => {
-      const len = 1 - Math.abs(a) * 0.55;
-      return { a, len, key: i };
-    });
-  }, []);
+/**
+ * One cannabis plant used to cost ~60 meshes, each with its own inline
+ * geometry and material. Every leaflet is now baked once, at module scope,
+ * into two merged geometries (one per leaf tone), so a whole plant is four
+ * meshes that share their GPU resources with every other plant in the garden.
+ */
 
-  return (
-    <group scale={scale}>
-      {leaflets.map(({ a, len, key }) => (
-        <group key={key} rotation-y={a} rotation-z={-0.15}>
-          <mesh position={[0, 0, len * 0.5]} scale={[0.09, 0.02, len * 0.55]}>
-            <sphereGeometry args={[1, 8, 6]} />
-            <meshLambertMaterial color={key % 2 === 0 ? palette.leaf : palette.leafLight} />
-          </mesh>
-        </group>
-      ))}
-    </group>
-  );
+const NODES = [0.55, 0.95, 1.35, 1.7].map((y, i) => ({
+  y,
+  rot: i * 1.4,
+  scale: 1.1 - i * 0.18,
+}));
+
+const LEAFLET_ANGLES = [-1.05, -0.7, -0.35, 0, 0.35, 0.7, 1.05];
+
+function buildLeafTones() {
+  const base = new SphereGeometry(1, 6, 4);
+  const even: BufferGeometry[] = [];
+  const odd: BufferGeometry[] = [];
+
+  // Mirror the original scene graph, then bake the resulting world matrices.
+  const root = new Object3D();
+  const node = new Object3D();
+  const leaf = new Object3D();
+  const leaflet = new Object3D();
+  const blade = new Object3D();
+  root.add(node);
+  node.add(leaf);
+  leaf.add(leaflet);
+  leaflet.add(blade);
+
+  NODES.forEach(({ y, rot, scale }) => {
+    node.position.set(0, y, 0);
+    node.rotation.set(0, rot, 0);
+
+    ([0, Math.PI] as const).forEach((flip) => {
+      leaf.position.set(flip === 0 ? 0.12 : -0.12, 0, 0);
+      leaf.rotation.set(-0.1, flip, 0.25);
+      leaf.scale.setScalar(scale);
+
+      LEAFLET_ANGLES.forEach((a, i) => {
+        const len = 1 - Math.abs(a) * 0.55;
+        leaflet.position.set(0, 0, 0);
+        leaflet.rotation.set(0, a, -0.15);
+        blade.position.set(0, 0, len * 0.5);
+        blade.scale.set(0.09, 0.02, len * 0.55);
+        root.updateMatrixWorld(true);
+        (i % 2 === 0 ? even : odd).push(base.clone().applyMatrix4(blade.matrixWorld));
+      });
+    });
+  });
+
+  base.dispose();
+  return {
+    even: mergeGeometries(even, false)!,
+    odd: mergeGeometries(odd, false)!,
+  };
 }
+
+const LEAVES = buildLeafTones();
+
+const geo = {
+  soil: new SphereGeometry(1, 12, 8),
+  stem: new CylinderGeometry(0.035, 0.065, 2, 6),
+  cola: new IcosahedronGeometry(1, 1),
+};
+
+const mat = {
+  soil: new MeshLambertMaterial({ color: palette.soil }),
+  stem: new MeshLambertMaterial({ color: palette.stem }),
+  leaf: new MeshLambertMaterial({ color: palette.leaf }),
+  leafLight: new MeshLambertMaterial({ color: palette.leafLight }),
+  bud: new MeshLambertMaterial({ color: palette.bud }),
+};
 
 export function CannabisPlant({ position }: { position: [number, number, number] }) {
   const sway = useRef<Group>(null);
@@ -39,47 +98,25 @@ export function CannabisPlant({ position }: { position: [number, number, number]
     g.rotation.x = Math.cos(t * 0.6) * 0.02;
   });
 
-  const nodes = useMemo(
-    () =>
-      [0.55, 0.95, 1.35, 1.7].map((y, i) => ({
-        y,
-        rot: i * 1.4,
-        scale: 1.1 - i * 0.18,
-        key: i,
-      })),
-    [],
-  );
-
   return (
     <group position={position} scale={1.9}>
-      {/* soil mound */}
-      <mesh position={[0, 0.08, 0]} scale={[0.85, 0.28, 0.85]}>
-        <sphereGeometry args={[1, 14, 8]} />
-        <meshLambertMaterial color={palette.soil} />
-      </mesh>
+      <mesh
+        geometry={geo.soil}
+        material={mat.soil}
+        position={[0, 0.08, 0]}
+        scale={[0.85, 0.28, 0.85]}
+      />
 
       <group ref={sway}>
-        <mesh position={[0, 1, 0]}>
-          <cylinderGeometry args={[0.035, 0.065, 2, 6]} />
-          <meshLambertMaterial color={palette.stem} />
-        </mesh>
-
-        {nodes.map(({ y, rot, scale, key }) => (
-          <group key={key} position={[0, y, 0]} rotation-y={rot}>
-            <group position={[0.12, 0, 0]} rotation-z={0.25} rotation-x={-0.1}>
-              <FanLeaf scale={scale} />
-            </group>
-            <group position={[-0.12, 0, 0]} rotation-y={Math.PI} rotation-z={0.25} rotation-x={-0.1}>
-              <FanLeaf scale={scale} />
-            </group>
-          </group>
-        ))}
-
-        {/* top cola */}
-        <mesh position={[0, 2.1, 0]} scale={[0.16, 0.32, 0.16]}>
-          <icosahedronGeometry args={[1, 1]} />
-          <meshLambertMaterial color={palette.bud} />
-        </mesh>
+        <mesh geometry={geo.stem} material={mat.stem} position={[0, 1, 0]} />
+        <mesh geometry={LEAVES.even} material={mat.leaf} />
+        <mesh geometry={LEAVES.odd} material={mat.leafLight} />
+        <mesh
+          geometry={geo.cola}
+          material={mat.bud}
+          position={[0, 2.1, 0]}
+          scale={[0.16, 0.32, 0.16]}
+        />
       </group>
     </group>
   );

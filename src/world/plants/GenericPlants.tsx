@@ -2,7 +2,7 @@ import {
   BoxGeometry,
   CylinderGeometry,
   IcosahedronGeometry,
-  MeshStandardMaterial,
+  MeshLambertMaterial,
   SphereGeometry,
 } from "three";
 import { palette } from "../palette";
@@ -21,16 +21,16 @@ const geo = {
 };
 
 const mat = {
-  stem: new MeshStandardMaterial({ color: palette.stem, roughness: 0.9 }),
-  trunk: new MeshStandardMaterial({ color: palette.trunk, roughness: 1 }),
-  leafA: new MeshStandardMaterial({ color: palette.foliageA, flatShading: true, roughness: 0.9 }),
-  leafB: new MeshStandardMaterial({ color: palette.foliageB, flatShading: true, roughness: 0.9 }),
-  leafC: new MeshStandardMaterial({ color: palette.leafLight, flatShading: true, roughness: 0.9 }),
-  herb: new MeshStandardMaterial({ color: palette.shrub, flatShading: true, roughness: 0.95 }),
-  pot: new MeshStandardMaterial({ color: palette.wood, roughness: 1 }),
-  soil: new MeshStandardMaterial({ color: palette.bedSoil, roughness: 1 }),
-  fruit: new MeshStandardMaterial({ color: palette.flowerGold, roughness: 0.6 }),
-  sprout: new MeshStandardMaterial({ color: palette.leafLight, flatShading: true, roughness: 0.9 }),
+  stem: new MeshLambertMaterial({ color: palette.stem }),
+  trunk: new MeshLambertMaterial({ color: palette.trunk }),
+  leafA: new MeshLambertMaterial({ color: palette.foliageA, flatShading: true }),
+  leafB: new MeshLambertMaterial({ color: palette.foliageB, flatShading: true }),
+  leafC: new MeshLambertMaterial({ color: palette.leafLight, flatShading: true }),
+  herb: new MeshLambertMaterial({ color: palette.shrub, flatShading: true }),
+  pot: new MeshLambertMaterial({ color: palette.wood }),
+  soil: new MeshLambertMaterial({ color: palette.bedSoil }),
+  fruit: new MeshLambertMaterial({ color: palette.flowerGold }),
+  sprout: new MeshLambertMaterial({ color: palette.leafLight, flatShading: true }),
 };
 
 function Vegetable() {
