@@ -24,6 +24,14 @@ const CAMERA_HEIGHT = 3.1;
 /** Diary plants are solid too, but slim enough to walk right up to. */
 const PLANT_COLLIDER_RADIUS = 0.45;
 
+/** How fast the character turns toward the direction it is walking. */
+const TURN_RATE = 9;
+/** How fast the camera swings back behind the character. */
+const RECENTER_RATE = 2.4;
+/** Manual look keeps control of the camera for this long after the last input. */
+const MANUAL_HOLD = 2.5;
+/** Arrow-key look speed, radians per second. */
+const LOOK_KEY_RATE = 1.8;
 
 // Scratch objects — never allocate inside useFrame.
 const move = new Vector3();
@@ -32,22 +40,38 @@ const lookAt = new Vector3();
 
 const candidate = new Vector3();
 
+/** Shortest signed angular difference, wrapped to [-PI, PI]. */
+function angleDelta(from: number, to: number): number {
+  let d = (to - from) % (Math.PI * 2);
+  if (d > Math.PI) d -= Math.PI * 2;
+  if (d < -Math.PI) d += Math.PI * 2;
+  return d;
+}
 
 const keyMap: Record<string, [axis: "forward" | "strafe", value: number]> = {
   KeyW: ["forward", 1],
-  ArrowUp: ["forward", 1],
   KeyS: ["forward", -1],
-  ArrowDown: ["forward", -1],
   KeyA: ["strafe", -1],
-  ArrowLeft: ["strafe", -1],
   KeyD: ["strafe", 1],
-  ArrowRight: ["strafe", 1],
+};
+
+/** Arrow keys orbit the camera instead of moving the character. */
+const lookMap: Record<string, number> = {
+  ArrowLeft: 1,
+  ArrowRight: -1,
 };
 
 export function Player() {
   const body = useRef<Group>(null);
   const pos = useRef(new Vector3(SPAWN[0], 0, SPAWN[1]));
-  const yaw = useRef(0);
+  /** Camera orbit angle. */
+  const camYaw = useRef(0);
+  /** Character facing. */
+  const charYaw = useRef(0);
+  /** Seconds left of manual camera control. */
+  const manual = useRef(0);
+  const lookAxis = useRef(0);
+  const held = useRef<Set<string>>(new Set());
   const near = useRef<string | null>(null);
   const gl = useThree((s) => s.gl);
 
@@ -72,33 +96,42 @@ export function Player() {
 
 
   useEffect(() => {
-    const held = new Set<string>();
+    const keys = held.current;
 
     const apply = () => {
       let f = 0;
       let s = 0;
-      held.forEach((code) => {
+      let look = 0;
+      keys.forEach((code) => {
         const entry = keyMap[code];
-        if (!entry) return;
-        if (entry[0] === "forward") f += entry[1];
-        else s += entry[1];
+        if (entry) {
+          if (entry[0] === "forward") f += entry[1];
+          else s += entry[1];
+        }
+        const l = lookMap[code];
+        if (l) look += l;
       });
+      lookAxis.current = look;
       setKeyboardAxes(f, s);
     };
 
     const down = (e: KeyboardEvent) => {
-      if (!keyMap[e.code] || e.repeat) return;
-      held.add(e.code);
+      if (!keyMap[e.code] && !lookMap[e.code]) return;
+      if (e.repeat) return;
+      keys.add(e.code);
       apply();
     };
+    // Always recompute on keyup, even for a key we never saw go down: a missed
+    // keydown must never leave the character walking forever.
     const up = (e: KeyboardEvent) => {
-      if (!held.delete(e.code)) return;
+      if (!keyMap[e.code] && !lookMap[e.code]) return;
+      keys.delete(e.code);
       apply();
     };
     // Any focus/lifecycle change can swallow a keyup — drop keyboard state.
     const release = () => {
-      if (held.size === 0) return;
-      held.clear();
+      keys.clear();
+      lookAxis.current = 0;
       clearKeyboardInput();
     };
     const onVisibility = () => {
@@ -118,12 +151,26 @@ export function Player() {
       window.removeEventListener("pagehide", release);
       document.removeEventListener("visibilitychange", onVisibility);
       release();
-      clearKeyboardInput();
+    };
+  }, []);
+
+  // A lost pointerup (overlay, browser gesture, capture loss) could leave the
+  // touch joystick pushed — clear it from the window as a safety net.
+  useEffect(() => {
+    const stop = () => clearTouchInput();
+    window.addEventListener("pointerup", stop);
+    window.addEventListener("pointercancel", stop);
+    window.addEventListener("blur", stop);
+    return () => {
+      window.removeEventListener("pointerup", stop);
+      window.removeEventListener("pointercancel", stop);
+      window.removeEventListener("blur", stop);
     };
   }, []);
 
 
-  // Drag to look — works with mouse and touch, no pointer lock required.
+  // Optional manual look: drag the scene (mouse or touch) to orbit the camera.
+  // It hands control back to the automatic follow shortly after you let go.
   useEffect(() => {
     const el = gl.domElement;
     let dragging = false;
@@ -136,7 +183,11 @@ export function Player() {
     };
     const moveHandler = (e: PointerEvent) => {
       if (!dragging) return;
-      input.yawDelta -= (e.clientX - lastX) * 0.005;
+      const dx = e.clientX - lastX;
+      if (dx !== 0) {
+        input.yawDelta -= dx * 0.005;
+        manual.current = MANUAL_HOLD;
+      }
       lastX = e.clientX;
     };
     const end = (e: PointerEvent) => {
@@ -162,24 +213,37 @@ export function Player() {
     const frozen = store.journalOpen || store.indoorOpen || store.aboutOpen || store.comingSoon !== null;
 
     if (frozen) {
+      held.current.clear();
+      lookAxis.current = 0;
       clearKeyboardInput();
       clearTouchInput();
       input.yawDelta = 0;
     }
 
-
-    yaw.current += input.yawDelta;
+    // Manual camera control: arrow keys or an active drag.
+    if (lookAxis.current !== 0) {
+      camYaw.current += lookAxis.current * LOOK_KEY_RATE * delta;
+      manual.current = MANUAL_HOLD;
+    }
+    camYaw.current += input.yawDelta;
     input.yawDelta = 0;
+    if (manual.current > 0) manual.current = Math.max(0, manual.current - delta);
 
-    if (input.forward !== 0 || input.strafe !== 0) {
-      const sin = Math.sin(yaw.current);
-      const cos = Math.cos(yaw.current);
+    const moving = input.forward !== 0 || input.strafe !== 0;
+
+    if (moving) {
+      const sin = Math.sin(camYaw.current);
+      const cos = Math.cos(camYaw.current);
       move.set(
         input.strafe * cos - input.forward * sin,
         0,
         -input.strafe * sin - input.forward * cos,
       );
       if (move.lengthSq() > 0) {
+        // Face where we are actually walking.
+        const target = Math.atan2(-move.x, -move.z);
+        charYaw.current += angleDelta(charYaw.current, target) * Math.min(1, delta * TURN_RATE);
+
         move.normalize().multiplyScalar(SPEED * delta);
         let nx = pos.current.x + move.x;
         let nz = pos.current.z + move.z;
@@ -194,18 +258,24 @@ export function Player() {
         pos.current.x = resolved.x;
         pos.current.z = resolved.z;
       }
+
+      // Camera eases back behind the character unless the player is looking around.
+      if (manual.current <= 0) {
+        camYaw.current +=
+          angleDelta(camYaw.current, charYaw.current) * Math.min(1, delta * RECENTER_RATE);
+      }
     }
 
 
     if (body.current) {
       body.current.position.copy(pos.current);
-      body.current.rotation.y = yaw.current;
+      body.current.rotation.y = charYaw.current;
     }
 
     desiredCam.set(
-      pos.current.x + Math.sin(yaw.current) * CAMERA_DISTANCE,
+      pos.current.x + Math.sin(camYaw.current) * CAMERA_DISTANCE,
       CAMERA_HEIGHT,
-      pos.current.z + Math.cos(yaw.current) * CAMERA_DISTANCE,
+      pos.current.z + Math.cos(camYaw.current) * CAMERA_DISTANCE,
     );
     state.camera.position.lerp(desiredCam, 1 - Math.pow(0.001, delta));
     lookAt.set(pos.current.x, 1.2, pos.current.z);
@@ -255,4 +325,3 @@ export function Player() {
     </group>
   );
 }
-
