@@ -10,10 +10,10 @@ import {
   completedToday,
   currentStreak,
   completionDays,
-  dayCountSince,
+  elapsedLabel,
   recentDayKeys,
 } from "./streaks";
-import type { ActiveTimer } from "./types";
+import { MAX_TIMER_SECONDS, type ActiveTimer, type TimerPreset } from "./types";
 
 function useTick(active: boolean, ms = 1000): number {
   const [now, setNow] = useState(0);
@@ -34,9 +34,11 @@ function remainingSeconds(timer: ActiveTimer, now: number): number {
 }
 
 function mmss(total: number): string {
-  const m = Math.floor(total / 60);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
   const s = total % 60;
-  return `${m}:${`${s}`.padStart(2, "0")}`;
+  const pad = (n: number) => `${n}`.padStart(2, "0");
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
 }
 
 const SYNC_LABEL: Record<string, string> = {
