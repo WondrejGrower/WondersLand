@@ -155,21 +155,9 @@ export function nearPath(x: number, z: number, clearance: number) {
   return false;
 }
 
-// Flat stone slabs stepped along the straight route.
+// Flat soil walkway along the straight route.
 function Path() {
-  const points = useMemo(() => {
-    const heading = Math.atan2(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z);
-    const length = Math.hypot(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z);
-    // One slab per SLAB_SIZE of route: slabs meet edge to edge instead of
-    // stacking on top of each other (which flickered).
-    const count = Math.max(1, Math.ceil(length / SLAB_SIZE));
-    const list: { x: number; z: number; rot: number }[] = [];
-    for (let i = 0; i <= count; i++) {
-      const { x, z } = pathPoint(i / count);
-      list.push({ x, z, rot: -heading });
-    }
-    return list;
-  }, []);
+
 
   return (
     <group>
