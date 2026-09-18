@@ -54,10 +54,18 @@ type TasksState = {
   renameTask: (id: string, title: string) => void;
   toggleTask: (id: string) => void;
   archiveTask: (id: string) => void;
+  clearCompletedTasks: () => void;
 
-  addHabit: (title: string, cadence?: "daily" | "weekly") => void;
+  addHabit: (title: string, cadence?: "daily" | "weekly", target?: number) => void;
+  updateHabit: (
+    id: string,
+    patch: { title?: string; cadence?: "daily" | "weekly"; target?: number },
+  ) => void;
   toggleHabitToday: (id: string) => void;
   archiveHabit: (id: string) => void;
+
+  /** Pure reordering: persisted in the snapshot, never logged as activity. */
+  moveItem: (list: "tasks" | "habits" | "timers", id: string, direction: -1 | 1) => void;
 
   addTimerPreset: (title: string, durationSeconds: number, icon?: string) => void;
   updateTimerPreset: (
