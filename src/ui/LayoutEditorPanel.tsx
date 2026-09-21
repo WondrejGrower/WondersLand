@@ -11,7 +11,7 @@ import { PLAYER_RADIUS, WORLD_COLLIDERS, resolveMove, resolved } from "../world/
 import { pathPoint } from "../world/Plaza";
 import { SPAWN } from "../world/layout";
 import { serializeLayout } from "../world/editor/serialize";
-import { focusOn, frameAll, reset as resetView } from "../world/editor/editorCamera";
+import { focusOn, frameAll, reset as resetView, zoomBy } from "../world/editor/editorCamera";
 import { round, useLayoutEditorStore } from "../world/editor/useLayoutEditorStore";
 import type { PlaceableModelType } from "../world/layout";
 
@@ -49,6 +49,7 @@ export function LayoutEditorPanel() {
   const version = useLayoutEditorStore((s) => s.version);
   const selectedId = useLayoutEditorStore((s) => s.selected);
   const step = useLayoutEditorStore((s) => s.step);
+  const pointerMode = useLayoutEditorStore((s) => s.pointerMode);
   const [copied, setCopied] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [addType, setAddType] = useState<(typeof ADD_OPTIONS)[number]["value"]>("tree");
@@ -115,6 +116,38 @@ export function LayoutEditorPanel() {
                 {s}
               </button>
             ))}
+          </div>
+
+          <div className="grid grid-cols-2 gap-1 text-xs">
+            {(["camera", "edit"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => store.setPointerMode(mode)}
+                className={`min-h-10 rounded-md border px-2 py-1 md:min-h-0 ${
+                  pointerMode === mode ? "border-primary bg-primary/10" : "border-border"
+                }`}
+              >
+                {mode === "camera" ? "Kamera" : "Úpravy"}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-2 gap-1 text-xs">
+            <button
+              type="button"
+              className="min-h-10 rounded-md border border-border px-2 py-1 md:min-h-0"
+              onClick={() => zoomBy(1 / 1.25)}
+            >
+              Přiblížit +
+            </button>
+            <button
+              type="button"
+              className="min-h-10 rounded-md border border-border px-2 py-1 md:min-h-0"
+              onClick={() => zoomBy(1.25)}
+            >
+              Oddálit −
+            </button>
           </div>
 
           <div className="grid grid-cols-3 gap-1 text-xs">

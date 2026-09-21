@@ -165,6 +165,22 @@ export function buildItems(): EditItem[] {
   items.push(leg("path-via", "Cesta — zlom u brány", PATH_VIA));
   items.push(leg("path-to", "Cesta — konec u domku", PATH_TO));
 
+  // The drawn walkway itself: it has no position of its own, but it can be
+  // hidden. Waypoints above keep steering the character either way.
+  if (!HIDDEN_LAYOUT_ITEMS.has("path")) {
+    items.push({
+      id: "path",
+      label: "Pěšina (povrch)",
+      group: "Cesta",
+      x: PATH_VIA.x,
+      z: PATH_VIA.z,
+      rot: null,
+      scale: null,
+      removable: true,
+      set: () => {},
+    });
+  }
+
   TREE_INSTANCES.forEach((tree, i) => {
     items.push({
       id: `tree:${i}`,
@@ -266,7 +282,7 @@ export function removeItem(id: string) {
     if (index >= 0) PLACED_MODELS.splice(index, 1);
     return;
   }
-  if (["arch", "cottage", "greenhouse", "garden-board", "welcome-sign", "grow-beds"].includes(id)) {
+  if (["arch", "cottage", "greenhouse", "garden-board", "welcome-sign", "grow-beds", "path"].includes(id)) {
     HIDDEN_LAYOUT_ITEMS.add(id);
   }
 }

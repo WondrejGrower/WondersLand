@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 2026-09-21 — Layout editor camera fix and path removal
+
+- The editor now opens in Camera mode: dragging always pans the map, two
+  fingers / right button orbit, wheel and pinch zoom. An Edit mode toggle
+  re-enables object dragging.
+- Grabbing an object uses a 30px screen-space threshold instead of a 2.2m world
+  radius, so a zoomed-out view no longer grabs scenery on every press.
+- Added zoom in / out buttons to the panel for touch devices.
+- The drawn path surface is now its own editable item and can be hidden;
+  waypoints, spawn and the cottage door stay non-removable but movable.
+
+
 ## 2026-09-21 — Layout editor add/remove catalogue
 
 - Added an object catalogue for trees, plant spots, the WondersLand arch,

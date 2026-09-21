@@ -11,13 +11,14 @@ import { buildItems } from "./items";
 import { orbitBy, panBy, zoomBy } from "./editorCamera";
 import { round, useLayoutEditorStore } from "./useLayoutEditorStore";
 
-/** How close to a marker a click counts as grabbing it. */
-const GRAB_RADIUS = 2.2;
+/** How close to a marker, in screen pixels, a press counts as grabbing it. */
+const GRAB_PIXELS = 30;
 
 const ray = new Raycaster();
 const ndc = new Vector2();
 const groundPlane = new Plane(new Vector3(0, 1, 0), 0);
 const hit = new Vector3();
+const projected = new Vector3();
 
 function snap(value: number, step: number) {
   return round(Math.round(value / step) * step);
@@ -78,10 +79,19 @@ export function EditorLayer() {
       const point = toGround(e.clientX, e.clientY);
       if (!point) return;
       const store = useLayoutEditorStore.getState();
+      // Camera mode never grabs scenery, so the map is always draggable.
       let best: { id: string; d: number } | null = null;
-      for (const item of buildItems()) {
-        const d = Math.hypot(item.x - point.x, item.z - point.z);
-        if (d < GRAB_RADIUS && (!best || d < best.d)) best = { id: item.id, d };
+      if (store.pointerMode === "edit") {
+        const rect = el.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const py = e.clientY - rect.top;
+        for (const item of buildItems()) {
+          projected.set(item.x, 0, item.z).project(camera);
+          const sx = ((projected.x + 1) / 2) * rect.width;
+          const sy = ((1 - projected.y) / 2) * rect.height;
+          const d = Math.hypot(sx - px, sy - py);
+          if (d < GRAB_PIXELS && (!best || d < best.d)) best = { id: item.id, d };
+        }
       }
       if (best) {
         dragging = best.id;

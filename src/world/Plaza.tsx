@@ -282,7 +282,7 @@ export function Plaza() {
   return (
     <group>
       {!HIDDEN_LAYOUT_ITEMS.has("arch") && <EntranceArch />}
-      <Path />
+      {!HIDDEN_LAYOUT_ITEMS.has("path") && <Path />}
       {!HIDDEN_LAYOUT_ITEMS.has("greenhouse") && <Greenhouse />}
       <Scatter />
       {/* soil pad + shadow under the interaction plant */}
