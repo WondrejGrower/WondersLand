@@ -36,6 +36,9 @@ function FrameLimiter({ fps }: { fps: number }) {
 export default function World() {
   const renderScale = useWorldSettingsStore((s) => s.graphics.renderScale);
   const fpsLimit = useWorldSettingsStore((s) => s.graphics.fpsLimit);
+  // Hidden layout editor: scenery remounts on every edit so it re-reads layout.
+  const editing = useLayoutEditorStore((s) => s.active);
+  const layoutVersion = useLayoutEditorStore((s) => s.version);
 
   // Settings persist locally; read them before the first frame.
   useEffect(() => {
@@ -58,19 +61,21 @@ export default function World() {
       <hemisphereLight args={[palette.skyTop, palette.ground, 1.0]} />
       <directionalLight position={[8, 12, 6]} intensity={1.25} color={palette.sun} />
       <Sky />
-      <Ground />
-      <Plaza />
-      <GrowBeds />
-      <Cottage />
-      <Suspense fallback={null}>
-        <GardenBoard />
-      </Suspense>
-      <WelcomeSign />
-      <GardenPlants />
+      <group key={layoutVersion}>
+        <Ground />
+        <Plaza />
+        <GrowBeds />
+        <Cottage />
+        <Suspense fallback={null}>
+          <GardenBoard />
+        </Suspense>
+        <WelcomeSign />
+        <GardenPlants />
+      </group>
       <FocusRing />
       <DestinationMarker />
       <HighlightRing />
-      <WorldPointerInput />
+      {editing ? <EditorLayer /> : <WorldPointerInput />}
       <Player />
     </Canvas>
   );
