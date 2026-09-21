@@ -127,7 +127,11 @@ export const useTasksStore = create<TasksState>((set, get) => {
     set({ pending: pendingCount() });
   }
 
-  function log(itemId: string, action: ActivityAction) {
+  function log(
+    itemId: string,
+    action: ActivityAction,
+    metadata?: Record<string, string | number | boolean>,
+  ) {
     const occurredAt = Date.now();
     const entry: ActivityLog = {
       schemaVersion: TASKS_SCHEMA_VERSION,
@@ -136,6 +140,7 @@ export const useTasksStore = create<TasksState>((set, get) => {
       action,
       occurredAt,
       dateKey: dateKeyOf(occurredAt),
+      ...(metadata ? { metadata } : {}),
     };
     const logs = [...get().logs, entry];
     set({ logs });
@@ -279,7 +284,7 @@ export const useTasksStore = create<TasksState>((set, get) => {
           t.id === id ? { ...t, completed, completedOn: completed ? dateKeyOf(Date.now()) : "" } : t,
         ),
       }));
-      log(id, completed ? "task_completed" : "task_uncompleted");
+      log(id, completed ? "task_completed" : "task_uncompleted", { title: task.title });
     },
 
     archiveTask: (id) =>
@@ -331,8 +336,10 @@ export const useTasksStore = create<TasksState>((set, get) => {
     },
 
     toggleHabitToday: (id) => {
+      const habit = get().board.habits.find((item) => item.id === id);
+      if (!habit) return;
       const done = completedToday(get().logs, id);
-      log(id, done ? "habit_uncompleted" : "habit_completed");
+      log(id, done ? "habit_uncompleted" : "habit_completed", { title: habit.title });
     },
 
     archiveHabit: (id) =>
@@ -411,7 +418,10 @@ export const useTasksStore = create<TasksState>((set, get) => {
           },
         ],
       }));
-      log(presetId, "timer_started");
+      log(presetId, "timer_started", {
+        title: preset.title,
+        durationSeconds: preset.durationSeconds,
+      });
     },
 
     pauseTimer: (presetId) =>
@@ -433,20 +443,26 @@ export const useTasksStore = create<TasksState>((set, get) => {
       })),
 
     cancelTimer: (presetId) => {
+      const preset = get().board.timers.find((item) => item.id === presetId);
       mutate((board) => ({
         ...board,
         activeTimers: board.activeTimers.filter((t) => t.presetId !== presetId),
       }));
-      log(presetId, "timer_cancelled");
+      log(presetId, "timer_cancelled", preset ? { title: preset.title } : undefined);
     },
 
     completeTimer: (presetId) => {
+      const preset = get().board.timers.find((item) => item.id === presetId);
+      const active = get().board.activeTimers.find((item) => item.presetId === presetId);
       if (!get().board.activeTimers.some((t) => t.presetId === presetId)) return;
       mutate((board) => ({
         ...board,
         activeTimers: board.activeTimers.filter((t) => t.presetId !== presetId),
       }));
-      log(presetId, "timer_completed");
+      log(presetId, "timer_completed", {
+        title: preset?.title ?? "Timer",
+        ...(active ? { durationSeconds: active.durationSeconds } : {}),
+      });
     },
 
     // --- streak goals ------------------------------------------------------
@@ -480,13 +496,14 @@ export const useTasksStore = create<TasksState>((set, get) => {
     },
 
     resetStreakGoal: (id) => {
+      const goal = get().board.streakGoals.find((item) => item.id === id);
       mutate((board) => ({
         ...board,
         streakGoals: board.streakGoals.map((g) =>
           g.id === id ? { ...g, startedAt: Date.now() } : g,
         ),
       }));
-      log(id, "streak_reset");
+      log(id, "streak_reset", goal ? { title: goal.title } : undefined);
     },
 
     archiveStreakGoal: (id) =>
