@@ -494,6 +494,10 @@ reading the same three constants in `src/world/layout.ts`.
 - `LayoutEditorPanel.tsx` is a bottom sheet below 768px, capped at 42dvh with
   internal scrolling and a fixed header; desktop keeps the top-left panel.
   `TouchControls.tsx` returns null while editing to preserve map space.
+- The editor catalogue adds all current scenery model types at the camera target.
+  `PLACED_MODELS` holds decorative copies and `HIDDEN_LAYOUT_ITEMS` hides original
+  functional models without duplicating their actions. Both are session-only,
+  exported by `serializeLayout()`, and restored by `revert()`.
 
 ## 2026-09-21 — Hidden layout editor (owner tool, done)
 

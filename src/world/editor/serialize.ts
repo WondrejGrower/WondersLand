@@ -10,7 +10,9 @@ import {
   COTTAGE_POSITION,
   GREENHOUSE_POSITION,
   GROW_BEDS_CENTER,
+  HIDDEN_LAYOUT_ITEMS,
   LAYOUT,
+  PLACED_MODELS,
   PATH_FROM,
   PATH_TO,
   PATH_VIA,
@@ -50,6 +52,13 @@ export function serializeLayout(): string {
   lines.push(`  welcomeRotY: ${n(LAYOUT.welcomeRotY)},`);
   lines.push(`  welcomeScale: ${n(LAYOUT.welcomeScale)},`);
   lines.push("};");
+  lines.push("");
+  lines.push(`export const HIDDEN_LAYOUT_ITEMS = new Set<string>(${JSON.stringify([...HIDDEN_LAYOUT_ITEMS])});`);
+  lines.push("export const PLACED_MODELS: PlacedModel[] = [");
+  for (const model of PLACED_MODELS) {
+    lines.push(`  { id: ${model.id}, type: ${JSON.stringify(model.type)}, x: ${n(model.x)}, z: ${n(model.z)}, rot: ${n(model.rot)}, scale: ${n(model.scale)} },`);
+  }
+  lines.push("];");
   lines.push("");
   lines.push("export const TREE_INSTANCES: Instance[] = [");
   for (const t of TREE_INSTANCES) {

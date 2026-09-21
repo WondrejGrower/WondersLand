@@ -11,7 +11,9 @@ import {
   COTTAGE_POSITION,
   GREENHOUSE_POSITION,
   GROW_BEDS_CENTER,
+  HIDDEN_LAYOUT_ITEMS,
   LAYOUT,
+  PLACED_MODELS,
   PATH_FROM,
   PATH_TO,
   PATH_VIA,
@@ -19,6 +21,7 @@ import {
   TREE_INSTANCES,
   WELCOME_POSITION,
 } from "../layout";
+import type { PlaceableModelType } from "../layout";
 
 export type EditGroup = "Stavby" | "Cesta" | "Stromy" | "Rostliny";
 
@@ -32,6 +35,7 @@ export type EditItem = {
   rot: number | null;
   /** null when the object cannot be resized. */
   scale: number | null;
+  removable: boolean;
   set: (patch: { x?: number; z?: number; rot?: number; scale?: number }) => void;
 };
 
@@ -51,6 +55,7 @@ function pair(
     z: target[1],
     rot: rot ? rot.get() : null,
     scale: scale ? scale.get() : null,
+    removable: true,
     set: (patch) => {
       if (patch.x !== undefined) target[0] = patch.x;
       if (patch.z !== undefined) target[1] = patch.z;
@@ -63,7 +68,7 @@ function pair(
 export function buildItems(): EditItem[] {
   const items: EditItem[] = [];
 
-  items.push({
+  if (!HIDDEN_LAYOUT_ITEMS.has("arch")) items.push({
     id: "arch",
     label: "Brána WondersLand",
     group: "Stavby",
@@ -71,6 +76,7 @@ export function buildItems(): EditItem[] {
     z: ARCH_POSITION[2],
     rot: LAYOUT.archRotY,
     scale: LAYOUT.archScale,
+    removable: true,
     set: (p) => {
       if (p.x !== undefined) ARCH_POSITION[0] = p.x;
       if (p.z !== undefined) ARCH_POSITION[2] = p.z;
@@ -79,7 +85,7 @@ export function buildItems(): EditItem[] {
     },
   });
 
-  items.push({
+  if (!HIDDEN_LAYOUT_ITEMS.has("cottage")) items.push({
     id: "cottage",
     label: "Domek My Garden",
     group: "Stavby",
@@ -87,6 +93,7 @@ export function buildItems(): EditItem[] {
     z: COTTAGE_POSITION[2],
     rot: LAYOUT.cottageRotY,
     scale: LAYOUT.cottageScale,
+    removable: true,
     set: (p) => {
       if (p.x !== undefined) COTTAGE_POSITION[0] = p.x;
       if (p.z !== undefined) COTTAGE_POSITION[2] = p.z;
@@ -95,7 +102,7 @@ export function buildItems(): EditItem[] {
     },
   });
 
-  items.push({
+  if (!HIDDEN_LAYOUT_ITEMS.has("greenhouse")) items.push({
     id: "greenhouse",
     label: "Skleník",
     group: "Stavby",
@@ -103,6 +110,7 @@ export function buildItems(): EditItem[] {
     z: GREENHOUSE_POSITION[2],
     rot: LAYOUT.greenhouseRotY,
     scale: LAYOUT.greenhouseScale,
+    removable: true,
     set: (p) => {
       if (p.x !== undefined) GREENHOUSE_POSITION[0] = p.x;
       if (p.z !== undefined) GREENHOUSE_POSITION[2] = p.z;
@@ -111,7 +119,7 @@ export function buildItems(): EditItem[] {
     },
   });
 
-  items.push(
+  if (!HIDDEN_LAYOUT_ITEMS.has("garden-board")) items.push(
     pair(
       "garden-board",
       "Task cedule",
@@ -121,7 +129,7 @@ export function buildItems(): EditItem[] {
       { get: () => LAYOUT.boardScale, set: (v) => (LAYOUT.boardScale = v) },
     ),
   );
-  items.push(
+  if (!HIDDEN_LAYOUT_ITEMS.has("welcome-sign")) items.push(
     pair(
       "welcome-sign",
       "Uvítací cedule",
@@ -131,9 +139,13 @@ export function buildItems(): EditItem[] {
       { get: () => LAYOUT.welcomeScale, set: (v) => (LAYOUT.welcomeScale = v) },
     ),
   );
-  items.push(pair("grow-beds", "Vyvýšené záhony", "Stavby", GROW_BEDS_CENTER));
-  items.push(pair("cottage-door", "Vstup do domku", "Stavby", COTTAGE_INTERACTION_POINT));
-  items.push(pair("spawn", "Spawn point", "Cesta", SPAWN));
+  if (!HIDDEN_LAYOUT_ITEMS.has("grow-beds")) items.push(pair("grow-beds", "Vyvýšené záhony", "Stavby", GROW_BEDS_CENTER));
+  const cottageDoor = pair("cottage-door", "Vstup do domku", "Stavby", COTTAGE_INTERACTION_POINT);
+  cottageDoor.removable = false;
+  items.push(cottageDoor);
+  const spawn = pair("spawn", "Spawn point", "Cesta", SPAWN);
+  spawn.removable = false;
+  items.push(spawn);
 
   const leg = (id: string, label: string, p: { x: number; z: number }): EditItem => ({
     id,
@@ -143,6 +155,7 @@ export function buildItems(): EditItem[] {
     z: p.z,
     rot: null,
     scale: null,
+    removable: false,
     set: (patch) => {
       if (patch.x !== undefined) p.x = patch.x;
       if (patch.z !== undefined) p.z = patch.z;
@@ -161,6 +174,7 @@ export function buildItems(): EditItem[] {
       z: tree.z,
       rot: tree.rot,
       scale: tree.scale,
+      removable: true,
       set: (p) => {
         if (p.x !== undefined) tree.x = p.x;
         if (p.z !== undefined) tree.z = p.z;
@@ -182,6 +196,7 @@ export function buildItems(): EditItem[] {
       z: slot.position[2],
       rot: slot.rotationY,
       scale: null,
+      removable: true,
       set: (p) => {
         if (p.x !== undefined) slot.position[0] = p.x;
         if (p.z !== undefined) slot.position[2] = p.z;
@@ -190,14 +205,74 @@ export function buildItems(): EditItem[] {
     });
   });
 
+  const labels: Record<PlaceableModelType, string> = {
+    arch: "Brána WondersLand",
+    cottage: "Domek My Garden",
+    greenhouse: "Skleník",
+    "garden-board": "Task cedule",
+    "welcome-sign": "Uvítací cedule",
+    "grow-beds": "Vyvýšené záhony",
+  };
+  for (const model of PLACED_MODELS) {
+    items.push({
+      id: `model:${model.id}`,
+      label: `${labels[model.type]} (kopie)`,
+      group: "Stavby",
+      x: model.x,
+      z: model.z,
+      rot: model.rot,
+      scale: model.scale,
+      removable: true,
+      set: (p) => {
+        if (p.x !== undefined) model.x = p.x;
+        if (p.z !== undefined) model.z = p.z;
+        if (p.rot !== undefined) model.rot = p.rot;
+        if (p.scale !== undefined) model.scale = p.scale;
+      },
+    });
+  }
+
   return items;
 }
 
-export function addTree() {
-  TREE_INSTANCES.push({ x: 0, z: 6, rot: 0, scale: 1, scaleY: 1 });
+export function addTree(x = 0, z = 6) {
+  TREE_INSTANCES.push({ x, z, rot: 0, scale: 1, scaleY: 1 });
   return `tree:${TREE_INSTANCES.length - 1}`;
 }
 
 export function removeTree(index: number) {
   if (index >= 0 && index < TREE_INSTANCES.length) TREE_INSTANCES.splice(index, 1);
+}
+
+export function addModel(type: PlaceableModelType, x: number, z: number) {
+  const id = PLACED_MODELS.reduce((max, item) => Math.max(max, item.id), 0) + 1;
+  PLACED_MODELS.push({ id, type, x, z, rot: 0, scale: 1 });
+  return `model:${id}`;
+}
+
+export function removeItem(id: string) {
+  if (id.startsWith("tree:")) {
+    removeTree(Number(id.slice(5)));
+    return;
+  }
+  if (id.startsWith("slot:")) {
+    const index = Number(id.slice(5));
+    if (index >= 0 && index < PLANT_SLOTS.length) PLANT_SLOTS.splice(index, 1);
+    PLANT_SLOTS.forEach((slot, i) => (slot.id = i));
+    return;
+  }
+  if (id.startsWith("model:")) {
+    const index = PLACED_MODELS.findIndex((item) => item.id === Number(id.slice(6)));
+    if (index >= 0) PLACED_MODELS.splice(index, 1);
+    return;
+  }
+  if (["arch", "cottage", "greenhouse", "garden-board", "welcome-sign", "grow-beds"].includes(id)) {
+    HIDDEN_LAYOUT_ITEMS.add(id);
+  }
+}
+
+export function addPlantSlot(x: number, z: number) {
+  const id = PLANT_SLOTS.length;
+  PLANT_SLOTS.push({ id, position: [x, 0, z], rotationY: 0 });
+  return `slot:${id}`;
 }

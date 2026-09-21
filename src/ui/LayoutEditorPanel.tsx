@@ -5,14 +5,27 @@
  * paste-ready TypeScript. Nothing is stored or published.
  */
 import { useMemo, useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
+import { Button } from "../components/ui/button";
 import { PLAYER_RADIUS, WORLD_COLLIDERS, resolveMove, resolved } from "../world/collision";
 import { pathPoint } from "../world/Plaza";
 import { SPAWN } from "../world/layout";
 import { serializeLayout } from "../world/editor/serialize";
 import { focusOn, frameAll, reset as resetView } from "../world/editor/editorCamera";
 import { round, useLayoutEditorStore } from "../world/editor/useLayoutEditorStore";
+import type { PlaceableModelType } from "../world/layout";
 
 const STEPS = [0.1, 0.5, 1];
+const ADD_OPTIONS: Array<{ value: PlaceableModelType | "tree" | "plant-slot"; label: string }> = [
+  { value: "tree", label: "Strom" },
+  { value: "arch", label: "Brána WondersLand" },
+  { value: "cottage", label: "Domek My Garden" },
+  { value: "greenhouse", label: "Skleník" },
+  { value: "garden-board", label: "Task cedule" },
+  { value: "welcome-sign", label: "Uvítací cedule" },
+  { value: "grow-beds", label: "Vyvýšené záhony" },
+  { value: "plant-slot", label: "Místo pro rostlinu" },
+];
 
 function spawnWarning(): string | null {
   resolveMove(SPAWN[0], SPAWN[1], WORLD_COLLIDERS, null, PLAYER_RADIUS);
@@ -38,6 +51,7 @@ export function LayoutEditorPanel() {
   const step = useLayoutEditorStore((s) => s.step);
   const [copied, setCopied] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [addType, setAddType] = useState<(typeof ADD_OPTIONS)[number]["value"]>("tree");
 
   const items = useMemo(() => useLayoutEditorStore.getState().items(), [version, active]);
   const selected = items.find((it) => it.id === selectedId) ?? null;
@@ -142,6 +156,29 @@ export function LayoutEditorPanel() {
             ))}
           </select>
 
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-1">
+            <select
+              aria-label="Model k přidání"
+              value={addType}
+              onChange={(e) => setAddType(e.target.value as typeof addType)}
+              className="min-h-10 min-w-0 rounded-md border border-border bg-background px-2 py-1 text-sm md:min-h-0"
+            >
+              {ADD_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="min-h-10 shrink-0 md:min-h-0"
+              onClick={() => store.addItem(addType)}
+              title="Přidat model doprostřed pohledu"
+            >
+              <Plus aria-hidden="true" /> Přidat
+            </Button>
+          </div>
+
           {selected && (
             <div className="flex flex-col gap-2 rounded-lg border border-border p-2">
               <div className="text-xs font-medium">{selected.label}</div>
@@ -231,25 +268,19 @@ export function LayoutEditorPanel() {
                 </label>
               )}
 
-              {selected.id.startsWith("tree:") && (
-                <button
+              {selected.removable && (
+                <Button
                   type="button"
-                  className="rounded-md border border-destructive px-2 py-1 text-xs text-destructive"
-                  onClick={() => store.removeSelectedTree()}
+                  variant="outline"
+                  size="sm"
+                  className="min-h-10 border-destructive text-destructive md:min-h-0"
+                  onClick={() => store.removeSelected()}
                 >
-                  Smazat strom
-                </button>
+                  <Trash2 aria-hidden="true" /> Odstranit
+                </Button>
               )}
             </div>
           )}
-
-          <button
-            type="button"
-            className="min-h-10 rounded-md border border-border px-2 py-1 text-xs md:min-h-0"
-            onClick={() => store.addTree()}
-          >
-            + Přidat strom
-          </button>
 
           {warnings.length > 0 && (
             <ul className="rounded-md border border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive">

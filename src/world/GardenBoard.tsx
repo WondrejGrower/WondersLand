@@ -14,10 +14,20 @@ import { palette } from "./palette";
 const LEG_HEIGHT = 1.15;
 const BOARD_HEIGHT = 1.6;
 
-export function GardenBoard() {
+export function GardenBoard({
+  position: positionOverride,
+  rotation = LAYOUT.boardRotY,
+  modelScale = LAYOUT.boardScale,
+  interactive = true,
+}: {
+  position?: [number, number, number];
+  rotation?: number;
+  modelScale?: number;
+  interactive?: boolean;
+}) {
   /** Position comes from the shared interactable data, so it cannot drift. */
-  const spot = getInteractable("garden-board")!;
-  const position: [number, number, number] = [spot.position[0], 0, spot.position[1]];
+  const spot = getInteractable("garden-board");
+  const position: [number, number, number] = positionOverride ?? [spot?.position[0] ?? 0, 0, spot?.position[1] ?? 0];
   const gltf = useGLTF(model.url, true);
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   const [hovered, setHovered] = useState(false);
@@ -36,18 +46,20 @@ export function GardenBoard() {
   return (
     <group
       position={position}
-      rotation-y={LAYOUT.boardRotY}
-      userData={{ interactable: "garden-board" }}
+      rotation-y={rotation}
+      userData={interactive ? { interactable: "garden-board" } : {}}
       onPointerOver={(e) => {
+        if (!interactive) return;
         e.stopPropagation();
         setHovered(true);
         document.body.style.cursor = "pointer";
       }}
       onPointerOut={() => {
+        if (!interactive) return;
         setHovered(false);
         document.body.style.cursor = "";
       }}
-      scale={(hovered ? 1.03 : 1) * LAYOUT.boardScale}
+      scale={(hovered && interactive ? 1.03 : 1) * modelScale}
     >
       {/* Simple wooden legs. */}
       <mesh position={[-0.5, LEG_HEIGHT / 2, 0]}>

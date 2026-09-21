@@ -1,6 +1,6 @@
 import { Trees } from "./Trees";
 import { palette } from "./palette";
-import { GARDEN_RADIUS as RADIUS } from "./layout";
+import { GARDEN_RADIUS as RADIUS, HIDDEN_LAYOUT_ITEMS } from "./layout";
 
 export const GARDEN_RADIUS = RADIUS;
 
@@ -20,7 +20,7 @@ export function Ground() {
         <meshLambertMaterial color={palette.groundDark} />
       </mesh>
 
-      <Trees />
+      {!HIDDEN_LAYOUT_ITEMS.has("trees") && <Trees />}
     </group>
   );
 }

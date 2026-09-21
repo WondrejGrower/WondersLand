@@ -62,6 +62,27 @@ export type Instance = {
   scaleY: number;
 };
 
+export type PlaceableModelType =
+  | "arch"
+  | "cottage"
+  | "greenhouse"
+  | "garden-board"
+  | "welcome-sign"
+  | "grow-beds";
+
+export type PlacedModel = {
+  id: number;
+  type: PlaceableModelType;
+  x: number;
+  z: number;
+  rot: number;
+  scale: number;
+};
+
+/** Session-only additions and hidden originals managed by the owner editor. */
+export const PLACED_MODELS: PlacedModel[] = [];
+export const HIDDEN_LAYOUT_ITEMS = new Set<string>();
+
 /** Deterministic pseudo-random: same garden every visit, no data shipped. */
 export function rng(seed: number) {
   let s = seed;

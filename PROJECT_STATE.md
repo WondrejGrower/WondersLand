@@ -723,8 +723,14 @@ Google Fonts style/font origins. Everything else is unchanged.
 - On mobile the editor is a bottom sheet capped at 42dvh. Its fixed header stays
   visible while parameters scroll inside; collapsing leaves only the header.
   The touch joystick is hidden for the entire edit session.
+- The add-model catalogue places a tree, plant spot, arch, cottage, greenhouse,
+  Garden Board, welcome sign or grow beds at the current camera focus. Every
+  added copy can be moved, rotated, scaled and removed. Existing functional
+  models can be hidden and are restored by "Vrátit vše"; copies are visual only
+  and never duplicate house/board/sign actions.
 - Limitations: camera state is memory-only; no keyboard camera shortcuts; the
-  editor still has no persistence (export text only).
+  editor still has no persistence (export text only). Added model copies are
+  decorative and do not add duplicate interactions.
 
 ## 2026-09-21 — Hidden layout editor (owner tool, done)
 

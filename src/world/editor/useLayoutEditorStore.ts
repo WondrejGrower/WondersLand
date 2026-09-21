@@ -20,7 +20,9 @@ import {
   COTTAGE_POSITION,
   GREENHOUSE_POSITION,
   GROW_BEDS_CENTER,
+  HIDDEN_LAYOUT_ITEMS,
   LAYOUT,
+  PLACED_MODELS,
   PATH_FROM,
   PATH_TO,
   PATH_VIA,
@@ -28,9 +30,11 @@ import {
   TREE_INSTANCES,
   WELCOME_POSITION,
   type Instance,
+  type PlaceableModelType,
+  type PlacedModel,
 } from "../layout";
-import { addTree, buildItems, removeTree, type EditItem } from "./items";
-import { frameAll } from "./editorCamera";
+import { addModel, addPlantSlot, addTree, buildItems, removeItem, type EditItem } from "./items";
+import { editorCamera, frameAll } from "./editorCamera";
 
 type Snapshot = {
   arch: [number, number, number];
@@ -47,6 +51,8 @@ type Snapshot = {
   scalars: typeof LAYOUT;
   trees: Instance[];
   slots: Array<{ x: number; z: number; rot: number }>;
+  placedModels: PlacedModel[];
+  hidden: string[];
 };
 
 function snapshot(): Snapshot {
@@ -65,6 +71,8 @@ function snapshot(): Snapshot {
     scalars: { ...LAYOUT },
     trees: TREE_INSTANCES.map((t) => ({ ...t })),
     slots: PLANT_SLOTS.map((s) => ({ x: s.position[0], z: s.position[2], rot: s.rotationY })),
+    placedModels: PLACED_MODELS.map((model) => ({ ...model })),
+    hidden: [...HIDDEN_LAYOUT_ITEMS],
   };
 }
 
@@ -90,6 +98,10 @@ function restore(snap: Snapshot) {
   snap.slots.forEach((s, i) => {
     PLANT_SLOTS.push({ id: i, position: [s.x, 0, s.z], rotationY: s.rot });
   });
+  PLACED_MODELS.length = 0;
+  PLACED_MODELS.push(...snap.placedModels.map((model) => ({ ...model })));
+  HIDDEN_LAYOUT_ITEMS.clear();
+  snap.hidden.forEach((id) => HIDDEN_LAYOUT_ITEMS.add(id));
 }
 
 /** Push edited layout data through everything derived from it. */
@@ -114,8 +126,8 @@ type EditorState = {
   setStep: (step: number) => void;
   update: (id: string, patch: { x?: number; z?: number; rot?: number; scale?: number }) => void;
   nudge: (id: string, dx: number, dz: number) => void;
-  addTree: () => void;
-  removeSelectedTree: () => void;
+  addItem: (type: PlaceableModelType | "tree" | "plant-slot") => void;
+  removeSelected: () => void;
   revert: () => void;
   items: () => EditItem[];
 };
@@ -154,16 +166,19 @@ export const useLayoutEditorStore = create<EditorState>((set, get) => ({
     get().update(id, { x: round(item.x + dx), z: round(item.z + dz) });
   },
 
-  addTree: () => {
-    const id = addTree();
+  addItem: (type) => {
+    const x = round(editorCamera.targetX);
+    const z = round(editorCamera.targetZ);
+    const id = type === "tree" ? addTree(x, z) : type === "plant-slot" ? addPlantSlot(x, z) : addModel(type, x, z);
     applyLayout();
     set((s) => ({ version: s.version + 1, dirty: true, selected: id }));
   },
 
-  removeSelectedTree: () => {
+  removeSelected: () => {
     const id = get().selected;
-    if (!id?.startsWith("tree:")) return;
-    removeTree(Number(id.slice(5)));
+    const item = id ? buildItems().find((candidate) => candidate.id === id) : null;
+    if (!id || !item?.removable) return;
+    removeItem(id);
     applyLayout();
     set((s) => ({ version: s.version + 1, dirty: true, selected: null }));
   },

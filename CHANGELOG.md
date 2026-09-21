@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 2026-09-21 — Layout editor add/remove catalogue
+
+- Added an object catalogue for trees, plant spots, the WondersLand arch,
+  cottage, greenhouse, Garden Board, welcome sign and raised grow beds.
+- New objects appear at the current camera focus and can immediately be moved,
+  rotated, resized or removed. Existing functional models can be hidden safely;
+  added copies remain decorative so actions are never duplicated.
+- Full-session revert and exported layout text now include added and hidden
+  models. The editor remains local and owner-only.
+
 ## 2026-09-21 — Mobile layout editor bottom sheet
 
 - On phones the layout editor is now a bottom sheet capped at 42% of the
