@@ -205,6 +205,9 @@ joystick and tap/click paths animate consistently. No movement behavior changed.
   signs and grow beds at the current camera focus, then move, rotate, resize or
   remove them. Original functional models may be hidden; added copies are
   scenery-only. "Vrátit vše" restores the complete session baseline.
+- Camera stabilization follow-up: panning uses screen-space deltas instead of a
+  moving ground raycast; touch transitions and pointer cancellation reset their
+  baselines so the strategic view does not shake or jump.
 
 ## 2026-09-21 — Hidden layout editor (owner tool, done)
 

@@ -8,7 +8,7 @@ import { useThree } from "@react-three/fiber";
 import { Plane, Raycaster, Vector2, Vector3 } from "three";
 import { stop } from "../controller/CharacterController";
 import { buildItems } from "./items";
-import { orbitBy, panBy, zoomBy } from "./editorCamera";
+import { orbitBy, panByScreen, zoomBy } from "./editorCamera";
 import { round, useLayoutEditorStore } from "./useLayoutEditorStore";
 
 /** How close to a marker, in screen pixels, a press counts as grabbing it. */
@@ -36,8 +36,6 @@ export function EditorLayer() {
     let mode: "none" | "pan" | "orbit" = "none";
     let lastX = 0;
     let lastY = 0;
-    let panX = 0;
-    let panZ = 0;
     // Active touches, for pinch zoom / two-finger orbit.
     const touches = new Map<number, { x: number; y: number }>();
     let pinchDist = 0;
@@ -54,6 +52,23 @@ export function EditorLayer() {
       return ray.ray.intersectPlane(groundPlane, hit) ? hit : null;
     };
 
+    const beginPinch = () => {
+      if (touches.size !== 2) return;
+      const [a, b] = [...touches.values()];
+      mode = "orbit";
+      dragging = null;
+      pinchDist = Math.hypot(a!.x - b!.x, a!.y - b!.y);
+      pinchMidX = (a!.x + b!.x) / 2;
+      pinchMidY = (a!.y + b!.y) / 2;
+    };
+
+    const cancelGesture = () => {
+      dragging = null;
+      mode = "none";
+      pinchDist = 0;
+      touches.clear();
+    };
+
     const down = (e: PointerEvent) => {
       el.setPointerCapture?.(e.pointerId);
       if (e.pointerType === "touch") touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -62,12 +77,7 @@ export function EditorLayer() {
 
       // Two fingers: pinch zoom + orbit, never object dragging.
       if (touches.size === 2) {
-        dragging = null;
-        mode = "orbit";
-        const [a, b] = [...touches.values()];
-        pinchDist = Math.hypot(a!.x - b!.x, a!.y - b!.y);
-        pinchMidX = (a!.x + b!.x) / 2;
-        pinchMidY = (a!.y + b!.y) / 2;
+        beginPinch();
         return;
       }
 
@@ -76,8 +86,6 @@ export function EditorLayer() {
         return;
       }
 
-      const point = toGround(e.clientX, e.clientY);
-      if (!point) return;
       const store = useLayoutEditorStore.getState();
       // Camera mode never grabs scenery, so the map is always draggable.
       let best: { id: string; d: number } | null = null;
@@ -100,11 +108,10 @@ export function EditorLayer() {
         stop();
         return;
       }
-      // Empty ground: drag the map itself, keeping the grabbed point under the
-      // pointer.
+      // Empty ground: drag the map using stable screen-space deltas. Ground
+      // raycasts are intentionally not used here because the render camera is
+      // easing at the same time and would feed its own movement back into pan.
       mode = "pan";
-      panX = point.x;
-      panZ = point.z;
     };
 
     const move = (e: PointerEvent) => {
@@ -133,9 +140,10 @@ export function EditorLayer() {
       }
 
       if (mode === "pan") {
-        const point = toGround(e.clientX, e.clientY);
-        if (!point) return;
-        panBy(panX - point.x, panZ - point.z);
+        const rect = el.getBoundingClientRect();
+        panByScreen(e.clientX - lastX, e.clientY - lastY, rect.height);
+        lastX = e.clientX;
+        lastY = e.clientY;
         return;
       }
 
@@ -149,11 +157,31 @@ export function EditorLayer() {
     };
 
     const up = (e: PointerEvent) => {
-      el.releasePointerCapture?.(e.pointerId);
       touches.delete(e.pointerId);
-      if (touches.size < 2) pinchDist = 0;
+      dragging = null;
+      pinchDist = 0;
+
+      // When one finger remains after a pinch, start a fresh pan baseline.
+      // Reusing the old pinch midpoint causes the first one-finger move to jump.
+      if (e.pointerType === "touch" && touches.size === 1) {
+        const remaining = [...touches.values()][0];
+        if (remaining) {
+          lastX = remaining.x;
+          lastY = remaining.y;
+          mode = "pan";
+        }
+      } else {
+        mode = "none";
+      }
+      if (el.hasPointerCapture?.(e.pointerId)) el.releasePointerCapture(e.pointerId);
+    };
+
+    const lostCapture = (e: PointerEvent) => {
+      if (!touches.has(e.pointerId)) return;
+      touches.delete(e.pointerId);
       dragging = null;
       mode = "none";
+      pinchDist = 0;
     };
 
     const wheel = (e: WheelEvent) => {
@@ -167,15 +195,23 @@ export function EditorLayer() {
     el.addEventListener("pointermove", move);
     el.addEventListener("pointerup", up);
     el.addEventListener("pointercancel", up);
+    el.addEventListener("lostpointercapture", lostCapture);
     el.addEventListener("wheel", wheel, { passive: false });
     el.addEventListener("contextmenu", contextMenu);
+    window.addEventListener("blur", cancelGesture);
+    const unsubscribe = useLayoutEditorStore.subscribe((state, previous) => {
+      if (state.pointerMode !== previous.pointerMode) cancelGesture();
+    });
     return () => {
       el.removeEventListener("pointerdown", down);
       el.removeEventListener("pointermove", move);
       el.removeEventListener("pointerup", up);
       el.removeEventListener("pointercancel", up);
+      el.removeEventListener("lostpointercapture", lostCapture);
       el.removeEventListener("wheel", wheel);
       el.removeEventListener("contextmenu", contextMenu);
+      window.removeEventListener("blur", cancelGesture);
+      unsubscribe();
     };
   }, [gl, camera]);
 
