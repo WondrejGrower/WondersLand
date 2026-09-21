@@ -112,8 +112,13 @@ function applyLayout() {
   if (garden.diaries.length) garden.setDiaries(garden.diaries);
 }
 
+/** Camera mode never grabs objects; edit mode drags the thing under the pointer. */
+export type PointerMode = "camera" | "edit";
+
 type EditorState = {
   active: boolean;
+  pointerMode: PointerMode;
+  setPointerMode: (mode: PointerMode) => void;
   selected: string | null;
   /** Grid step for nudging and dragging, in world units. */
   step: number;
@@ -136,6 +141,8 @@ let baseline: Snapshot | null = null;
 
 export const useLayoutEditorStore = create<EditorState>((set, get) => ({
   active: false,
+  pointerMode: "camera",
+  setPointerMode: (mode) => set({ pointerMode: mode }),
   selected: null,
   step: 0.1,
   version: 0,
