@@ -9,10 +9,10 @@
 export const GARDEN_RADIUS = 19;
 
 /** One shared spatial plan for rendering, interaction, collision and path clearance. */
-export const ARCH_POSITION: [number, number, number] = [0, 0, 17];
+export const ARCH_POSITION: [number, number, number] = [0, 0, 12.6];
 export const ARCH_POST_X = [-2.4, 2.4] as const;
 export const ARCH_POST_RADIUS = 0.55;
-export const SPAWN: [number, number] = [0, 9.2];
+export const SPAWN: [number, number] = [0, 15.2];
 export const WELCOME_POSITION: [number, number] = [-2.4, 7.4];
 export const COTTAGE_POSITION: [number, number, number] = [7, 0, -5];
 export const COTTAGE_ROTATION_Y = -0.35;
