@@ -10,15 +10,11 @@ import { LAYOUT } from "./layout";
  * "What is WondersLand" overlay — the world layer only flips a store flag.
  */
 const TARGET_HEIGHT = 2.1;
-/** Position comes from the shared interactable data, so it cannot drift. */
-const SIGN = getInteractable("welcome-sign")!;
-const POSITION: [number, number, number] = [SIGN.position[0], 0, SIGN.position[1]];
-/** Face back toward the player walking up the path. */
-const ROTATION_Y = 0.5;
-
-
 
 export function WelcomeSign() {
+  /** Position comes from the shared interactable data, so it cannot drift. */
+  const sign = getInteractable("welcome-sign")!;
+  const position: [number, number, number] = [sign.position[0], 0, sign.position[1]];
   const gltf = useGLTF(model.url, true);
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   const [hovered, setHovered] = useState(false);
