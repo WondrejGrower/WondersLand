@@ -2,7 +2,7 @@
 
 Snapshot of what actually exists. Update this with every change.
 
-**Last updated:** 2026-09-21 (arch sign + connected path)
+**Last updated:** 2026-09-21 (layout editor camera stabilization)
 **Current phase:** Milestone 1 implemented and verified in a browser.
 
 ## Built and working

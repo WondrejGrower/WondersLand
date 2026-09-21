@@ -86,6 +86,8 @@ the boolean in/out state flips.
 - **Input capture:** while the journal is open, movement keys must be ignored
   and Esc must close the journal, not exit pointer lock silently.
 - **Mobile:** the desktop-only pointer-lock path must not block touch users.
+- **Editor camera feedback:** pan from bounded screen-space deltas; never derive
+  a camera target by repeatedly raycasting through the same easing camera.
 
 ## Verification before you claim done
 

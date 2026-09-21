@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 2026-09-21 — Stable layout editor camera gestures
+
+- Replaced ground-raycast camera panning with bounded screen-space movement,
+  removing the feedback loop that made the strategy view shake while dragging.
+- One-finger pan and two-finger zoom/orbit now reset their gesture baselines
+  when fingers are added or removed, preventing sudden jumps on mobile.
+- Camera deltas, zoom and pitch are bounded; switching Camera/Edit mode, losing
+  pointer capture or leaving the window safely cancels the current gesture.
+
 ## 2026-09-21 — Layout editor camera fix and path removal
 
 - The editor now opens in Camera mode: dragging always pans the map, two

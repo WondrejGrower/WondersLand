@@ -21,7 +21,9 @@ export function EditorCamera() {
       Math.sin(pitch) * distance,
       targetZ + Math.cos(yaw) * horizontal,
     );
-    state.camera.position.lerp(desired, 1 - Math.pow(0.0005, delta));
+    // Exponential damping gives the same response at every frame rate without
+    // feeding the displayed (still easing) pose back into pointer calculations.
+    state.camera.position.lerp(desired, 1 - Math.exp(-12 * delta));
     look.set(targetX, 0, targetZ);
     state.camera.lookAt(look);
   });
