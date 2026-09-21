@@ -8,7 +8,9 @@
  */
 import { create } from "zustand";
 import { PLANT_SLOTS } from "../../garden/slots";
+import { isOwner } from "../../nostr/owner";
 import { useGardenStore } from "../../state/useGardenStore";
+import { useNostrStore } from "../../state/useNostrStore";
 import { rebuildColliders } from "../collision";
 import { rebuildInteractables } from "../interactables";
 import {

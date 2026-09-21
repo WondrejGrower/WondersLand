@@ -10,33 +10,44 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DotwellKnownNostrDotjsonRouteImport } from './routes/[.]well-known/nostr[.]json'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotwellKnownNostrDotjsonRoute =
+  DotwellKnownNostrDotjsonRouteImport.update({
+    id: '/.well-known/nostr.json',
+    path: '/.well-known/nostr.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/.well-known/nostr.json': typeof DotwellKnownNostrDotjsonRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/.well-known/nostr.json': typeof DotwellKnownNostrDotjsonRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/.well-known/nostr.json': typeof DotwellKnownNostrDotjsonRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/.well-known/nostr.json'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/.well-known/nostr.json'
+  id: '__root__' | '/' | '/.well-known/nostr.json'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DotwellKnownNostrDotjsonRoute: typeof DotwellKnownNostrDotjsonRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +59,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.well-known/nostr.json': {
+      id: '/.well-known/nostr.json'
+      path: '/.well-known/nostr.json'
+      fullPath: '/.well-known/nostr.json'
+      preLoaderRoute: typeof DotwellKnownNostrDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DotwellKnownNostrDotjsonRoute: DotwellKnownNostrDotjsonRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
