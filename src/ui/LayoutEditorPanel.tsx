@@ -6,7 +6,7 @@
  */
 import { useMemo, useState } from "react";
 import { PLAYER_RADIUS, WORLD_COLLIDERS, resolveMove, resolved } from "../world/collision";
-import { nearPath } from "../world/Plaza";
+import { pathPoint } from "../world/Plaza";
 import { SPAWN } from "../world/layout";
 import { serializeLayout } from "../world/editor/serialize";
 import { round, useLayoutEditorStore } from "../world/editor/useLayoutEditorStore";
@@ -19,10 +19,13 @@ function spawnWarning(): string | null {
   return off > 1e-3 ? "Spawn point je uvnitř překážky." : null;
 }
 
+/** Walk the centerline and flag any point the player would be pushed out of. */
 function pathWarning(): string | null {
-  for (const c of WORLD_COLLIDERS) {
-    const r = c.kind === "circle" ? c.r : Math.max(c.hw, c.hd);
-    if (nearPath(c.x, c.z, r + PLAYER_RADIUS + 0.1)) return "Něco stojí na pěšině.";
+  // The last stretch ends at the cottage door, where being pushed back is normal.
+  for (let i = 0; i <= 18; i++) {
+    const p = pathPoint(i / 20);
+    resolveMove(p.x, p.z, WORLD_COLLIDERS, null, PLAYER_RADIUS);
+    if (Math.hypot(resolved.x - p.x, resolved.z - p.z) > 1e-3) return "Něco stojí na pěšině.";
   }
   return null;
 }
