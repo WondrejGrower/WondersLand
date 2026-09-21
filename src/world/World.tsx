@@ -16,6 +16,7 @@ import { WorldPointerInput } from "./input/WorldPointerInput";
 import { useWorldSettingsStore } from "../state/useWorldSettingsStore";
 import { useLayoutEditorStore } from "./editor/useLayoutEditorStore";
 import { EditorLayer } from "./editor/EditorLayer";
+import { EditorCamera } from "./editor/EditorCamera";
 import { palette } from "./palette";
 
 // Phones pay twice for pixels: lower the ceiling and drop MSAA there.

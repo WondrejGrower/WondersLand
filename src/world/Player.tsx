@@ -26,6 +26,7 @@ import {
 } from "./controller/CharacterController";
 import { setDynamicColliders } from "./nav/path";
 import { tickPendingInteraction } from "./interactions";
+import { editorActive, useLayoutEditorStore } from "./editor/useLayoutEditorStore";
 
 const WALK_SPEED = 4.2;
 const RUN_SPEED = 5.8;
