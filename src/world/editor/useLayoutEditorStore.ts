@@ -153,7 +153,7 @@ export const useLayoutEditorStore = create<EditorState>((set, get) => ({
     if (!isOwner(useNostrStore.getState().pubkey)) return;
     if (!baseline) baseline = snapshot();
     frameAll();
-    set({ active: true });
+    set({ active: true, pointerMode: "camera" });
   },
   close: () => set({ active: false, selected: null }),
   select: (id) => set({ selected: id }),

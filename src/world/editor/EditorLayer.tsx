@@ -11,13 +11,14 @@ import { buildItems } from "./items";
 import { orbitBy, panBy, zoomBy } from "./editorCamera";
 import { round, useLayoutEditorStore } from "./useLayoutEditorStore";
 
-/** How close to a marker a click counts as grabbing it. */
-const GRAB_RADIUS = 2.2;
+/** How close to a marker, in screen pixels, a press counts as grabbing it. */
+const GRAB_PIXELS = 30;
 
 const ray = new Raycaster();
 const ndc = new Vector2();
 const groundPlane = new Plane(new Vector3(0, 1, 0), 0);
 const hit = new Vector3();
+const projected = new Vector3();
 
 function snap(value: number, step: number) {
   return round(Math.round(value / step) * step);
