@@ -10,6 +10,7 @@ import {
   GREENHOUSE_HALF,
   GREENHOUSE_POSITION,
   GREENHOUSE_ROTATION_Y,
+  LAYOUT,
   PATH_FROM,
   PATH_TO,
   PATH_VIA,
@@ -94,7 +95,7 @@ export { ARCH_POSITION, ARCH_POST_RADIUS, ARCH_POST_X, GREENHOUSE_HALF, GREENHOU
 function EntranceArch() {
   const sign = useSignTexture();
   return (
-    <group position={ARCH_POSITION}>
+    <group position={ARCH_POSITION} rotation-y={LAYOUT.archRotY} scale={LAYOUT.archScale}>
       {ARCH_POST_X.map((x) => (
         <group key={x} position={[x, 0, 0]}>
 
@@ -191,7 +192,11 @@ function Path() {
 
 function Greenhouse() {
   return (
-    <group position={GREENHOUSE_POSITION} rotation-y={GREENHOUSE_ROTATION_Y}>
+    <group
+      position={GREENHOUSE_POSITION}
+      rotation-y={LAYOUT.greenhouseRotY}
+      scale={LAYOUT.greenhouseScale}
+    >
       <ContactShadow position={[0, 0.04, 0]} radius={4.4} opacity={0.18} />
       {/* low stone base */}
       <mesh position={[0, 0.3, 0]}>
