@@ -19,6 +19,7 @@ import { WorldSettings } from "../ui/WorldSettings";
 import { WorldHint } from "../ui/WorldHint";
 import { useWorldSettingsStore } from "../state/useWorldSettingsStore";
 import { useLayoutEditorStore } from "../world/editor/useLayoutEditorStore";
+import { isOwner } from "../nostr/owner";
 
 // Three.js is browser-only: the module itself must not load during SSR.
 const World = lazy(() => import("../world/World"));
