@@ -170,3 +170,11 @@ joystick and tap/click paths animate consistently. No movement behavior changed.
   rotated to face the approaching visitor) and the Garden Board now stands
   beside its entrance (`[3.1, -6.9]`), matching the hand-drawn layout sketch.
   The path (`PATH_TO = {x: 4.4, z: -4.1}`) leads straight to the house steps.
+
+## 2026-09-21 — Arch sign readable from spawn + connected path (done)
+
+- The WondersLand sign on the entrance arch now faces the spawn, so visitors
+  read it on arrival instead of seeing the bare back.
+- The walkway is two straight legs meeting under the arch center
+  (`PATH_FROM → PATH_VIA → PATH_TO`): it starts beneath the spawn point,
+  passes through the middle of the gate and continues to the house.

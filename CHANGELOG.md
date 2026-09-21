@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2026-09-21 — Arch sign readable, path connected
+
+- The WondersLand arch sign now faces the entrance so it reads on arrival.
+- The walkway runs from the spawn through the center of the arch to the house.
+
 ## 2026-09-21 — House at the end of the path
 
 - Moved the My Garden house to the end of the dirt path, facing the visitor,
