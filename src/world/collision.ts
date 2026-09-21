@@ -8,16 +8,18 @@
  * Physical colliders are deliberately smaller than the matching interaction
  * radii, so the player can always stand close enough to press E / tap.
  */
-import { TREE_INSTANCES } from "./layout";
 import {
   ARCH_POSITION,
   ARCH_POST_RADIUS,
   ARCH_POST_X,
+  COTTAGE_HALF,
+  COTTAGE_POSITION,
+  COTTAGE_ROTATION_Y,
   GREENHOUSE_HALF,
   GREENHOUSE_POSITION,
   GREENHOUSE_ROTATION_Y,
-} from "./Plaza";
-import { COTTAGE_POSITION, COTTAGE_ROTATION_Y, COTTAGE_HALF } from "./Cottage";
+  TREE_INSTANCES,
+} from "./layout";
 import { GROW_BEDS_CENTER, GROW_BEDS_HALF, WORLD_INTERACTABLES } from "./interactables";
 
 export const PLAYER_RADIUS = 0.42;

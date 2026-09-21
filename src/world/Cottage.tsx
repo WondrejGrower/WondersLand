@@ -2,17 +2,19 @@ import { useMemo } from "react";
 import { Box3, Vector3 } from "three";
 import { useGLTF } from "@react-three/drei";
 import model from "../assets/cottage.glb.asset.json";
+import {
+  COTTAGE_HALF,
+  COTTAGE_POSITION,
+  COTTAGE_ROTATION_Y,
+} from "./layout";
 
 /** Static scenery: the garden cottage. No interaction, no UI. */
 const TARGET_HEIGHT = 5.5;
-const POSITION: [number, number, number] = [6, 0, -4];
 /** World position + reach used by the interaction system. */
-export const COTTAGE_POSITION = POSITION;
+export { COTTAGE_POSITION };
 export const COTTAGE_INTERACT_RADIUS = 5;
-const ROTATION_Y = -0.5;
 /** Rotation + solid footprint half-extents used by collision.ts. */
-export const COTTAGE_ROTATION_Y = ROTATION_Y;
-export const COTTAGE_HALF: [number, number] = [3.4, 2.8];
+export { COTTAGE_ROTATION_Y, COTTAGE_HALF };
 
 
 export function Cottage() {
@@ -32,7 +34,7 @@ export function Cottage() {
   }, [scene]);
 
   return (
-    <group position={POSITION} rotation-y={ROTATION_Y} userData={{ interactable: "my-garden-house" }}>
+    <group position={COTTAGE_POSITION} rotation-y={COTTAGE_ROTATION_Y} userData={{ interactable: "my-garden-house" }}>
       <primitive object={scene} scale={scale} position={offset} />
     </group>
   );

@@ -1,5 +1,5 @@
 import { palette } from "./palette";
-import { GROW_BEDS_CENTER, GROW_BEDS_HALF } from "./interactables";
+import { GROW_BEDS_CENTER, GROW_BEDS_HALF } from "./layout";
 
 /**
  * Outdoor grow-bed area: raised timber beds that give the "raised-beds" plant

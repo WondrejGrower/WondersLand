@@ -2,6 +2,16 @@ import { useMemo } from "react";
 import { CanvasTexture, Color, InstancedMesh, Matrix4, Object3D } from "three";
 import { palette } from "./palette";
 import { nearInteractable } from "./interactables";
+import {
+  ARCH_POSITION,
+  ARCH_POST_RADIUS,
+  ARCH_POST_X,
+  GREENHOUSE_HALF,
+  GREENHOUSE_POSITION,
+  GREENHOUSE_ROTATION_Y,
+  PATH_FROM,
+  PATH_TO,
+} from "./layout";
 
 
 // Deterministic pseudo-random: same plaza every visit, no data shipped.
@@ -77,13 +87,7 @@ function useSignTexture() {
 }
 
 /** Shared scenery constants — collision.ts reads these so it cannot drift. */
-export const ARCH_POSITION: [number, number, number] = [0, 0, 17];
-export const ARCH_POST_X = [-2.4, 2.4];
-export const ARCH_POST_RADIUS = 0.55;
-export const GREENHOUSE_POSITION: [number, number, number] = [-13, 0, -13];
-export const GREENHOUSE_ROTATION_Y = 0.7;
-/** Half-extents of the greenhouse stone base (7 x 4.4). */
-export const GREENHOUSE_HALF: [number, number] = [3.5, 2.2];
+export { ARCH_POSITION, ARCH_POST_RADIUS, ARCH_POST_X, GREENHOUSE_HALF, GREENHOUSE_POSITION, GREENHOUSE_ROTATION_Y };
 
 function EntranceArch() {
   const sign = useSignTexture();
@@ -134,8 +138,6 @@ function EntranceArch() {
 // quadratic curve below degenerates into a line from the arch to the plant.
 /** Edge length of one stone slab, in world units. */
 const SLAB_SIZE = 2.4;
-const PATH_FROM = { x: 0, z: 16 };
-const PATH_TO = { x: 5.4, z: -3.2 };
 const PATH_MID = { x: (PATH_FROM.x + PATH_TO.x) / 2, z: (PATH_FROM.z + PATH_TO.z) / 2 };
 
 function pathPoint(t: number) {
@@ -249,7 +251,7 @@ export function Plaza() {
       <Greenhouse />
       <Scatter />
       {/* soil pad + shadow under the interaction plant */}
-      <ContactShadow position={[6, 0.03, -4]} radius={1.6} opacity={0.2} />
+      <ContactShadow position={[7, 0.03, -5]} radius={1.6} opacity={0.2} />
     </group>
   );
 }

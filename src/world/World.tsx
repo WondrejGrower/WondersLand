@@ -8,7 +8,6 @@ import { Player } from "./Player";
 import { Cottage } from "./Cottage";
 import { GardenBoard } from "./GardenBoard";
 import { WelcomeSign } from "./WelcomeSign";
-import { Portals } from "./Portals";
 import { GrowBeds } from "./GrowBeds";
 import { FocusRing } from "./FocusRing";
 import { DestinationMarker } from "./DestinationMarker";
@@ -60,7 +59,6 @@ export default function World() {
       <Ground />
       <Plaza />
       <GrowBeds />
-      <Portals />
       <Cottage />
       <Suspense fallback={null}>
         <GardenBoard />

@@ -67,7 +67,6 @@ export function runInteraction(req: InteractRequest) {
   if (it.action === "about") store.openAbout();
   else if (it.action === "indoor") store.openIndoor();
   else if (it.action === "tasks") store.openTasks();
-  else if (it.comingSoon) store.openComingSoon(it.comingSoon);
 }
 
 /**

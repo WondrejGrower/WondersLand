@@ -8,6 +8,25 @@
 
 export const GARDEN_RADIUS = 19;
 
+/** One shared spatial plan for rendering, interaction, collision and path clearance. */
+export const ARCH_POSITION: [number, number, number] = [0, 0, 17];
+export const ARCH_POST_X = [-2.4, 2.4] as const;
+export const ARCH_POST_RADIUS = 0.55;
+export const SPAWN: [number, number] = [0, 13.5];
+export const WELCOME_POSITION: [number, number] = [-2.2, 10.2];
+export const COTTAGE_POSITION: [number, number, number] = [7, 0, -5];
+export const COTTAGE_ROTATION_Y = -0.35;
+export const COTTAGE_HALF: [number, number] = [3.4, 2.8];
+export const COTTAGE_INTERACTION_POINT: [number, number] = [3.7, -2.2];
+export const BOARD_POSITION: [number, number] = [2.3, -7.8];
+export const GROW_BEDS_CENTER: [number, number] = [-6.2, -3.2];
+export const GROW_BEDS_HALF: [number, number] = [2.6, 2.9];
+export const GREENHOUSE_POSITION: [number, number, number] = [-12.5, 0, -12.5];
+export const GREENHOUSE_ROTATION_Y = 0.7;
+export const GREENHOUSE_HALF: [number, number] = [3.5, 2.2];
+export const PATH_FROM = { x: 0, z: 16 } as const;
+export const PATH_TO = { x: 0, z: -2.2 } as const;
+
 export type Instance = {
   x: number;
   z: number;
@@ -47,9 +66,9 @@ export const TREE_INSTANCES: Instance[] = (() => {
   }
 
   ([
-    [-7.5, 6, 0.7],
-    [8.5, 5.5, 0.62],
-    [10, -8, 0.8],
+    [-8.5, 7, 0.7],
+    [9.5, 7, 0.62],
+    [11.5, -10, 0.8],
   ] as [number, number, number][]).forEach(([x, z, s], i) => {
     list.push({ x, z, rot: i * 1.7, scale: s, scaleY: s });
   });
