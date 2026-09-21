@@ -3,6 +3,7 @@ import { Box3, Vector3 } from "three";
 import { useGLTF } from "@react-three/drei";
 import model from "../assets/woodland-sign.glb.asset.json";
 import { getInteractable } from "./interactables";
+import { LAYOUT } from "./layout";
 
 /**
  * Woodland sign just off the spawn path. Clicking / tapping it opens the
