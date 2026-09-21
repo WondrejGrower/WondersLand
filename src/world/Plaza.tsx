@@ -118,7 +118,7 @@ function EntranceArch() {
         <meshLambertMaterial color={palette.wood} />
       </mesh>
       {/* sign board */}
-      <mesh position={[0, 3.05, -0.26]} rotation-y={Math.PI}>
+      <mesh position={[0, 3.05, 0.27]}>
         <planeGeometry args={[4.1, 1.0]} />
         {sign ? (
           <meshBasicMaterial map={sign} toneMapped={false} />
