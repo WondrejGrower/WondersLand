@@ -35,8 +35,8 @@ export function GardenBoard() {
 
   return (
     <group
-      position={POSITION}
-      rotation-y={ROTATION_Y}
+      position={position}
+      rotation-y={LAYOUT.boardRotY}
       userData={{ interactable: "garden-board" }}
       onPointerOver={(e) => {
         e.stopPropagation();
@@ -47,7 +47,7 @@ export function GardenBoard() {
         setHovered(false);
         document.body.style.cursor = "";
       }}
-      scale={hovered ? 1.03 : 1}
+      scale={(hovered ? 1.03 : 1) * LAYOUT.boardScale}
     >
       {/* Simple wooden legs. */}
       <mesh position={[-0.5, LEG_HEIGHT / 2, 0]}>
