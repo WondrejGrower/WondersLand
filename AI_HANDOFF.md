@@ -491,6 +491,9 @@ reading the same three constants in `src/world/layout.ts`.
   orbitBy, focusOn, frameAll, reset. `open()` calls `frameAll()`.
 - `EditorLayer.tsx` handles pan (ground-anchored), object drag, orbit (right
   mouse / two fingers), zoom (wheel / pinch). No drei OrbitControls.
+- `LayoutEditorPanel.tsx` is a bottom sheet below 768px, capped at 42dvh with
+  internal scrolling and a fixed header; desktop keeps the top-left panel.
+  `TouchControls.tsx` returns null while editing to preserve map space.
 
 ## 2026-09-21 — Hidden layout editor (owner tool, done)
 

@@ -198,6 +198,9 @@ joystick and tap/click paths animate consistently. No movement behavior changed.
 - New: src/world/editor/editorCamera.ts, src/world/editor/EditorCamera.tsx.
   Touched: Player.tsx (early return + no avatar while editing), World.tsx,
   EditorLayer.tsx (pan/orbit/pinch/wheel), LayoutEditorPanel.tsx (view buttons).
+- Mobile editor panel is a bottom sheet capped at 42% of the viewport with an
+  independently scrolling body and compact collapsed state; the joystick is
+  hidden while editing so the map remains usable.
 
 ## 2026-09-21 — Hidden layout editor (owner tool, done)
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { clearTouchInput, setTouchAxes } from "../state/input";
 import { useWorldSettingsStore } from "../state/useWorldSettingsStore";
+import { useLayoutEditorStore } from "../world/editor/useLayoutEditorStore";
 
 
 const RADIUS = 52;
@@ -14,12 +15,13 @@ export function TouchControls() {
   // The joystick is one of two mobile movement styles; tap-to-move is the other.
   const mobileMovement = useWorldSettingsStore((s) => s.controls.mobileMovement);
   const movementMode = useWorldSettingsStore((s) => s.controls.movementMode);
+  const editing = useLayoutEditorStore((s) => s.active);
 
   useEffect(() => {
     setIsTouch(window.matchMedia("(pointer: coarse)").matches);
   }, []);
 
-  if (!isTouch || mobileMovement !== "joystick" || movementMode === "click") return null;
+  if (editing || !isTouch || mobileMovement !== "joystick" || movementMode === "click") return null;
 
   const setKnob = (dx: number, dy: number) => {
     if (knob.current) knob.current.style.transform = `translate(${dx}px, ${dy}px)`;

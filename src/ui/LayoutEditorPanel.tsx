@@ -62,22 +62,22 @@ export function LayoutEditorPanel() {
   };
 
   return (
-    <div className="pointer-events-auto absolute left-3 top-3 z-30 flex max-h-[85vh] w-[min(20rem,calc(100vw-1.5rem))] flex-col gap-2 overflow-hidden rounded-xl border border-border bg-card/95 p-3 text-sm text-card-foreground shadow-xl backdrop-blur">
-      <div className="flex items-center justify-between gap-2">
+    <div className="pointer-events-auto absolute inset-x-2 bottom-2 z-30 flex max-h-[42dvh] flex-col overflow-hidden rounded-xl border border-border bg-card/95 text-sm text-card-foreground shadow-xl backdrop-blur md:inset-x-auto md:bottom-auto md:left-3 md:top-3 md:max-h-[85vh] md:w-[min(20rem,calc(100vw-1.5rem))]">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border/60 px-3 py-2 md:border-b-0 md:pb-1 md:pt-3">
         <strong className="text-xs uppercase tracking-wide text-muted-foreground">
           Layout editor
         </strong>
         <div className="flex gap-1">
           <button
             type="button"
-            className="rounded-md border border-border px-2 py-1 text-xs"
+            className="min-h-10 rounded-md border border-border px-3 py-1 text-xs md:min-h-0 md:px-2"
             onClick={() => setCollapsed((c) => !c)}
           >
             {collapsed ? "Rozbalit" : "Sbalit"}
           </button>
           <button
             type="button"
-            className="rounded-md border border-border px-2 py-1 text-xs"
+            className="min-h-10 rounded-md border border-border px-3 py-1 text-xs md:min-h-0 md:px-2"
             onClick={() => store.close()}
           >
             Zavřít
@@ -86,7 +86,7 @@ export function LayoutEditorPanel() {
       </div>
 
       {!collapsed && (
-        <>
+        <div className="flex min-h-0 flex-col gap-2 overflow-y-auto overscroll-contain px-3 pb-3 pt-2 [scrollbar-gutter:stable] md:pt-1">
           <div className="flex items-center gap-2 text-xs">
             <span className="text-muted-foreground">Krok</span>
             {STEPS.map((s) => (
@@ -103,10 +103,10 @@ export function LayoutEditorPanel() {
             ))}
           </div>
 
-          <div className="flex gap-1 text-xs">
+          <div className="grid grid-cols-3 gap-1 text-xs">
             <button
               type="button"
-              className="flex-1 rounded-md border border-border px-2 py-1 disabled:opacity-40"
+              className="min-h-10 rounded-md border border-border px-2 py-1 disabled:opacity-40 md:min-h-0"
               disabled={!selected}
               onClick={() => selected && focusOn(selected.x, selected.z)}
             >
@@ -114,14 +114,14 @@ export function LayoutEditorPanel() {
             </button>
             <button
               type="button"
-              className="flex-1 rounded-md border border-border px-2 py-1"
+              className="min-h-10 rounded-md border border-border px-2 py-1 md:min-h-0"
               onClick={() => frameAll()}
             >
               Celá zahrada
             </button>
             <button
               type="button"
-              className="flex-1 rounded-md border border-border px-2 py-1"
+              className="min-h-10 rounded-md border border-border px-2 py-1 md:min-h-0"
               onClick={() => resetView()}
             >
               Reset pohledu
@@ -132,7 +132,7 @@ export function LayoutEditorPanel() {
           <select
             value={selectedId ?? ""}
             onChange={(e) => store.select(e.target.value || null)}
-            className="w-full rounded-md border border-border bg-background px-2 py-1 text-sm"
+            className="min-h-10 w-full rounded-md border border-border bg-background px-2 py-1 text-sm md:min-h-0"
           >
             <option value="">— vyber objekt —</option>
             {items.map((it) => (
@@ -149,7 +149,7 @@ export function LayoutEditorPanel() {
                 <span />
                 <button
                   type="button"
-                  className="rounded-md border border-border py-1"
+                  className="min-h-10 rounded-md border border-border py-1 md:min-h-0"
                   onClick={() => store.nudge(selected.id, 0, -step)}
                 >
                   ↑
@@ -157,21 +157,21 @@ export function LayoutEditorPanel() {
                 <span />
                 <button
                   type="button"
-                  className="rounded-md border border-border py-1"
+                  className="min-h-10 rounded-md border border-border py-1 md:min-h-0"
                   onClick={() => store.nudge(selected.id, -step, 0)}
                 >
                   ←
                 </button>
                 <button
                   type="button"
-                  className="rounded-md border border-border py-1"
+                  className="min-h-10 rounded-md border border-border py-1 md:min-h-0"
                   onClick={() => store.nudge(selected.id, 0, step)}
                 >
                   ↓
                 </button>
                 <button
                   type="button"
-                  className="rounded-md border border-border py-1"
+                  className="min-h-10 rounded-md border border-border py-1 md:min-h-0"
                   onClick={() => store.nudge(selected.id, step, 0)}
                 >
                   →
@@ -186,7 +186,7 @@ export function LayoutEditorPanel() {
                     step={step}
                     value={round(selected.x)}
                     onChange={(e) => store.update(selected.id, { x: Number(e.target.value) })}
-                    className="w-full rounded-md border border-border bg-background px-2 py-1 text-sm"
+                    className="min-h-10 w-full rounded-md border border-border bg-background px-2 py-1 text-sm md:min-h-0"
                   />
                 </label>
                 <label className="flex-1 text-xs">
@@ -196,7 +196,7 @@ export function LayoutEditorPanel() {
                     step={step}
                     value={round(selected.z)}
                     onChange={(e) => store.update(selected.id, { z: Number(e.target.value) })}
-                    className="w-full rounded-md border border-border bg-background px-2 py-1 text-sm"
+                    className="min-h-10 w-full rounded-md border border-border bg-background px-2 py-1 text-sm md:min-h-0"
                   />
                 </label>
               </div>
@@ -245,7 +245,7 @@ export function LayoutEditorPanel() {
 
           <button
             type="button"
-            className="rounded-md border border-border px-2 py-1 text-xs"
+            className="min-h-10 rounded-md border border-border px-2 py-1 text-xs md:min-h-0"
             onClick={() => store.addTree()}
           >
             + Přidat strom
@@ -276,11 +276,11 @@ export function LayoutEditorPanel() {
             </button>
           </div>
 
-          <p className="text-[0.7rem] leading-snug text-muted-foreground">
+          <p className="hidden text-[0.7rem] leading-snug text-muted-foreground md:block">
             Táhni objekt po zemi, nebo ho posuň šipkami. Pravé tlačítko / dvěma prsty otáčí kameru.
             Rozmístění se nikam neukládá — zkopíruj ho a pošli.
           </p>
-        </>
+        </div>
       )}
     </div>
   );
