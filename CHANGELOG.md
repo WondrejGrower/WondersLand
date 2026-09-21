@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 2026-09-21 — Hidden layout editor (owner tool, done)
+
+- `?edit=1` or F2 opens an in-page "Layout editor" panel: pick any building,
+  path point, spawn, tree or plant slot, drag it on the ground or nudge it by
+  0.1 / 0.5 / 1, adjust rotation and scale, add or delete trees.
+- Warnings fire when the spawn is inside an obstacle or the centerline of the
+  path is blocked; colliders and interactables rebuild live on every edit.
+- "Zkopírovat rozmístění" copies paste-ready TypeScript (layout.ts constants,
+  LAYOUT scalars, TREE_INSTANCES, PLANT_SLOTS); "Vrátit vše" restores the
+  session baseline. Nothing is persisted, synced or published — memory only.
+- Files: src/world/layout.ts (mutable), src/garden/slots.ts,
+  src/world/interactables.ts (rebuildInteractables), src/world/collision.ts
+  (buildColliders/rebuildColliders), src/world/editor/{items,serialize,
+  useLayoutEditorStore,EditorLayer}, src/ui/LayoutEditorPanel.tsx,
+  src/world/{World,Plaza,Cottage,GardenBoard,WelcomeSign}.tsx,
+  src/routes/index.tsx.
+- Deferred: persisting a layout, NavMesh, gamification.
+
 ## 2026-09-21 — Arch sign readable, path connected
 
 - The WondersLand arch sign now faces the entrance so it reads on arrival.
