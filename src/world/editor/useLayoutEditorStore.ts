@@ -127,6 +127,8 @@ export const useLayoutEditorStore = create<EditorState>((set, get) => ({
   dirty: false,
 
   open: () => {
+    // Fail closed: only the owner identity may ever open the editor.
+    if (!isOwner(useNostrStore.getState().pubkey)) return;
     if (!baseline) baseline = snapshot();
     set({ active: true });
   },
