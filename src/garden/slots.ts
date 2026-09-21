@@ -6,8 +6,6 @@
  * Positions are mutable so the hidden layout editor can drag a spot and have
  * the planted diary follow it.
  */
-import { GROW_BEDS_CENTER } from "../world/layout";
-
 export type PlantSlot = {
   id: number;
   /** World position of the spot. */
@@ -16,19 +14,11 @@ export type PlantSlot = {
   rotationY: number;
 };
 
-const [CX, CZ] = GROW_BEDS_CENTER;
-
-const OFFSETS: Array<[number, number, number]> = [
-  [-1.6, -1.35, 0.2],
-  [0, -1.35, -0.35],
-  [1.6, -1.35, 0.6],
-  [-1.6, 1.35, -0.5],
-  [0, 1.35, 0.4],
-  [1.6, 1.35, -0.2],
+export const PLANT_SLOTS: PlantSlot[] = [
+  { id: 0, position: [-7.8, 0, -4.55], rotationY: 0.2 },
+  { id: 1, position: [-6.2, 0, -4.55], rotationY: -0.35 },
+  { id: 2, position: [-4.6, 0, -4.55], rotationY: 0.6 },
+  { id: 3, position: [-7.8, 0, -1.85], rotationY: -0.5 },
+  { id: 4, position: [-6.2, 0, -1.85], rotationY: 0.4 },
+  { id: 5, position: [-4.6, 0, -1.85], rotationY: -0.2 },
 ];
-
-export const PLANT_SLOTS: PlantSlot[] = OFFSETS.map(([dx, dz, rot], i) => ({
-  id: i,
-  position: [CX + dx, 0, CZ + dz] as [number, number, number],
-  rotationY: rot,
-}));
