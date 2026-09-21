@@ -293,6 +293,9 @@ export function Player() {
       }
     }
 
+    // Animate resolved locomotion rather than one particular input source.
+    character.moving = !frozen && !unfocused && moving;
+
     // ---- Queued click-to-interact ----
     if (!frozen) tickPendingInteraction();
 

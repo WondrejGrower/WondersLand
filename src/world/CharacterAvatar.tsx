@@ -2,9 +2,9 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useAnimations, useGLTF } from "@react-three/drei";
 import { Box3, type Group } from "three";
-import { input } from "../state/input";
-import { useWorldStore } from "../state/useWorldStore";
+import { useWorldStore, worldFrozen } from "../state/useWorldStore";
 import model from "../assets/character.glb.asset.json";
+import { character } from "./controller/CharacterController";
 
 // Uploaded rigged character. Native height varies per export, so the model is
 // measured once and scaled to the same ~1.9 gameplay height as before.
@@ -43,8 +43,7 @@ export function CharacterAvatar() {
   useFrame((state, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05);
     const world = useWorldStore.getState();
-    const frozen = world.journalOpen || world.indoorOpen;
-    const isMoving = !frozen && (input.forward !== 0 || input.strafe !== 0);
+    const isMoving = !worldFrozen(world) && character.moving;
 
     const walk = actions["Walking"];
     if (walk) {
