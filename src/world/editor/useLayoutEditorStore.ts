@@ -30,6 +30,7 @@ import {
   type Instance,
 } from "../layout";
 import { addTree, buildItems, removeTree, type EditItem } from "./items";
+import { frameAll } from "./editorCamera";
 
 type Snapshot = {
   arch: [number, number, number];
@@ -132,6 +133,7 @@ export const useLayoutEditorStore = create<EditorState>((set, get) => ({
     // Fail closed: only the owner identity may ever open the editor.
     if (!isOwner(useNostrStore.getState().pubkey)) return;
     if (!baseline) baseline = snapshot();
+    frameAll();
     set({ active: true });
   },
   close: () => set({ active: false, selected: null }),
