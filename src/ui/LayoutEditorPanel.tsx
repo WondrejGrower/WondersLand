@@ -9,6 +9,7 @@ import { PLAYER_RADIUS, WORLD_COLLIDERS, resolveMove, resolved } from "../world/
 import { pathPoint } from "../world/Plaza";
 import { SPAWN } from "../world/layout";
 import { serializeLayout } from "../world/editor/serialize";
+import { focusOn, frameAll, reset as resetView } from "../world/editor/editorCamera";
 import { round, useLayoutEditorStore } from "../world/editor/useLayoutEditorStore";
 
 const STEPS = [0.1, 0.5, 1];
@@ -101,6 +102,32 @@ export function LayoutEditorPanel() {
               </button>
             ))}
           </div>
+
+          <div className="flex gap-1 text-xs">
+            <button
+              type="button"
+              className="flex-1 rounded-md border border-border px-2 py-1 disabled:opacity-40"
+              disabled={!selected}
+              onClick={() => selected && focusOn(selected.x, selected.z)}
+            >
+              Na výběr
+            </button>
+            <button
+              type="button"
+              className="flex-1 rounded-md border border-border px-2 py-1"
+              onClick={() => frameAll()}
+            >
+              Celá zahrada
+            </button>
+            <button
+              type="button"
+              className="flex-1 rounded-md border border-border px-2 py-1"
+              onClick={() => resetView()}
+            >
+              Reset pohledu
+            </button>
+          </div>
+
 
           <select
             value={selectedId ?? ""}
