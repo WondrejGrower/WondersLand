@@ -2,7 +2,7 @@
 
 Snapshot of what actually exists. Update this with every change.
 
-**Last updated:** 2026-09-21 (house at the end of the path)
+**Last updated:** 2026-09-21 (arch sign + connected path)
 **Current phase:** Milestone 1 implemented and verified in a browser.
 
 ## Built and working
@@ -689,3 +689,12 @@ Google Fonts style/font origins. Everything else is unchanged.
   faces the path end and the Garden Board stands to the left of the entrance,
   per the user's layout sketch. Collision walk from spawn through the arch to
   the house verified clear.
+
+## Arch sign orientation and path connection (2026-09-21)
+
+- The arch sign plane in `Plaza.tsx` now sits on the +z side without the π
+  rotation, so the "WondersLand" text reads correctly from the spawn side.
+- `PATH_VIA = {x: 0, z: 12.6}` (arch center) added to `src/world/layout.ts`;
+  `Path` renders two strips (spawn → arch, arch → house) and `pathPoint` /
+  `nearPath` follow the same two-leg route. Collision walk spawn → arch →
+  house verified clear.

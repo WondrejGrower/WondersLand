@@ -463,3 +463,9 @@ The cottage now terminates the path: `COTTAGE_POSITION [7.4, 0, -6.2]`,
 rotation `-0.5`, interaction point `[4.4, -4.1]`; the Garden Board is beside
 the door at `[3.1, -6.9]`. All still shared constants in `src/world/layout.ts` —
 move things there only.
+
+## Arch sign + path legs (2026-09-21)
+
+The arch sign faces +z (spawn side). The walkway is two legs through
+`PATH_VIA` (the arch center) — keep render strips, `pathPoint` and `nearPath`
+reading the same three constants in `src/world/layout.ts`.

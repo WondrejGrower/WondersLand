@@ -24,7 +24,9 @@ export const GROW_BEDS_HALF: [number, number] = [2.6, 2.9];
 export const GREENHOUSE_POSITION: [number, number, number] = [-12.5, 0, -12.5];
 export const GREENHOUSE_ROTATION_Y = 0.7;
 export const GREENHOUSE_HALF: [number, number] = [3.5, 2.2];
-export const PATH_FROM = { x: 0, z: 16 } as const;
+export const PATH_FROM = { x: 0, z: 16.5 } as const;
+/** Bend point: the walkway passes through the exact center of the arch. */
+export const PATH_VIA = { x: 0, z: 12.6 } as const;
 export const PATH_TO = { x: 4.4, z: -4.1 } as const;
 
 export type Instance = {

@@ -12,6 +12,7 @@ import {
   GREENHOUSE_ROTATION_Y,
   PATH_FROM,
   PATH_TO,
+  PATH_VIA,
 } from "./layout";
 
 
@@ -118,7 +119,7 @@ function EntranceArch() {
         <meshLambertMaterial color={palette.wood} />
       </mesh>
       {/* sign board */}
-      <mesh position={[0, 3.05, -0.26]} rotation-y={Math.PI}>
+      <mesh position={[0, 3.05, 0.27]}>
         <planeGeometry args={[4.1, 1.0]} />
         {sign ? (
           <meshBasicMaterial map={sign} toneMapped={false} />
@@ -135,18 +136,24 @@ function EntranceArch() {
 }
 
 // Shared path line so vegetation can keep clear of the walkable route.
-// The route is deliberately straight: PATH_MID is the exact midpoint, so the
-// quadratic curve below degenerates into a line from the arch to the plant.
+// Two straight legs meeting under the arch center: spawn → arch → house.
 /** Edge length of one stone slab, in world units. */
 const SLAB_SIZE = 2.4;
-const PATH_MID = { x: (PATH_FROM.x + PATH_TO.x) / 2, z: (PATH_FROM.z + PATH_TO.z) / 2 };
 
 function pathPoint(t: number) {
-  const x =
-    (1 - t) * (1 - t) * PATH_FROM.x + 2 * (1 - t) * t * PATH_MID.x + t * t * PATH_TO.x;
-  const z =
-    (1 - t) * (1 - t) * PATH_FROM.z + 2 * (1 - t) * t * PATH_MID.z + t * t * PATH_TO.z;
-  return { x, z };
+  // Piecewise linear across the two legs.
+  if (t < 0.5) {
+    const u = t * 2;
+    return {
+      x: PATH_FROM.x + (PATH_VIA.x - PATH_FROM.x) * u,
+      z: PATH_FROM.z + (PATH_VIA.z - PATH_FROM.z) * u,
+    };
+  }
+  const u = (t - 0.5) * 2;
+  return {
+    x: PATH_VIA.x + (PATH_TO.x - PATH_VIA.x) * u,
+    z: PATH_VIA.z + (PATH_TO.z - PATH_VIA.z) * u,
+  };
 }
 
 export function nearPath(x: number, z: number, clearance: number) {
@@ -157,20 +164,25 @@ export function nearPath(x: number, z: number, clearance: number) {
   return false;
 }
 
-// Flat soil walkway along the straight route.
+// Flat soil walkway: one strip per leg of the route.
+function PathStrip({ from, to }: { from: { x: number; z: number }; to: { x: number; z: number } }) {
+  return (
+    <mesh
+      rotation={[-Math.PI / 2, 0, -Math.atan2(to.x - from.x, to.z - from.z)]}
+      position={[(from.x + to.x) / 2, 0.008, (from.z + to.z) / 2]}
+    >
+      <planeGeometry args={[SLAB_SIZE + 0.3, Math.hypot(to.x - from.x, to.z - from.z)]} />
+      <meshLambertMaterial color={palette.path} />
+    </mesh>
+  );
+}
+
 function Path() {
-
-
   return (
     <group>
       {/* plain soil strip — the stone slab model is gone */}
-      <mesh
-        rotation={[-Math.PI / 2, 0, -Math.atan2(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z)]}
-        position={[PATH_MID.x, 0.008, PATH_MID.z]}
-      >
-        <planeGeometry args={[SLAB_SIZE + 0.3, Math.hypot(PATH_TO.x - PATH_FROM.x, PATH_TO.z - PATH_FROM.z)]} />
-        <meshLambertMaterial color={palette.path} />
-      </mesh>
+      <PathStrip from={PATH_FROM} to={PATH_VIA} />
+      <PathStrip from={PATH_VIA} to={PATH_TO} />
     </group>
   );
 }
