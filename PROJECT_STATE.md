@@ -630,6 +630,9 @@ Google Fonts style/font origins. Everything else is unchanged.
 - NavMesh is DEFERRED. `src/world/nav/path.ts` is a direct-line planner with one
   sidestep waypoint; replacing `planPath` with a real nav query needs no changes
   to input or controller code.
+- Avatar animation reads the controller's actual per-frame locomotion state,
+  so the existing walk clip runs for tap/click paths as well as WASD/joystick
+  and returns to the neutral pose after reaching the destination.
 
 ### Garden Board completion pass
 - Habits support `cadence: daily | weekly` end to end. Weekly progress

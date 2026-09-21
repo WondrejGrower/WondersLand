@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 2026-09-21 — Tap-to-move walk animation
+
+- The character controller now exposes the actual locomotion state calculated
+  by `Player.tsx`, regardless of whether movement came from a tap/click path,
+  joystick or keyboard.
+- `CharacterAvatar.tsx` uses that shared state for its existing walk/idle blend,
+  fixing the stationary pose while the avatar travelled after a ground tap.
+- Movement, camera behavior and path planning are unchanged.
+
 ## 2026-09-18 — 3D world: frame-rate pass
 
 - `src/world/plants/CannabisPlant.tsx`: every leaflet is baked once at module

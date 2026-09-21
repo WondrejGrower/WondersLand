@@ -24,6 +24,8 @@ export const character = {
   /** Direction command for this frame, written by WASD / joystick. */
   forward: 0,
   strafe: 0,
+  /** Actual locomotion result from Player, shared with avatar animation. */
+  moving: false,
   /** Active path from the last moveTo, consumed waypoint by waypoint. */
   path: [] as Waypoint[],
   pathIndex: 0,
@@ -63,6 +65,7 @@ export function stop() {
   character.pending = null;
   character.forward = 0;
   character.strafe = 0;
+  character.moving = false;
 }
 
 export function hasDestination(): boolean {

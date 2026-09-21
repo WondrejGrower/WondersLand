@@ -425,6 +425,10 @@ Pathfinding is still direct-line (`src/world/nav/path.ts`). A future NavMesh
 phase should replace `planPath` only; it must keep returning waypoints and must
 never run per frame — recompute on destination change or collider invalidation.
 
+Avatar animation must read `character.moving`, which `Player.tsx` sets from the
+resolved locomotion result each frame. Do not derive animation directly from
+`input.forward` / `input.strafe`: tap-to-move paths do not use those axes.
+
 Garden Board derivations live in `src/features/tasks/streaks.ts` and must stay
 pure: streaks, weekly progress, remaining timer seconds and clock labels are all
 computed from `startedAt` / activity logs, never stored. Add board actions to

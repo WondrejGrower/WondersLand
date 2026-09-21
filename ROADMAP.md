@@ -140,3 +140,8 @@ task grouping with "Clear completed", manual timer "Complete", HH:MM:SS labels
 from one hour, journey rename, and a compact sync status badge with details.
 Next: gamification (XP / levels / achievements) is NOT started and stays out of
 scope until a later phase.
+
+## 2026-09-21 — Tap-to-move walk animation hotfix (done)
+
+The avatar walk clip now follows actual controller locomotion, so keyboard,
+joystick and tap/click paths animate consistently. No movement behavior changed.
