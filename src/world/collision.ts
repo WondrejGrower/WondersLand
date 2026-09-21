@@ -8,17 +8,21 @@
  * Physical colliders are deliberately smaller than the matching interaction
  * radii, so the player can always stand close enough to press E / tap.
  */
-import { TREE_INSTANCES } from "./layout";
 import {
   ARCH_POSITION,
   ARCH_POST_RADIUS,
   ARCH_POST_X,
+  COTTAGE_HALF,
+  COTTAGE_POSITION,
+  COTTAGE_ROTATION_Y,
   GREENHOUSE_HALF,
   GREENHOUSE_POSITION,
   GREENHOUSE_ROTATION_Y,
-} from "./Plaza";
-import { COTTAGE_POSITION, COTTAGE_ROTATION_Y, COTTAGE_HALF } from "./Cottage";
-import { GROW_BEDS_CENTER, GROW_BEDS_HALF, WORLD_INTERACTABLES } from "./interactables";
+  GROW_BEDS_CENTER,
+  GROW_BEDS_HALF,
+  TREE_INSTANCES,
+} from "./layout";
+import { WORLD_INTERACTABLES } from "./interactables";
 
 export const PLAYER_RADIUS = 0.42;
 
@@ -52,7 +56,7 @@ export const WORLD_COLLIDERS: Collider[] = (() => {
     rot: GREENHOUSE_ROTATION_Y,
   });
 
-  // Welcome sign and the two portals: solid circles from the shared data.
+  // Welcome sign and Garden Board: solid circles from the shared data.
   for (const it of WORLD_INTERACTABLES) {
     if (it.collider) list.push(circle(it.position[0], it.position[1], it.collider));
   }

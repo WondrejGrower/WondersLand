@@ -10,7 +10,6 @@ import { HomeDashboard } from "../ui/HomeDashboard";
 import { Journal } from "../ui/Journal";
 import { IndoorGarden } from "../ui/IndoorGarden";
 import { AboutSign } from "../ui/AboutSign";
-import { ComingSoon } from "../ui/ComingSoon";
 import { InteractionPrompt } from "../ui/InteractionPrompt";
 import { TasksBoard } from "../features/tasks/TasksBoard";
 import { TouchControls } from "../ui/TouchControls";
@@ -76,7 +75,6 @@ function Index() {
       journalOpen: false,
       indoorOpen: false,
       aboutOpen: false,
-      comingSoon: null,
       target: null,
       focusedPlantId: null,
     });
@@ -112,7 +110,6 @@ function Index() {
       <Journal />
       <IndoorGarden />
       <AboutSign />
-      <ComingSoon />
       <TasksBoard />
       <WorldSettings />
     </main>

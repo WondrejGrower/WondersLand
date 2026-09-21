@@ -1,28 +1,28 @@
 /**
  * The single, deterministic list of world interactables.
  *
- * Rendering (Portals, FocusRing), proximity (Player), collision (collision.ts)
+ * Rendering, proximity, collision and navigation all consume this same data.
  * and the prompt UI all read this file, so a visible object, its collider and
  * its prompt can never drift apart. Plain data — no Three.js imports.
  */
 
-export type WorldZoneId =
-  | "spawn"
-  | "welcome"
-  | "path"
-  | "house"
-  | "grow-beds"
-  | "plaza-portal"
-  | "friend-portal"
-  | "garden-board";
+import {
+  BOARD_POSITION,
+  COTTAGE_INTERACTION_POINT,
+  COTTAGE_POSITION,
+  GROW_BEDS_CENTER,
+  GROW_BEDS_HALF,
+  SPAWN,
+  WELCOME_POSITION,
+} from "./layout";
 
-export type WorldAction = "about" | "indoor" | "coming-soon" | "tasks";
+export type WorldZoneId = "spawn" | "welcome" | "path" | "house" | "grow-beds" | "garden-board";
+
+export type WorldAction = "about" | "indoor" | "tasks";
 
 export type WorldInteractableId =
   | "welcome-sign"
   | "my-garden-house"
-  | "plaza-portal"
-  | "friend-portal"
   | "garden-board";
 
 export type WorldInteractable = {
@@ -49,21 +49,19 @@ export type WorldInteractable = {
   interactionRadius?: number;
   /** Decoration keeps this much distance away, so the object can breathe. */
   clearance: number;
-  comingSoon?: { title: string; body: string };
 };
 
 /** Player spawn, on the stone path looking up toward the house. */
-export const SPAWN: [number, number] = [2.25, 8];
+export { SPAWN };
 
 /** Outdoor grow-bed area — matches the "raised-beds" plant zone. */
-export const GROW_BEDS_CENTER: [number, number] = [-7.2, -4.2];
-export const GROW_BEDS_HALF: [number, number] = [2.6, 2.9];
+export { GROW_BEDS_CENTER, GROW_BEDS_HALF };
 
 export const WORLD_INTERACTABLES: readonly WorldInteractable[] = [
   {
     id: "welcome-sign",
     zone: "welcome",
-    position: [0.3, 6.0],
+    position: WELCOME_POSITION,
     radius: 3.4,
     focusRadius: 1.1,
     label: "Welcome sign",
@@ -75,7 +73,7 @@ export const WORLD_INTERACTABLES: readonly WorldInteractable[] = [
   {
     id: "my-garden-house",
     zone: "house",
-    position: [6, -4],
+    position: [COTTAGE_POSITION[0], COTTAGE_POSITION[2]],
     radius: 5,
     focusRadius: 2.6,
     label: "My Garden",
@@ -83,7 +81,7 @@ export const WORLD_INTERACTABLES: readonly WorldInteractable[] = [
     action: "indoor",
     clearance: 5,
     // The cottage is solid: stand at its door side, not inside the wall.
-    interactionPoint: [4.1, -0.5],
+    interactionPoint: COTTAGE_INTERACTION_POINT,
     interactionRadius: 2.4,
   },
   {
@@ -91,7 +89,7 @@ export const WORLD_INTERACTABLES: readonly WorldInteractable[] = [
     // geometry later without touching this entry.
     id: "garden-board",
     zone: "house",
-    position: [3.1, -2.2],
+    position: BOARD_POSITION,
     radius: 2.6,
     focusRadius: 0.9,
     label: "Garden board",
@@ -99,38 +97,6 @@ export const WORLD_INTERACTABLES: readonly WorldInteractable[] = [
     action: "tasks",
     collider: 0.5,
     clearance: 1.8,
-  },
-  {
-    id: "plaza-portal",
-    zone: "plaza-portal",
-    position: [-7.4, 9.6],
-    radius: 3.2,
-    focusRadius: 1.4,
-    label: "Plaza portal",
-    verb: "use",
-    action: "coming-soon",
-    collider: 0.9,
-    clearance: 3,
-    comingSoon: {
-      title: "The Plaza is coming soon",
-      body: "A shared meeting ground where growers gather, show off their gardens and swap notes. It is not open yet — for now the Grow Feed is where the community lives.",
-    },
-  },
-  {
-    id: "friend-portal",
-    zone: "friend-portal",
-    position: [11.4, 6.2],
-    radius: 3.2,
-    focusRadius: 1.4,
-    label: "Visit a friend",
-    verb: "use",
-    action: "coming-soon",
-    collider: 0.9,
-    clearance: 3,
-    comingSoon: {
-      title: "Visiting is coming soon",
-      body: "Step through to walk someone else's garden, grown from their public Nostr diaries. Until then you can follow other growers in the Grow Feed.",
-    },
   },
 ] as const;
 

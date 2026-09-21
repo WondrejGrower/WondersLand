@@ -62,7 +62,6 @@ export function InteractionPrompt() {
       if (world.action === "about") store.openAbout();
       else if (world.action === "indoor") store.openIndoor();
       else if (world.action === "tasks") store.openTasks();
-      else if (world.comingSoon) store.openComingSoon(world.comingSoon);
       return;
     }
     if (plant) store.openJournal();

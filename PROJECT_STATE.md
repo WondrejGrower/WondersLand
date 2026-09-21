@@ -2,7 +2,7 @@
 
 Snapshot of what actually exists. Update this with every change.
 
-**Last updated:** 2026-08-31 (C key / touch button exits the world to the Nostr client)
+**Last updated:** 2026-09-21 (garden layout consolidation and house archive)
 **Current phase:** Milestone 1 implemented and verified in a browser.
 
 ## Built and working
@@ -653,3 +653,21 @@ Google Fonts style/font origins. Everything else is unchanged.
 - Unchanged: local-first IndexedDB flow, encrypted-only NIP-44 publish, kind
   30078 snapshot + kind 78 logs, 4 s debounce, no per-second relay writes. No
   schema change (`TASKS_SCHEMA_VERSION` stays 1) — existing snapshots load as is.
+
+## Garden layout + My Garden House archive (2026-09-21)
+
+- `src/world/layout.ts` is now the shared source for entrance, spawn, welcome
+  sign, path, grow beds, Garden Board, cottage, greenhouse and boundary trees.
+  Rendering and collision consume those same coordinates. The route is entrance
+  → sign → path → beds → board/house, with scenery kept clear of the approach.
+- Both coming-soon portals, their meshes, interaction records, colliders and
+  overlay state were removed. They have no replacement destination yet.
+- The cottage opens `IndoorGarden` as a three-tab garden-house archive: indoor
+  Plants, a newest-first timeline of entries across existing diaries, and a
+  newest-first Activity timeline from existing Garden Board logs.
+- New task/habit/timer/journey events snapshot a sanitized title and timer
+  duration in optional `ActivityLog.metadata`. Schema remains v1; older logs
+  remain valid and use generic labels such as “Removed task” when their source
+  item no longer exists. Storage and relay publication remain NIP-44 encrypted.
+- The house is still an overlay rather than a physically enterable interior.
+  Real NavMesh routing remains deferred; direct-line/sidestep planning is unchanged.

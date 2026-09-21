@@ -15,6 +15,7 @@ import { moveInList, useTasksStore } from "./useTasksStore";
 import { dateKeyOf, sanitizeBoard, sanitizeLog, TASKS_SCHEMA_VERSION, type ActivityLog } from "./types";
 import { isNewer, signerCanEncrypt } from "./nostr";
 import { mergeLogs } from "./storage";
+import { activityHistory, diaryHistory } from "../history";
 import type { NostrEvent } from "../../nostr/types";
 
 const DAY = 86_400_000;
@@ -297,5 +298,54 @@ describe("board actions", () => {
     store.getState().moveItem("tasks", "b", -1);
     expect(store.getState().board.tasks.map((t) => t.id)).toEqual(["b", "a"]);
     expect(store.getState().logs).toHaveLength(0);
+  });
+});
+
+describe("house history", () => {
+  it("sorts diary entries newest first across diaries", () => {
+    const diaries = [
+      {
+        id: "d1",
+        authorPubkey: "p",
+        title: "First grow",
+        plant: "Plant A",
+        createdAt: 1,
+        updatedAt: 1,
+        items: [
+          { eventId: "old", authorPubkey: "p", createdAt: 10, addedAt: 10 },
+          { eventId: "new", authorPubkey: "p", createdAt: 30, addedAt: 30 },
+        ],
+      },
+      {
+        id: "d2",
+        authorPubkey: "p",
+        title: "Second grow",
+        createdAt: 1,
+        updatedAt: 1,
+        items: [{ eventId: "mid", authorPubkey: "p", createdAt: 20, addedAt: 20 }],
+      },
+    ];
+    expect(diaryHistory(diaries).map((item) => item.id)).toEqual(["new", "mid", "old"]);
+  });
+
+  it("shows completed activity and preserves metadata after an item is removed", () => {
+    const board = { ...useTasksStore.getState().board, tasks: [], habits: [], timers: [], streakGoals: [] };
+    const logs = [
+      { ...log("gone", 20, "task_completed"), metadata: { title: "Water seedlings" } },
+      log("unknown", 10, "timer_completed"),
+      log("ignored", 30, "timer_cancelled"),
+    ];
+    const history = activityHistory(board, logs);
+    expect(history.map((item) => item.title)).toEqual(["Removed timer", "Water seedlings", "Removed timer"]);
+    expect(history.map((item) => item.action)).toContain("timer_cancelled");
+  });
+
+  it("sanitizes private history metadata without changing schema version", () => {
+    const sanitized = sanitizeLog({
+      ...log("t", 1, "task_completed"),
+      metadata: { title: "Done", durationSeconds: 60, nested: { unsafe: true } },
+    });
+    expect(sanitized?.metadata).toEqual({ title: "Done", durationSeconds: 60 });
+    expect(sanitized?.schemaVersion).toBe(1);
   });
 });

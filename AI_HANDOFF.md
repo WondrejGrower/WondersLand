@@ -434,3 +434,18 @@ pure: streaks, weekly progress, remaining timer seconds and clock labels are all
 computed from `startedAt` / activity logs, never stored. Add board actions to
 `useTasksStore.ts` through `mutate()` so the snapshot sync and offline queue pick
 them up; never publish plaintext and never emit an event per tick.
+
+## Garden layout and house archive (2026-09-21)
+
+All fixed world coordinates now live in `src/world/layout.ts`; do not reintroduce
+private position constants in render components. `interactables.ts`, collision,
+the path, grow slots and scenery consume this shared layout. Placeholder portals
+and their coming-soon overlay were removed.
+
+The My Garden house opens `src/ui/IndoorGarden.tsx`, now a three-tab archive.
+Plants retains the existing indoor-diary view; Diary history flattens and sorts
+existing diary entries; Activity uses pure selectors in `src/features/history.ts`.
+New kind 78 transition logs carry optional sanitized `metadata.title` and timer
+duration snapshots. This did not bump `TASKS_SCHEMA_VERSION`; old logs still load
+and fall back to generic removed-item labels. Never expose these private labels
+outside the existing NIP-44 self-encrypted task transport.

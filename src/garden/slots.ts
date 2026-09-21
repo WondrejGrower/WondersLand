@@ -3,7 +3,7 @@
  * one spot, in order; anything beyond the last spot is not planted yet.
  * Deliberately dumb data — no zones, no hashing, no reflow logic.
  */
-import { GROW_BEDS_CENTER } from "../world/interactables";
+import { GROW_BEDS_CENTER } from "../world/layout";
 
 export type PlantSlot = {
   id: number;

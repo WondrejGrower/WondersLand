@@ -271,6 +271,15 @@ export function sanitizeLog(input: unknown): ActivityLog | null {
   const occurredAt = num(raw["occurredAt"]);
   if (!entryId || !itemId || !action || occurredAt === null) return null;
   if (!ACTIONS.includes(action as ActivityAction)) return null;
+  const metadataRaw = obj(raw["metadata"]);
+  const metadata: Record<string, string | number | boolean> = {};
+  if (metadataRaw) {
+    for (const [key, value] of Object.entries(metadataRaw).slice(0, 12)) {
+      if (typeof value === "string") metadata[key.slice(0, 40)] = value.slice(0, 200);
+      else if (typeof value === "number" && Number.isFinite(value)) metadata[key.slice(0, 40)] = value;
+      else if (typeof value === "boolean") metadata[key.slice(0, 40)] = value;
+    }
+  }
   return {
     schemaVersion: TASKS_SCHEMA_VERSION,
     entryId,
@@ -278,5 +287,6 @@ export function sanitizeLog(input: unknown): ActivityLog | null {
     action: action as ActivityAction,
     occurredAt,
     dateKey: str(raw["dateKey"], 10) ?? dateKeyOf(occurredAt),
+    ...(Object.keys(metadata).length > 0 ? { metadata } : {}),
   };
 }
