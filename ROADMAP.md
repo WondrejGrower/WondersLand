@@ -163,3 +163,10 @@ joystick and tap/click paths animate consistently. No movement behavior changed.
   `[0, 0, 12.6]`, centered on the path axis ~2.6 m ahead of spawn, so the
   visitor walks through the wooden gate into the garden. Verified in browser
   (desktop + mobile) and with a collision walk simulation: no stuck spots.
+
+## 2026-09-21 — House at the end of the path (done)
+
+- The My Garden house moved to the end of the dirt path (`[7.4, 0, -6.2]`,
+  rotated to face the approaching visitor) and the Garden Board now stands
+  beside its entrance (`[3.1, -6.9]`), matching the hand-drawn layout sketch.
+  The path (`PATH_TO = {x: 4.4, z: -4.1}`) leads straight to the house steps.

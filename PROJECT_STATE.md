@@ -2,7 +2,7 @@
 
 Snapshot of what actually exists. Update this with every change.
 
-**Last updated:** 2026-09-21 (spawn at the entrance arch)
+**Last updated:** 2026-09-21 (house at the end of the path)
 **Current phase:** Milestone 1 implemented and verified in a browser.
 
 ## Built and working
@@ -680,3 +680,12 @@ Google Fonts style/font origins. Everything else is unchanged.
 - Verified: `assertSpawnClear` passes, a scripted collision walk crosses the
   arch center and reaches the cottage path end without blocking, and the
   desktop/mobile browser run shows no console errors.
+
+## House at the end of the path (2026-09-21)
+
+- `COTTAGE_POSITION = [7.4, 0, -6.2]`, `COTTAGE_ROTATION_Y = -0.5`,
+  `COTTAGE_INTERACTION_POINT = [4.4, -4.1]`, `BOARD_POSITION = [3.1, -6.9]`
+  and `PATH_TO = {x: 4.4, z: -4.1}` in `src/world/layout.ts`. The house door
+  faces the path end and the Garden Board stands to the left of the entrance,
+  per the user's layout sketch. Collision walk from spawn through the arch to
+  the house verified clear.

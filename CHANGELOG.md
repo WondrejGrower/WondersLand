@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2026-09-21 — House at the end of the path
+
+- Moved the My Garden house to the end of the dirt path, facing the visitor,
+  and placed the Garden Board beside its entrance.
+
 ## 2026-09-21 — Spawn at the entrance arch
 
 - Moved the spawn point to the entrance and centered the wooden arch on the
