@@ -32,8 +32,8 @@ export function WelcomeSign() {
 
   return (
     <group
-      position={POSITION}
-      rotation-y={ROTATION_Y}
+      position={position}
+      rotation-y={LAYOUT.welcomeRotY}
       userData={{ interactable: "welcome-sign" }}
       onPointerOver={(e) => {
         e.stopPropagation();
@@ -44,7 +44,7 @@ export function WelcomeSign() {
         setHovered(false);
         document.body.style.cursor = "";
       }}
-      scale={hovered ? 1.04 : 1}
+      scale={(hovered ? 1.04 : 1) * LAYOUT.welcomeScale}
     >
       <primitive object={scene} scale={scale} position={offset} />
     </group>
