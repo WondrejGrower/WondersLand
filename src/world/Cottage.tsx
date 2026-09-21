@@ -49,7 +49,7 @@ export function Cottage({
       position={position}
       rotation-y={rotation}
       scale={modelScale}
-      userData={interactive ? { interactable: "my-garden-house" } : undefined}
+      userData={interactive ? { interactable: "my-garden-house" } : {}}
     >
       <primitive object={scene} scale={scale} position={offset} />
     </group>

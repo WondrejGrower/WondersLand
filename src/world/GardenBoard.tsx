@@ -47,13 +47,15 @@ export function GardenBoard({
     <group
       position={position}
       rotation-y={rotation}
-      userData={interactive ? { interactable: "garden-board" } : undefined}
+      userData={interactive ? { interactable: "garden-board" } : {}}
       onPointerOver={(e) => {
+        if (!interactive) return;
         e.stopPropagation();
         setHovered(true);
         document.body.style.cursor = "pointer";
       }}
       onPointerOut={() => {
+        if (!interactive) return;
         setHovered(false);
         document.body.style.cursor = "";
       }}

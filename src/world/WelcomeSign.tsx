@@ -44,13 +44,15 @@ export function WelcomeSign({
     <group
       position={position}
       rotation-y={rotation}
-      userData={interactive ? { interactable: "welcome-sign" } : undefined}
+      userData={interactive ? { interactable: "welcome-sign" } : {}}
       onPointerOver={(e) => {
+        if (!interactive) return;
         e.stopPropagation();
         setHovered(true);
         document.body.style.cursor = "pointer";
       }}
       onPointerOut={() => {
+        if (!interactive) return;
         setHovered(false);
         document.body.style.cursor = "";
       }}
