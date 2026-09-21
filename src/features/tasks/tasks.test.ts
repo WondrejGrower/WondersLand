@@ -336,8 +336,8 @@ describe("house history", () => {
       log("ignored", 30, "timer_cancelled"),
     ];
     const history = activityHistory(board, logs);
-    expect(history.map((item) => item.title)).toEqual(["Water seedlings", "Removed timer"]);
-    expect(history.map((item) => item.action)).not.toContain("timer_cancelled");
+    expect(history.map((item) => item.title)).toEqual(["Removed timer", "Water seedlings", "Removed timer"]);
+    expect(history.map((item) => item.action)).toContain("timer_cancelled");
   });
 
   it("sanitizes private history metadata without changing schema version", () => {

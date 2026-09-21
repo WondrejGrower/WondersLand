@@ -73,7 +73,7 @@ export function IndoorGarden() {
 
   if (!open) return null;
 
-  const name = profile?.display_name || profile?.name || "Your garden";
+  const name = profile?.displayName || profile?.name || "Your garden";
 
   return (
     <div className="absolute inset-0 z-20 flex items-center justify-center bg-foreground/40 p-3 backdrop-blur-sm sm:p-6">

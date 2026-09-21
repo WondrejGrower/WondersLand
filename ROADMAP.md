@@ -145,3 +145,14 @@ scope until a later phase.
 
 The avatar walk clip now follows actual controller locomotion, so keyboard,
 joystick and tap/click paths animate consistently. No movement behavior changed.
+
+## 2026-09-21 — Garden layout consolidation + house archive (done)
+
+- One readable route now connects entrance, welcome sign, grow beds, Garden
+  Board and the My Garden house; render, interaction and collision positions
+  share one layout source. The greenhouse remains distant scenery.
+- Both placeholder portals and their interactions were removed.
+- The house now opens a private archive with Plants, Diary history and Activity
+  tabs. Existing Garden Board logs remain encrypted/local-first; new activity
+  events include a small title/duration snapshot so history survives deletion.
+- No physical house interior, NavMesh, gamification or new persistence layer.

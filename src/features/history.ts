@@ -34,14 +34,16 @@ export function diaryHistory(diaries: Diary[]): DiaryHistoryItem[] {
 const completedActions = new Set<ActivityLog["action"]>([
   "task_completed",
   "habit_completed",
+  "timer_started",
   "timer_completed",
+  "timer_cancelled",
   "streak_reset",
 ]);
 
 function fallbackTitle(action: ActivityLog["action"]): string {
   if (action === "task_completed") return "Removed task";
   if (action === "habit_completed") return "Removed habit";
-  if (action === "timer_completed") return "Removed timer";
+  if (action === "timer_started" || action === "timer_completed" || action === "timer_cancelled") return "Removed timer";
   return "Journey reset";
 }
 
@@ -67,6 +69,10 @@ export function activityHistory(board: BoardSnapshot, logs: ActivityLog[]): Acti
               ? typeof duration === "number"
                 ? `Timer completed · ${Math.round(duration / 60)} min`
                 : "Timer completed"
+              : log.action === "timer_started"
+                ? "Timer started"
+                : log.action === "timer_cancelled"
+                  ? "Timer cancelled"
               : "Journey restarted";
       return { id: log.entryId, occurredAt: log.occurredAt, action: log.action, title, detail };
     })

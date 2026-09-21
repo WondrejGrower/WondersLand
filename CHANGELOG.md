@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 2026-09-21 — Garden layout and house archive
+
+- Consolidated entrance, welcome sign, path, grow beds, board, cottage,
+  greenhouse and boundary positions into one shared world layout. Rendering,
+  interactions and collision now read the same coordinates.
+- Removed both placeholder portal models, interactions, colliders and overlay.
+- The My Garden house now contains Plants, Diary history and Activity tabs,
+  derived from existing diary and Garden Board data.
+- New activity transitions snapshot sanitized item names and timer duration;
+  older logs remain compatible through generic fallback labels. Task schema stays
+  version 1 and Nostr publication remains self-encrypted.
+- Physical indoor navigation and NavMesh routing remain deferred.
+
 ## 2026-09-21 — Tap-to-move walk animation
 
 - The character controller now exposes the actual locomotion state calculated
