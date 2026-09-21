@@ -25,7 +25,7 @@ export const GREENHOUSE_POSITION: [number, number, number] = [-12.5, 0, -12.5];
 export const GREENHOUSE_ROTATION_Y = 0.7;
 export const GREENHOUSE_HALF: [number, number] = [3.5, 2.2];
 export const PATH_FROM = { x: 0, z: 16 } as const;
-export const PATH_TO = { x: 0, z: -2.2 } as const;
+export const PATH_TO = { x: 3.1, z: -1.7 } as const;
 
 export type Instance = {
   x: number;

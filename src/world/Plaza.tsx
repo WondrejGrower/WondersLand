@@ -251,7 +251,7 @@ export function Plaza() {
       <Greenhouse />
       <Scatter />
       {/* soil pad + shadow under the interaction plant */}
-      <ContactShadow position={[7, 0.03, -5]} radius={1.6} opacity={0.2} />
+      <ContactShadow position={[COTTAGE_POSITION[0], 0.03, COTTAGE_POSITION[2]]} radius={1.6} opacity={0.2} />
     </group>
   );
 }

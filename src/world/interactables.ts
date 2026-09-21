@@ -1,7 +1,7 @@
 /**
  * The single, deterministic list of world interactables.
  *
- * Rendering (Portals, FocusRing), proximity (Player), collision (collision.ts)
+ * Rendering, proximity, collision and navigation all consume this same data.
  * and the prompt UI all read this file, so a visible object, its collider and
  * its prompt can never drift apart. Plain data — no Three.js imports.
  */

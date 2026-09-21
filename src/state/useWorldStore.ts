@@ -6,8 +6,6 @@ export type InteractionTarget =
   | { kind: "world"; id: string }
   | null;
 
-export type ComingSoon = { title: string; body: string } | null;
-
 type WorldState = {
   entered: boolean;
   focusedPlantId: string | null;
@@ -17,8 +15,6 @@ type WorldState = {
   indoorOpen: boolean;
   /** "What is WondersLand" overlay opened from the 3D welcome sign. */
   aboutOpen: boolean;
-  /** Placeholder overlay for portals that are not built yet. */
-  comingSoon: ComingSoon;
   /** Private tasks/habits/timers board, opened from the board beside the house. */
   tasksOpen: boolean;
   /** Device-local world settings panel. */
@@ -36,8 +32,6 @@ type WorldState = {
   closeIndoor: () => void;
   openAbout: () => void;
   closeAbout: () => void;
-  openComingSoon: (info: NonNullable<ComingSoon>) => void;
-  closeComingSoon: () => void;
   openTasks: () => void;
   closeTasks: () => void;
   openSettings: () => void;
@@ -52,7 +46,6 @@ export const useWorldStore = create<WorldState>((set) => ({
   journalOpen: false,
   indoorOpen: false,
   aboutOpen: false,
-  comingSoon: null,
   tasksOpen: false,
   settingsOpen: false,
   hint: null,
@@ -63,7 +56,6 @@ export const useWorldStore = create<WorldState>((set) => ({
       journalOpen: false,
       indoorOpen: false,
       aboutOpen: false,
-      comingSoon: null,
       tasksOpen: false,
       settingsOpen: false,
       hint: null,
@@ -79,8 +71,6 @@ export const useWorldStore = create<WorldState>((set) => ({
   closeIndoor: () => set({ indoorOpen: false }),
   openAbout: () => set({ aboutOpen: true }),
   closeAbout: () => set({ aboutOpen: false }),
-  openComingSoon: (info) => set({ comingSoon: info }),
-  closeComingSoon: () => set({ comingSoon: null }),
   openTasks: () => set({ tasksOpen: true }),
   closeTasks: () => set({ tasksOpen: false }),
   openSettings: () => set({ settingsOpen: true, hint: null }),
@@ -95,9 +85,6 @@ export function worldFrozen(s: {
   aboutOpen: boolean;
   tasksOpen: boolean;
   settingsOpen: boolean;
-  comingSoon: ComingSoon;
 }): boolean {
-  return (
-    s.journalOpen || s.indoorOpen || s.aboutOpen || s.tasksOpen || s.settingsOpen || s.comingSoon !== null
-  );
+  return s.journalOpen || s.indoorOpen || s.aboutOpen || s.tasksOpen || s.settingsOpen;
 }
