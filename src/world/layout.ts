@@ -4,9 +4,16 @@
  * Rendering (Trees.tsx) and collision (collision.ts) both read these arrays,
  * so a rendered trunk and its collider can never drift apart.
  * Plain data, no Three.js imports.
+ *
+ * Arrays and objects here are shared by reference on purpose: the hidden
+ * layout editor mutates them in place and rebuilds colliders, so the world
+ * can be rearranged live without a second source of truth. Scalars that the
+ * editor can change (rotations, scales) live in the mutable `LAYOUT` object.
  */
 
 export const GARDEN_RADIUS = 19;
+
+export type XZ = { x: number; z: number };
 
 /** One shared spatial plan for rendering, interaction, collision and path clearance. */
 export const ARCH_POSITION: [number, number, number] = [0, 0, 12.6];
@@ -24,10 +31,27 @@ export const GROW_BEDS_HALF: [number, number] = [2.6, 2.9];
 export const GREENHOUSE_POSITION: [number, number, number] = [-12.5, 0, -12.5];
 export const GREENHOUSE_ROTATION_Y = 0.7;
 export const GREENHOUSE_HALF: [number, number] = [3.5, 2.2];
-export const PATH_FROM = { x: 0, z: 16.5 } as const;
+export const PATH_FROM: XZ = { x: 0, z: 16.5 };
 /** Bend point: the walkway passes through the exact center of the arch. */
-export const PATH_VIA = { x: 0, z: 12.6 } as const;
-export const PATH_TO = { x: 4.4, z: -4.1 } as const;
+export const PATH_VIA: XZ = { x: 0, z: 12.6 };
+export const PATH_TO: XZ = { x: 4.4, z: -4.1 };
+
+/**
+ * Mutable scalars shared by rendering and collision. Read these (not the
+ * `*_ROTATION_Y` constants) wherever a value must follow live edits.
+ */
+export const LAYOUT = {
+  archRotY: 0,
+  archScale: 1,
+  cottageRotY: COTTAGE_ROTATION_Y,
+  cottageScale: 1,
+  greenhouseRotY: GREENHOUSE_ROTATION_Y,
+  greenhouseScale: 1,
+  boardRotY: -0.5,
+  boardScale: 1,
+  welcomeRotY: 0.5,
+  welcomeScale: 1,
+};
 
 export type Instance = {
   x: number;

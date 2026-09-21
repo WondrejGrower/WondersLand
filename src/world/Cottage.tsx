@@ -6,6 +6,7 @@ import {
   COTTAGE_HALF,
   COTTAGE_POSITION,
   COTTAGE_ROTATION_Y,
+  LAYOUT,
 } from "./layout";
 
 /** Static scenery: the garden cottage. No interaction, no UI. */
@@ -34,7 +35,12 @@ export function Cottage() {
   }, [scene]);
 
   return (
-    <group position={COTTAGE_POSITION} rotation-y={COTTAGE_ROTATION_Y} userData={{ interactable: "my-garden-house" }}>
+    <group
+      position={COTTAGE_POSITION}
+      rotation-y={LAYOUT.cottageRotY}
+      scale={LAYOUT.cottageScale}
+      userData={{ interactable: "my-garden-house" }}
+    >
       <primitive object={scene} scale={scale} position={offset} />
     </group>
   );

@@ -14,12 +14,11 @@ import {
   ARCH_POST_X,
   COTTAGE_HALF,
   COTTAGE_POSITION,
-  COTTAGE_ROTATION_Y,
   GREENHOUSE_HALF,
   GREENHOUSE_POSITION,
-  GREENHOUSE_ROTATION_Y,
   GROW_BEDS_CENTER,
   GROW_BEDS_HALF,
+  LAYOUT,
   TREE_INSTANCES,
 } from "./layout";
 import { WORLD_INTERACTABLES } from "./interactables";
@@ -34,8 +33,7 @@ function circle(x: number, z: number, r: number): Collider {
   return { kind: "circle", x, z, r };
 }
 
-/** Static scenery colliders, built once at module load. */
-export const WORLD_COLLIDERS: Collider[] = (() => {
+function buildColliders(): Collider[] {
   const list: Collider[] = [];
 
   // Cottage + greenhouse: rotated boxes matching their solid footprint.
@@ -43,17 +41,17 @@ export const WORLD_COLLIDERS: Collider[] = (() => {
     kind: "box",
     x: COTTAGE_POSITION[0],
     z: COTTAGE_POSITION[2],
-    hw: COTTAGE_HALF[0],
-    hd: COTTAGE_HALF[1],
-    rot: COTTAGE_ROTATION_Y,
+    hw: COTTAGE_HALF[0] * LAYOUT.cottageScale,
+    hd: COTTAGE_HALF[1] * LAYOUT.cottageScale,
+    rot: LAYOUT.cottageRotY,
   });
   list.push({
     kind: "box",
     x: GREENHOUSE_POSITION[0],
     z: GREENHOUSE_POSITION[2],
-    hw: GREENHOUSE_HALF[0],
-    hd: GREENHOUSE_HALF[1],
-    rot: GREENHOUSE_ROTATION_Y,
+    hw: GREENHOUSE_HALF[0] * LAYOUT.greenhouseScale,
+    hd: GREENHOUSE_HALF[1] * LAYOUT.greenhouseScale,
+    rot: LAYOUT.greenhouseRotY,
   });
 
   // Welcome sign and Garden Board: solid circles from the shared data.
@@ -76,7 +74,13 @@ export const WORLD_COLLIDERS: Collider[] = (() => {
 
   // Entrance arch posts — the gap between them stays walkable.
   for (const x of ARCH_POST_X) {
-    list.push(circle(ARCH_POSITION[0] + x, ARCH_POSITION[2], ARCH_POST_RADIUS));
+    list.push(
+      circle(
+        ARCH_POSITION[0] + x * LAYOUT.archScale,
+        ARCH_POSITION[2],
+        ARCH_POST_RADIUS * LAYOUT.archScale,
+      ),
+    );
   }
 
   // Tree trunks only — canopies overhang freely.
@@ -85,7 +89,16 @@ export const WORLD_COLLIDERS: Collider[] = (() => {
   }
 
   return list;
-})();
+}
+
+/** Static scenery colliders. Mutated in place so held references stay valid. */
+export const WORLD_COLLIDERS: Collider[] = buildColliders();
+
+/** Re-derive every collider after the hidden layout editor moved something. */
+export function rebuildColliders() {
+  WORLD_COLLIDERS.length = 0;
+  WORLD_COLLIDERS.push(...buildColliders());
+}
 
 // Scratch scalars: resolveMove never allocates.
 let outX = 0;

@@ -3,21 +3,18 @@ import { Box3, Vector3 } from "three";
 import { useGLTF } from "@react-three/drei";
 import model from "../assets/woodland-sign.glb.asset.json";
 import { getInteractable } from "./interactables";
+import { LAYOUT } from "./layout";
 
 /**
  * Woodland sign just off the spawn path. Clicking / tapping it opens the
  * "What is WondersLand" overlay — the world layer only flips a store flag.
  */
 const TARGET_HEIGHT = 2.1;
-/** Position comes from the shared interactable data, so it cannot drift. */
-const SIGN = getInteractable("welcome-sign")!;
-const POSITION: [number, number, number] = [SIGN.position[0], 0, SIGN.position[1]];
-/** Face back toward the player walking up the path. */
-const ROTATION_Y = 0.5;
-
-
 
 export function WelcomeSign() {
+  /** Position comes from the shared interactable data, so it cannot drift. */
+  const sign = getInteractable("welcome-sign")!;
+  const position: [number, number, number] = [sign.position[0], 0, sign.position[1]];
   const gltf = useGLTF(model.url, true);
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   const [hovered, setHovered] = useState(false);
@@ -35,8 +32,8 @@ export function WelcomeSign() {
 
   return (
     <group
-      position={POSITION}
-      rotation-y={ROTATION_Y}
+      position={position}
+      rotation-y={LAYOUT.welcomeRotY}
       userData={{ interactable: "welcome-sign" }}
       onPointerOver={(e) => {
         e.stopPropagation();
@@ -47,7 +44,7 @@ export function WelcomeSign() {
         setHovered(false);
         document.body.style.cursor = "";
       }}
-      scale={hovered ? 1.04 : 1}
+      scale={(hovered ? 1.04 : 1) * LAYOUT.welcomeScale}
     >
       <primitive object={scene} scale={scale} position={offset} />
     </group>

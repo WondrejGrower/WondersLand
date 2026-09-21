@@ -2,6 +2,9 @@
  * The garden has a small, fixed set of planting spots. One visible diary fills
  * one spot, in order; anything beyond the last spot is not planted yet.
  * Deliberately dumb data — no zones, no hashing, no reflow logic.
+ *
+ * Positions are mutable so the hidden layout editor can drag a spot and have
+ * the planted diary follow it.
  */
 import { GROW_BEDS_CENTER } from "../world/layout";
 
@@ -24,7 +27,7 @@ const OFFSETS: Array<[number, number, number]> = [
   [1.6, 1.35, -0.2],
 ];
 
-export const PLANT_SLOTS: readonly PlantSlot[] = OFFSETS.map(([dx, dz, rot], i) => ({
+export const PLANT_SLOTS: PlantSlot[] = OFFSETS.map(([dx, dz, rot], i) => ({
   id: i,
   position: [CX + dx, 0, CZ + dz] as [number, number, number],
   rotationY: rot,

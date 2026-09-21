@@ -57,7 +57,7 @@ export { SPAWN };
 /** Outdoor grow-bed area — matches the "raised-beds" plant zone. */
 export { GROW_BEDS_CENTER, GROW_BEDS_HALF };
 
-export const WORLD_INTERACTABLES: readonly WorldInteractable[] = [
+export const WORLD_INTERACTABLES: WorldInteractable[] = [
   {
     id: "welcome-sign",
     zone: "welcome",
@@ -98,10 +98,22 @@ export const WORLD_INTERACTABLES: readonly WorldInteractable[] = [
     collider: 0.5,
     clearance: 1.8,
   },
-] as const;
+];
 
 export function getInteractable(id: string): WorldInteractable | undefined {
   return WORLD_INTERACTABLES.find((it) => it.id === id);
+}
+
+/**
+ * Re-derive the entries whose coordinates are copied out of layout.ts.
+ * Only the hidden layout editor calls this; at runtime nothing moves.
+ */
+export function rebuildInteractables() {
+  const house = getInteractable("my-garden-house");
+  if (house) {
+    house.position[0] = COTTAGE_POSITION[0];
+    house.position[1] = COTTAGE_POSITION[2];
+  }
 }
 
 /** True when (x, z) sits inside the breathing room of any interactable. */

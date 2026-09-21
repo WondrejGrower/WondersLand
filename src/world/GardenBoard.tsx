@@ -3,6 +3,7 @@ import { Box3, Vector3 } from "three";
 import { useGLTF } from "@react-three/drei";
 import model from "../assets/garden-board.glb.asset.json";
 import { getInteractable } from "./interactables";
+import { LAYOUT } from "./layout";
 import { palette } from "./palette";
 
 /**
@@ -13,13 +14,10 @@ import { palette } from "./palette";
 const LEG_HEIGHT = 1.15;
 const BOARD_HEIGHT = 1.6;
 
-/** Position comes from the shared interactable data, so it cannot drift. */
-const SPOT = getInteractable("garden-board")!;
-const POSITION: [number, number, number] = [SPOT.position[0], 0, SPOT.position[1]];
-/** Face the player walking up from spawn. */
-const ROTATION_Y = -0.5;
-
 export function GardenBoard() {
+  /** Position comes from the shared interactable data, so it cannot drift. */
+  const spot = getInteractable("garden-board")!;
+  const position: [number, number, number] = [spot.position[0], 0, spot.position[1]];
   const gltf = useGLTF(model.url, true);
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   const [hovered, setHovered] = useState(false);
@@ -37,8 +35,8 @@ export function GardenBoard() {
 
   return (
     <group
-      position={POSITION}
-      rotation-y={ROTATION_Y}
+      position={position}
+      rotation-y={LAYOUT.boardRotY}
       userData={{ interactable: "garden-board" }}
       onPointerOver={(e) => {
         e.stopPropagation();
@@ -49,7 +47,7 @@ export function GardenBoard() {
         setHovered(false);
         document.body.style.cursor = "";
       }}
-      scale={hovered ? 1.03 : 1}
+      scale={(hovered ? 1.03 : 1) * LAYOUT.boardScale}
     >
       {/* Simple wooden legs. */}
       <mesh position={[-0.5, LEG_HEIGHT / 2, 0]}>

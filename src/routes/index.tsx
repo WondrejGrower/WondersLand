@@ -18,9 +18,14 @@ import { WorldSettingsButton } from "../ui/WorldSettingsButton";
 import { WorldSettings } from "../ui/WorldSettings";
 import { WorldHint } from "../ui/WorldHint";
 import { useWorldSettingsStore } from "../state/useWorldSettingsStore";
+import { useLayoutEditorStore } from "../world/editor/useLayoutEditorStore";
 
 // Three.js is browser-only: the module itself must not load during SSR.
 const World = lazy(() => import("../world/World"));
+// Hidden owner tool: never part of the normal bundle path.
+const LayoutEditorPanel = lazy(() =>
+  import("../ui/LayoutEditorPanel").then((m) => ({ default: m.LayoutEditorPanel })),
+);
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -60,7 +65,25 @@ function Index() {
   const hudScale = useWorldSettingsStore((s) => s.interface.hudScale);
   const largeText = useWorldSettingsStore((s) => s.accessibility.largeText);
 
+  const editorOpen = useLayoutEditorStore((s) => s.active);
+
   useEffect(() => setHydrated(true), []);
+
+  // Hidden layout editor: ?edit=1 or F2. Invisible to ordinary visitors.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("edit") === "1") {
+      useLayoutEditorStore.getState().open();
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "F2") return;
+      e.preventDefault();
+      const store = useLayoutEditorStore.getState();
+      if (store.active) store.close();
+      else store.open();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   // Restore the saved session as early as possible so a returning grower never
   // sees the signed-out landing page flash before their dashboard.
@@ -112,6 +135,11 @@ function Index() {
       <AboutSign />
       <TasksBoard />
       <WorldSettings />
+      {editorOpen && (
+        <Suspense fallback={null}>
+          <LayoutEditorPanel />
+        </Suspense>
+      )}
     </main>
   );
 }
