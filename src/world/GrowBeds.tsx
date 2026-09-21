@@ -10,9 +10,13 @@ const [HW, HD] = GROW_BEDS_HALF;
 const PLANK = 0.22;
 const HEIGHT = 0.44;
 
-export function GrowBeds() {
+export function GrowBeds({ position = GROW_BEDS_CENTER, rotation = 0, scale = 1 }: {
+  position?: [number, number];
+  rotation?: number;
+  scale?: number;
+}) {
   return (
-    <group position={[CX, 0, CZ]}>
+    <group position={[position[0], 0, position[1]]} rotation-y={rotation} scale={scale}>
       {/* soil pad */}
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.04, 0]}>
         <planeGeometry args={[HW * 2, HD * 2]} />

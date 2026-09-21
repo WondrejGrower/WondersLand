@@ -11,10 +11,20 @@ import { LAYOUT } from "./layout";
  */
 const TARGET_HEIGHT = 2.1;
 
-export function WelcomeSign() {
+export function WelcomeSign({
+  position: positionOverride,
+  rotation = LAYOUT.welcomeRotY,
+  modelScale = LAYOUT.welcomeScale,
+  interactive = true,
+}: {
+  position?: [number, number, number];
+  rotation?: number;
+  modelScale?: number;
+  interactive?: boolean;
+}) {
   /** Position comes from the shared interactable data, so it cannot drift. */
   const sign = getInteractable("welcome-sign")!;
-  const position: [number, number, number] = [sign.position[0], 0, sign.position[1]];
+  const position: [number, number, number] = positionOverride ?? [sign.position[0], 0, sign.position[1]];
   const gltf = useGLTF(model.url, true);
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   const [hovered, setHovered] = useState(false);
@@ -33,8 +43,8 @@ export function WelcomeSign() {
   return (
     <group
       position={position}
-      rotation-y={LAYOUT.welcomeRotY}
-      userData={{ interactable: "welcome-sign" }}
+      rotation-y={rotation}
+      userData={interactive ? { interactable: "welcome-sign" } : undefined}
       onPointerOver={(e) => {
         e.stopPropagation();
         setHovered(true);
@@ -44,7 +54,7 @@ export function WelcomeSign() {
         setHovered(false);
         document.body.style.cursor = "";
       }}
-      scale={(hovered ? 1.04 : 1) * LAYOUT.welcomeScale}
+      scale={(hovered && interactive ? 1.04 : 1) * modelScale}
     >
       <primitive object={scene} scale={scale} position={offset} />
     </group>

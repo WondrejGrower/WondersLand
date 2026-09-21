@@ -92,10 +92,18 @@ function useSignTexture() {
 /** Shared scenery constants — collision.ts reads these so it cannot drift. */
 export { ARCH_POSITION, ARCH_POST_RADIUS, ARCH_POST_X, GREENHOUSE_HALF, GREENHOUSE_POSITION, GREENHOUSE_ROTATION_Y };
 
-function EntranceArch() {
+export function EntranceArch({
+  position = ARCH_POSITION,
+  rotation = LAYOUT.archRotY,
+  scale = LAYOUT.archScale,
+}: {
+  position?: [number, number, number];
+  rotation?: number;
+  scale?: number;
+}) {
   const sign = useSignTexture();
   return (
-    <group position={ARCH_POSITION} rotation-y={LAYOUT.archRotY} scale={LAYOUT.archScale}>
+    <group position={position} rotation-y={rotation} scale={scale}>
       {ARCH_POST_X.map((x) => (
         <group key={x} position={[x, 0, 0]}>
 
@@ -190,12 +198,20 @@ function Path() {
 
 
 
-function Greenhouse() {
+export function Greenhouse({
+  position = GREENHOUSE_POSITION,
+  rotation = LAYOUT.greenhouseRotY,
+  scale = LAYOUT.greenhouseScale,
+}: {
+  position?: [number, number, number];
+  rotation?: number;
+  scale?: number;
+}) {
   return (
     <group
-      position={GREENHOUSE_POSITION}
-      rotation-y={LAYOUT.greenhouseRotY}
-      scale={LAYOUT.greenhouseScale}
+      position={position}
+      rotation-y={rotation}
+      scale={scale}
     >
       <ContactShadow position={[0, 0.04, 0]} radius={4.4} opacity={0.18} />
       {/* low stone base */}

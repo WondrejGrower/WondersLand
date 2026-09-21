@@ -18,7 +18,17 @@ export const COTTAGE_INTERACT_RADIUS = 5;
 export { COTTAGE_ROTATION_Y, COTTAGE_HALF };
 
 
-export function Cottage() {
+export function Cottage({
+  position = COTTAGE_POSITION,
+  rotation = LAYOUT.cottageRotY,
+  modelScale = LAYOUT.cottageScale,
+  interactive = true,
+}: {
+  position?: [number, number, number];
+  rotation?: number;
+  modelScale?: number;
+  interactive?: boolean;
+}) {
   const gltf = useGLTF(model.url, true);
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
 
@@ -36,10 +46,10 @@ export function Cottage() {
 
   return (
     <group
-      position={COTTAGE_POSITION}
-      rotation-y={LAYOUT.cottageRotY}
-      scale={LAYOUT.cottageScale}
-      userData={{ interactable: "my-garden-house" }}
+      position={position}
+      rotation-y={rotation}
+      scale={modelScale}
+      userData={interactive ? { interactable: "my-garden-house" } : undefined}
     >
       <primitive object={scene} scale={scale} position={offset} />
     </group>
