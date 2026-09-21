@@ -8,7 +8,9 @@
  */
 import { create } from "zustand";
 import { PLANT_SLOTS } from "../../garden/slots";
+import { isOwner } from "../../nostr/owner";
 import { useGardenStore } from "../../state/useGardenStore";
+import { useNostrStore } from "../../state/useNostrStore";
 import { rebuildColliders } from "../collision";
 import { rebuildInteractables } from "../interactables";
 import {
@@ -127,6 +129,8 @@ export const useLayoutEditorStore = create<EditorState>((set, get) => ({
   dirty: false,
 
   open: () => {
+    // Fail closed: only the owner identity may ever open the editor.
+    if (!isOwner(useNostrStore.getState().pubkey)) return;
     if (!baseline) baseline = snapshot();
     set({ active: true });
   },

@@ -19,6 +19,7 @@ import { WorldSettings } from "../ui/WorldSettings";
 import { WorldHint } from "../ui/WorldHint";
 import { useWorldSettingsStore } from "../state/useWorldSettingsStore";
 import { useLayoutEditorStore } from "../world/editor/useLayoutEditorStore";
+import { isOwner } from "../nostr/owner";
 
 // Three.js is browser-only: the module itself must not load during SSR.
 const World = lazy(() => import("../world/World"));
@@ -69,21 +70,53 @@ function Index() {
 
   useEffect(() => setHydrated(true), []);
 
-  // Hidden layout editor: ?edit=1 or F2. Invisible to ordinary visitors.
+  // Hidden layout editor, owner only: ?edit=1, F2, or a two-finger long press
+  // on touch devices. Invisible and inert for every other visitor.
   useEffect(() => {
+    if (!isOwner(pubkey)) {
+      if (useLayoutEditorStore.getState().active) useLayoutEditorStore.getState().close();
+      return;
+    }
+    const toggle = () => {
+      const store = useLayoutEditorStore.getState();
+      if (store.active) store.close();
+      else store.open();
+    };
     if (new URLSearchParams(window.location.search).get("edit") === "1") {
       useLayoutEditorStore.getState().open();
     }
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "F2") return;
       e.preventDefault();
-      const store = useLayoutEditorStore.getState();
-      if (store.active) store.close();
-      else store.open();
+      toggle();
+    };
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const cancel = () => {
+      if (timer) clearTimeout(timer);
+      timer = null;
+    };
+    const onTouchStart = (e: TouchEvent) => {
+      cancel();
+      if (e.touches.length !== 2) return;
+      timer = setTimeout(() => {
+        timer = null;
+        toggle();
+      }, 1200);
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", cancel, { passive: true });
+    window.addEventListener("touchend", cancel);
+    window.addEventListener("touchcancel", cancel);
+    return () => {
+      cancel();
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", cancel);
+      window.removeEventListener("touchend", cancel);
+      window.removeEventListener("touchcancel", cancel);
+    };
+  }, [pubkey]);
 
   // Restore the saved session as early as possible so a returning grower never
   // sees the signed-out landing page flash before their dashboard.
