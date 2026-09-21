@@ -456,3 +456,10 @@ outside the existing NIP-44 self-encrypted task transport.
 the path axis in `src/world/layout.ts`. Keep both tied to the shared layout —
 render, collision and nav read the same constants, so moving the arch or spawn
 only happens there.
+
+## House at the end of the path (2026-09-21)
+
+The cottage now terminates the path: `COTTAGE_POSITION [7.4, 0, -6.2]`,
+rotation `-0.5`, interaction point `[4.4, -4.1]`; the Garden Board is beside
+the door at `[3.1, -6.9]`. All still shared constants in `src/world/layout.ts` —
+move things there only.
