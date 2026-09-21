@@ -10,8 +10,8 @@ import { palette } from "./palette";
  * on two simple procedural legs. Position comes from the shared interactable
  * data so the prompt, collider and visual can never drift apart.
  */
-const LEG_HEIGHT = 0.85;
-const BOARD_HEIGHT = 1.1;
+const LEG_HEIGHT = 1.15;
+const BOARD_HEIGHT = 1.6;
 
 /** Position comes from the shared interactable data, so it cannot drift. */
 const SPOT = getInteractable("garden-board")!;
@@ -52,12 +52,12 @@ export function GardenBoard() {
       scale={hovered ? 1.03 : 1}
     >
       {/* Simple wooden legs. */}
-      <mesh position={[-0.35, LEG_HEIGHT / 2, 0]}>
-        <boxGeometry args={[0.09, LEG_HEIGHT, 0.09]} />
+      <mesh position={[-0.5, LEG_HEIGHT / 2, 0]}>
+        <boxGeometry args={[0.12, LEG_HEIGHT, 0.12]} />
         <meshLambertMaterial color={palette.wood} />
       </mesh>
-      <mesh position={[0.35, LEG_HEIGHT / 2, 0]}>
-        <boxGeometry args={[0.09, LEG_HEIGHT, 0.09]} />
+      <mesh position={[0.5, LEG_HEIGHT / 2, 0]}>
+        <boxGeometry args={[0.12, LEG_HEIGHT, 0.12]} />
         <meshLambertMaterial color={palette.wood} />
       </mesh>
       {/* The board model rests on top of the legs. */}
