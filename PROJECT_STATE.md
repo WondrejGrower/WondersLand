@@ -720,6 +720,9 @@ Google Fonts style/font origins. Everything else is unchanged.
 - Editor pointer model: drag empty ground = pan, drag marker = move object,
   right mouse / two fingers = orbit (yaw + pitch), wheel / pinch = zoom.
   Panel buttons: focus selection, frame whole garden, reset view.
+- On mobile the editor is a bottom sheet capped at 42dvh. Its fixed header stays
+  visible while parameters scroll inside; collapsing leaves only the header.
+  The touch joystick is hidden for the entire edit session.
 - Limitations: camera state is memory-only; no keyboard camera shortcuts; the
   editor still has no persistence (export text only).
 

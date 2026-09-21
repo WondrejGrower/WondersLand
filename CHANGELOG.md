@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 2026-09-21 — Mobile layout editor bottom sheet
+
+- On phones the layout editor is now a bottom sheet capped at 42% of the
+  viewport instead of a near-full-screen panel. Parameters scroll inside while
+  the title, collapse and close controls remain visible.
+- The collapsed state is a narrow bar, touch targets stay usable, the long help
+  copy is desktop-only, and the movement joystick is hidden during edit mode.
+- Desktop editor layout and all editing behavior are unchanged.
+
 ## 2026-09-21 — Edit mode is a strategy view
 
 - Opening the layout editor now switches the world to an orbiting bird's-eye
