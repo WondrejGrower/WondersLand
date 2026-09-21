@@ -23,8 +23,8 @@ export function WelcomeSign({
   interactive?: boolean;
 }) {
   /** Position comes from the shared interactable data, so it cannot drift. */
-  const sign = getInteractable("welcome-sign")!;
-  const position: [number, number, number] = positionOverride ?? [sign.position[0], 0, sign.position[1]];
+  const sign = getInteractable("welcome-sign");
+  const position: [number, number, number] = positionOverride ?? [sign?.position[0] ?? 0, 0, sign?.position[1] ?? 0];
   const gltf = useGLTF(model.url, true);
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   const [hovered, setHovered] = useState(false);

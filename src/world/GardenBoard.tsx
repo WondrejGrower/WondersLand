@@ -26,8 +26,8 @@ export function GardenBoard({
   interactive?: boolean;
 }) {
   /** Position comes from the shared interactable data, so it cannot drift. */
-  const spot = getInteractable("garden-board")!;
-  const position: [number, number, number] = positionOverride ?? [spot.position[0], 0, spot.position[1]];
+  const spot = getInteractable("garden-board");
+  const position: [number, number, number] = positionOverride ?? [spot?.position[0] ?? 0, 0, spot?.position[1] ?? 0];
   const gltf = useGLTF(model.url, true);
   const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   const [hovered, setHovered] = useState(false);
