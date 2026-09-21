@@ -21,6 +21,10 @@ import { useWorldSettingsStore } from "../state/useWorldSettingsStore";
 
 // Three.js is browser-only: the module itself must not load during SSR.
 const World = lazy(() => import("../world/World"));
+// Hidden owner tool: never part of the normal bundle path.
+const LayoutEditorPanel = lazy(() =>
+  import("../ui/LayoutEditorPanel").then((m) => ({ default: m.LayoutEditorPanel })),
+);
 
 export const Route = createFileRoute("/")({
   head: () => ({
