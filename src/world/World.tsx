@@ -18,6 +18,8 @@ import { useLayoutEditorStore } from "./editor/useLayoutEditorStore";
 import { EditorLayer } from "./editor/EditorLayer";
 import { EditorCamera } from "./editor/EditorCamera";
 import { palette } from "./palette";
+import { HIDDEN_LAYOUT_ITEMS } from "./layout";
+import { PlacedModels } from "./editor/PlacedModels";
 
 // Phones pay twice for pixels: lower the ceiling and drop MSAA there.
 const coarse =
@@ -65,13 +67,14 @@ export default function World() {
       <group key={layoutVersion}>
         <Ground />
         <Plaza />
-        <GrowBeds />
-        <Cottage />
+        {!HIDDEN_LAYOUT_ITEMS.has("grow-beds") && <GrowBeds />}
+        {!HIDDEN_LAYOUT_ITEMS.has("cottage") && <Cottage />}
         <Suspense fallback={null}>
-          <GardenBoard />
+          {!HIDDEN_LAYOUT_ITEMS.has("garden-board") && <GardenBoard />}
         </Suspense>
-        <WelcomeSign />
+        {!HIDDEN_LAYOUT_ITEMS.has("welcome-sign") && <WelcomeSign />}
         <GardenPlants />
+        <PlacedModels />
       </group>
       <FocusRing />
       <DestinationMarker />

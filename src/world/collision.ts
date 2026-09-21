@@ -18,6 +18,7 @@ import {
   GREENHOUSE_POSITION,
   GROW_BEDS_CENTER,
   GROW_BEDS_HALF,
+  HIDDEN_LAYOUT_ITEMS,
   LAYOUT,
   TREE_INSTANCES,
 } from "./layout";
@@ -37,7 +38,7 @@ function buildColliders(): Collider[] {
   const list: Collider[] = [];
 
   // Cottage + greenhouse: rotated boxes matching their solid footprint.
-  list.push({
+  if (!HIDDEN_LAYOUT_ITEMS.has("cottage")) list.push({
     kind: "box",
     x: COTTAGE_POSITION[0],
     z: COTTAGE_POSITION[2],
@@ -45,7 +46,7 @@ function buildColliders(): Collider[] {
     hd: COTTAGE_HALF[1] * LAYOUT.cottageScale,
     rot: LAYOUT.cottageRotY,
   });
-  list.push({
+  if (!HIDDEN_LAYOUT_ITEMS.has("greenhouse")) list.push({
     kind: "box",
     x: GREENHOUSE_POSITION[0],
     z: GREENHOUSE_POSITION[2],
@@ -56,12 +57,13 @@ function buildColliders(): Collider[] {
 
   // Welcome sign and Garden Board: solid circles from the shared data.
   for (const it of WORLD_INTERACTABLES) {
+    if (HIDDEN_LAYOUT_ITEMS.has(it.id === "my-garden-house" ? "cottage" : it.id)) continue;
     if (it.collider) list.push(circle(it.position[0], it.position[1], it.collider));
   }
 
   // Raised grow beds: the two long timber rims. The ends stay open so the
   // player can still step between the beds and reach the plants.
-  for (const dz of [-1, 1]) {
+  if (!HIDDEN_LAYOUT_ITEMS.has("grow-beds")) for (const dz of [-1, 1]) {
     list.push({
       kind: "box",
       x: GROW_BEDS_CENTER[0],
@@ -73,7 +75,7 @@ function buildColliders(): Collider[] {
   }
 
   // Entrance arch posts — the gap between them stays walkable.
-  for (const x of ARCH_POST_X) {
+  if (!HIDDEN_LAYOUT_ITEMS.has("arch")) for (const x of ARCH_POST_X) {
     list.push(
       circle(
         ARCH_POSITION[0] + x * LAYOUT.archScale,
@@ -84,7 +86,7 @@ function buildColliders(): Collider[] {
   }
 
   // Tree trunks only — canopies overhang freely.
-  for (const tree of TREE_INSTANCES) {
+  if (!HIDDEN_LAYOUT_ITEMS.has("trees")) for (const tree of TREE_INSTANCES) {
     list.push(circle(tree.x, tree.z, 0.45 * tree.scale));
   }
 

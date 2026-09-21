@@ -10,6 +10,7 @@ import {
   GREENHOUSE_HALF,
   GREENHOUSE_POSITION,
   GREENHOUSE_ROTATION_Y,
+  HIDDEN_LAYOUT_ITEMS,
   LAYOUT,
   PATH_FROM,
   PATH_TO,
@@ -280,9 +281,9 @@ function Scatter() {
 export function Plaza() {
   return (
     <group>
-      <EntranceArch />
+      {!HIDDEN_LAYOUT_ITEMS.has("arch") && <EntranceArch />}
       <Path />
-      <Greenhouse />
+      {!HIDDEN_LAYOUT_ITEMS.has("greenhouse") && <Greenhouse />}
       <Scatter />
       {/* soil pad + shadow under the interaction plant */}
       <ContactShadow position={[COTTAGE_POSITION[0], 0.03, COTTAGE_POSITION[2]]} radius={1.6} opacity={0.2} />

@@ -12,6 +12,7 @@ import {
   COTTAGE_POSITION,
   GROW_BEDS_CENTER,
   GROW_BEDS_HALF,
+  HIDDEN_LAYOUT_ITEMS,
   SPAWN,
   WELCOME_POSITION,
 } from "./layout";
@@ -101,6 +102,7 @@ export const WORLD_INTERACTABLES: WorldInteractable[] = [
 ];
 
 export function getInteractable(id: string): WorldInteractable | undefined {
+  if (HIDDEN_LAYOUT_ITEMS.has(id === "my-garden-house" ? "cottage" : id)) return undefined;
   return WORLD_INTERACTABLES.find((it) => it.id === id);
 }
 
@@ -119,6 +121,7 @@ export function rebuildInteractables() {
 /** True when (x, z) sits inside the breathing room of any interactable. */
 export function nearInteractable(x: number, z: number, extra = 0): boolean {
   for (const it of WORLD_INTERACTABLES) {
+    if (HIDDEN_LAYOUT_ITEMS.has(it.id === "my-garden-house" ? "cottage" : it.id)) continue;
     if (Math.hypot(it.position[0] - x, it.position[1] - z) < it.clearance + extra) return true;
   }
   const bx = Math.abs(x - GROW_BEDS_CENTER[0]) - GROW_BEDS_HALF[0] - extra;
