@@ -141,7 +141,7 @@ function EntranceArch() {
 /** Edge length of one stone slab, in world units. */
 const SLAB_SIZE = 2.4;
 
-function pathPoint(t: number) {
+export function pathPoint(t: number) {
   // Piecewise linear across the two legs.
   if (t < 0.5) {
     const u = t * 2;
