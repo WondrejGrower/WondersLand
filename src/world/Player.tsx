@@ -81,6 +81,7 @@ export function Player() {
   const lookAxis = useRef(0);
   const held = useRef<Set<string>>(new Set());
   const near = useRef<string | null>(null);
+  const editing = useLayoutEditorStore((s) => s.active);
 
   // Diary plants are dynamic scenery: rebuild their colliders only when the
   // list changes, never inside useFrame.
@@ -369,6 +370,9 @@ export function Player() {
       );
     }
   });
+
+  // Edit mode is a strategy view: no avatar, no shadow disc.
+  if (editing) return null;
 
   return (
     <group ref={body}>
