@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## 2026-09-21 — Edit mode is a strategy view
+
+- Opening the layout editor now switches the world to an orbiting bird's-eye
+  camera: `src/world/editor/editorCamera.ts` (module singleton target/distance/
+  yaw/pitch with `panBy`, `zoomBy`, `orbitBy`, `focusOn`, `frameAll`, `reset`;
+  distance 8–70, pitch 0.35–1.35) driven by `src/world/editor/EditorCamera.tsx`
+  (mounted only while editing, lerped in `useFrame`, no allocations).
+- `src/world/Player.tsx`: while the editor is active the frame loop returns
+  early (input cleared, `stop()`, `character.moving = false`) and the avatar +
+  shadow disc are not rendered. `character.pos` is untouched, so closing the
+  editor puts the player back exactly where they stood.
+- `src/world/editor/EditorLayer.tsx`: drag on empty ground pans the map (grabbed
+  ground point stays under the pointer), drag on a marker still moves the object,
+  right mouse / two fingers orbit yaw+pitch, wheel / pinch zooms.
+- `src/ui/LayoutEditorPanel.tsx`: "Na výběr", "Celá zahrada", "Reset pohledu".
+- `useLayoutEditorStore.open()` frames the whole garden. No new packages, no
+  persistence, no change to the object list, export or warnings.
+
+
+
 ## 2026-09-21 — Owner-gated editor + NIP-05 on the domain
 
 - `src/nostr/owner.ts`: single OWNER_PUBKEY (npub1c0cj4x…zzvqsjelp5x) + `isOwner()`.

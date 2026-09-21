@@ -26,6 +26,7 @@ import {
 } from "./controller/CharacterController";
 import { setDynamicColliders } from "./nav/path";
 import { tickPendingInteraction } from "./interactions";
+import { editorActive, useLayoutEditorStore } from "./editor/useLayoutEditorStore";
 
 const WALK_SPEED = 4.2;
 const RUN_SPEED = 5.8;
@@ -80,6 +81,7 @@ export function Player() {
   const lookAxis = useRef(0);
   const held = useRef<Set<string>>(new Set());
   const near = useRef<string | null>(null);
+  const editing = useLayoutEditorStore((s) => s.active);
 
   // Diary plants are dynamic scenery: rebuild their colliders only when the
   // list changes, never inside useFrame.
@@ -207,6 +209,20 @@ export function Player() {
     const store = useWorldStore.getState();
     const settings = worldSettings();
     const frozen = worldFrozen(store);
+
+    // Layout editor: the strategy camera owns the view, the character stands
+    // still and invisible. Its position is kept, so closing the editor returns
+    // the player exactly where they were.
+    if (editorActive()) {
+      held.current.clear();
+      lookAxis.current = 0;
+      clearKeyboardInput();
+      clearTouchInput();
+      input.yawDelta = 0;
+      stop();
+      character.moving = false;
+      return;
+    }
 
     // Safety net: if the document is not focused (another window, the editor
     // panel, a browser dialog) no keyup will ever reach us, so never keep
@@ -354,6 +370,9 @@ export function Player() {
       );
     }
   });
+
+  // Edit mode is a strategy view: no avatar, no shadow disc.
+  if (editing) return null;
 
   return (
     <group ref={body}>

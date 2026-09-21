@@ -710,6 +710,19 @@ Google Fonts style/font origins. Everything else is unchanged.
   owner pubkey, with relay hints, `access-control-allow-origin: *`, 5 min cache.
   Owner must set `_@wondersland.online` as their NIP-05 field in their client.
 
+## 2026-09-21 — Edit mode strategy camera (done)
+
+- While the layout editor is open the world runs a bird's-eye orbit camera
+  (`src/world/editor/editorCamera.ts` singleton + `EditorCamera.tsx`), the avatar
+  is not rendered and `Player.tsx` returns early from its frame loop, so walking,
+  proximity targeting and interactions are suspended. `character.pos` is kept,
+  so closing the editor restores the player and the follow-cam.
+- Editor pointer model: drag empty ground = pan, drag marker = move object,
+  right mouse / two fingers = orbit (yaw + pitch), wheel / pinch = zoom.
+  Panel buttons: focus selection, frame whole garden, reset view.
+- Limitations: camera state is memory-only; no keyboard camera shortcuts; the
+  editor still has no persistence (export text only).
+
 ## 2026-09-21 — Hidden layout editor (owner tool, done)
 
 - `?edit=1` or F2 opens an in-page "Layout editor" panel: pick any building,

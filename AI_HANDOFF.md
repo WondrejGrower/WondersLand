@@ -481,6 +481,17 @@ reading the same three constants in `src/world/layout.ts`.
   owner pubkey, with relay hints, `access-control-allow-origin: *`, 5 min cache.
   Owner must set `_@wondersland.online` as their NIP-05 field in their client.
 
+## 2026-09-21 — Edit mode strategy camera (done)
+
+- Edit mode = strategy view. `EditorCamera.tsx` owns the camera while
+  `useLayoutEditorStore.active`; `Player.tsx` bails out of `useFrame` and renders
+  nothing. Do not re-enable character movement in edit mode.
+- Camera state lives in `src/world/editor/editorCamera.ts` (module singleton,
+  never React state): targetX/targetZ/distance/yaw/pitch, helpers panBy, zoomBy,
+  orbitBy, focusOn, frameAll, reset. `open()` calls `frameAll()`.
+- `EditorLayer.tsx` handles pan (ground-anchored), object drag, orbit (right
+  mouse / two fingers), zoom (wheel / pinch). No drei OrbitControls.
+
 ## 2026-09-21 — Hidden layout editor (owner tool, done)
 
 - `?edit=1` or F2 opens an in-page "Layout editor" panel: pick any building,

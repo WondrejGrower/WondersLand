@@ -190,6 +190,15 @@ joystick and tap/click paths animate consistently. No movement behavior changed.
   owner pubkey, with relay hints, `access-control-allow-origin: *`, 5 min cache.
   Owner must set `_@wondersland.online` as their NIP-05 field in their client.
 
+## 2026-09-21 — Edit mode strategy camera (done)
+
+- Layout editor no longer uses the character follow-cam: orbiting bird's-eye
+  view (pan / pinch-zoom / orbit), avatar hidden, walking and interactions
+  suspended, camera and player restored on close.
+- New: src/world/editor/editorCamera.ts, src/world/editor/EditorCamera.tsx.
+  Touched: Player.tsx (early return + no avatar while editing), World.tsx,
+  EditorLayer.tsx (pan/orbit/pinch/wheel), LayoutEditorPanel.tsx (view buttons).
+
 ## 2026-09-21 — Hidden layout editor (owner tool, done)
 
 - `?edit=1` or F2 opens an in-page "Layout editor" panel: pick any building,

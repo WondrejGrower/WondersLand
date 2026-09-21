@@ -6,9 +6,9 @@
 import { useEffect } from "react";
 import { useThree } from "@react-three/fiber";
 import { Plane, Raycaster, Vector2, Vector3 } from "three";
-import { input } from "../../state/input";
 import { stop } from "../controller/CharacterController";
 import { buildItems } from "./items";
+import { orbitBy, panBy, zoomBy } from "./editorCamera";
 import { round, useLayoutEditorStore } from "./useLayoutEditorStore";
 
 /** How close to a marker a click counts as grabbing it. */
@@ -32,8 +32,16 @@ export function EditorLayer() {
   useEffect(() => {
     const el = gl.domElement;
     let dragging: string | null = null;
+    let mode: "none" | "pan" | "orbit" = "none";
     let lastX = 0;
-    let orbiting = false;
+    let lastY = 0;
+    let panX = 0;
+    let panZ = 0;
+    // Active touches, for pinch zoom / two-finger orbit.
+    const touches = new Map<number, { x: number; y: number }>();
+    let pinchDist = 0;
+    let pinchMidX = 0;
+    let pinchMidY = 0;
 
     const toGround = (clientX: number, clientY: number) => {
       const rect = el.getBoundingClientRect();
@@ -47,11 +55,26 @@ export function EditorLayer() {
 
     const down = (e: PointerEvent) => {
       el.setPointerCapture?.(e.pointerId);
+      if (e.pointerType === "touch") touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
       lastX = e.clientX;
-      if (e.pointerType === "mouse" && e.button !== 0) {
-        orbiting = true;
+      lastY = e.clientY;
+
+      // Two fingers: pinch zoom + orbit, never object dragging.
+      if (touches.size === 2) {
+        dragging = null;
+        mode = "orbit";
+        const [a, b] = [...touches.values()];
+        pinchDist = Math.hypot(a!.x - b!.x, a!.y - b!.y);
+        pinchMidX = (a!.x + b!.x) / 2;
+        pinchMidY = (a!.y + b!.y) / 2;
         return;
       }
+
+      if (e.pointerType === "mouse" && e.button !== 0) {
+        mode = "orbit";
+        return;
+      }
+
       const point = toGround(e.clientX, e.clientY);
       if (!point) return;
       const store = useLayoutEditorStore.getState();
@@ -62,17 +85,50 @@ export function EditorLayer() {
       }
       if (best) {
         dragging = best.id;
+        mode = "none";
         store.select(best.id);
         stop();
+        return;
       }
+      // Empty ground: drag the map itself, keeping the grabbed point under the
+      // pointer.
+      mode = "pan";
+      panX = point.x;
+      panZ = point.z;
     };
 
     const move = (e: PointerEvent) => {
-      if (orbiting) {
-        input.yawDelta -= (e.clientX - lastX) * 0.005;
-        lastX = e.clientX;
+      if (e.pointerType === "touch" && touches.has(e.pointerId)) {
+        touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      }
+
+      if (touches.size === 2) {
+        const [a, b] = [...touches.values()];
+        const dist = Math.hypot(a!.x - b!.x, a!.y - b!.y);
+        const midX = (a!.x + b!.x) / 2;
+        const midY = (a!.y + b!.y) / 2;
+        if (pinchDist > 0 && dist > 0) zoomBy(pinchDist / dist);
+        orbitBy((midX - pinchMidX) * -0.006, (midY - pinchMidY) * 0.004);
+        pinchDist = dist;
+        pinchMidX = midX;
+        pinchMidY = midY;
         return;
       }
+
+      if (mode === "orbit") {
+        orbitBy((e.clientX - lastX) * -0.006, (e.clientY - lastY) * 0.004);
+        lastX = e.clientX;
+        lastY = e.clientY;
+        return;
+      }
+
+      if (mode === "pan") {
+        const point = toGround(e.clientX, e.clientY);
+        if (!point) return;
+        panBy(panX - point.x, panZ - point.z);
+        return;
+      }
+
       if (!dragging) return;
       const point = toGround(e.clientX, e.clientY);
       if (!point) return;
@@ -84,8 +140,15 @@ export function EditorLayer() {
 
     const up = (e: PointerEvent) => {
       el.releasePointerCapture?.(e.pointerId);
+      touches.delete(e.pointerId);
+      if (touches.size < 2) pinchDist = 0;
       dragging = null;
-      orbiting = false;
+      mode = "none";
+    };
+
+    const wheel = (e: WheelEvent) => {
+      e.preventDefault();
+      zoomBy(e.deltaY > 0 ? 1.1 : 1 / 1.1);
     };
 
     const contextMenu = (e: MouseEvent) => e.preventDefault();
@@ -94,12 +157,14 @@ export function EditorLayer() {
     el.addEventListener("pointermove", move);
     el.addEventListener("pointerup", up);
     el.addEventListener("pointercancel", up);
+    el.addEventListener("wheel", wheel, { passive: false });
     el.addEventListener("contextmenu", contextMenu);
     return () => {
       el.removeEventListener("pointerdown", down);
       el.removeEventListener("pointermove", move);
       el.removeEventListener("pointerup", up);
       el.removeEventListener("pointercancel", up);
+      el.removeEventListener("wheel", wheel);
       el.removeEventListener("contextmenu", contextMenu);
     };
   }, [gl, camera]);
