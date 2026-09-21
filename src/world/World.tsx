@@ -75,7 +75,14 @@ export default function World() {
       <FocusRing />
       <DestinationMarker />
       <HighlightRing />
-      {editing ? <EditorLayer /> : <WorldPointerInput />}
+      {editing ? (
+        <>
+          <EditorLayer />
+          <EditorCamera />
+        </>
+      ) : (
+        <WorldPointerInput />
+      )}
       <Player />
     </Canvas>
   );

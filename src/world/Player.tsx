@@ -208,6 +208,20 @@ export function Player() {
     const settings = worldSettings();
     const frozen = worldFrozen(store);
 
+    // Layout editor: the strategy camera owns the view, the character stands
+    // still and invisible. Its position is kept, so closing the editor returns
+    // the player exactly where they were.
+    if (editorActive()) {
+      held.current.clear();
+      lookAxis.current = 0;
+      clearKeyboardInput();
+      clearTouchInput();
+      input.yawDelta = 0;
+      stop();
+      character.moving = false;
+      return;
+    }
+
     // Safety net: if the document is not focused (another window, the editor
     // panel, a browser dialog) no keyup will ever reach us, so never keep
     // walking on stale key state.
