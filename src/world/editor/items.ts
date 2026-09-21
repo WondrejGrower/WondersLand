@@ -235,8 +235,8 @@ export function buildItems(): EditItem[] {
   return items;
 }
 
-export function addTree() {
-  TREE_INSTANCES.push({ x: 0, z: 6, rot: 0, scale: 1, scaleY: 1 });
+export function addTree(x = 0, z = 6) {
+  TREE_INSTANCES.push({ x, z, rot: 0, scale: 1, scaleY: 1 });
   return `tree:${TREE_INSTANCES.length - 1}`;
 }
 
