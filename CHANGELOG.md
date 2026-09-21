@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2026-09-21 — Spawn at the entrance arch
+
+- Moved the spawn point to the entrance and centered the wooden arch on the
+  path just ahead of it, so every visit begins by walking through the gate.
+
 ## 2026-09-21 — Garden layout and house archive
 
 - Consolidated entrance, welcome sign, path, grow beds, board, cottage,

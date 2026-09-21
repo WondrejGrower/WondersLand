@@ -156,3 +156,10 @@ joystick and tap/click paths animate consistently. No movement behavior changed.
   tabs. Existing Garden Board logs remain encrypted/local-first; new activity
   events include a small title/duration snapshot so history survives deletion.
 - No physical house interior, NavMesh, gamification or new persistence layer.
+
+## 2026-09-21 — Spawn at the entrance arch (done)
+
+- Spawn moved to `[0, 15.2]`, right at the entrance. The arch moved to
+  `[0, 0, 12.6]`, centered on the path axis ~2.6 m ahead of spawn, so the
+  visitor walks through the wooden gate into the garden. Verified in browser
+  (desktop + mobile) and with a collision walk simulation: no stuck spots.

@@ -2,7 +2,7 @@
 
 Snapshot of what actually exists. Update this with every change.
 
-**Last updated:** 2026-09-21 (garden layout consolidation and house archive)
+**Last updated:** 2026-09-21 (spawn at the entrance arch)
 **Current phase:** Milestone 1 implemented and verified in a browser.
 
 ## Built and working
@@ -671,3 +671,12 @@ Google Fonts style/font origins. Everything else is unchanged.
   item no longer exists. Storage and relay publication remain NIP-44 encrypted.
 - The house is still an overlay rather than a physically enterable interior.
   Real NavMesh routing remains deferred; direct-line/sidestep planning is unchanged.
+
+## Spawn at the entrance arch (2026-09-21)
+
+- `SPAWN = [0, 15.2]` and `ARCH_POSITION = [0, 0, 12.6]` in
+  `src/world/layout.ts`. The arch straddles the straight path axis (posts at
+  ±2.4 x) just ahead of spawn, so the first steps lead through the gate.
+- Verified: `assertSpawnClear` passes, a scripted collision walk crosses the
+  arch center and reaches the cottage path end without blocking, and the
+  desktop/mobile browser run shows no console errors.

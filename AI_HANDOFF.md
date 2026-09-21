@@ -449,3 +449,10 @@ New kind 78 transition logs carry optional sanitized `metadata.title` and timer
 duration snapshots. This did not bump `TASKS_SCHEMA_VERSION`; old logs still load
 and fall back to generic removed-item labels. Never expose these private labels
 outside the existing NIP-44 self-encrypted task transport.
+
+## Spawn at the entrance arch (2026-09-21)
+
+`SPAWN` is now `[0, 15.2]` with `ARCH_POSITION = [0, 0, 12.6]` ahead of it on
+the path axis in `src/world/layout.ts`. Keep both tied to the shared layout —
+render, collision and nav read the same constants, so moving the arch or spawn
+only happens there.
