@@ -470,6 +470,17 @@ The arch sign faces +z (spawn side). The walkway is two legs through
 `PATH_VIA` (the arch center) — keep render strips, `pathPoint` and `nearPath`
 reading the same three constants in `src/world/layout.ts`.
 
+## 2026-09-21 — Owner-gated editor + NIP-05 on the domain
+
+- `src/nostr/owner.ts`: single OWNER_PUBKEY (npub1c0cj4x…zzvqsjelp5x) + `isOwner()`.
+- Layout editor is fail-closed: `useLayoutEditorStore.open()` returns unless the
+  signed-in pubkey is the owner; `?edit=1`, F2 and the new two-finger long-press
+  (1.2s, touch) listeners are only registered for the owner and torn down on
+  sign-out. Convenience gate, not a security boundary — editor state is local.
+- `src/routes/[.]well-known/nostr[.]json.ts`: NIP-05 root identifier `_` →
+  owner pubkey, with relay hints, `access-control-allow-origin: *`, 5 min cache.
+  Owner must set `_@wondersland.online` as their NIP-05 field in their client.
+
 ## 2026-09-21 — Hidden layout editor (owner tool, done)
 
 - `?edit=1` or F2 opens an in-page "Layout editor" panel: pick any building,
