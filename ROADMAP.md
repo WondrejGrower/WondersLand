@@ -201,6 +201,10 @@ joystick and tap/click paths animate consistently. No movement behavior changed.
 - Mobile editor panel is a bottom sheet capped at 42% of the viewport with an
   independently scrolling body and compact collapsed state; the joystick is
   hidden while editing so the map remains usable.
+- The owner can add trees, plant spots, arches, cottages, greenhouses, boards,
+  signs and grow beds at the current camera focus, then move, rotate, resize or
+  remove them. Original functional models may be hidden; added copies are
+  scenery-only. "Vrátit vše" restores the complete session baseline.
 
 ## 2026-09-21 — Hidden layout editor (owner tool, done)
 
