@@ -8,10 +8,13 @@
  * collide. Until that set exists on a relay, verification is *unconfigured*:
  * no account is invented and nothing is auto-allowed.
  */
+import { nip19 } from "nostr-tools";
 import { KIND_GROWMIES } from "../nostr/kinds";
+import { withClientTag } from "../nostr/clientTag";
 import { OWNER_PUBKEY } from "../nostr/owner";
-import { query } from "../nostr/pool";
+import { publish, query, type PublishResult } from "../nostr/pool";
 import { getEnabledRelayUrls } from "../nostr/relays";
+import type { Signer } from "../nostr/signers";
 
 export const VERIFIERS_D_TAG = "wondersland:verifiers:v1";
 export const VERIFIERS_AUTHOR = OWNER_PUBKEY;
