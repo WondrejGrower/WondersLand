@@ -819,6 +819,7 @@ export function HomeDashboard() {
               <>
                 {cards}
                 <MilestoneCard diaries={sorted} />
+                <ReviewerPanel />
                 <Panel title="Missions" Icon={Sparkles}>
                   <p className="text-sm text-cream/80">
                     Personal Garden Growth grows out of your own documentation: new species,

@@ -119,12 +119,42 @@ export const useMilestonesStore = create<State>((set, get) => ({
 
   async attest(signer, claim, verdict) {
     await publishAttestation(signer, claim, verdict);
-    set({ attestations: await fetchAttestations(get().claims) });
+    set({
+      attestations: await fetchAttestations(get().claims),
+      reviewAttestations: await fetchAttestations(get().reviewClaims),
+    });
+  },
+
+  async publishVerifiers(signer, pubkeys) {
+    set({ listPublishState: { kind: "sending" } });
+    try {
+      const results = await publishVerifierList(signer, pubkeys);
+      const accepted = results.filter((r) => r.ok).length;
+      set({
+        verifiers: [...new Set(pubkeys.map((p) => p.toLowerCase()))],
+        listPublishState:
+          accepted === results.length
+            ? { kind: "accepted", accepted, total: results.length }
+            : { kind: "partial", accepted, total: results.length },
+      });
+    } catch (error) {
+      set({
+        listPublishState: {
+          kind: "error",
+          message: error instanceof Error ? error.message : "Publishing failed",
+        },
+      });
+    }
   },
 
   statuses() {
     const { claims, attestations, verifiers } = get();
     return claims.map((claim) => evaluateClaim(claim, attestations, verifiers));
+  },
+
+  reviewStatuses() {
+    const { reviewClaims, reviewAttestations, verifiers } = get();
+    return reviewClaims.map((claim) => evaluateClaim(claim, reviewAttestations, verifiers));
   },
 
   xp() {
