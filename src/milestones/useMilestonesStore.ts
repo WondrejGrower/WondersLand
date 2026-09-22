@@ -36,10 +36,18 @@ type State = {
   /** null = no verifier list published yet. */
   verifiers: string[] | null;
   publishState: PublishState;
+  /** Claims by other authors, for the reviewer view. */
+  reviewClaims: MilestoneClaim[];
+  reviewAttestations: Attestation[];
+  reviewPhase: Phase;
+  listPublishState: PublishState;
   load: (pubkey: string) => Promise<void>;
+  loadReview: (pubkey: string) => Promise<void>;
   submit: (signer: Signer, input: ClaimInput) => Promise<void>;
   attest: (signer: Signer, claim: MilestoneClaim, verdict: Verdict) => Promise<void>;
+  publishVerifiers: (signer: Signer, pubkeys: string[]) => Promise<void>;
   statuses: () => MilestoneStatus[];
+  reviewStatuses: () => MilestoneStatus[];
   xp: () => number;
 };
 
