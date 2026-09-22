@@ -48,3 +48,47 @@ export async function fetchVerifiers(): Promise<string[] | null> {
   }
   return [...out];
 }
+
+/**
+ * Normalise a user-typed verifier identifier to a hex pubkey.
+ * Accepts 64-char hex or an npub. Throws on anything else — the caller shows
+ * the message and publishes nothing.
+ */
+export function parseVerifierInput(input: string): string {
+  const trimmed = input.trim();
+  if (HEX64.test(trimmed.toLowerCase())) return trimmed.toLowerCase();
+  if (trimmed.startsWith("npub1")) {
+    try {
+      const decoded = nip19.decode(trimmed);
+      if (decoded.type === "npub" && typeof decoded.data === "string") {
+        return decoded.data.toLowerCase();
+      }
+    } catch {
+      // fall through to the generic error below
+    }
+  }
+  throw new Error("Enter a valid npub… address or a 64-character hex pubkey");
+}
+
+/** Publish the owner-signed reviewer list. Replaces the previous list. */
+export async function publishVerifierList(
+  signer: Signer,
+  pubkeys: string[],
+): Promise<PublishResult[]> {
+  const unique = [...new Set(pubkeys.map((p) => p.toLowerCase()))];
+  for (const pubkey of unique) {
+    if (!HEX64.test(pubkey)) throw new Error("The reviewer list contains an invalid pubkey");
+  }
+  const template = withClientTag({
+    kind: KIND_GROWMIES,
+    created_at: Math.floor(Date.now() / 1000),
+    tags: [["d", VERIFIERS_D_TAG], ...unique.map((p) => ["p", p])],
+    content: "",
+  });
+  const event = await signer.signEvent(template);
+  const results = await publish(getEnabledRelayUrls(), event);
+  if (results.length > 0 && !results.some((r) => r.ok)) {
+    throw new Error("No relay accepted the reviewer list — nothing was published");
+  }
+  return results;
+}
