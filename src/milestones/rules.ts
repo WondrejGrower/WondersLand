@@ -5,8 +5,8 @@
  * the same result. XP is computed here from the rules; a number written by a
  * player into an event or into local storage is never read.
  */
-import { sha256 } from "@noble/hashes/sha2";
-import { bytesToHex } from "@noble/hashes/utils";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import {
   MILESTONE_XP,
   REQUIRED_VOTES,
