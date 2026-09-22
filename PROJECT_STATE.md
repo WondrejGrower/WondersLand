@@ -771,5 +771,22 @@ Needs configuration: the NIP-51 reviewer set
 `kind 30000 / d = wondersland:verifiers:v1` published by the owner.
 
 Limitations: the unlocked "Documented" marker is a dashboard badge only — no
-3D decoration was added. A reviewer UI for confirming *other* people's claims
-is not built; only withdrawal of one's own confirmation is exposed.
+3D decoration was added.
+
+## 2026-09-22 — community-verified milestone, pass 2 (reviewer side)
+
+- Owner-only reviewer list editor in Missions (`src/ui/ReviewerPanel.tsx`):
+  add/remove reviewers by npub or hex (`parseVerifierInput`), publish the
+  NIP-51 set kind 30000 `d = wondersland:verifiers:v1` signed by the owner.
+  Same three-valued publish state as claims (sending / accepted / partial).
+- Listed reviewers see pending claims from other authors with photo evidence
+  and Confirm / Withdraw buttons; self-review is never offered and read-only
+  sessions get disabled buttons with an explanation.
+- `fetchPendingClaims` reads milestone claims across all authors;
+  `dedupeClaims` (newest per author+milestone+project) is exported and
+  tested. Store gained `reviewClaims`, `reviewAttestations`,
+  `reviewStatuses()`, `loadReview()` and `publishVerifiers()`.
+- Tested: 7 new tests (pending filtering, newest-wins, npub/hex validation);
+  full suite 73 tests, typecheck green.
+- Still missing: the owner must actually publish the reviewer list; no real
+  claim has been confirmed end to end yet.

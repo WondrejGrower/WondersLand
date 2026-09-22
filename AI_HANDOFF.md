@@ -530,6 +530,13 @@ reading the same three constants in `src/world/layout.ts`.
 - `src/ui/MilestoneCard.tsx` renders inside the existing Missions section. No
   second dashboard, no second progress system: personal Garden Growth and
   community-verified milestones are shown side by side and clearly labelled.
+- `src/ui/ReviewerPanel.tsx` (also in Missions) is the reviewer side:
+  the owner edits and publishes the reviewer list (npub/hex validated,
+  `parseVerifierInput` in `verifiers.ts`, `publishVerifierList` signs kind
+  30000 `d=wondersland:verifiers:v1`); listed reviewers confirm or withdraw
+  on pending claims fetched by `fetchPendingClaims` (own claims excluded,
+  `dedupeClaims` keeps the newest per author+project).
 - The private Garden Board stays encrypted; nothing from it is published here.
 - Reviewer list is NOT configured yet. Until the owner publishes kind 30000
-  `d=wondersland:verifiers:v1`, every claim reads `unconfigured`.
+  `d=wondersland:verifiers:v1` (now possible from the UI), every claim reads
+  `unconfigured`.
