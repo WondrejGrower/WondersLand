@@ -176,7 +176,8 @@ export async function fetchPendingClaims(excludeAuthor: string): Promise<Milesto
   return dedupeClaims(events, undefined, excludeAuthor);
 }
 
-function dedupeClaims(
+/** Exported for tests: newest-claim-per-(author, milestone, project) filtering. */
+export function dedupeClaims(
   events: NostrEvent[],
   onlyAuthor?: string,
   excludeAuthor?: string,
