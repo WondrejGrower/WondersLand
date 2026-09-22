@@ -6,10 +6,17 @@
  */
 import { create } from "zustand";
 import type { Signer } from "../nostr/signers";
-import { fetchAttestations, fetchClaims, publishAttestation, publishClaim, type ClaimInput } from "./nostr";
+import {
+  fetchAttestations,
+  fetchClaims,
+  fetchPendingClaims,
+  publishAttestation,
+  publishClaim,
+  type ClaimInput,
+} from "./nostr";
 import { evaluateClaim, observationXp } from "./rules";
 import type { Attestation, MilestoneClaim, MilestoneStatus, Verdict } from "./types";
-import { fetchVerifiers } from "./verifiers";
+import { fetchVerifiers, publishVerifierList } from "./verifiers";
 
 type Phase = "idle" | "loading" | "ready" | "error";
 
