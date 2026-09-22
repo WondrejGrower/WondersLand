@@ -41,6 +41,7 @@ import type { PublishResult } from "../nostr/pool";
 
 import { computeGrowth, nextStep } from "../progression/growth";
 import { MilestoneCard } from "./MilestoneCard";
+import { ReviewerPanel } from "./ReviewerPanel";
 import heroArt from "../assets/garden-island.png";
 
 
