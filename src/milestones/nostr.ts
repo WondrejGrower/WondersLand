@@ -159,12 +159,36 @@ export async function fetchClaims(authorPubkey: string): Promise<MilestoneClaim[
     { kinds: [KIND_DIARY], authors: [authorPubkey], "#t": [MILESTONE_TAG], limit: 100 },
     6000,
   );
+  return dedupeClaims(events, authorPubkey);
+}
+
+/**
+ * Claims waiting for review, across every author, newest per
+ * (author, milestone, project). The viewer's own claims are excluded —
+ * self-verification is never offered.
+ */
+export async function fetchPendingClaims(excludeAuthor: string): Promise<MilestoneClaim[]> {
+  const events = await query(
+    getEnabledRelayUrls(),
+    { kinds: [KIND_DIARY], "#t": [MILESTONE_TAG], limit: 300 },
+    6000,
+  );
+  return dedupeClaims(events, undefined, excludeAuthor);
+}
+
+/** Exported for tests: newest-claim-per-(author, milestone, project) filtering. */
+export function dedupeClaims(
+  events: NostrEvent[],
+  onlyAuthor?: string,
+  excludeAuthor?: string,
+): MilestoneClaim[] {
   const best = new Map<string, { event: NostrEvent; claim: MilestoneClaim }>();
   for (const event of events) {
-    if (event.pubkey !== authorPubkey) continue;
+    if (onlyAuthor && event.pubkey !== onlyAuthor) continue;
+    if (excludeAuthor && event.pubkey === excludeAuthor) continue;
     const claim = parseClaim(event);
     if (!claim) continue;
-    const key = `${claim.milestoneId}|${claim.projectId}`;
+    const key = `${claim.authorPubkey}|${claim.milestoneId}|${claim.projectId}`;
     const current = best.get(key);
     if (!current || event.created_at > current.event.created_at) best.set(key, { event, claim });
   }
