@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 2026-09-22 — Reviewer side of community-verified milestones
+
+- Owner-only reviewer list editor in Missions: add/remove reviewers by npub or
+  hex (validated), publish as NIP-51 set kind 30000,
+  `d = wondersland:verifiers:v1`, signed by the owner. Until it is published,
+  verification stays "unconfigured" and no account is invented.
+- Listed reviewers see a "Review milestones" panel: pending claims from other
+  authors with photo evidence, Confirm (NIP-32 `l=verified`) and Withdraw
+  (`l=revoked`). Reviewers never see their own claims there.
+- Claim fetching generalised: `fetchPendingClaims` queries milestone claims
+  across all authors and keeps the newest per author + milestone + project;
+  `dedupeClaims` is exported and tested.
+- Publishing the list uses the same three-valued state as claims: sending /
+  accepted / partial.
+- 7 new tests (pending-claim filtering, npub/hex validation); 73 total, all
+  green. Still missing: the owner must actually publish the reviewer list and
+  a real end-to-end run (claim → 3 confirmations) has not happened yet.
+
 ## 2026-09-21 — Stable layout editor camera gestures
 
 - Replaced ground-raycast camera panning with bounded screen-space movement,

@@ -255,3 +255,13 @@ Shipped: a single milestone "Document your project".
 
 Not in this pass: skills beyond Observation, further milestones, cosmetic 3D
 rewards, WoT graph, percentage proof scores, reputation weighting.
+
+## 2026-09-22 — Reviewer side of the milestone loop (done)
+
+- Owner can edit and publish the trusted reviewer list from Missions
+  (kind 30000, `d = wondersland:verifiers:v1`, npub/hex validated input).
+- Listed reviewers get a "Review milestones" panel: pending claims from other
+  authors with photo evidence, Confirm / Withdraw. Self-review is never
+  offered and read-only sessions get disabled buttons with an explanation.
+- Known gap: the reviewer list still has to be published by the owner for
+  real; no end-to-end verified milestone has happened yet.
