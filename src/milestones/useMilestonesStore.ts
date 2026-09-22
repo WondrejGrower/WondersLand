@@ -58,6 +58,21 @@ export const useMilestonesStore = create<State>((set, get) => ({
   attestations: [],
   verifiers: null,
   publishState: { kind: "idle" },
+  reviewClaims: [],
+  reviewAttestations: [],
+  reviewPhase: "idle",
+  listPublishState: { kind: "idle" },
+
+  async loadReview(pubkey) {
+    set({ reviewPhase: "loading" });
+    try {
+      const reviewClaims = await fetchPendingClaims(pubkey.toLowerCase());
+      const reviewAttestations = await fetchAttestations(reviewClaims);
+      set({ reviewClaims, reviewAttestations, reviewPhase: "ready" });
+    } catch {
+      set({ reviewPhase: "error" });
+    }
+  },
 
   async load(pubkey) {
     set({ phase: "loading", error: null });
