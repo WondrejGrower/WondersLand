@@ -519,3 +519,17 @@ reading the same three constants in `src/world/layout.ts`.
   src/routes/index.tsx.
 - Deferred: persisting a layout, NavMesh, gamification.
 
+
+## Community-verified milestones (`src/milestones/`)
+
+- `types.ts` — plain data + constants. `rules.ts` — pure deterministic scoring
+  (no React, no network); this is the module a future app reuses.
+- `nostr.ts` — claim/attestation publishing and reading over the existing pool,
+  relays and signer. `verifiers.ts` — the NIP-51 reviewer list.
+- `useMilestonesStore.ts` — dashboard state; recomputes on data change only.
+- `src/ui/MilestoneCard.tsx` renders inside the existing Missions section. No
+  second dashboard, no second progress system: personal Garden Growth and
+  community-verified milestones are shown side by side and clearly labelled.
+- The private Garden Board stays encrypted; nothing from it is published here.
+- Reviewer list is NOT configured yet. Until the owner publishes kind 30000
+  `d=wondersland:verifiers:v1`, every claim reads `unconfigured`.

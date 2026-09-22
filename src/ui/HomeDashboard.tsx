@@ -40,7 +40,9 @@ import { relayHost } from "../nostr/hosts";
 import type { PublishResult } from "../nostr/pool";
 
 import { computeGrowth, nextStep } from "../progression/growth";
+import { MilestoneCard } from "./MilestoneCard";
 import heroArt from "../assets/garden-island.png";
+
 
 /** "accepted by 3 of 4 relays" — never claim more than the relays confirmed. */
 function deletionSummary(results: PublishResult[]): string {
@@ -816,16 +818,20 @@ export function HomeDashboard() {
             ) : section === "missions" ? (
               <>
                 {cards}
+                <MilestoneCard diaries={sorted} />
                 <Panel title="Missions" Icon={Sparkles}>
                   <p className="text-sm text-cream/80">
-                    Missions grow out of real documentation: new species, entries on real days and
-                    completed grows. Nothing here expires and nothing punishes you for being away.
+                    Personal Garden Growth grows out of your own documentation: new species,
+                    entries on real days and completed grows. Nothing here expires and nothing
+                    punishes you for being away. Community-verified milestones are counted
+                    separately, above.
                   </p>
                   <p className="text-xs text-cream/60">
                     {growth.signals.species} species · {growth.signals.activeDays} active days ·{" "}
                     {growth.signals.completed} completed grows
                   </p>
                 </Panel>
+
               </>
             ) : (
               <>

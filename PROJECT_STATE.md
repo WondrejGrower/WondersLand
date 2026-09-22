@@ -750,3 +750,26 @@ Google Fonts style/font origins. Everything else is unchanged.
   src/routes/index.tsx.
 - Deferred: persisting a layout, NavMesh, gamification.
 
+
+## 2026-09-22 — community-verified milestone, pass 1
+
+Added `src/milestones/` (types, pure rules, Nostr transport, reviewer list,
+store, tests) and `src/ui/MilestoneCard.tsx`, wired into the Missions section
+of the existing dashboard. New kind constants in `src/nostr/kinds.ts`.
+
+Works: submitting one claim from an existing diary with three photo entries,
+waiting state 0/3 → 1/3 → 2/3, acceptance at three distinct authorised
+reviewers, +100 Observation XP, state restored from Nostr on another device,
+signed withdrawal of a confirmation.
+
+Tested: 9 unit tests over the rules (duplicate votes, self-verification,
+unauthorised signature, withdrawal, delivery order, changed evidence set,
+reviewer removed from the list, one reward per author+project+milestone, hash
+stability). Full suite 66 tests, typecheck and build green.
+
+Needs configuration: the NIP-51 reviewer set
+`kind 30000 / d = wondersland:verifiers:v1` published by the owner.
+
+Limitations: the unlocked "Documented" marker is a dashboard badge only — no
+3D decoration was added. A reviewer UI for confirming *other* people's claims
+is not built; only withdrawal of one's own confirmation is exposed.

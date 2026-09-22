@@ -227,3 +227,31 @@ joystick and tap/click paths animate consistently. No movement behavior changed.
   src/routes/index.tsx.
 - Deferred: persisting a layout, NavMesh, gamification.
 
+
+## Milestone — community-verified gamification, pass 1 (authorised 2026-09-22, done)
+
+Scope change authorised by the project owner: gamification was deferred, this
+one small pass is explicitly approved. Nothing else from the deferred list is
+unblocked.
+
+Shipped: a single milestone "Document your project".
+
+- Public claim: kind 30078, `d = wondersland:milestone:<milestone>:<project>`,
+  tagged `t=wondersland-milestone`, referencing exactly three existing diary
+  entries that carry a photo.
+- Confirmation: NIP-32 label, kind 1985, `L=wondersland.milestone`,
+  `l=verified|revoked`, bound to the claim coordinate and to a `proof-hash`
+  recomputed locally from the evidence set.
+- Reviewer list: NIP-51 set, kind 30000, `d = wondersland:verifiers:v1`,
+  published by the owner. Not published yet → state is `unconfigured`; no
+  account is invented and nothing is auto-allowed.
+- Three distinct authorised reviewers are required. No self-verification, one
+  vote per account, votes cast on an older evidence set do not carry over.
+- 100 Observation XP per accepted milestone, once per author + project +
+  milestone, computed from rules only — never read from an event or storage.
+- Withdrawal is a signed `l=revoked` label; removing a reviewer from the list
+  or withdrawing a confirmation returns the milestone to waiting. XP is
+  therefore explicitly reversible and the UI says so.
+
+Not in this pass: skills beyond Observation, further milestones, cosmetic 3D
+rewards, WoT graph, percentage proof scores, reputation weighting.

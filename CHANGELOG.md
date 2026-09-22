@@ -708,3 +708,12 @@ wooden board beside the house (E on desktop, tap on mobile).
 - Journey: inline rename; Reset unchanged (single startedAt reset + one event).
 - Sync status is now a compact badge with an expandable details popover.
 - No schema change; 54 tests pass.
+
+## Community-verified milestone "Document your project" (2026-09-22)
+
+First connected gamification pass: public claim (kind 30078), NIP-32 label
+confirmations (kind 1985), NIP-51 reviewer list (kind 30000,
+`wondersland:verifiers:v1`), deterministic 100 Observation XP at three
+distinct authorised confirmations, signed withdrawal, reversible XP, and a
+card inside the existing Missions section. Reviewer list still needs to be
+published.
