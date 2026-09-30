@@ -51,3 +51,10 @@ See others walking in the same garden: opt-in, local-key users only, 1–2 relay
 - Relay support for ephemeral events varies, so it needs a live test.
 - The UX for NIP-07 users (session key vs excluded).
 - Everyone currently sees their own garden layout, so a shared space means agreeing on one common world first.
+
+## Shared world concept (owner decision, 2026-09-30)
+
+- **Common Plaza:** one shared space with a fixed layout that everyone sees the same. A player teleports there from their own garden (for example from the arch or via a button). Presence subscribes only to `t=wondersland-presence` + `room=plaza`.
+- **Garden invites:** at the Plaza a player can invite someone to their own garden. The invite is a signed ephemeral event to the recipient's pubkey (`p` tag, `room=garden:<hostPubkey>`). The guest loads the host's public GardenConfig (already on Nostr) and joins the room `garden:<host>`. Only invited pubkeys are shown/accepted in the room; the host can cancel the invite.
+- This resolves the "every garden has its own layout" risk: the Plaza is shared, and a garden always renders the host's layout.
+- Pilot order: 1) Plaza + presence, 2) invites to a garden.
