@@ -265,3 +265,6 @@ rewards, WoT graph, percentage proof scores, reputation weighting.
   offered and read-only sessions get disabled buttons with an explanation.
 - Known gap: the reviewer list still has to be published by the owner for
   real; no end-to-end verified milestone has happened yet.
+
+## 2026-09-30 — Multiplayer over Nostr: research done, pilot pending approval
+Findings and a minimal pilot proposal are in `docs/MULTIPLAYER_RESEARCH.md`. Multiplayer stays banned until the owner approves the pilot.
