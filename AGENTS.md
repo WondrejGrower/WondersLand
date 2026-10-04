@@ -88,3 +88,6 @@ top level of a route file.
 When finishing work, state plainly what was built, what was skipped, and what
 the next milestone step is. Do not claim a feature exists until it is visible
 in the running app.
+
+## 11. Unlisted games
+`/games/*` pages are unlisted (noindex, no nav links) and live in `src/features/<game>/`. They use their own game-only Nostr identity and must never touch the main WondersLand session or signer. Why: friends' game keys must not interfere with real accounts.

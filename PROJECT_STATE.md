@@ -790,3 +790,10 @@ Limitations: the unlocked "Documented" marker is a dashboard badge only — no
   full suite 73 tests, typecheck green.
 - Still missing: the owner must actually publish the reviewer list; no real
   claim has been confirmed end to end yet.
+
+## 2026-10-04 — Unlisted Project Zomboid companion (/games/project-zomboid)
+- An unlisted page with `noindex, nofollow`. It isn't linked from navigation or the home page. Code is in `src/features/pz/`.
+- The checklist (Easiest Run with gates, 14 sections, challenges, What Now?, filters, export/import) saves to localStorage under `wondersland-pz-checklist:v1`. The export never includes any key.
+- Party: a dedicated game-only Nostr key in localStorage under `wondersland-pz-game-identity:v1`, isolated from the main session and signer. Players register with a kind 30078 profile (`d=wondersland:pz:<code>:player`).
+- Death posts are public kind 1 notes with tags `t=wondersland-pz-death` and `h=wondersland:pz:<code>`. Counts are rebuilt from verified relay events, deduplicated by id. The party view polls every 30 s.
+- Limitations: no live subscription (the pool only does one-shot queries), and the game key is stored in plain text in this browser.
