@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DotwellKnownNostrDotjsonRouteImport } from './routes/[.]well-known/nostr[.]json'
+import { Route as GamesProjectZomboidRouteImport } from './routes/games.project-zomboid'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -23,31 +24,40 @@ const DotwellKnownNostrDotjsonRoute =
     path: '/.well-known/nostr.json',
     getParentRoute: () => rootRouteImport,
   } as any)
+const GamesProjectZomboidRoute = GamesProjectZomboidRouteImport.update({
+  id: '/games/project-zomboid',
+  path: '/games/project-zomboid',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/.well-known/nostr.json': typeof DotwellKnownNostrDotjsonRoute
+  '/games/project-zomboid': typeof GamesProjectZomboidRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/.well-known/nostr.json': typeof DotwellKnownNostrDotjsonRoute
+  '/games/project-zomboid': typeof GamesProjectZomboidRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/.well-known/nostr.json': typeof DotwellKnownNostrDotjsonRoute
+  '/games/project-zomboid': typeof GamesProjectZomboidRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/.well-known/nostr.json'
+  fullPaths: '/' | '/.well-known/nostr.json' | '/games/project-zomboid'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/.well-known/nostr.json'
-  id: '__root__' | '/' | '/.well-known/nostr.json'
+  to: '/' | '/.well-known/nostr.json' | '/games/project-zomboid'
+  id: '__root__' | '/' | '/.well-known/nostr.json' | '/games/project-zomboid'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DotwellKnownNostrDotjsonRoute: typeof DotwellKnownNostrDotjsonRoute
+  GamesProjectZomboidRoute: typeof GamesProjectZomboidRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -66,12 +76,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotwellKnownNostrDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/games/project-zomboid': {
+      id: '/games/project-zomboid'
+      path: '/games/project-zomboid'
+      fullPath: '/games/project-zomboid'
+      preLoaderRoute: typeof GamesProjectZomboidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DotwellKnownNostrDotjsonRoute: DotwellKnownNostrDotjsonRoute,
+  GamesProjectZomboidRoute: GamesProjectZomboidRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
