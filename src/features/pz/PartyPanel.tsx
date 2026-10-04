@@ -29,10 +29,6 @@ const shortNpub = (pk: string) => {
   return `${n.slice(0, 10)}…${n.slice(-4)}`;
 };
 
-export function usePartyTotal() {
-  return useState(0);
-}
-
 export function PartyPanel({ onTotal }: { onTotal: (n: number) => void }) {
   const [me, setMe] = useState<GameProfile | null>(null);
   const [editing, setEditing] = useState(false);
