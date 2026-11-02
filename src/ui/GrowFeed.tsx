@@ -326,7 +326,8 @@ export function GrowFeed({
   onToggleExpand,
 }: {
   expanded: boolean;
-  onToggleExpand: () => void;
+  /** Omit for a standalone feed page (no expand/collapse controls). */
+  onToggleExpand?: () => void;
 }) {
   const mode = useFeedStore((s) => s.mode);
   const lane = useFeedStore((s) => s[s.mode]);
@@ -370,7 +371,7 @@ export function GrowFeed({
   return (
     <section
       className={`flex w-full min-w-0 flex-col overflow-hidden rounded-[1.5rem] border border-forest-soft/50 bg-forest/50 ${
-        expanded ? "h-full" : "lg:max-h-[calc(100vh-8rem)]"
+        expanded ? "" : "lg:max-h-[calc(100vh-8rem)]"
       }`}
       aria-label={copy.title}
     >
@@ -421,6 +422,7 @@ export function GrowFeed({
               ◎
             </button>
           ) : null}
+          {onToggleExpand ? (
           <button
             type="button"
             onClick={onToggleExpand}
@@ -429,6 +431,7 @@ export function GrowFeed({
           >
             {expanded ? "✕" : "⤢"}
           </button>
+          ) : null}
         </div>
       </header>
 
@@ -473,7 +476,7 @@ export function GrowFeed({
         )}
       </div>
 
-      <footer className="px-4 pb-4">
+      {onToggleExpand ? <footer className="px-4 pb-4">
         <button
           type="button"
           onClick={onToggleExpand}
@@ -484,7 +487,7 @@ export function GrowFeed({
             {expanded ? "←" : "→"}
           </span>
         </button>
-      </footer>
+      </footer> : null}
     </section>
   );
 }
