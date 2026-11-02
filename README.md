@@ -3,7 +3,10 @@
 An interactive personal creator page: a native upward journey from dark roots to
 a living plant, with FastBuds on the flower and Higgsfield on a fan leaf.
 
-The project uses React, TypeScript and TanStack Start and remains connected to Lovable.
+The project uses React, TypeScript, TanStack Start and Three.js and remains connected to Lovable.
+The plant has real volumetric geometry, a scroll-driven camera and drag/keyboard
+rotation. Rendering stops at rest. Devices without WebGL use a lower-detail 3D
+Canvas renderer with the same perspective camera.
 
 ## Run and verify
 

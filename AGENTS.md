@@ -15,7 +15,13 @@ storage/Nostr events. The user explicitly authorized deleting the game feature.
 - One cannabis plant, with FastBuds on the upper flower and Higgsfield on a leaf.
 - Begin underground at the bottom of a native scroll region. Ascending reveals
   roots, stem, leaf and flower while darkness becomes daylight.
-- Use CSS/transforms and one optimized botanical image, not the old 3D world.
+- The user revised the design on 2026-11-02: use a real volumetric 3D plant and
+  scroll-driven perspective camera, inspired by the linked JS Mastery MacBook
+  tutorial. This supersedes the earlier image-only direction. Do not import the
+  archived 3D world. The new scene is isolated under creator-hub/scene/.
+- Keep scrolling passive and native. Animate imperatively, render only while
+  moving, cap drawing-buffer pixels and reuse/merge geometry. A low-detail 3D
+  Canvas renderer supports devices without WebGL; the image is a last-resort poster.
 - Keep direct links reachable at every stage. Chapter buttons and the ascent
   button offer an accessible alternative to scrolling. Honor reduced motion.
 - Maintain readable text at both ends of the color transition, mobile layouts,

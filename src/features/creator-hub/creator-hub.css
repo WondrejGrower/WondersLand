@@ -4,10 +4,13 @@
   --journey-accent: #d0b27d;
   --journey-day: 0;
   --journey-dark: 1;
+  --plant-target: 85%;
+  --plant-zoom: 1.55;
+  --plant-pan: 0vw;
   position: fixed;
   inset: 0;
   overflow: hidden;
-  background: var(--journey-bg);
+  background: #05080c;
   color: var(--journey-ink);
   font-family: "Karla", sans-serif;
   isolation: isolate;
@@ -108,7 +111,6 @@
   border-radius: 40px;
   color: inherit;
   font-size: 12px;
-  backdrop-filter: blur(12px);
 }
 .hub-viewport {
   width: 100%;
@@ -127,8 +129,8 @@
   position: relative;
 }
 .hub-stage {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  inset: 0;
   height: 100dvh;
   width: 100%;
   overflow: clip;
@@ -138,7 +140,6 @@
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  background: var(--journey-bg);
 }
 .hub-moon-glow {
   position: absolute;
@@ -168,7 +169,6 @@
     #fff4c316 11deg 14deg,
     transparent 16deg 25deg
   );
-  filter: blur(10px);
   opacity: var(--journey-day);
   transform: rotate(-8deg);
 }
@@ -181,34 +181,6 @@
   border-radius: 50%;
   background: radial-gradient(ellipse, #121f14 0, transparent 70%);
   opacity: calc(var(--journey-dark) * 0.7);
-}
-.hub-grain {
-  position: absolute;
-  inset: 0;
-  opacity: 0.16;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.22' filter='url(%23n)'/%3E%3C/svg%3E");
-  mix-blend-mode: soft-light;
-}
-.hub-speck {
-  position: absolute;
-  height: 2px;
-  width: 2px;
-  border-radius: 50%;
-  background: var(--journey-accent);
-  box-shadow: 0 0 8px 2px color-mix(in srgb, var(--journey-accent) 30%, transparent);
-  opacity: 0.28;
-  animation: hub-drift 12s ease-in-out infinite;
-}
-@keyframes hub-drift {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-    opacity: 0.15;
-  }
-  50% {
-    transform: translate3d(8px, -28px, 0);
-    opacity: 0.55;
-  }
 }
 .hub-plant-world {
   position: absolute;
@@ -225,7 +197,7 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: brightness(var(--plant-light)) saturate(var(--plant-saturation));
+  filter: brightness(0.85);
   user-select: none;
   -webkit-user-drag: none;
 }
@@ -244,7 +216,7 @@
   font-weight: 500;
   box-shadow: 0 5px 30px #0003;
   pointer-events: auto;
-  backdrop-filter: blur(12px);
+
   transition:
     background 0.2s,
     box-shadow 0.2s;
@@ -418,7 +390,7 @@
   padding: 20px 21px 14px;
   border-radius: 16px;
   background: color-mix(in srgb, var(--journey-bg) 80%, transparent);
-  backdrop-filter: blur(18px);
+
   border: 1px solid color-mix(in srgb, var(--journey-ink) 22%, transparent);
   box-shadow: 0 15px 45px #0000000d;
   animation: hub-arrive 0.5s ease-out both;
@@ -503,6 +475,9 @@
 }
 .hub-progress > span {
   width: 100%;
+  height: 100%;
+  transform: scaleY(0);
+  transform-origin: bottom;
   background: var(--journey-accent);
 }
 .hub-dock {
@@ -519,7 +494,6 @@
   border: 1px solid color-mix(in srgb, var(--journey-ink) 16%, transparent);
   border-radius: 14px;
   background: color-mix(in srgb, var(--journey-bg) 80%, transparent);
-  backdrop-filter: blur(18px);
 }
 .hub-dock-person {
   display: flex;
@@ -980,4 +954,154 @@
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* The scene owns its animation loop; these layers only composite their opacity. */
+.creator-hub[data-chapter="1"] {
+  --journey-bg: #101d1d;
+  --journey-accent: #d1c49f;
+}
+.creator-hub[data-chapter="2"] {
+  --journey-bg: #1c322b;
+  --journey-accent: #d3d4ae;
+}
+.creator-hub[data-chapter="3"] {
+  --journey-bg: #dfe7bd;
+  --journey-ink: #233c2b;
+  --journey-accent: #496139;
+}
+.hub-day-glow {
+  inset: 0;
+  background: radial-gradient(ellipse at 78% 12%, #fff6d8 0%, #dfe7bd 52%, #809b72 100%);
+  will-change: opacity;
+}
+.hub-moon-glow {
+  will-change: opacity;
+}
+.hub-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+[data-scene-state="ready"] .hub-scene {
+  opacity: 1;
+}
+.hub-scene canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: pan-y;
+  cursor: grab;
+}
+.hub-scene canvas:active {
+  cursor: grabbing;
+}
+[data-scene-state="fallback"] .hub-scene {
+  pointer-events: none;
+}
+.hub-plant-world {
+  z-index: 1;
+}
+.hub-scene-hotspot.hub-plant-hotspot {
+  z-index: 7;
+  left: 0;
+  top: 0;
+  min-height: 44px;
+  margin: 0;
+  will-change: transform;
+}
+.hub-scene-hotspot[hidden] {
+  display: none;
+}
+.hub-scene-controls,
+.hub-scene-status {
+  position: absolute;
+  z-index: 8;
+  right: 9.3%;
+  bottom: 122px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--journey-accent);
+  font-size: 8px;
+  letter-spacing: 1.1px;
+}
+.hub-scene-controls button {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  width: 38px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  border-radius: 50%;
+}
+.hub-scene-controls button:hover {
+  background: #a8b58320;
+}
+.hub-scene-controls span {
+  opacity: 0.75;
+}
+@media (max-width: 600px) {
+  .hub-scene-controls,
+  .hub-scene-status {
+    right: 17px;
+    bottom: 115px;
+    font-size: 6px;
+    letter-spacing: 0.7px;
+    gap: 1px;
+  }
+  .hub-scene-controls button {
+    width: 30px;
+  }
+  .hub-scene-hotspot.hub-plant-hotspot {
+    margin: 0;
+    font-size: 10px;
+  }
+}
+@media (max-height: 700px) and (max-width: 600px) {
+  .hub-scene-controls,
+  .hub-scene-status {
+    bottom: 100px;
+  }
+}
+
+.hub-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, #05080cbb, transparent 37%);
+  opacity: var(--journey-dark);
+}
+@media (max-width: 600px) {
+  .hub-scene::after {
+    background: linear-gradient(180deg, var(--journey-bg) 0 36%, transparent 62%);
+    opacity: 0.96;
+  }
+}
+
+/* Input belongs to the native flow track. Fixed scene layers must not intercept
+   its wheel/touch scrolling; interactive controls opt back into pointer events. */
+.hub-stage,
+.hub-scene {
+  pointer-events: none;
+}
+.hub-viewport {
+  touch-action: pan-y;
+  cursor: grab;
+}
+.hub-viewport:active {
+  cursor: grabbing;
+}
+.hub-story > * {
+  pointer-events: none;
+}
+.hub-story :is(button, a),
+.hub-chapter-rail,
+.hub-scene-controls,
+.hub-plant-hotspot {
+  pointer-events: auto;
 }

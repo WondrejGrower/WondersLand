@@ -5,6 +5,9 @@
 - Remove all game feature code and route from WondersLand.
 - Preserve the complete remaining code in verified backup/wondersland-nostr-2026-11-02.
 - Build the single-plant personal hub with soil-to-daylight journey.
+- Replace the image-only version with volumetric 3D, a scroll camera and rotation.
+- Remove animation-frame React updates, bound GPU resolution and stop rendering
+  at rest; retain interactive low-detail 3D when WebGL is unavailable.
 - Put Higgsfield on the leaf and FastBuds on the top flower.
 - Provide direct links, accessible chapter controls, mobile layout and personal bio.
 

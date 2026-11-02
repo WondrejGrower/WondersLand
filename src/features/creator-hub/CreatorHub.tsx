@@ -1,14 +1,9 @@
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type ReactNode,
-} from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   ArrowDown,
+  ArrowLeft,
+  ArrowRight,
   ArrowUp,
   ArrowUpRight,
   Check,
@@ -21,44 +16,10 @@ import {
   X,
 } from "lucide-react";
 import { partnerLink, SOCIAL, type Partner } from "./links";
+import { CHAPTERS, chapterAt, clamp, interpolate, smoothstep } from "./scene/journey";
+import type { SceneController, SceneFrame } from "./scene/PlantScene";
 import "./creator-hub.css";
 
-const CHAPTERS = [
-  { label: "Soil", at: 0, number: "01" },
-  { label: "Roots", at: 0.29, number: "02" },
-  { label: "Leaf", at: 0.64, number: "03" },
-  { label: "Flower", at: 1, number: "04" },
-];
-const SPECKS = Array.from({ length: 16 }, (_, i) => ({
-  left: ((i * 37 + 13) % 100) + "%",
-  top: ((i * 23 + 7) % 100) + "%",
-  animationDelay: -i * 1.3 + "s",
-  animationDuration: 9 + (i % 7) + "s",
-}));
-function interpolate(p: number, points: [number, number][]): number {
-  for (let i = 1; i < points.length; i++) {
-    const [to, b] = points[i]!,
-      [from, a] = points[i - 1]!;
-    if (p <= to) return a + (b - a) * Math.max(0, (p - from) / (to - from));
-  }
-  return points[points.length - 1]![1];
-}
-function color(p: number, stops: [number, [number, number, number]][]) {
-  return (
-    "rgb(" +
-    [0, 1, 2]
-      .map((channel) =>
-        Math.round(
-          interpolate(
-            p,
-            stops.map(([at, rgb]) => [at, rgb[channel]!]),
-          ),
-        ),
-      )
-      .join(" ") +
-    ")"
-  );
-}
 function PartnerAnchor({
   id,
   className,
@@ -150,90 +111,145 @@ function LinkDirectory() {
 }
 
 export function CreatorHub() {
-  const viewport = useRef<HTMLDivElement>(null),
-    frame = useRef<number | null>(null);
-  const [progress, setProgress] = useState(0),
-    [reducedMotion, setReducedMotion] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  const viewport = useRef<HTMLDivElement>(null);
+  const sceneHost = useRef<HTMLDivElement>(null);
+  const scene = useRef<SceneController | null>(null);
+  const leaf = useRef<HTMLAnchorElement>(null);
+  const flower = useRef<HTMLAnchorElement>(null);
+  const progressbar = useRef<HTMLDivElement>(null);
+  const rawProgress = useRef(0);
+  const activeChapter = useRef(0);
+  const lastPercent = useRef(-1);
+  const reduced = useRef(false);
+  const sceneReady = useRef(false);
+  const [chapter, setChapter] = useState(0);
+  const [sceneState, setSceneState] = useState<"loading" | "ready" | "fallback">("loading");
+
+  function paint(p: number) {
+    const el = root.current;
+    if (!el) return;
+    const daylight = smoothstep(0.38, 1, p);
+    el.style.setProperty("--journey-day", daylight.toFixed(3));
+    el.style.setProperty("--journey-dark", (1 - daylight).toFixed(3));
+    const next = chapterAt(p);
+    if (activeChapter.current !== next) {
+      activeChapter.current = next;
+      setChapter(next); // React changes only at chapter boundaries, never per animation frame.
+    }
+    if (progressbar.current) {
+      const percent = Math.round(p * 100);
+      if (percent !== lastPercent.current) {
+        progressbar.current.setAttribute("aria-valuenow", String(percent));
+        lastPercent.current = percent;
+      }
+      (progressbar.current.firstElementChild as HTMLElement).style.transform = `scaleY(${p})`;
+    }
+    if (!sceneReady.current) {
+      el.style.setProperty(
+        "--plant-target",
+        interpolate(p, [
+          [0, 85],
+          [0.29, 67],
+          [0.64, 36],
+          [1, 13],
+        ]) + "%",
+      );
+      el.style.setProperty(
+        "--plant-zoom",
+        String(
+          interpolate(p, [
+            [0, 1.55],
+            [0.29, 1.22],
+            [0.64, 1.08],
+            [1, 1.05],
+          ]),
+        ),
+      );
+    }
+  }
+  function paintScene({ progress, width, leaf: leafPoint, flower: flowerPoint }: SceneFrame) {
+    paint(progress);
+    for (const [ref, point] of [
+      [leaf, leafPoint],
+      [flower, flowerPoint],
+    ] as const) {
+      if (!ref.current) continue;
+      const half = (width < 600 ? 106 : 130) / 2 + 8;
+      const x = clamp(point.x, half, Math.max(half, width - half));
+      ref.current.style.transform = `translate3d(${x.toFixed(1)}px, ${point.y.toFixed(1)}px, 0) translate(-50%, -50%)`;
+      ref.current.style.visibility = point.visible ? "visible" : "hidden";
+    }
+  }
   useLayoutEffect(() => {
     const el = viewport.current;
     if (el) el.scrollTop = el.scrollHeight - el.clientHeight;
   }, []);
   useEffect(() => {
-    const m = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReducedMotion(m.matches);
-    update();
-    m.addEventListener("change", update);
-    return () => m.removeEventListener("change", update);
-  }, []);
-  useEffect(
-    () => () => {
-      if (frame.current !== null) cancelAnimationFrame(frame.current);
-    },
-    [],
-  );
-  function readScroll() {
-    if (frame.current !== null) return;
-    frame.current = requestAnimationFrame(() => {
-      frame.current = null;
-      const el = viewport.current;
-      if (!el) return;
+    let cancelled = false;
+    const el = viewport.current!,
+      host = sceneHost.current!;
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    function motionPreference() {
+      reduced.current = media.matches;
+      scene.current?.setReducedMotion(media.matches);
+    }
+    function scroll() {
       const max = el.scrollHeight - el.clientHeight;
-      setProgress(Math.max(0, Math.min(1, max > 0 ? 1 - el.scrollTop / max : 0)));
-    });
-  }
+      const p = clamp(max > 0 ? 1 - el.scrollTop / max : 0);
+      rawProgress.current = p;
+      scene.current?.setProgress(p);
+      if (!sceneReady.current) paint(p);
+    }
+    motionPreference();
+    media.addEventListener("change", motionPreference);
+    el.addEventListener("scroll", scroll, { passive: true });
+    window.addEventListener("resize", scroll);
+    scroll();
+    void import("./scene/PlantScene")
+      .then(({ mountPlantScene }) => {
+        if (cancelled) return;
+        scene.current = mountPlantScene({
+          host,
+          input: el,
+          reducedMotion: reduced.current,
+          progress: rawProgress.current,
+          onFrame: paintScene,
+          onStatus(ready) {
+            if (cancelled) return;
+            sceneReady.current = ready;
+            setSceneState(ready ? "ready" : "fallback");
+          },
+        });
+      })
+      .catch((error: unknown) => {
+        console.warn(
+          "NoTillMan 3D is unavailable:",
+          error instanceof Error ? error.message : "Unknown renderer error",
+        );
+        if (!cancelled) {
+          sceneReady.current = false;
+          setSceneState("fallback");
+        }
+      });
+    return () => {
+      cancelled = true;
+      el.removeEventListener("scroll", scroll);
+      window.removeEventListener("resize", scroll);
+      media.removeEventListener("change", motionPreference);
+      scene.current?.dispose();
+      scene.current = null;
+    };
+  }, []);
   function riseTo(at: number) {
     const el = viewport.current;
-    if (el)
-      el.scrollTo({
-        top: (1 - at) * (el.scrollHeight - el.clientHeight),
-        behavior: reducedMotion ? "instant" : "smooth",
-      });
+    el?.scrollTo({
+      top: (1 - at) * (el.scrollHeight - el.clientHeight),
+      behavior: reduced.current ? "instant" : "smooth",
+    });
   }
-  const chapter = progress < 0.15 ? 0 : progress < 0.46 ? 1 : progress < 0.82 ? 2 : 3;
-  const daylight = Math.max(0, (progress - 0.54) / 0.46);
-  const target = interpolate(progress, [
-    [0, 0.85],
-    [0.29, 0.67],
-    [0.64, 0.36],
-    [1, 0.13],
-  ]);
-  const style = {
-    "--journey-bg": color(progress, [
-      [0, [5, 8, 12]],
-      [0.3, [10, 24, 24]],
-      [0.6, [25, 53, 41]],
-      [1, [224, 232, 194]],
-    ]),
-    "--journey-ink": color(progress, [
-      [0, [243, 235, 216]],
-      [0.66, [243, 235, 216]],
-      [1, [28, 54, 35]],
-    ]),
-    "--journey-accent": color(progress, [
-      [0, [208, 178, 125]],
-      [0.6, [193, 209, 154]],
-      [1, [59, 91, 43]],
-    ]),
-    "--journey-day": daylight,
-    "--journey-dark": 1 - daylight,
-    "--plant-light": 0.23 + 0.77 * progress,
-    "--plant-saturation": 0.56 + progress * 0.44,
-    "--plant-target": target * 100 + "%",
-    "--plant-zoom": interpolate(progress, [
-      [0, 1.55],
-      [0.29, 1.22],
-      [0.64, 1.08],
-      [1, 1.05],
-    ]),
-    "--plant-pan":
-      interpolate(progress, [
-        [0, 0],
-        [0.64, -5],
-        [1, 0],
-      ]) + "vw",
-  } as CSSProperties;
   return (
-    <div className="creator-hub" style={style}>
+    <div ref={root} className="creator-hub" data-chapter={chapter} data-scene-state={sceneState}>
       <a className="hub-skip" href="#hub-quick-links">
         Skip to the links
       </a>
@@ -264,7 +280,6 @@ export function CreatorHub() {
       <div
         ref={viewport}
         className="hub-viewport"
-        onScroll={readScroll}
         tabIndex={0}
         role="region"
         aria-label="A journey from the soil to the flower. Scroll upward, or use the chapter buttons."
@@ -276,34 +291,61 @@ export function CreatorHub() {
               <div className="hub-day-glow" />
               <div className="hub-light-rays" />
               <div className="hub-horizon" />
-              <div className="hub-grain" />
-              {SPECKS.map((s, i) => (
-                <i key={i} className="hub-speck" style={s} />
-              ))}
             </div>
-            <div className="hub-plant-world">
-              <img
-                className="hub-plant"
-                src="/images/notillman-plant.webp"
-                alt="A single cannabis plant with a flowering top, green fan leaves and an exposed branching root system"
-                width="1024"
-                height="1536"
-                fetchPriority="high"
-                decoding="async"
-              />
-              {chapter === 2 && (
-                <PartnerAnchor id="higgsfield" className="hub-plant-hotspot hub-leaf-hotspot">
-                  <span className="hub-hotspot-dot" />
-                  <span>Higgsfield</span>
-                </PartnerAnchor>
-              )}
-              {chapter === 3 && (
-                <PartnerAnchor id="fastbuds" className="hub-plant-hotspot hub-flower-hotspot">
-                  <span className="hub-hotspot-dot" />
-                  <span>FastBuds</span>
-                </PartnerAnchor>
-              )}
-            </div>
+            <div ref={sceneHost} className="hub-scene" />
+            {sceneState === "fallback" && (
+              <div className="hub-plant-world" aria-hidden>
+                <img
+                  className="hub-plant"
+                  src="/images/notillman-plant.webp"
+                  alt=""
+                  width="1024"
+                  height="1536"
+                  decoding="async"
+                />
+              </div>
+            )}
+            <a
+              ref={leaf}
+              href={partnerLink("higgsfield").href}
+              target="_blank"
+              rel={partnerLink("higgsfield").rel}
+              className="hub-plant-hotspot hub-scene-hotspot hub-leaf-hotspot"
+              hidden={chapter !== 2 || sceneState !== "ready"}
+            >
+              <span className="hub-hotspot-dot" />
+              <span>Higgsfield</span>
+              <ArrowUpRight size={14} aria-hidden />
+            </a>
+            <a
+              ref={flower}
+              href={partnerLink("fastbuds").href}
+              target="_blank"
+              rel={partnerLink("fastbuds").rel}
+              className="hub-plant-hotspot hub-scene-hotspot hub-flower-hotspot"
+              hidden={chapter !== 3 || sceneState !== "ready"}
+            >
+              <span className="hub-hotspot-dot" />
+              <span>FastBuds</span>
+              <ArrowUpRight size={14} aria-hidden />
+            </a>
+            {sceneState === "ready" ? (
+              <div className="hub-scene-controls" role="group" aria-label="Plant view">
+                <button aria-label="Rotate plant left" onClick={() => scene.current?.rotate(-0.28)}>
+                  <ArrowLeft size={14} />
+                </button>
+                <span>3D · DRAG TO EXPLORE</span>
+                <button aria-label="Rotate plant right" onClick={() => scene.current?.rotate(0.28)}>
+                  <ArrowRight size={14} />
+                </button>
+              </div>
+            ) : (
+              <p className="hub-scene-status" role="status">
+                {sceneState === "loading"
+                  ? "Opening the garden…"
+                  : "Still view · explore the links"}
+              </p>
+            )}
             <nav className="hub-chapter-rail" aria-label="Journey chapters">
               {CHAPTERS.slice()
                 .reverse()
@@ -434,14 +476,15 @@ export function CreatorHub() {
               )}
             </div>
             <div
+              ref={progressbar}
               className="hub-progress"
               role="progressbar"
               aria-label="Journey into the light"
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-valuenow={Math.round(progress * 100)}
+              aria-valuenow={0}
             >
-              <span style={{ height: progress * 100 + "%" }} />
+              <span />
             </div>
           </main>
         </div>
