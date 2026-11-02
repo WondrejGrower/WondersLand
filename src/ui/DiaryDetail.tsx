@@ -22,6 +22,13 @@ function dateLabel(seconds: number): string {
   });
 }
 
+/** Grow week (1-based) from the diary's own start; null when not derivable. */
+function weekOf(diary: Diary, at: number): number | null {
+  const start = diary.startedAt ?? diary.createdAt;
+  if (!start || at < start) return null;
+  return Math.floor((at - start) / (7 * 86400)) + 1;
+}
+
 function Meta({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
@@ -43,6 +50,8 @@ export function DiaryDetail({
   onUnlock,
   onDelete,
   onResendDelete,
+  owner = true,
+  grower,
 }: {
   diary: Diary;
   writable: boolean;
@@ -55,6 +64,9 @@ export function DiaryDetail({
   onUnlock: (diary: Diary) => void;
   onDelete: (diary: Diary) => Promise<void>;
   onResendDelete: (diary: Diary) => Promise<string>;
+  /** False for community diaries: hides every owner action. */
+  owner?: boolean;
+  grower?: string;
 }) {
 
   const [entries, setEntries] = useState<DiaryEntry[] | null>(null);
@@ -111,7 +123,7 @@ export function DiaryDetail({
         onClick={onBack}
         className="inline-flex min-h-11 w-fit items-center gap-2 rounded-xl border border-forest-soft/60 px-4 py-2 text-sm text-cream/85"
       >
-        <ArrowLeft className="h-4 w-4" aria-hidden /> Back to diaries
+        <ArrowLeft className="h-4 w-4" aria-hidden /> Back
       </button>
 
       <article className="min-w-0 overflow-hidden rounded-2xl border border-forest-soft/50 bg-forest/60">
@@ -138,6 +150,7 @@ export function DiaryDetail({
             >
               {diary.title}
             </h2>
+            {grower ? <p className="text-sm text-cream/75">by {grower}</p> : null}
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-cream/60">
               <CalendarDays className="h-3.5 w-3.5" aria-hidden />
               created {dateLabel(diary.createdAt)} · updated {dateLabel(diary.updatedAt)} ·{" "}
@@ -167,7 +180,7 @@ export function DiaryDetail({
             </div>
           ) : null}
 
-          {writable ? (
+          {!owner ? null : writable ? (
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
@@ -201,7 +214,7 @@ export function DiaryDetail({
           )}
 
 
-          <div className="min-w-0 border-t border-forest-soft/40 pt-4">
+          {owner ? (<div className="min-w-0 border-t border-forest-soft/40 pt-4">
             {hidden ? (
               <div className="grid min-w-0 gap-2">
                 <p className="text-xs text-cream/70">
@@ -226,7 +239,7 @@ export function DiaryDetail({
                   <button
                     type="button"
                     onClick={() => onHide(diary)}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-400/50 px-4 py-2.5 text-sm font-medium text-amber-300"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-amber-400/50 px-4 py-2.5 text-sm font-medium text-destructive"
                   >
                     <EyeOff className="h-4 w-4" aria-hidden /> Yes, hide it
                   </button>
@@ -248,9 +261,9 @@ export function DiaryDetail({
                 <EyeOff className="h-4 w-4" aria-hidden /> Hide diary
               </button>
             )}
-          </div>
+          </div>) : null}
 
-          {writable ? (
+          {owner && writable ? (
             <div className="min-w-0 border-t border-forest-soft/40 pt-4">
               <button
                 type="button"
@@ -258,7 +271,7 @@ export function DiaryDetail({
                   setDeleteError(null);
                   setConfirmDelete(true);
                 }}
-                className="inline-flex min-h-11 w-fit items-center gap-2 rounded-xl px-3 py-2.5 text-xs text-red-300/75 hover:text-red-300"
+                className="inline-flex min-h-11 w-fit items-center gap-2 rounded-xl px-3 py-2.5 text-xs text-destructive/80 hover:text-destructive"
               >
                 <Trash2 className="h-4 w-4" aria-hidden /> Delete diary
               </button>
@@ -290,7 +303,7 @@ export function DiaryDetail({
               {resendReport ? (
                 <p className="mt-2 whitespace-pre-wrap text-xs text-cream/80">{resendReport}</p>
               ) : null}
-              {deleteError ? <p className="mt-2 text-xs text-amber-300">{deleteError}</p> : null}
+              {deleteError ? <p className="mt-2 text-xs text-destructive">{deleteError}</p> : null}
             </div>
           ) : null}
 
@@ -372,6 +385,11 @@ export function DiaryDetail({
                 className="min-w-0 overflow-hidden rounded-2xl border border-forest-soft/50 bg-forest/60 p-4 sm:p-5"
               >
                 <div className="flex flex-wrap items-center gap-2">
+                  {weekOf(diary, entry.createdAt) ? (
+                    <span className="rounded-full border border-forest-soft/60 px-2 py-0.5 text-[0.65rem] font-semibold text-cream/80">
+                      Week {weekOf(diary, entry.createdAt)}
+                    </span>
+                  ) : null}
                   <p className="text-xs text-cream/65">{dateLabel(entry.createdAt)}</p>
                   {entry.phaseLabel ? (
                     <span className="rounded-full bg-leaf/15 px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-wide text-leaf">
@@ -410,7 +428,7 @@ export function DiaryDetail({
           </ol>
         )}
 
-        {error ? <p className="text-xs text-amber-300">{error}</p> : null}
+        {error ? <p className="text-xs text-destructive">{error}</p> : null}
       </div>
     </section>
   );
