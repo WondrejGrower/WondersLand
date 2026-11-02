@@ -198,3 +198,9 @@
 .pz .pz-mono {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
 }
+
+/* Obvious keyboard focus everywhere in the journal client. */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--leaf);
+  outline-offset: 2px;
+}
