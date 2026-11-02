@@ -1,5 +1,13 @@
 # AGENTS.md — WondersLand
 
+## 2026-11-02 — Clean archive preparation
+
+The user authorized removing the entire Project Zomboid companion. Its route,
+feature code, styling and active preservation rules are removed. The remaining
+WondersLand Nostr client and all its data formats are preserved for a dedicated
+GitHub backup before the personal NoTillMan website replaces the main page.
+No browser storage, Nostr events or published Git history is deleted.
+
 ## Current direction — 2026-11-02
 
 The user explicitly changed the current milestone: WondersLand is a 2D Nostr
@@ -20,9 +28,8 @@ Supabase, email accounts, a shop or new gamification.
   Save Garden UI are inactive in the 2D flow.
 - Main private keys remain memory-only and guarded. Do not publish test events
   while checking the app. Never promote private board data into public discovery.
-- `/games/project-zomboid` remains unlisted/noindex with its own isolated identity.
 - Use semantic color tokens suited to the light botanical theme, readable warnings
-  and focus indicators. Preserve the separately scoped `.pz` theme.
+  and focus indicators.
 - Run the Nostr/session/domain tests, TypeScript and production build after changes.
   Update these notes with actual verification limits; do not claim unperformed
   browser or signed publishing/upload checks.
@@ -40,7 +47,6 @@ Supabase, email accounts, a shop or new gamification.
   sign-in panel, relay controls, Grow posts and Grow Lens UI were checked.
   The 390px view had no horizontal overflow and zero canvas elements.
 - Static root import graph: 71 reachable source modules, no world/Three imports.
-  Project Zomboid route still loads and reports `noindex, nofollow`.
 - No signing, publishing, account creation, likes or upload was performed during
   QA. Actual signed publishing and media uploads need an owner session to verify.
   Read-only restoration/secret handling and private task behavior are covered by
@@ -145,5 +151,3 @@ When finishing work, state plainly what was built, what was skipped, and what
 the next milestone step is. Do not claim a feature exists until it is visible
 in the running app.
 
-## 11. Unlisted games
-`/games/*` pages are unlisted (noindex, no nav links) and live in `src/features/<game>/`. They use their own game-only Nostr identity and must never touch the main WondersLand session or signer. Why: friends' game keys must not interfere with real accounts.

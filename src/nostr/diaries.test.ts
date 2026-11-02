@@ -55,10 +55,10 @@ describe("public grow diary discovery", () => {
     expect(await fetchDiaries(author)).toHaveLength(1);
   });
 
-  it("never promotes reserved tasks or game data even with a diary tag", async () => {
+  it("never promotes reserved tasks or unrelated app data even with a diary tag", async () => {
     returnEvents([
       event({ title: "Private board" }, { tags: [["d", "wondersland:tasks:v1"], ["t", "weedoshi-diary"]] }),
-      event({ title: "Game profile" }, { tags: [["d", "wondersland:pz:room:player"], ["t", "weedoshi"]] }),
+      event({ title: "Unrelated application" }, { tags: [["d", "wondersland:other-app:v1"], ["t", "weedoshi"]] }),
       event({ title: "Unrelated" }, { tags: [["d", "other-data"]] }),
     ]);
     expect(await fetchCommunityDiaries()).toEqual([]);
