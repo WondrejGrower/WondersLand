@@ -15,7 +15,7 @@ function Chips({
 }) {
   if (hosts.length === 0) return null;
   return (
-    <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-[0.65rem] text-cream/55">
+    <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-[0.65rem] text-cream/65">
       <span className="inline-flex items-center gap-1 uppercase tracking-wide">
         <Icon className="h-3 w-3" aria-hidden /> {label}
       </span>
@@ -43,7 +43,7 @@ export function RelayChips({
 }) {
   const hosts = relayHosts(relays);
   if (hosts.length === 0) {
-    return fallback ? <p className="text-[0.65rem] text-cream/45">{fallback}</p> : null;
+    return fallback ? <p className="text-[0.65rem] text-cream/65">{fallback}</p> : null;
   }
   return <Chips icon={Radio} label={label} hosts={hosts} />;
 }
@@ -57,7 +57,7 @@ export function MediaChips({ urls, label = "Media" }: { urls: string[] | undefin
 export function ClientChip({ client }: { client: string | undefined }) {
   if (!client) return null;
   return (
-    <span className="inline-flex max-w-full items-center gap-1 truncate rounded-full border border-forest-soft/50 bg-forest-deep/40 px-2 py-0.5 text-[0.65rem] text-cream/60">
+    <span className="inline-flex max-w-full items-center gap-1 truncate rounded-full border border-forest-soft/50 bg-forest-deep/40 px-2 py-0.5 text-[0.65rem] text-cream/70">
       <Sparkles className="h-3 w-3 shrink-0" aria-hidden /> from {client}
     </span>
   );

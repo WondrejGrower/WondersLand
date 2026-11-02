@@ -22,41 +22,84 @@ function isDiaryEvent(event: NostrEvent, dTag: string): boolean {
   return hasTag || dTag.toLowerCase().startsWith("diary-");
 }
 
-function parseDiary(event: NostrEvent, authorPubkey: string): Diary | null {
+function text(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function timestamp(value: unknown, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0
+    ? Math.floor(value)
+    : fallback;
+}
+
+function optionalTimestamp(value: unknown): number | undefined {
+  const result = timestamp(value, NaN);
+  return Number.isFinite(result) ? result : undefined;
+}
+
+function imageUrl(value: unknown): string | undefined {
+  const url = text(value);
+  if (!url) return undefined;
+  try {
+    return ["https:", "http:"].includes(new URL(url).protocol) ? url : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function parseDiary(event: NostrEvent, authorPubkey: string, publicOnly = false): Diary | null {
+  if (event.kind !== KIND_DIARY) return null;
   const dTag = tagValue(event, "d") ?? "";
-  if (!isDiaryEvent(event, dTag)) return null;
+  if (!isDiaryEvent(event, dTag) || dTag.toLowerCase().startsWith("wondersland:")) return null;
   const id = (dTag.toLowerCase().startsWith("diary-") ? dTag.replace(/^diary-/i, "") : dTag).trim();
   if (!id) return null;
 
-  let parsed: Partial<Diary> & { items?: DiaryItemRef[] } = {};
+  let content: unknown;
   try {
-    parsed = JSON.parse(event.content || "{}") as Partial<Diary>;
+    content = JSON.parse(event.content || "{}");
   } catch {
-    parsed = {};
+    return null;
   }
+  if (!content || typeof content !== "object" || Array.isArray(content)) return null;
+  const parsed = content as Record<string, unknown>;
+  // A public relay is not a privacy boundary, but Explore must still respect
+  // visibility flags instead of promoting explicitly private/unlisted data.
+  if (publicOnly && (
+    (parsed["isPublic"] !== undefined && parsed["isPublic"] !== true) ||
+    (parsed["public"] !== undefined && parsed["public"] !== true) ||
+    (parsed["private"] !== undefined && parsed["private"] !== false) ||
+    (parsed["visibility"] !== undefined && text(parsed["visibility"])?.toLowerCase() !== "public")
+  )) return null;
 
-  const plantSlug = tagValue(event, "plant") ?? parsed.plantSlug;
+  const plantSlug = tagValue(event, "plant") ?? text(parsed["plantSlug"]);
   const custom = plantSlug ? decodeCustomPlantSlug(plantSlug) : null;
   const catalogLatin = plantSlug ? getPlantBySlug(plantSlug)?.latin : undefined;
 
   const items = new Map<string, DiaryItemRef>();
-  for (const item of Array.isArray(parsed.items) ? parsed.items : []) {
-    if (!item || typeof item.eventId !== "string" || !item.eventId.trim()) continue;
-    items.set(item.eventId, {
-      eventId: item.eventId,
-      authorPubkey: item.authorPubkey || authorPubkey,
-      createdAt: typeof item.createdAt === "number" ? item.createdAt : event.created_at,
-      addedAt: typeof item.addedAt === "number" ? item.addedAt : event.created_at,
-      contentPreview: typeof item.contentPreview === "string" ? item.contentPreview : "",
-      image: typeof item.image === "string" ? item.image : undefined,
-      mediaUrls: Array.isArray(item.mediaUrls) ? item.mediaUrls.filter((u) => typeof u === "string") : undefined,
-      phaseLabel: typeof item.phaseLabel === "string" ? item.phaseLabel : undefined,
+  for (const raw of Array.isArray(parsed["items"]) ? parsed["items"] : []) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+    const item = raw as Record<string, unknown>;
+    const eventId = text(item["eventId"]);
+    if (!eventId || !/^[0-9a-f]{64}$/i.test(eventId)) continue;
+    const author = text(item["authorPubkey"]);
+    items.set(eventId, {
+      eventId,
+      authorPubkey: author && /^[0-9a-f]{64}$/i.test(author) ? author : authorPubkey,
+      createdAt: timestamp(item["createdAt"], event.created_at),
+      addedAt: timestamp(item["addedAt"], event.created_at),
+      contentPreview: text(item["contentPreview"]) ?? "",
+      image: imageUrl(item["image"]),
+      mediaUrls: Array.isArray(item["mediaUrls"])
+        ? item["mediaUrls"].map(imageUrl).filter((u): u is string => Boolean(u))
+        : undefined,
+      phaseLabel: text(item["phaseLabel"]),
     });
   }
   for (const tag of event.tags) {
-    if (tag[0] !== "e" || typeof tag[1] !== "string" || items.has(tag[1])) continue;
-    items.set(tag[1], {
-      eventId: tag[1],
+    const eventId = tag[1];
+    if (tag[0] !== "e" || !eventId || !/^[0-9a-f]{64}$/i.test(eventId) || items.has(eventId)) continue;
+    items.set(eventId, {
+      eventId,
       authorPubkey,
       createdAt: event.created_at,
       addedAt: event.created_at,
@@ -67,18 +110,19 @@ function parseDiary(event: NostrEvent, authorPubkey: string): Diary | null {
   return {
     id,
     authorPubkey,
-    title: parsed.title?.trim() || tagValue(event, "title") || id,
-    plant: parsed.plant?.trim() || custom || catalogLatin,
+    title: text(parsed["title"]) ?? tagValue(event, "title") ?? id,
+    plant: text(parsed["plant"]) ?? custom ?? catalogLatin,
     plantSlug,
-    species: tagValue(event, "species") ?? parsed.species,
-    cultivar: tagValue(event, "cultivar") ?? parsed.cultivar,
-    breeder: tagValue(event, "breeder") ?? parsed.breeder,
-    phase: parsed.phase,
-    coverImage: parsed.coverImage,
-    createdAt: typeof parsed.createdAt === "number" ? parsed.createdAt : event.created_at,
-    updatedAt: typeof parsed.updatedAt === "number" ? parsed.updatedAt : event.created_at,
-    startedAt: typeof parsed.startedAt === "number" ? parsed.startedAt : undefined,
-    endedAt: typeof parsed.endedAt === "number" ? parsed.endedAt : undefined,
+    species: tagValue(event, "species") ?? text(parsed["species"]),
+    cultivar: tagValue(event, "cultivar") ?? text(parsed["cultivar"]),
+    breeder: tagValue(event, "breeder") ?? text(parsed["breeder"]),
+    phase: text(parsed["phase"]),
+    coverImage: imageUrl(parsed["coverImage"]),
+    createdAt: timestamp(parsed["createdAt"], event.created_at),
+    updatedAt: timestamp(parsed["updatedAt"], event.created_at),
+    startedAt: optionalTimestamp(parsed["startedAt"]),
+    endedAt: optionalTimestamp(parsed["endedAt"]),
+    sourceDTag: dTag,
     items: [...items.values()].sort((a, b) => a.createdAt - b.createdAt),
   };
 }
@@ -98,7 +142,7 @@ async function hydrateItems(diaries: Diary[]): Promise<void> {
   for (const diary of diaries) {
     for (const item of diary.items) {
       const note = byId.get(item.eventId);
-      if (!note) continue;
+      if (!note || note.pubkey !== item.authorPubkey) continue;
       const images = extractImageUrls(note.content || "");
       if (!item.contentPreview) item.contentPreview = preview(note.content || "");
       if (!firstImage(item) && images.length > 0) {
@@ -182,22 +226,19 @@ export async function fetchCommunityDiaries(limit = 80): Promise<Diary[]> {
   const latest = new Map<string, NostrEvent>();
   for (const event of events) {
     const dTag = tagValue(event, "d") ?? "";
-    if (!dTag || dTag.startsWith("wondersland:")) continue;
+    if (event.kind !== KIND_DIARY || !dTag || dTag.toLowerCase().startsWith("wondersland:")) continue;
     if (!isDiaryEvent(event, dTag)) continue;
-    let content: unknown;
-    try {
-      content = JSON.parse(event.content || "");
-    } catch {
-      continue;
-    }
-    if (!content || typeof content !== "object" || Array.isArray(content)) continue;
-    const key = `${event.pubkey}:${dTag.replace(/^diary-/i, "").trim().toLowerCase()}`;
+    // NIP-01 address identity is author + exact d value. Select a revision
+    // before checking its content/visibility so an older public copy cannot
+    // reappear when the newest returned revision is private or malformed.
+    const key = `${event.pubkey}:${dTag}`;
     const current = latest.get(key);
-    if (!current || event.created_at > current.created_at) latest.set(key, event);
+    if (!current || event.created_at > current.created_at ||
+      (event.created_at === current.created_at && event.id < current.id)) latest.set(key, event);
   }
   const diaries: Diary[] = [];
   for (const event of latest.values()) {
-    const diary = parseDiary(event, event.pubkey);
+    const diary = parseDiary(event, event.pubkey, true);
     if (diary) diaries.push({ ...diary, seenOn: sources.get(event.id) ?? [] });
   }
   diaries.sort((a, b) => b.updatedAt - a.updatedAt);

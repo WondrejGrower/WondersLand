@@ -99,13 +99,13 @@ function FilterBar({ f, label }: { f: ReturnType<typeof useFiltered>; label: str
     <div className="grid min-w-0 gap-2">
       <label className="relative block">
         <span className="sr-only">{label}</span>
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cream/50" aria-hidden />
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cream/65" aria-hidden />
         <input
           type="search"
           value={f.query}
           onChange={(e) => f.setQuery(e.target.value)}
           placeholder="Search title, cultivar, breeder…"
-          className="min-h-11 w-full rounded-xl border border-forest-soft bg-forest pl-9 pr-3 text-sm text-cream placeholder:text-cream/45"
+          className="min-h-11 w-full rounded-xl border border-forest-soft bg-forest pl-9 pr-3 text-sm text-cream placeholder:text-cream/65"
         />
       </label>
       <div className="flex min-w-0 flex-wrap items-center gap-1.5" role="group" aria-label="Filter by phase">
@@ -155,7 +155,7 @@ function DiaryCard({ diary, grower, onOpen }: { diary: Diary; grower?: string; o
           {cover ? (
             <img src={cover} alt="" loading="lazy" className="h-full w-full object-cover" />
           ) : (
-            <div className="grid h-full place-items-center text-xs text-cream/50">No photo yet</div>
+            <div className="grid h-full place-items-center text-xs text-cream/65">No photo yet</div>
           )}
         </div>
         <div className="grid min-w-0 gap-1 p-4">
@@ -171,7 +171,7 @@ function DiaryCard({ diary, grower, onOpen }: { diary: Diary; grower?: string; o
           </div>
           {grower ? <p className="truncate text-xs font-medium text-cream/75">{grower}</p> : null}
           {sub ? <p className="truncate text-xs text-cream/65">{sub}</p> : null}
-          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-cream/60">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-cream/70">
             <GrowClock diary={diary} compact />
             <span>
               {diary.items.length} {diary.items.length === 1 ? "update" : "updates"} · {relative(diary.updatedAt)}
@@ -195,7 +195,7 @@ function SignInPrompt({ text }: { text: string }) {
   return (
     <div className="grid min-w-0 gap-3 rounded-2xl border border-forest-soft/70 bg-forest p-6">
       <p className="text-sm text-cream/80">{text}</p>
-      <p className="text-xs text-cream/60">Use the Sign in button at the top. A browser extension (NIP-07) is recommended; you can also view an npub read-only.</p>
+      <p className="text-xs text-cream/70">Use the Sign in button at the top. A browser extension (NIP-07) is recommended; you can also view an npub read-only.</p>
     </div>
   );
 }
@@ -287,7 +287,7 @@ function Explore({ onOpen, profiles }: { onOpen: (d: Diary) => void; profiles: R
             <Grid>
               {f.filtered.map((d) => (
                 <DiaryCard
-                  key={`${d.authorPubkey}:${d.id}`}
+                  key={`${d.authorPubkey}:${d.sourceDTag ?? d.id}`}
                   diary={d}
                   grower={profileLabel(profiles[d.authorPubkey] ?? null, d.authorPubkey) || shortNpub(d.authorPubkey)}
                   onOpen={onOpen}
@@ -337,6 +337,7 @@ function RelaySettings() {
         <Radio className="h-4 w-4 text-leaf" aria-hidden /> Relays
       </h2>
       <p className="text-xs text-cream/65">Where WondersLand reads and publishes. Changes apply on the next refresh of a feed.</p>
+      {!relays.some((r) => r.enabled) ? <p role="status" className="text-xs text-destructive">Enable at least one relay to read or publish.</p> : null}
       <ul className="grid gap-1.5">
         {relays.map((r) => (
           <li key={r.url} className="flex min-w-0 items-center justify-between gap-3">
@@ -421,12 +422,12 @@ function ProfilePage({ diaries }: { diaries: Diary[] }) {
                 onClick={() => {
                   void navigator.clipboard?.writeText(npub).then(() => setCopied(true));
                 }}
-                className="w-fit max-w-full truncate text-left text-xs text-cream/60 hover:text-cream"
+                className="w-fit max-w-full truncate text-left text-xs text-cream/70 hover:text-cream"
                 aria-label="Copy npub"
               >
                 {copied ? "Copied" : `${npub.slice(0, 16)}…${npub.slice(-6)}`}
               </button>
-              <p className="text-xs text-cream/60">
+              <p className="text-xs text-cream/70">
                 {canPublish(method) ? "Can publish from this tab" : "Read-only session — unlock publishing when you add or edit a diary."}
                 {" · "}
                 {diaries.length} {diaries.length === 1 ? "diary" : "diaries"}
@@ -474,6 +475,8 @@ export function AppShell() {
   const profile = useNostrStore((s) => s.profile);
   const diaries = useNostrStore((s) => s.diaries);
   const status = useNostrStore((s) => s.status);
+  const accountError = useNostrStore((s) => s.error);
+  const refresh = useNostrStore((s) => s.refresh);
   const method = useNostrStore((s) => s.method);
   const removeDiary = useNostrStore((s) => s.removeDiary);
   const hiddenIds = useHiddenDiaries((s) => s.ids);
@@ -494,6 +497,7 @@ export function AppShell() {
 
   useEffect(() => {
     profileListener = setProfiles;
+    setProfiles({ ...profileCache });
     return () => {
       profileListener = null;
     };
@@ -511,6 +515,11 @@ export function AppShell() {
     setOpenOwn(null);
     setComposer(null);
     setShowHidden(false);
+    setPendingIntent(null);
+    setUnlockOpen(false);
+    setToast(null);
+    useWorldStore.getState().closeTasks();
+    if (!pubkey) setSection("explore");
   }, [pubkey]);
 
   const all = useMemo(() => [...diaries].sort((a, b) => b.updatedAt - a.updatedAt), [diaries]);
@@ -630,6 +639,7 @@ export function AppShell() {
               <p className="text-xs text-cream/65">Read-only session — you&rsquo;ll be asked to unlock publishing before anything is posted.</p>
             ) : null}
             <FilterBar f={own} label="Search my diaries" />
+            {accountError ? <p role="alert" className="text-sm text-destructive">{accountError} <button type="button" onClick={() => void refresh()} className="underline">Try again</button></p> : null}
             {status === "loading" && all.length === 0 ? (
               <Note>Reading your diaries from the relays…</Note>
             ) : own.filtered.length === 0 ? (
@@ -718,9 +728,9 @@ export function AppShell() {
         ))}
       </nav>
 
-      <div className="fixed inset-0 z-40 empty:hidden [&:not(:has(*))]:hidden">
+      {pubkey ? <div className="fixed inset-0 z-40 empty:hidden [&:not(:has(*))]:hidden">
         <TasksBoard />
-      </div>
+      </div> : null}
 
       {composer ? <DiaryComposer mode={composer} onClose={() => setComposer(null)} onPublished={(d, kind, n) => {
         setSection("diaries");

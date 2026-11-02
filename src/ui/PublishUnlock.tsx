@@ -73,7 +73,7 @@ export function PublishUnlock({
         ) : null}
 
         <div className="mt-4">
-          <label htmlFor="unlock-nsec" className="text-[0.7rem] uppercase tracking-wide text-cream/55">
+          <label htmlFor="unlock-nsec" className="text-[0.7rem] uppercase tracking-wide text-cream/65">
             {nip07Available ? "or paste your nsec" : "paste your nsec"}
           </label>
           <input
@@ -88,7 +88,7 @@ export function PublishUnlock({
           />
         </div>
 
-        {error ? <p className="mt-3 text-xs text-amber-300">{error}</p> : null}
+        {error ? <p className="mt-3 text-xs text-destructive">{error}</p> : null}
 
         <div className="mt-4 flex flex-wrap justify-end gap-2">
           <button

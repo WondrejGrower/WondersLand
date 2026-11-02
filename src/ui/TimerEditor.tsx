@@ -23,7 +23,7 @@ function fromLocalInput(value: string): number | null {
 
 const field =
   "min-h-11 w-full rounded-xl border border-forest-soft/60 bg-forest-deep/50 px-3 py-2 text-sm text-cream outline-none focus:border-leaf";
-const label = "text-[0.7rem] uppercase tracking-wide text-cream/55";
+const label = "text-[0.7rem] uppercase tracking-wide text-cream/65";
 
 export function TimerEditor({ diary }: { diary: Diary }) {
   const method = useNostrStore((s) => s.method);
@@ -96,7 +96,7 @@ export function TimerEditor({ diary }: { diary: Diary }) {
           type="button"
           onClick={() => setOpen(false)}
           aria-label="Close timer editor"
-          className="grid h-8 w-8 place-items-center rounded-full text-cream/60 hover:text-cream"
+          className="grid h-8 w-8 place-items-center rounded-full text-cream/70 hover:text-cream"
         >
           <X className="h-4 w-4" aria-hidden />
         </button>

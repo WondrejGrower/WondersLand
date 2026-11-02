@@ -20,7 +20,7 @@ export function GrowClock({
   return (
     <span
       className={`inline-flex items-center gap-1.5 whitespace-nowrap text-xs ${
-        timer.running ? "text-leaf" : "text-cream/60"
+        timer.running ? "text-leaf" : "text-cream/70"
       } ${className}`}
       title={timer.running ? "Time since this diary was started" : "Total grow time"}
     >

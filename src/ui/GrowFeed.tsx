@@ -103,9 +103,9 @@ function PostCard({ post }: { post: FeedPost }) {
         )}
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-cream">{name}</p>
-          <p className="truncate text-[0.7rem] text-cream/60">{shortNpub(post.pubkey)}</p>
+          <p className="truncate text-[0.7rem] text-cream/70">{shortNpub(post.pubkey)}</p>
         </div>
-        <span className="shrink-0 text-[0.7rem] text-cream/55">{ago(post.createdAt)}</span>
+        <span className="shrink-0 text-[0.7rem] text-cream/65">{ago(post.createdAt)}</span>
       </header>
 
       {post.text ? (
@@ -135,7 +135,7 @@ function PostCard({ post }: { post: FeedPost }) {
               ◎
             </span>
             Lens score {post.score}
-            <span className="text-cream/50">· why am I seeing this</span>
+            <span className="text-cream/65">· why am I seeing this</span>
           </button>
           {showWhy ? (
             <ul className="mt-2 grid gap-1 rounded-xl border border-forest-soft/40 bg-forest-deep/30 px-3 py-2">
@@ -146,10 +146,10 @@ function PostCard({ post }: { post: FeedPost }) {
                 >
                   <span className="min-w-0">
                     {signal.label}
-                    <span className="block text-[0.62rem] text-cream/50">{signal.detail}</span>
+                    <span className="block text-[0.62rem] text-cream/65">{signal.detail}</span>
                   </span>
                   <span
-                    className={`shrink-0 tabular-nums ${signal.points < 0 ? "text-cream/50" : "text-leaf"}`}
+                    className={`shrink-0 tabular-nums ${signal.points < 0 ? "text-cream/65" : "text-leaf"}`}
                   >
                     {signal.points > 0 ? "+" : ""}
                     {signal.points}
@@ -157,7 +157,7 @@ function PostCard({ post }: { post: FeedPost }) {
                 </li>
               ))}
               {(post.signals ?? []).length === 0 ? (
-                <li className="text-[0.68rem] text-cream/60">No signals fired for this note.</li>
+                <li className="text-[0.68rem] text-cream/70">No signals fired for this note.</li>
               ) : null}
             </ul>
           ) : null}
@@ -189,7 +189,7 @@ function PostCard({ post }: { post: FeedPost }) {
             {liked ? "♥" : "♡"}
           </span>
           <span className="hidden min-[380px]:inline">Like</span>
-          {likes > 0 ? <span className="text-cream/60">{likes}</span> : null}
+          {likes > 0 ? <span className="text-cream/70">{likes}</span> : null}
         </button>
 
         <button
@@ -197,7 +197,7 @@ function PostCard({ post }: { post: FeedPost }) {
           disabled
           title="Zaps come with Lightning wallet support"
           aria-label="Zap"
-          className="flex min-w-0 items-center justify-center gap-1 rounded-xl border border-forest-soft/40 bg-forest-deep/40 px-1.5 py-2 text-[0.7rem] text-cream/50 disabled:cursor-not-allowed sm:gap-1.5 sm:px-2 sm:py-1.5"
+          className="flex min-w-0 items-center justify-center gap-1 rounded-xl border border-forest-soft/40 bg-forest-deep/40 px-1.5 py-2 text-[0.7rem] text-cream/65 disabled:cursor-not-allowed sm:gap-1.5 sm:px-2 sm:py-1.5"
         >
           <span aria-hidden className="text-sm text-leaf/60">
             ⚡
@@ -215,7 +215,7 @@ function PostCard({ post }: { post: FeedPost }) {
             ↩
           </span>
           <span className="hidden min-[380px]:inline">Reply</span>
-          {replies.length > 0 ? <span className="text-cream/60">{replies.length}</span> : null}
+          {replies.length > 0 ? <span className="text-cream/70">{replies.length}</span> : null}
         </button>
 
         <button
@@ -223,7 +223,7 @@ function PostCard({ post }: { post: FeedPost }) {
           disabled
           title="Reposts come next"
           aria-label="Repost"
-          className="flex min-w-0 items-center justify-center gap-1 rounded-xl border border-forest-soft/40 bg-forest-deep/40 px-1.5 py-2 text-[0.7rem] text-cream/50 disabled:cursor-not-allowed sm:gap-1.5 sm:px-2 sm:py-1.5"
+          className="flex min-w-0 items-center justify-center gap-1 rounded-xl border border-forest-soft/40 bg-forest-deep/40 px-1.5 py-2 text-[0.7rem] text-cream/65 disabled:cursor-not-allowed sm:gap-1.5 sm:px-2 sm:py-1.5"
         >
           <span aria-hidden className="text-sm text-leaf/60">
             ⇅
@@ -239,7 +239,7 @@ function PostCard({ post }: { post: FeedPost }) {
             onChange={(event) => setText(event.target.value)}
             rows={3}
             placeholder="Write a comment…"
-            className="w-full resize-y rounded-xl border border-forest-soft/50 bg-forest-deep/40 px-3 py-2 text-sm text-cream placeholder:text-cream/40"
+            className="w-full resize-y rounded-xl border border-forest-soft/50 bg-forest-deep/40 px-3 py-2 text-sm text-cream placeholder:text-cream/65"
           />
           <div className="flex items-center justify-end gap-2">
             <button
@@ -280,7 +280,7 @@ function PostCard({ post }: { post: FeedPost }) {
                   key={item.id}
                   className="rounded-xl border border-forest-soft/40 bg-forest-deep/30 px-3 py-2"
                 >
-                  <p className="flex flex-wrap items-center gap-2 text-[0.65rem] text-cream/55">
+                  <p className="flex flex-wrap items-center gap-2 text-[0.65rem] text-cream/65">
                     <span className="truncate">{shortNpub(item.pubkey)}</span>
                     <span>{ago(item.createdAt)}</span>
                     <ClientChip client={item.client} />

@@ -44,5 +44,7 @@ export type Diary = {
   endedAt?: number | undefined;
   /** Relay URLs that served this diary event on the last successful fetch. Display only. */
   seenOn?: string[] | undefined;
+  /** Exact Nostr d tag for display identity; never written into event content. */
+  sourceDTag?: string | undefined;
   items: DiaryItemRef[];
 };

@@ -39,8 +39,9 @@ export function getRelays(): Relay[] {
 }
 
 export function getEnabledRelayUrls(): string[] {
-  const enabled = relays.filter((r) => r.enabled).map((r) => r.url);
-  return enabled.length > 0 ? enabled : DEFAULTS.filter((r) => r.enabled).map((r) => r.url);
+  // An explicitly disabled relay must stay disabled, including when the
+  // visitor disables every relay. Defaults are already installed on startup.
+  return relays.filter((r) => r.enabled).map((r) => r.url);
 }
 
 export function setRelayEnabled(url: string, enabled: boolean): void {

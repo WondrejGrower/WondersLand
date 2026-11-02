@@ -97,13 +97,11 @@ export const useNostrStore = create<NostrState>((set, get) => {
 
   async function load(pubkey: string, seq: number) {
     set({ status: "loading", error: null });
-    const method = get().method ?? "npub";
     const cached = await getCachedDiaries(pubkey);
     if (stale(seq)) return;
     // Render the cached garden immediately; the relays catch up in step two.
     set({ diaries: cached });
-    await useGardenStore.getState().load(pubkey, method, cached);
-    if (stale(seq)) return;
+    // The 3D world is deferred. Its layout fetch must not delay a diary login.
     try {
       const [profile, diaries] = await Promise.all([fetchProfile(pubkey), fetchDiaries(pubkey)]);
       if (stale(seq)) return;

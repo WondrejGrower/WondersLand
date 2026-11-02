@@ -11,9 +11,9 @@ const chipOn = "border-leaf bg-leaf text-forest-deep font-semibold";
 const chipOff = "border-forest-soft/60 bg-forest-deep/40 text-cream/75";
 
 export const fieldClass =
-  "w-full min-w-0 min-h-11 rounded-xl border border-forest-soft/60 bg-forest-deep/60 px-3 py-2.5 text-base text-cream placeholder:text-cream/40 outline-none focus:border-leaf/70 sm:text-sm";
+  "w-full min-w-0 min-h-11 rounded-xl border border-forest-soft/60 bg-forest-deep/60 px-3 py-2.5 text-base text-cream placeholder:text-cream/65 outline-none focus:border-leaf/70 sm:text-sm";
 
-export const labelClass = "text-[0.7rem] uppercase tracking-wide text-cream/60";
+export const labelClass = "text-[0.7rem] uppercase tracking-wide text-cream/70";
 
 /* ------------------------------------------------------------------ plants */
 
@@ -117,7 +117,7 @@ export function PlantPicker({
 
       <div className="max-h-44 min-w-0 overflow-y-auto rounded-xl border border-forest-soft/40">
         {results.length === 0 ? (
-          <p className="p-3 text-xs text-cream/60">
+          <p className="p-3 text-xs text-cream/70">
             Nothing here matches. Type your own plant name below.
           </p>
         ) : (

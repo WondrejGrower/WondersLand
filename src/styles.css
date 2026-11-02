@@ -201,6 +201,6 @@
 
 /* Obvious keyboard focus everywhere in the journal client. */
 :where(button, a, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--leaf);
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
 }

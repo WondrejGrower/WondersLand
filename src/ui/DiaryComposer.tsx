@@ -195,7 +195,7 @@ export function DiaryComposer({
             type="button"
             onClick={onClose}
             aria-label="Close composer"
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm text-cream/60 hover:text-cream"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-sm text-cream/70 hover:text-cream"
           >
             ✕
           </button>
@@ -369,11 +369,11 @@ export function DiaryComposer({
                   />
                 </div>
               </div>
-              <p className="text-xs text-cream/60">
+              <p className="text-xs text-cream/70">
                 The grow clock counts from the start date. Set a finish date to stop it.
               </p>
 
-              <p className="text-xs text-cream/60">
+              <p className="text-xs text-cream/70">
                 Editing republishes the same diary event — your {existing?.items.length ?? 0}{" "}
                 entries stay untouched. A relay that refuses the update may keep serving the old
                 version.
@@ -450,7 +450,7 @@ export function DiaryComposer({
                     onChange={(e) => setStartedAt(e.target.value)}
                     className={fieldClass}
                   />
-                  <p className="text-xs text-cream/60">
+                  <p className="text-xs text-cream/70">
                     Defaults to now — set it back if the grow already started.
                   </p>
                 </div>
@@ -459,7 +459,7 @@ export function DiaryComposer({
           )}
 
           {error ? (
-            <p role="alert" className="rounded-xl border border-amber-400/30 bg-amber-400/5 p-2.5 text-xs text-amber-300">
+            <p role="alert" className="rounded-xl border border-amber-400/30 bg-amber-400/5 p-2.5 text-xs text-destructive">
               {error}
             </p>
           ) : null}

@@ -32,7 +32,7 @@ function weekOf(diary: Diary, at: number): number | null {
 function Meta({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <p className="text-[0.7rem] uppercase tracking-wide text-cream/55">{label}</p>
+      <p className="text-[0.7rem] uppercase tracking-wide text-cream/65">{label}</p>
       <p className="truncate text-sm text-cream/90">{value}</p>
     </div>
   );
@@ -135,7 +135,7 @@ export function DiaryDetail({
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="grid h-full place-items-center gap-2 text-xs text-cream/55">
+            <div className="grid h-full place-items-center gap-2 text-xs text-cream/65">
               <ImageOff className="h-5 w-5" aria-hidden />
               No photo in this diary yet
             </div>
@@ -151,7 +151,7 @@ export function DiaryDetail({
               {diary.title}
             </h2>
             {grower ? <p className="text-sm text-cream/75">by {grower}</p> : null}
-            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-cream/60">
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-cream/70">
               <CalendarDays className="h-3.5 w-3.5" aria-hidden />
               created {dateLabel(diary.createdAt)} · updated {dateLabel(diary.updatedAt)} ·{" "}
               {diary.items.length} {diary.items.length === 1 ? "entry" : "entries"}
@@ -160,7 +160,7 @@ export function DiaryDetail({
               <div className="flex flex-wrap items-center gap-2">
                 <GrowClock diary={diary} />
               </div>
-              {writable ? <TimerEditor key={diary.updatedAt} diary={diary} /> : null}
+              {owner && writable ? <TimerEditor key={diary.updatedAt} diary={diary} /> : null}
             </div>
 
 
@@ -295,7 +295,7 @@ export function DiaryDetail({
                 <Send className="h-4 w-4" aria-hidden />
                 {resending ? "Re-sending…" : "Re-send deletion"}
               </button>
-              <p className="mt-2 text-[0.7rem] leading-relaxed text-cream/55">
+              <p className="mt-2 text-[0.7rem] leading-relaxed text-cream/65">
                 Relays decide for themselves whether to honour a deletion. If a diary keeps coming
                 back, it is still being served by one of the relays listed above — re-sending asks
                 them again.
@@ -345,7 +345,7 @@ export function DiaryDetail({
                     })
                     .finally(() => setDeleting(false));
                 }}
-                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-red-500/90 px-5 py-2.5 text-sm font-semibold text-cream disabled:opacity-60"
+                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-destructive px-5 py-2.5 text-sm font-semibold text-destructive-foreground disabled:opacity-60"
               >
                 <Trash2 className="h-4 w-4" aria-hidden />
                 {deleting ? "Deleting…" : "Delete permanently"}
@@ -402,7 +402,7 @@ export function DiaryDetail({
                     {entry.text}
                   </p>
                 ) : (
-                  <p className="mt-2 text-sm text-cream/55">
+                  <p className="mt-2 text-sm text-cream/65">
                     {entry.missing ? "This note could not be read from the relays." : "No text in this entry."}
                   </p>
                 )}

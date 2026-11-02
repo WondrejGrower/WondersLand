@@ -50,7 +50,7 @@ export async function fetchDiaryEntries(diary: Diary): Promise<DiaryEntry[]> {
   if (refs.length === 0) return [];
 
   const ids = refs.map((ref) => ref.eventId).slice(0, 300);
-  let byId = new Map<string, { content: string; created_at: number }>();
+  let byId = new Map<string, { content: string; created_at: number; pubkey: string }>();
   let sources = new Map<string, string[]>();
   try {
     const result = await queryWithSources(getEnabledRelayUrls(), { kinds: [KIND_NOTE], ids }, 7000);
@@ -62,7 +62,7 @@ export async function fetchDiaryEntries(diary: Diary): Promise<DiaryEntry[]> {
 
   return refs.map((ref) => {
     const note = byId.get(ref.eventId);
-    if (!note) return fromRef(ref);
+    if (!note || note.pubkey !== ref.authorPubkey) return fromRef(ref);
     const images = extractImageUrls(note.content || "");
     return {
       eventId: ref.eventId,

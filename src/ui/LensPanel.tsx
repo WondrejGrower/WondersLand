@@ -87,7 +87,7 @@ export function LensPanel({ onClose, onApply }: { onClose: () => void; onApply: 
 
       <div className="mt-3 grid gap-3">
         <div>
-          <p className="text-[0.7rem] uppercase tracking-wide text-cream/55">Where posts come from</p>
+          <p className="text-[0.7rem] uppercase tracking-wide text-cream/65">Where posts come from</p>
           <div className="mt-1.5 grid gap-1.5">
             {SOURCE_LABELS.map((source) => (
               <label key={source.key} className="flex items-start gap-2 text-xs text-cream/80">
@@ -99,7 +99,7 @@ export function LensPanel({ onClose, onApply }: { onClose: () => void; onApply: 
                 />
                 <span className="min-w-0">
                   {source.label}
-                  <span className="block text-[0.65rem] text-cream/55">{source.hint}</span>
+                  <span className="block text-[0.65rem] text-cream/65">{source.hint}</span>
                 </span>
               </label>
             ))}
@@ -107,13 +107,13 @@ export function LensPanel({ onClose, onApply }: { onClose: () => void; onApply: 
         </div>
 
         <div>
-          <p className="text-[0.7rem] uppercase tracking-wide text-cream/55">Signal weights</p>
+          <p className="text-[0.7rem] uppercase tracking-wide text-cream/65">Signal weights</p>
           <div className="mt-1.5 grid gap-2.5">
             {LENS_SIGNAL_IDS.map((id) => (
               <label key={id} className="block text-xs text-cream/80">
                 <span className="flex items-baseline justify-between gap-2">
                   <span className="min-w-0 truncate">{SIGNAL_LABELS[id]}</span>
-                  <span className="shrink-0 tabular-nums text-cream/60">{config.weights[id]}</span>
+                  <span className="shrink-0 tabular-nums text-cream/70">{config.weights[id]}</span>
                 </span>
                 <input
                   type="range"
@@ -124,7 +124,7 @@ export function LensPanel({ onClose, onApply }: { onClose: () => void; onApply: 
                   onChange={(e) => setWeight(id, Number(e.target.value))}
                   className="mt-1 w-full accent-current"
                 />
-                <span className="block text-[0.65rem] leading-snug text-cream/55">
+                <span className="block text-[0.65rem] leading-snug text-cream/65">
                   {SIGNAL_HINTS[id]}
                 </span>
               </label>
@@ -135,7 +135,7 @@ export function LensPanel({ onClose, onApply }: { onClose: () => void; onApply: 
         <div className="grid gap-2 sm:grid-cols-2">
           <label className="block text-xs text-cream/80">
             <span className="flex items-baseline justify-between gap-2">
-              Minimum score <span className="tabular-nums text-cream/60">{config.minScore}</span>
+              Minimum score <span className="tabular-nums text-cream/70">{config.minScore}</span>
             </span>
             <input
               type="range"
@@ -150,7 +150,7 @@ export function LensPanel({ onClose, onApply }: { onClose: () => void; onApply: 
           <label className="block text-xs text-cream/80">
             <span className="flex items-baseline justify-between gap-2">
               Max posts per author{" "}
-              <span className="tabular-nums text-cream/60">{config.maxPerAuthor}</span>
+              <span className="tabular-nums text-cream/70">{config.maxPerAuthor}</span>
             </span>
             <input
               type="range"
@@ -173,7 +173,7 @@ export function LensPanel({ onClose, onApply }: { onClose: () => void; onApply: 
           />
           <span className="min-w-0">
             Only posts about growing
-            <span className="block text-[0.65rem] text-cream/55">
+            <span className="block text-[0.65rem] text-cream/65">
               Even people you follow need a grow word or grow hashtag to appear here.
             </span>
           </span>
@@ -198,7 +198,7 @@ export function LensPanel({ onClose, onApply }: { onClose: () => void; onApply: 
             onBlur={() => setKeywords(tagList(keywordText))}
             rows={2}
             placeholder="e.g. terpene mycorrhiza"
-            className="mt-1 w-full resize-y rounded-xl border border-forest-soft/50 bg-forest/50 px-3 py-2 text-xs text-cream placeholder:text-cream/40"
+            className="mt-1 w-full resize-y rounded-xl border border-forest-soft/50 bg-forest/50 px-3 py-2 text-xs text-cream placeholder:text-cream/65"
           />
         </label>
 
@@ -220,7 +220,7 @@ export function LensPanel({ onClose, onApply }: { onClose: () => void; onApply: 
               onChange={(e) => setImportText(e.target.value)}
               rows={3}
               placeholder="Paste a lens config to import…"
-              className="w-full resize-y rounded-xl border border-forest-soft/50 bg-forest/50 px-3 py-2 text-xs text-cream placeholder:text-cream/40"
+              className="w-full resize-y rounded-xl border border-forest-soft/50 bg-forest/50 px-3 py-2 text-xs text-cream placeholder:text-cream/65"
             />
             <button
               type="button"

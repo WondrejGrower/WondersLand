@@ -1,3 +1,59 @@
+# AGENTS.md — WondersLand
+
+## Current direction — 2026-11-02
+
+The user explicitly changed the current milestone: WondersLand is a 2D Nostr
+grow-diary community client, inspired by GrowDiaries workflows. This section
+supersedes the historical 3D-first scope and milestone bans below. Keep the
+existing Nostr identity and diary stack; do not introduce a centralized backend,
+Supabase, email accounts, a shop or new gamification.
+
+- The root route renders `src/ui/AppShell.tsx`: public Explore (community diaries
+  and Grow posts), My Diaries, and Profile with relays and the private Garden Board.
+- Keep existing diary formats, ids, author ownership, media upload seam, readonly
+  npub/unlock behavior, relay acknowledgement handling and private encrypted tasks.
+- Public discovery validates untrusted JSON, excludes unrelated/encrypted or explicitly
+  nonpublic app data, and selects the newest returned revision per author + exact d tag
+  (lowest event id on timestamp ties). `Diary.sourceDTag` is display-only provenance.
+- Do not mount or import the 3D world/editor/HUD in the active client. Its source
+  and assets remain intact for a future phase. World-layout network loading and
+  Save Garden UI are inactive in the 2D flow.
+- Main private keys remain memory-only and guarded. Do not publish test events
+  while checking the app. Never promote private board data into public discovery.
+- `/games/project-zomboid` remains unlisted/noindex with its own isolated identity.
+- Use semantic color tokens suited to the light botanical theme, readable warnings
+  and focus indicators. Preserve the separately scoped `.pz` theme.
+- Run the Nostr/session/domain tests, TypeScript and production build after changes.
+  Update these notes with actual verification limits; do not claim unperformed
+  browser or signed publishing/upload checks.
+
+### Verification of this change
+
+- `npx tsc --noEmit`: passed.
+- `npx vitest run`: 10 files / 89 tests passed, including new public diary
+  schema/visibility/revision isolation and disabled-relay regression cases.
+- `npm run build`: client, SSR and Cloudflare-module production build passed.
+  The existing framework emitted nonfatal module-directive/config warnings.
+- Browser QA: desktop and a 390px iframe viewport; real public diaries, photo
+  and entry timeline loaded from the enabled Nostr relays. Search/no-result/reset
+  and Seedling filter, public owner-action gating, signed-out My Diaries/Profile,
+  sign-in panel, relay controls, Grow posts and Grow Lens UI were checked.
+  The 390px view had no horizontal overflow and zero canvas elements.
+- Static root import graph: 71 reachable source modules, no world/Three imports.
+  Project Zomboid route still loads and reports `noindex, nofollow`.
+- No signing, publishing, account creation, likes or upload was performed during
+  QA. Actual signed publishing and media uploads need an owner session to verify.
+  Read-only restoration/secret handling and private task behavior are covered by
+  the existing automated tests; no personal session was used for browser QA.
+- Lovable generated the first implementation; credits then ran out. Completion
+  fixes were made through its connected GitHub repository. No production deploy
+  or sharing change is part of this update.
+
+## Historical milestones — retained for context
+
+The following world/entrance instructions describe deferred work. They are not
+the current product mandate and must not reactivate the 3D experience.
+
 <!-- LOVABLE:BEGIN -->
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting

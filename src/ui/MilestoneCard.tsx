@@ -18,7 +18,7 @@ function StatusLine({ status }: { status: MilestoneStatus }) {
   if (status.state === "unconfigured") {
     return (
       <p className="inline-flex items-center gap-2 text-sm text-cream/80">
-        <ShieldAlert className="h-4 w-4 text-amber-300" aria-hidden />
+        <ShieldAlert className="h-4 w-4 text-destructive" aria-hidden />
         Verification is not configured yet — no reviewer list has been published.
       </p>
     );
@@ -33,7 +33,7 @@ function StatusLine({ status }: { status: MilestoneStatus }) {
   }
   return (
     <p className="inline-flex items-center gap-2 text-sm text-cream/85">
-      <Clock className="h-4 w-4 text-cream/60" aria-hidden />
+      <Clock className="h-4 w-4 text-cream/70" aria-hidden />
       Waiting for confirmation · {status.votes}/{status.required}
       {status.revokedBy.length > 0 ? ` · ${status.revokedBy.length} withdrawn` : ""}
     </p>
@@ -137,7 +137,7 @@ export function MilestoneCard({ diaries }: { diaries: Diary[] }) {
                 <div className="mt-1">
                   <StatusLine status={status} />
                 </div>
-                <p className="mt-1 text-xs text-cream/55">
+                <p className="mt-1 text-xs text-cream/65">
                   {status.claim.proofs.length} public entries as evidence
                 </p>
                 {mine ? (
@@ -160,7 +160,7 @@ export function MilestoneCard({ diaries }: { diaries: Diary[] }) {
 
       {chosen ? (
         <div className="mt-5 rounded-xl border border-forest-soft/40 bg-forest-deep/50 p-3">
-          <label className="block text-xs uppercase tracking-wide text-cream/60" htmlFor="ms-diary">
+          <label className="block text-xs uppercase tracking-wide text-cream/70" htmlFor="ms-diary">
             Diary to submit
           </label>
           <select
@@ -176,7 +176,7 @@ export function MilestoneCard({ diaries }: { diaries: Diary[] }) {
             ))}
           </select>
 
-          <p className="mt-3 text-xs text-cream/60">
+          <p className="mt-3 text-xs text-cream/70">
             These three entries and their photos are already public on Nostr and will be linked as
             evidence:
           </p>
@@ -205,7 +205,7 @@ export function MilestoneCard({ diaries }: { diaries: Diary[] }) {
             Submit for verification
           </button>
           {!getSigner(method) ? (
-            <p className="mt-2 text-xs text-cream/60">Sign in with a key that can publish first.</p>
+            <p className="mt-2 text-xs text-cream/70">Sign in with a key that can publish first.</p>
           ) : null}
           {publishState.kind === "accepted" ? (
             <p className="mt-2 text-xs text-leaf">
@@ -213,17 +213,17 @@ export function MilestoneCard({ diaries }: { diaries: Diary[] }) {
             </p>
           ) : null}
           {publishState.kind === "partial" ? (
-            <p className="mt-2 text-xs text-amber-200">
+            <p className="mt-2 text-xs text-destructive">
               Accepted by {publishState.accepted} of {publishState.total} relays — sync is
               incomplete.
             </p>
           ) : null}
           {publishState.kind === "error" ? (
-            <p className="mt-2 text-xs text-amber-200">{publishState.message}</p>
+            <p className="mt-2 text-xs text-destructive">{publishState.message}</p>
           ) : null}
         </div>
       ) : (
-        <p className="mt-4 text-xs text-cream/60">
+        <p className="mt-4 text-xs text-cream/70">
           Add a diary with at least {REQUIRED_PROOFS} entries that include a photo to submit this
           milestone.
         </p>

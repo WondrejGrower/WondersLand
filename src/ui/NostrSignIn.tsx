@@ -4,7 +4,6 @@ import { createPortal } from "react-dom";
 import { forgetFreshNsec, peekFreshNsec } from "../nostr/signers/local";
 import { useNostrStore } from "../state/useNostrStore";
 import { profileLabel } from "../nostr/profile";
-import { SaveGarden } from "./SaveGarden";
 
 /**
  * Sign-in: browser extension (NIP-07, preferred) or a pasted npub for
@@ -56,7 +55,6 @@ export function NostrSignIn() {
         forgetFreshNsec();
         dismissKeyBackup();
       }} /> : null}
-      <SaveGarden />
       <button
         type="button"
         onClick={() => void signOut()}
@@ -68,7 +66,7 @@ export function NostrSignIn() {
         ) : (
           <span aria-hidden>✦</span>
         )}
-        <span className="max-w-[9rem] truncate">{profileLabel(profile, pubkey)}</span>
+        <span className="max-w-[5.5rem] truncate sm:max-w-[9rem]">{profileLabel(profile, pubkey)}</span>
         <span className="hidden text-forest-deep/70 sm:inline">
           {busy ? "syncing…" : `${diaryCount} diaries`}
         </span>
@@ -90,10 +88,11 @@ export function NostrSignIn() {
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-30 mt-2 w-72 rounded-2xl border border-white/10 bg-forest-deep/95 p-4 text-left shadow-2xl backdrop-blur">
-          <p className="text-xs text-white/70">
-            Connect your Nostr identity to grow your existing diaries in WondersLand. Read-only — no
-            keys are stored.
+        <div role="dialog" aria-label="Sign in with Nostr"
+          className="absolute right-0 z-30 mt-2 max-h-[calc(100dvh-10rem)] w-72 overflow-y-auto rounded-2xl border border-forest-soft/70 bg-forest-deep/95 p-4 text-left shadow-2xl backdrop-blur">
+          <p className="text-xs text-cream/70">
+            Connect your Nostr identity to keep your grow diaries. Use an extension to publish, or
+            an npub to browse your account read-only.
           </p>
           <button
             type="button"
@@ -104,7 +103,7 @@ export function NostrSignIn() {
             {nip07Available ? "Use browser extension" : "Check for extension"}
           </button>
           <div className="mt-3">
-            <label htmlFor="npub-input" className="text-[0.7rem] uppercase tracking-wide text-white/50">
+            <label htmlFor="npub-input" className="text-[0.7rem] uppercase tracking-wide text-cream/65">
               or paste an npub
             </label>
             <div className="mt-1 flex gap-2">
@@ -113,22 +112,22 @@ export function NostrSignIn() {
                 value={npub}
                 onChange={(e) => setNpub(e.target.value)}
                 placeholder="npub1…"
-                className="min-w-0 flex-1 rounded-lg border border-white/15 bg-black/20 px-2 py-1.5 text-sm text-white placeholder:text-white/30"
+                className="min-w-0 flex-1 rounded-lg border border-forest-soft/70 bg-forest px-2 py-1.5 text-sm text-cream placeholder:text-cream/65"
               />
               <button
                 type="button"
                 disabled={busy || npub.trim().length === 0}
                 onClick={() => void signInWithNpub(npub)}
-                className="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white disabled:opacity-50"
+                className="rounded-lg border border-forest-soft/70 px-3 py-1.5 text-sm text-cream disabled:opacity-50"
               >
                 Go
               </button>
             </div>
           </div>
-          <div className="mt-4 border-t border-white/10 pt-3">
+          <div className="mt-4 border-t border-forest-soft/70 pt-3">
             {creating ? (
               <div>
-                <p className="text-[0.7rem] leading-snug text-white/60">
+                <p className="text-[0.7rem] leading-snug text-cream/70">
                   WondersLand generates a Nostr key in your browser. It is yours alone — we cannot
                   see it and cannot recover it.
                 </p>
@@ -136,7 +135,7 @@ export function NostrSignIn() {
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="Display name (optional)"
-                  className="mt-2 w-full rounded-lg border border-white/15 bg-black/20 px-2 py-1.5 text-sm text-white placeholder:text-white/30"
+                  className="mt-2 w-full rounded-lg border border-forest-soft/70 bg-forest px-2 py-1.5 text-sm text-cream placeholder:text-cream/65"
                 />
                 <div className="mt-2 flex gap-2">
                   <button
@@ -160,7 +159,7 @@ export function NostrSignIn() {
                   <button
                     type="button"
                     onClick={() => setCreating(false)}
-                    className="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/70"
+                    className="rounded-lg border border-forest-soft/70 px-3 py-1.5 text-sm text-cream/70"
                   >
                     Cancel
                   </button>
@@ -177,18 +176,18 @@ export function NostrSignIn() {
             )}
           </div>
 
-          <div className="mt-4 border-t border-white/10 pt-3">
+          <div className="mt-4 border-t border-forest-soft/70 pt-3">
             <button
               type="button"
               onClick={() => setAdvanced((v) => !v)}
               aria-expanded={advanced}
-              className="text-[0.7rem] uppercase tracking-wide text-white/50"
+              className="text-[0.7rem] uppercase tracking-wide text-cream/65"
             >
               Advanced: use nsec {advanced ? "▴" : "▾"}
             </button>
             {advanced ? (
               <div className="mt-2">
-                <p className="text-[0.7rem] leading-snug text-white/50">
+                <p className="text-[0.7rem] leading-snug text-cream/65">
                   Advanced &amp; risky: pasting your nsec gives this webpage direct access to
                   your private key. Prefer the browser extension above. The key is kept in
                   memory for this tab only and wiped on refresh or sign-out — but any page
@@ -202,7 +201,7 @@ export function NostrSignIn() {
                     value={nsec}
                     onChange={(e) => setNsec(e.target.value)}
                     placeholder="nsec1…"
-                    className="min-w-0 flex-1 rounded-lg border border-white/15 bg-black/20 px-2 py-1.5 text-sm text-white placeholder:text-white/30"
+                    className="min-w-0 flex-1 rounded-lg border border-forest-soft/70 bg-forest px-2 py-1.5 text-sm text-cream placeholder:text-cream/65"
                   />
                   <button
                     type="button"
@@ -219,7 +218,7 @@ export function NostrSignIn() {
               </div>
             ) : null}
           </div>
-          {error ? <p className="mt-3 text-xs text-red-300">{error}</p> : null}
+          {error ? <p className="mt-3 text-xs text-destructive">{error}</p> : null}
         </div>
       ) : null}
     </div>
@@ -256,11 +255,11 @@ function KeyBackup({
       <div className="w-full max-w-md rounded-2xl border border-leaf/30 bg-forest-deep/95 p-6 text-left shadow-2xl">
       <p className="text-lg font-semibold text-leaf">Save your secret key</p>
 
-      <p className="mt-1 text-xs leading-snug text-white/70">
+      <p className="mt-1 text-xs leading-snug text-cream/70">
         This is the only copy of your key. Anyone who has it controls your account, and nobody —
         including WondersLand — can recover it for you. Store it in a password manager.
       </p>
-      <code className="mt-3 block break-all rounded-lg border border-white/15 bg-black/30 p-2 text-[0.7rem] text-white/90">
+      <code className="mt-3 block break-all rounded-lg border border-forest-soft/70 bg-forest p-2 text-[0.7rem] text-cream/90">
         {nsec}
       </code>
       <button
@@ -268,11 +267,11 @@ function KeyBackup({
         onClick={() => {
           void navigator.clipboard?.writeText(nsec).then(() => setCopied(true));
         }}
-        className="mt-2 w-full rounded-lg border border-white/20 px-3 py-1.5 text-xs text-white"
+        className="mt-2 w-full rounded-lg border border-forest-soft/70 px-3 py-1.5 text-xs text-cream"
       >
         {copied ? "Copied" : "Copy key"}
       </button>
-      <label className="mt-3 flex items-start gap-2 text-xs text-white/70">
+      <label className="mt-3 flex items-start gap-2 text-xs text-cream/70">
         <input
           type="checkbox"
           checked={confirmed}
@@ -281,7 +280,7 @@ function KeyBackup({
         />
         I saved my key somewhere safe.
       </label>
-      <p className="mt-2 text-[0.7rem] leading-snug text-white/50">
+      <p className="mt-2 text-[0.7rem] leading-snug text-cream/65">
         Refreshing this tab signs you out. For everyday use, install a Nostr extension such as Alby
         or nos2x and add this key there.
       </p>
@@ -291,7 +290,7 @@ function KeyBackup({
         onClick={onDone}
         className="mt-4 w-full rounded-xl bg-leaf px-3 py-3 text-sm font-semibold text-forest-deep disabled:opacity-50"
       >
-        Continue to my garden
+        Continue to WondersLand
       </button>
       </div>
     </div>,

@@ -66,7 +66,7 @@ function OwnerListEditor() {
         <ShieldCheck className="h-4 w-4 text-leaf" aria-hidden />
         Reviewer list (owner)
       </p>
-      <p className="mt-1 text-xs text-cream/60">
+      <p className="mt-1 text-xs text-cream/70">
         {verifiers === null
           ? "No reviewer list is published yet — confirmations cannot count until you publish one."
           : `${verifiers.length} reviewer${verifiers.length === 1 ? "" : "s"} published on the relays.`}
@@ -83,14 +83,14 @@ function OwnerListEditor() {
               type="button"
               onClick={() => remove(pubkey)}
               aria-label={`Remove reviewer ${shortKey(pubkey)}`}
-              className="ml-auto inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-cream/60 hover:text-amber-200"
+              className="ml-auto inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-cream/70 hover:text-destructive"
             >
               <Trash2 className="h-4 w-4" aria-hidden />
             </button>
           </li>
         ))}
         {list.length === 0 ? (
-          <li className="text-xs text-cream/55">No reviewers yet. Add the first one below.</li>
+          <li className="text-xs text-cream/65">No reviewers yet. Add the first one below.</li>
         ) : null}
       </ul>
 
@@ -99,7 +99,7 @@ function OwnerListEditor() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="npub1… or hex pubkey"
-          className="min-h-11 flex-1 rounded-xl border border-forest-soft/60 bg-forest-deep px-3 font-mono text-xs text-cream placeholder:text-cream/40"
+          className="min-h-11 flex-1 rounded-xl border border-forest-soft/60 bg-forest-deep px-3 font-mono text-xs text-cream placeholder:text-cream/65"
         />
         <button
           type="button"
@@ -109,7 +109,7 @@ function OwnerListEditor() {
           <Plus className="h-4 w-4" aria-hidden /> Add
         </button>
       </div>
-      {inputError ? <p className="mt-2 text-xs text-amber-200">{inputError}</p> : null}
+      {inputError ? <p className="mt-2 text-xs text-destructive">{inputError}</p> : null}
 
       <button
         type="button"
@@ -123,19 +123,19 @@ function OwnerListEditor() {
         Publish reviewer list
       </button>
       {!signer ? (
-        <p className="mt-2 text-xs text-cream/60">Sign in with a key that can publish first.</p>
+        <p className="mt-2 text-xs text-cream/70">Sign in with a key that can publish first.</p>
       ) : null}
       {listPublishState.kind === "accepted" ? (
         <p className="mt-2 text-xs text-leaf">Accepted by all {listPublishState.total} relays.</p>
       ) : null}
       {listPublishState.kind === "partial" ? (
-        <p className="mt-2 text-xs text-amber-200">
+        <p className="mt-2 text-xs text-destructive">
           Accepted by {listPublishState.accepted} of {listPublishState.total} relays — sync is
           incomplete.
         </p>
       ) : null}
       {listPublishState.kind === "error" ? (
-        <p className="mt-2 text-xs text-amber-200">{listPublishState.message}</p>
+        <p className="mt-2 text-xs text-destructive">{listPublishState.message}</p>
       ) : null}
     </div>
   );
@@ -187,7 +187,7 @@ export function ReviewerPanel() {
 
       {isReviewer ? (
         <div className="mt-4">
-          <p className="text-xs text-cream/60">
+          <p className="text-xs text-cream/70">
             You are a trusted reviewer. Confirm only milestones whose evidence you have actually
             checked — your confirmation is public and you can withdraw it later.
           </p>
@@ -213,7 +213,7 @@ export function ReviewerPanel() {
                   className="rounded-xl border border-forest-soft/40 bg-forest-deep/50 p-3"
                 >
                   <p className="text-sm font-medium text-cream">{status.claim.title}</p>
-                  <p className="mt-0.5 font-mono text-xs text-cream/55">
+                  <p className="mt-0.5 font-mono text-xs text-cream/65">
                     by {shortKey(status.claim.authorPubkey)}
                     {status.claim.plant ? ` · ${status.claim.plant}` : ""}
                   </p>
@@ -225,7 +225,7 @@ export function ReviewerPanel() {
                       </>
                     ) : (
                       <>
-                        <Clock className="h-4 w-4 text-cream/60" aria-hidden />
+                        <Clock className="h-4 w-4 text-cream/70" aria-hidden />
                         Waiting · {status.votes}/{status.required}
                       </>
                     )}
@@ -245,7 +245,7 @@ export function ReviewerPanel() {
                             className="h-20 w-full object-cover"
                           />
                         ) : (
-                          <p className="p-2 text-[10px] text-cream/50">{proof.preview ?? "entry"}</p>
+                          <p className="p-2 text-[10px] text-cream/65">{proof.preview ?? "entry"}</p>
                         )}
                       </li>
                     ))}
@@ -277,7 +277,7 @@ export function ReviewerPanel() {
                     )}
                   </div>
                   {!signer ? (
-                    <p className="mt-2 text-xs text-cream/60">
+                    <p className="mt-2 text-xs text-cream/70">
                       Read-only session — sign in with a key that can publish to confirm.
                     </p>
                   ) : null}
