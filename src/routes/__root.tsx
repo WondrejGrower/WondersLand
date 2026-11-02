@@ -44,7 +44,6 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -81,26 +80,31 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "WondersLand — Grow diaries on Nostr" },
-      { name: "description", content: "Discover growers, follow grow diaries and document your own plants on Nostr." },
-      { name: "author", content: "WondersLand" },
-      { property: "og:title", content: "WondersLand" },
-      { property: "og:description", content: "Discover growers, follow grow diaries and document your own plants on Nostr." },
+      { title: "NoTillMan — Rooted in curiosity" },
+      {
+        name: "description",
+        content: "From the soil into the light. Living soil, growing and creative ideas.",
+      },
+      { name: "author", content: "NoTillMan" },
+      { property: "og:title", content: "NoTillMan" },
+      {
+        property: "og:description",
+        content: "From the soil into the light. Living soil, growing and creative ideas.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Karla:wght@400;500&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Karla:wght@400;500;600&display=swap",
       },
     ],
   }),

@@ -1,52 +1,32 @@
-# WondersLand
+# NoTillMan
 
-A browser-native, cozy 3D educational world. Not a shop, not a storefront — a
-small, peaceful botanical place you can walk around in and learn from.
+An interactive personal creator page: a native upward journey from dark roots to
+a living plant, with FastBuds on the flower and Higgsfield on a fan leaf.
 
-## What exists in Milestone 1
+The project uses React, TypeScript and TanStack Start and remains connected to Lovable.
 
-A visitor can:
+## Run and verify
 
-1. Open the website and see a title screen
-2. Press "Enter WondersLand"
-3. Walk around a small garden (WASD / arrow keys, touch joystick on mobile)
-4. Rotate the camera (mouse drag or pointer lock; touch drag on mobile)
-5. Walk up to a single cannabis plant
-6. Press the interact key (E) when close enough
-7. Read the plant's journal panel
-8. Close the journal (Esc or the close button)
-
-Nothing else. No inventory, accounts, backend, multiplayer, AI, quests,
-achievements, weather, economy, saving, database, auth, or shop.
-
-## Stack
-
-| Concern | Choice |
-| --- | --- |
-| Build tool | Vite |
-| UI | React 19 + TypeScript |
-| 3D | Three.js via React Three Fiber |
-| 3D helpers | @react-three/drei |
-| State | Zustand |
-| Styling (2D UI only) | Tailwind CSS v4 design tokens |
-| Routing | TanStack Router (already wired in this repo) |
-
-## Getting started
-
-```bash
-bun install
-bun run dev
+```sh
+npm install
+npm run dev
+npx tsc --noEmit
+npx vitest run
+npm run build
 ```
 
-The app runs on http://localhost:8080.
+The journey starts at the bottom. Scroll upward, use the chapter markers, or press
+the ascent button. All key links remain available without completing the journey.
 
-## Documentation
+## Destinations
 
-- `AGENTS.md` — rules for humans and AI agents working in this repo
-- `PROJECT_STATE.md` — what is actually built right now
-- `ROADMAP.md` — ordered milestones, one small step at a time
-- `AI_HANDOFF.md` — context an AI agent needs to continue safely
+Edit `src/features/creator-hub/links.ts` to configure real affiliate URLs. None have
+been supplied yet, so links currently use verified official home pages without
+referral attribution. Public Instagram/Nostr destinations are in the same file.
 
-## Status
+## Original WondersLand backup
 
-Documentation phase. No application code has been written yet.
+Before replacing the home page, the game feature was removed and the full remaining
+WondersLand source was preserved on `backup/wondersland-nostr-2026-11-02`, commit
+`6ca4b6bbbd59f4ee96f5be82c805d7e9027629d1`. No published history was rewritten.
+See PROJECT_STATE.md and AGENTS.md for current behavior and constraints.

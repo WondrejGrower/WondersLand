@@ -1,153 +1,51 @@
-# AGENTS.md — WondersLand
+# AGENTS.md — NoTillMan
 
-## 2026-11-02 — Clean archive preparation
+## Current product (user-authorized 2026-11-02)
 
-The user authorized removing the entire Project Zomboid companion. Its route,
-feature code, styling and active preservation rules are removed. The remaining
-WondersLand Nostr client and all its data formats are preserved for a dedicated
-GitHub backup before the personal NoTillMan website replaces the main page.
-No browser storage, Nostr events or published Git history is deleted.
+The active project is NoTillMan's personal creator website and affiliate hub.
+The earlier WondersLand Nostr client is archived in the same GitHub repository
+on branch `backup/wondersland-nostr-2026-11-02`, commit
+`6ca4b6bbbd59f4ee96f5be82c805d7e9027629d1`. That verified archive contains the
+complete remaining WondersLand code AFTER removal of the Project Zomboid game.
+Never modify that backup branch, rewrite published Git history or purge user
+storage/Nostr events. The user explicitly authorized deleting the game feature.
 
-## Current direction — 2026-11-02
+## Design and behavior
 
-The user explicitly changed the current milestone: WondersLand is a 2D Nostr
-grow-diary community client, inspired by GrowDiaries workflows. This section
-supersedes the historical 3D-first scope and milestone bans below. Keep the
-existing Nostr identity and diary stack; do not introduce a centralized backend,
-Supabase, email accounts, a shop or new gamification.
+- One cannabis plant, with FastBuds on the upper flower and Higgsfield on a leaf.
+- Begin underground at the bottom of a native scroll region. Ascending reveals
+  roots, stem, leaf and flower while darkness becomes daylight.
+- Use CSS/transforms and one optimized botanical image, not the old 3D world.
+- Keep direct links reachable at every stage. Chapter buttons and the ascent
+  button offer an accessible alternative to scrolling. Honor reduced motion.
+- Maintain readable text at both ends of the color transition, mobile layouts,
+  keyboard labels and the focus-trapped about/links dialog.
+- The creator site uses its own scoped `--journey-*` CSS tokens. Do not alter
+  the archived client's UI or reintroduce its sign-in/feed on the main route.
 
-- The root route renders `src/ui/AppShell.tsx`: public Explore (community diaries
-  and Grow posts), My Diaries, and Profile with relays and the private Garden Board.
-- Keep existing diary formats, ids, author ownership, media upload seam, readonly
-  npub/unlock behavior, relay acknowledgement handling and private encrypted tasks.
-- Public discovery validates untrusted JSON, excludes unrelated/encrypted or explicitly
-  nonpublic app data, and selects the newest returned revision per author + exact d tag
-  (lowest event id on timestamp ties). `Diary.sourceDTag` is display-only provenance.
-- Do not mount or import the 3D world/editor/HUD in the active client. Its source
-  and assets remain intact for a future phase. World-layout network loading and
-  Save Garden UI are inactive in the 2D flow.
-- Main private keys remain memory-only and guarded. Do not publish test events
-  while checking the app. Never promote private board data into public discovery.
-- Use semantic color tokens suited to the light botanical theme, readable warnings
-  and focus indicators.
-- Run the Nostr/session/domain tests, TypeScript and production build after changes.
-  Update these notes with actual verification limits; do not claim unperformed
-  browser or signed publishing/upload checks.
+## Links and identity
 
-### Verification of this change
+- NoTillMan / Wondrej; public Instagram @notill.man and the existing public Nostr npub.
+- Real affiliate URLs have not been supplied. `src/features/creator-hub/links.ts`
+  contains explicit null affiliate values and verified ordinary official fallback
+  URLs. Do not invent codes, discounts, affiliate earnings or official endorsements.
+- Once actual URLs are provided, update that config; sponsored rel/disclosure is
+  derived from whether an affiliate URL is configured.
+- Do not add a backend, login, store, trackers or private contact details.
 
-- `npx tsc --noEmit`: passed.
-- `npx vitest run`: 10 files / 89 tests passed, including new public diary
-  schema/visibility/revision isolation and disabled-relay regression cases.
-- `npm run build`: client, SSR and Cloudflare-module production build passed.
-  The existing framework emitted nonfatal module-directive/config warnings.
-- Browser QA: desktop and a 390px iframe viewport; real public diaries, photo
-  and entry timeline loaded from the enabled Nostr relays. Search/no-result/reset
-  and Seedling filter, public owner-action gating, signed-out My Diaries/Profile,
-  sign-in panel, relay controls, Grow posts and Grow Lens UI were checked.
-  The 390px view had no horizontal overflow and zero canvas elements.
-- Static root import graph: 71 reachable source modules, no world/Three imports.
-- No signing, publishing, account creation, likes or upload was performed during
-  QA. Actual signed publishing and media uploads need an owner session to verify.
-  Read-only restoration/secret handling and private task behavior are covered by
-  the existing automated tests; no personal session was used for browser QA.
-- Lovable generated the first implementation; credits then ran out. Completion
-  fixes were made through its connected GitHub repository. No production deploy
-  or sharing change is part of this update.
+## Source and workflow
 
-## Historical milestones — retained for context
+Use TanStack Start/React/TypeScript. Preserve root Outlet, SSR safety, sanitized
+errors and the existing NIP-05 endpoint. Dormant client/world modules may remain
+as source; the active root must not import them. Keep `src/routeTree.gen.ts`
+generated by the router tooling. The deleted game route must resolve to 404.
 
-The following world/entrance instructions describe deferred work. They are not
-the current product mandate and must not reactivate the 3D experience.
+This repository remains connected to Lovable. Normal commits to main synchronize
+to the editor. Never force push, rebase, squash or amend published history.
+Lovable AI credits were exhausted; this implementation was completed through the
+connected GitHub repository. Do not change production audience or deploy until asked.
 
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
-
-# AGENTS.md — WondersLand
-
-Rules for any human or AI agent working in this repository.
-
-## 1. What WondersLand is
-
-A browser-native cozy 3D educational world. A visitor explores a small,
-peaceful botanical space and learns about plants. It is **not** an e-commerce
-site. A shop may exist far in the future; it is not part of the product today.
-
-## 2. The prime directive: build the smallest thing that works
-
-Every change must be traceable to the current milestone in `ROADMAP.md`.
-If a change is not in the current milestone, it does not get written.
-
-## 3. Hard bans (Milestone 1)
-
-Do not add, scaffold, stub, or "prepare for": inventory, accounts, backend,
-multiplayer, AI, quests, achievements, weather, economy, save system,
-database, authentication, shop, analytics, physics engines, ECS frameworks,
-asset pipelines, or state machines.
-
-No premature abstractions. No `interface` for a thing that has one
-implementation. No config file for a value used once. No plugin systems.
-Duplicate twice before extracting.
-
-## 4. Performance is a feature
-
-- Target: 60 fps on a mid-range laptop, ≥30 fps on a modern phone.
-- One canvas. One scene. No post-processing in Milestone 1.
-- Prefer procedural/instanced geometry over downloaded models.
-- Never allocate inside `useFrame` (no `new THREE.Vector3()` per frame — hoist
-  scratch objects to module or ref scope).
-- Never call `setState` every frame. Frame-rate data lives in refs or in
-  Zustand values read via `getState()`, not via reactive subscriptions.
-- Keep draw calls low; reuse materials and geometries.
-- Lazy-load the 3D scene so the landing screen paints instantly.
-
-## 5. State rules
-
-- **Zustand** holds *world/session* state: has the visitor entered, which
-  plant is focused, is the journal open. Small, flat, no nesting.
-- **Refs** hold *per-frame* state: player position, velocity, camera yaw.
-- **React state** holds *local UI* state only.
-- Content (plant journal text) is static typed data, not state.
-
-## 6. Rendering boundaries
-
-- Anything inside `<Canvas>` is R3F/Three code. It may not import DOM UI
-  components.
-- Anything outside `<Canvas>` is regular React DOM. It may not import Three.
-- The two communicate **only** through the Zustand store.
-
-## 7. Styling
-
-2D UI uses semantic Tailwind tokens defined in `src/styles.css`. Never
-hardcode colors in components (`bg-[#...]`, `text-white`). 3D colors live in a
-single palette module so the world and the UI stay visually consistent.
-
-## 8. SSR note
-
-This repo uses TanStack Start, which server-renders by default. Three.js and
-R3F are browser-only. The 3D scene must be loaded client-side only
-(`React.lazy` behind a client-only gate). Never import a Three module at the
-top level of a route file.
-
-## 9. Definition of done for any task
-
-1. It runs with no console errors or warnings.
-2. It is reachable by a visitor through normal interaction.
-3. Frame rate is not visibly worse than before.
-4. `PROJECT_STATE.md` is updated.
-5. No file from the hard-ban list appeared.
-
-## 10. Communication
-
-When finishing work, state plainly what was built, what was skipped, and what
-the next milestone step is. Do not claim a feature exists until it is visible
-in the running app.
-
+Run TypeScript and a production build after changes. Existing Nostr/domain tests
+must continue to pass while dormant source is retained. Check real desktop/mobile
+navigation, native scrolling, direct-link destinations and dialog behavior.
+Update PROJECT_STATE.md with actual verification and remaining input.
