@@ -165,3 +165,42 @@ export async function fetchDiaries(pubkey: string): Promise<Diary[]> {
 export async function getCachedDiaries(pubkey: string): Promise<Diary[]> {
   return (await getJson<Diary[]>(`diaries:${pubkey}`)) ?? [];
 }
+
+/**
+ * Public community diaries for Explore. Same parser and namespace rules as a
+ * grower's own diaries: only kind 30078 events tagged as Weedoshi diaries are
+ * considered, the content must be a plain JSON object (encrypted/unrelated app
+ * data such as private Garden Board snapshots is skipped), and only the latest
+ * revision per author + diary id survives. Read-only.
+ */
+export async function fetchCommunityDiaries(limit = 80): Promise<Diary[]> {
+  const { events, sources } = await queryWithSources(
+    getEnabledRelayUrls(),
+    { kinds: [KIND_DIARY], "#t": [DIARY_TAG, DIARY_TAG_LEGACY], limit },
+    7000,
+  );
+  const latest = new Map<string, NostrEvent>();
+  for (const event of events) {
+    const dTag = tagValue(event, "d") ?? "";
+    if (!dTag || dTag.startsWith("wondersland:")) continue;
+    if (!isDiaryEvent(event, dTag)) continue;
+    let content: unknown;
+    try {
+      content = JSON.parse(event.content || "");
+    } catch {
+      continue;
+    }
+    if (!content || typeof content !== "object" || Array.isArray(content)) continue;
+    const key = `${event.pubkey}:${dTag.replace(/^diary-/i, "").trim().toLowerCase()}`;
+    const current = latest.get(key);
+    if (!current || event.created_at > current.created_at) latest.set(key, event);
+  }
+  const diaries: Diary[] = [];
+  for (const event of latest.values()) {
+    const diary = parseDiary(event, event.pubkey);
+    if (diary) diaries.push({ ...diary, seenOn: sources.get(event.id) ?? [] });
+  }
+  diaries.sort((a, b) => b.updatedAt - a.updatedAt);
+  await hydrateItems(diaries);
+  return diaries;
+}
