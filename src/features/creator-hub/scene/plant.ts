@@ -36,8 +36,8 @@ function leaflet(length: number, width: number, shade: number, lowDetail = false
     uv: number[] = [],
     indices: number[] = [];
   const tint = new Color();
-  const rows = lowDetail ? 14 : 34,
-    columns = lowDetail ? 2 : 4;
+  const rows = lowDetail ? 14 : 48,
+    columns = lowDetail ? 2 : 6;
   for (let y = 0; y <= rows; y++) {
     const t = y / rows;
     const profile = Math.pow(Math.sin(Math.PI * t), 0.85);
@@ -73,11 +73,11 @@ function leaflet(length: number, width: number, shade: number, lowDetail = false
 
 function tube(points: Vector3[], radius: number, tint: Color, segments = 14, taper = 0.5) {
   const curve = new CatmullRomCurve3(points);
-  const g = new TubeGeometry(curve, segments, radius, 5, false);
+  const g = new TubeGeometry(curve, segments, radius, 8, false);
   const pos = g.getAttribute("position"),
     rgb: number[] = [];
   for (let i = 0; i < pos.count; i++) {
-    const t = Math.floor(i / 6) / segments;
+    const t = Math.floor(i / 9) / segments;
     const center = curve.getPointAt(t),
       scale = 1 - t * taper;
     pos.setXYZ(
@@ -86,7 +86,7 @@ function tube(points: Vector3[], radius: number, tint: Color, segments = 14, tap
       center.y + (pos.getY(i) - center.y) * scale,
       center.z + (pos.getZ(i) - center.z) * scale,
     );
-    const light = 0.7 + (0.3 * (i % 6)) / 5;
+    const light = 0.7 + (0.3 * (i % 9)) / 8;
     rgb.push(tint.r * light, tint.g * light, tint.b * light);
   }
   g.setAttribute("color", new Float32BufferAttribute(rgb, 3));
@@ -214,6 +214,32 @@ export function createPlant(lowDetail = false) {
     }
   }
 
+  // Fine root hairs and branching hypha-like filaments remain visible in macro.
+  const fibres: number[] = [];
+  for (let i = 0; i < (lowDetail ? 160 : 720); i++) {
+    const a = random() * Math.PI * 2,
+      t = 0.15 + random() * 0.8;
+    const radius = (0.85 + random() * 0.55) * Math.sin(t * 1.8);
+    const x = Math.cos(a) * radius,
+      y = -t * 2.6,
+      z = Math.sin(a) * radius;
+    const reach = 0.035 + random() * 0.12;
+    const tip = [x + Math.cos(a + 0.7) * reach, y - reach * 0.5, z + Math.sin(a + 0.7) * reach];
+    fibres.push(
+      x,
+      y,
+      z,
+      ...tip,
+      ...tip,
+      tip[0]! + reach * 0.3,
+      tip[1]! - reach * 0.3,
+      tip[2]! + reach * 0.2,
+    );
+  }
+  const fibreGeometry = new BufferGeometry();
+  fibreGeometry.setAttribute("position", new Float32BufferAttribute(fibres, 3));
+  plant.add(new LineSegments(fibreGeometry, new LineBasicMaterial({ color: "#b8ad87" })));
+
   const buds: { position: Vector3; scale: Vector3; tint: Color }[] = [];
   const hairs: number[] = [],
     trichomes: number[] = [];
@@ -231,7 +257,7 @@ export function createPlant(lowDetail = false) {
         0.7,
       ),
     );
-    for (let i = 0; i < Math.round(height * (lowDetail ? 120 : 210)); i++) {
+    for (let i = 0; i < Math.round(height * (lowDetail ? 120 : 235)); i++) {
       const t = random(),
         angle = i * 2.39996;
       const bulge = Math.pow(Math.sin(Math.PI * t), 0.6);
@@ -263,7 +289,7 @@ export function createPlant(lowDetail = false) {
           ...end.toArray(),
         );
       }
-      for (let crystal = 0; crystal < (lowDetail ? 1 : 3); crystal++) {
+      for (let crystal = 0; crystal < (lowDetail ? 1 : 5); crystal++) {
         trichomes.push(
           position.x + Math.cos(angle) * scale,
           position.y + random() * scale * 1.5,
@@ -340,13 +366,15 @@ export function createPlant(lowDetail = false) {
   const pebbles = new InstancedMesh(
     new IcosahedronGeometry(1, 0),
     new MeshStandardMaterial({ color: "#584631", roughness: 1 }),
-    85,
+    lowDetail ? 165 : 405,
   );
-  for (let i = 0; i < 85; i++) {
+  for (let i = 0; i < pebbles.count; i++) {
     const a = random() * Math.PI * 2,
       r = Math.sqrt(random()) * 1.4;
     dummy.position.set(Math.cos(a) * r, 0.045 - r * 0.02, Math.sin(a) * r);
-    dummy.scale.setScalar(0.025 + random() * 0.055);
+    if (i >= 85)
+      dummy.position.set((random() - 0.5) * 3.3, -0.3 - random() * 2.5, -0.4 - random() * 1.2);
+    dummy.scale.setScalar(i < 85 ? 0.025 + random() * 0.055 : 0.018 + random() * 0.095);
     dummy.rotation.set(random(), random(), random());
     dummy.updateMatrix();
     pebbles.setMatrixAt(i, dummy.matrix);

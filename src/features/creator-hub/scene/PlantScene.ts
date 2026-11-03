@@ -156,7 +156,11 @@ export function mountPlantScene({
       pose = cameraPose(current, mobile);
     const daylight = smoothstep(0.3, 1, current);
     // A modest dolly/orbit reveals actual depth while retaining a calm editorial layout.
-    lookAt.set(mobile ? -0.05 : -1.65 * Math.min(1.25, width / height / 1.4), pose.focusY, 0);
+    lookAt.set(
+      mobile ? -0.05 : -0.25 - 1.4 * pose.framing * Math.min(1.25, width / height / 1.4),
+      pose.focusY,
+      0,
+    );
     const yaw = pose.yaw + orbit;
     camera.position.set(
       lookAt.x + Math.sin(yaw) * pose.distance,

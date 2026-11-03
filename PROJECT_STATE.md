@@ -73,3 +73,17 @@ rewrite published history or purge user storage/Nostr events.
 ## Remaining input
 
 Exact personal FastBuds and Higgsfield affiliate URLs. Do not invent codes.
+
+## Macro revision — 2026-11-03
+
+Camera starts at distance 1.65 among root hairs and soil aggregates, then pulls
+back monotonically through 2.6 / 4.2 / 6.3 to 8.2 at the flower. Mobile preserves
+the same pullback with progressively larger space for text. Horizontal framing
+opens gradually so the macro subject stays in view. Added finer root filaments,
+rounder root/stem tubes, denser flower calyxes/trichomes, refined leaf geometry
+and soil aggregates in the root volume. Geometry stays merged/instanced; demand
+rendering and pixel budgets remain. Tests now enforce monotonic camera distance.
+Desktop macro checked visually in the software 3D browser; monotonic pullback
+checked by camera-path tests. TypeScript, all 92 tests and production build passed.
+GPU FPS remains unmeasured; mobile framing was checked mathematically, not
+visually rerun for this revision.

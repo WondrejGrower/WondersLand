@@ -12,6 +12,9 @@ storage/Nostr events. The user explicitly authorized deleting the game feature.
 
 ## Design and behavior
 
+- Camera revision 2026-11-03: start inside the root zone in macro, then
+  continuously pull back while ascending to the upper flower. Never reverse
+  the dolly into a zoom-in near the top.
 - One cannabis plant, with FastBuds on the upper flower and Higgsfield on a leaf.
 - Begin underground at the bottom of a native scroll region. Ascending reveals
   roots, stem, leaf and flower while darkness becomes daylight.

@@ -1073,7 +1073,9 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(180deg, #05080cbb, transparent 37%);
+  background:
+    linear-gradient(90deg, #05080cf5, #05080cce 27%, transparent 65%),
+    linear-gradient(180deg, #05080cbb, transparent 37%);
   opacity: var(--journey-dark);
 }
 @media (max-width: 600px) {

@@ -20,10 +20,12 @@ describe("botanical scene budgets and camera", () => {
   it("ascends continuously, clamps overscroll, and retains the same camera framing on mobile", () => {
     for (const mobile of [false, true]) {
       let previous = -Infinity;
+      let previousDistance = 0;
       for (let step = 0; step <= 100; step++) {
         const pose = cameraPose(step / 100, mobile);
         expect(pose.focusY).toBeGreaterThanOrEqual(previous);
-        expect(pose.distance).toBeGreaterThan(0);
+        expect(pose.distance).toBeGreaterThanOrEqual(previousDistance);
+        previousDistance = pose.distance;
         expect(Object.values(pose).every(Number.isFinite)).toBe(true);
         previous = pose.focusY;
       }
@@ -47,7 +49,7 @@ describe("botanical scene budgets and camera", () => {
           ((geometry.index?.count ?? positions.count) / 3) *
           (object instanceof InstancedMesh ? object.count : 1);
       });
-      expect(triangles).toBeLessThan(lowDetail ? 40_000 : 160_000);
+      expect(triangles).toBeLessThan(lowDetail ? 45_000 : 200_000);
       expect(meshCount).toBeLessThanOrEqual(6);
       expect(bounds.min.y).toBeLessThan(-2);
       expect(bounds.max.y).toBeGreaterThan(6);

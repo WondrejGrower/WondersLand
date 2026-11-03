@@ -35,19 +35,29 @@ export function pixelRatio(width: number, height: number, deviceRatio: number) {
 export function cameraPose(progress: number, mobile: boolean) {
   const p = clamp(progress);
   return {
+    framing: smoothstep(0.05, 0.72, p),
     focusY:
       interpolate(p, [
         [0, -1.25],
         [0.29, 0.5],
         [0.64, 3.05],
         [1, 5.35],
-      ]) + (mobile ? 1.75 : 0),
+      ]) +
+      (mobile
+        ? interpolate(p, [
+            [0, 0.28],
+            [0.29, 0.75],
+            [0.64, 1.55],
+            [1, 1.75],
+          ])
+        : 0),
     distance:
       interpolate(p, [
-        [0, 7.5],
-        [0.29, 9],
-        [0.64, 8.1],
-        [1, 7.1],
+        [0, 1.65],
+        [0.15, 2.6],
+        [0.29, 4.2],
+        [0.64, 6.3],
+        [1, 8.2],
       ]) * (mobile ? 1.45 : 1),
     yaw: interpolate(p, [
       [0, -0.19],
