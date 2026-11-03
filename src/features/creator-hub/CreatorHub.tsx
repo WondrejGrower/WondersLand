@@ -1,4 +1,11 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   ArrowDown,
@@ -18,6 +25,7 @@ import {
 import { partnerLink, SOCIAL, type Partner } from "./links";
 import { CHAPTERS, chapterAt, clamp, interpolate, smoothstep } from "./scene/journey";
 import type { SceneController, SceneFrame } from "./scene/PlantScene";
+import { INTRO_DESCENT_MS, startEntryIntro, type IntroPhase } from "./intro";
 import "./creator-hub.css";
 
 function PartnerAnchor({
@@ -111,27 +119,10 @@ function LinkDirectory() {
 }
 
 export function CreatorHub() {
-  const [entry, setEntry] = useState<"landing" | "descending" | "journey">("landing");
-  const entryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const touchStart = useRef(0);
-  function enterSoil() {
-    if (entry !== "landing" || entryTimer.current) return;
-    if (reduced.current) {
-      setEntry("journey");
-      return;
-    }
-    setEntry("descending");
-    entryTimer.current = setTimeout(() => {
-      entryTimer.current = null;
-      setEntry("journey");
-    }, 1200);
-  }
-  useEffect(
-    () => () => {
-      if (entryTimer.current) clearTimeout(entryTimer.current);
-    },
-    [],
-  );
+  const [entry, setEntry] = useState<IntroPhase>("photo");
+  const [introReady, setIntroReady] = useState(false);
+  const introPhoto = useRef<HTMLImageElement>(null);
+  const intro = useRef<ReturnType<typeof startEntryIntro> | null>(null);
   const root = useRef<HTMLDivElement>(null);
   const viewport = useRef<HTMLDivElement>(null);
   const sceneHost = useRef<HTMLDivElement>(null);
@@ -146,6 +137,27 @@ export function CreatorHub() {
   const sceneReady = useRef(false);
   const [chapter, setChapter] = useState(0);
   const [sceneState, setSceneState] = useState<"loading" | "ready" | "fallback">("loading");
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const photo = introPhoto.current;
+    const controller = startEntryIntro({
+      photoReady: photo?.decode() ?? Promise.resolve(),
+      reducedMotion: media.matches,
+      onPhase: setEntry,
+    });
+    intro.current = controller;
+    setIntroReady(true);
+    const preferenceChanged = () => {
+      if (media.matches) controller.skip();
+    };
+    media.addEventListener("change", preferenceChanged);
+    return () => {
+      controller.dispose();
+      intro.current = null;
+      media.removeEventListener("change", preferenceChanged);
+    };
+  }, []);
 
   useEffect(() => {
     if (entry === "journey") viewport.current?.focus({ preventScroll: true });
@@ -280,63 +292,42 @@ export function CreatorHub() {
       data-chapter={entry === "journey" ? chapter : 0}
       data-scene-state={sceneState}
       data-entry={entry}
+      style={{ "--intro-descent-duration": `${INTRO_DESCENT_MS}ms` } as CSSProperties}
     >
-      <a className="hub-skip" href="#hub-quick-links">
-        Skip to the links
-      </a>
+      {entry === "journey" && (
+        <a className="hub-skip" href="#hub-quick-links">
+          Skip to the links
+        </a>
+      )}
       {entry !== "journey" && (
-        <section
-          className="hub-landing"
-          aria-label="Welcome to NoTillMan"
-          inert={entry === "descending"}
-          onWheel={(event) => {
-            if (event.deltaY > 10) enterSoil();
-          }}
-          onTouchStart={(event) => {
-            touchStart.current = event.touches[0]?.clientY ?? 0;
-          }}
-          onTouchEnd={(event) => {
-            if (touchStart.current - (event.changedTouches[0]?.clientY ?? touchStart.current) > 40)
-              enterSoil();
-          }}
-        >
-          <img
-            className="hub-landing-photo"
-            src="/images/notillman-night-landing.webp"
-            alt="Wondrej beside a tall outdoor plant at night, holding a spade"
-            fetchPriority="high"
-          />
-          <div className="hub-landing-copy">
-            <p className="hub-eyebrow">NOTILLMAN · GROWER & CREATOR</p>
-            <h1>
-              Rooted in
-              <br />
-              <em>the real world.</em>
-            </h1>
-            <p>
-              A journey beneath the surface.
-              <br />
-              From living soil to the flower.
-            </p>
-            <button className="hub-enter-soil" onClick={enterSoil}>
-              <ArrowDown size={18} /> Enter the soil
-            </button>
-            <small>Scroll down or tap to begin · then grow upward</small>
+        <section className="hub-intro" aria-label="NoTillMan introduction">
+          <div className="hub-intro-visual" aria-hidden="true">
+            <div className="hub-intro-world">
+              <div className="hub-intro-surface">
+                <img
+                  ref={introPhoto}
+                  className="hub-intro-photo"
+                  src="/images/notillman-night-landing.webp"
+                  alt=""
+                  width="1170"
+                  height="1487"
+                  fetchPriority="high"
+                />
+              </div>
+              <div className="hub-intro-earth" />
+            </div>
           </div>
+          <button
+            className="hub-skip-intro"
+            disabled={!introReady}
+            onClick={() => intro.current?.skip()}
+          >
+            Skip intro <ArrowDown size={14} aria-hidden />
+          </button>
         </section>
       )}
-      <div className="hub-descent-shade" aria-hidden="true" />
-      <header className="hub-header">
-        <button
-          className="hub-brand"
-          onClick={() => {
-            if (entryTimer.current) clearTimeout(entryTimer.current);
-            entryTimer.current = null;
-            viewport.current?.scrollTo({ top: viewport.current.scrollHeight, behavior: "instant" });
-            setEntry("landing");
-          }}
-          aria-label="NoTillMan — home"
-        >
+      <header className="hub-header" inert={entry !== "journey"}>
+        <button className="hub-brand" onClick={() => riseTo(0)} aria-label="NoTillMan — home">
           <SeedMark />
           <span>
             NoTillMan<small>ROOTED IN CURIOSITY</small>
@@ -459,7 +450,7 @@ export function CreatorHub() {
                 <span>{CHAPTERS[chapter]!.number}</span>
                 {
                   [
-                    "BELOW THE SURFACE",
+                    "THE PERSON BEHIND NOTILLMAN",
                     "EVERYTHING IS CONNECTED",
                     "A LITTLE IMAGINATION",
                     "INTO THE LIGHT",
@@ -469,9 +460,9 @@ export function CreatorHub() {
               <h1 key={chapter}>
                 {chapter === 0 ? (
                   <>
-                    Life starts
+                    Hey, I’m
                     <br />
-                    <em>in the dark.</em>
+                    <em>Wondrej.</em>
                   </>
                 ) : chapter === 1 ? (
                   <>
@@ -496,8 +487,8 @@ export function CreatorHub() {
               <p className="hub-story-description">
                 {
                   [
-                    "A little soil. A little curiosity. A whole world waiting to grow.",
-                    "I’m Wondrej. I grow living soil, follow curious ideas, and share what I learn.",
+                    "I’m the grower and creator behind NoTillMan. Here I share my plants, my experiments and the stories that grow around them.",
+                    "Living soil is where I start. Follow the stem to the tools and ideas I use.",
                     "From the first spark to a story worth sharing. This is where I explore the creative side.",
                     "The genetics behind a new beginning. Explore what could grow next.",
                   ][chapter]
@@ -574,7 +565,7 @@ export function CreatorHub() {
           </main>
         </div>
       </div>
-      <footer className="hub-dock" id="hub-quick-links">
+      <footer className="hub-dock" id="hub-quick-links" inert={entry !== "journey"}>
         <div className="hub-dock-person">
           <span className="hub-live-dot" />
           <span>
@@ -594,18 +585,8 @@ export function CreatorHub() {
         </div>
         <button
           className="hub-next-chapter"
-          onClick={() =>
-            entry !== "journey"
-              ? enterSoil()
-              : riseTo(chapter === 3 ? 0 : CHAPTERS[chapter + 1]!.at)
-          }
-          aria-label={
-            entry !== "journey"
-              ? "Begin the underground journey"
-              : chapter === 3
-                ? "Return to the soil"
-                : "Rise to the next chapter"
-          }
+          onClick={() => riseTo(chapter === 3 ? 0 : CHAPTERS[chapter + 1]!.at)}
+          aria-label={chapter === 3 ? "Return to my bio" : "Rise to the next chapter"}
         >
           {chapter === 3 ? <ArrowDown size={18} /> : <ArrowUp size={18} />}
         </button>

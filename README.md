@@ -18,8 +18,11 @@ npx vitest run
 npm run build
 ```
 
-The journey starts at the bottom. Scroll upward, use the chapter markers, or press
-the ascent button. All key links remain available without completing the journey.
+On entry, the night photograph automatically moves below the surface and reveals
+Wondrej’s bio underground. No click is required. The visitor then scrolls upward,
+uses the chapter markers, or presses the ascent button. Reduced motion skips the
+intro; a Skip intro control is also available. Returning to the bio does not replay
+the photograph. Key links remain available throughout the main journey.
 
 ## Destinations
 
@@ -32,4 +35,4 @@ referral attribution. Public Instagram/Nostr destinations are in the same file.
 Before replacing the home page, the game feature was removed and the full remaining
 WondersLand source was preserved on `backup/wondersland-nostr-2026-11-02`, commit
 `6ca4b6bbbd59f4ee96f5be82c805d7e9027629d1`. No published history was rewritten.
-See PROJECT_STATE.md and AGENTS.md for current behavior and constraints.
+See PROJECT_STATE.md for the current implementation and verification.

@@ -107,3 +107,28 @@ checked in the browser before this documentation-only approval update.
 
 Bud photo blob was accepted: 7109138c954d89fef1b8d7f8c065756ff8f38a90.
 Approved night photo blob: 84fcfd3fadb2f692dea50ed62e95672bd76a53ac.
+
+## Automatic entrance and underground bio — 2026-11-03
+
+The user clarified that the outdoor photo is an automatic entrance animation,
+not a separate landing screen. The earlier click-to-enter behavior is superseded.
+The user also revoked the previously provided AGENTS.md instructions.
+
+- The photograph appears briefly, then the view automatically travels downward
+  through the surface/earth layer. There is no intro headline or entry CTA.
+- The 650ms photo hold and 2800ms descent run once per route mount. Photo decoding
+  is bounded by a timeout so network failure cannot block access to the bio.
+- The first underground chapter introduces Wondrej, the grower/creator behind
+  NoTillMan. Scrolling upward begins only after this intro has finished.
+- Skip intro bypasses the entrance; reduced motion opens the bio immediately.
+- Navigation and partner controls are inactive during the entrance and available
+  afterward. The main scroll region receives focus without moving its position.
+- Home and return-to-bio controls do not replay the photographic intro.
+- Desktop and 390x844 browser checks confirmed automatic completion without a
+  click, the underground bio, Skip intro, continued chapter navigation and home
+  return with no intro replay. Mobile width/scrollWidth are both 390.
+- Seven lifecycle tests cover automatic arrival, slow/missing/failed image
+  decoding, skip, reduced motion and cleanup. Full suite: 99 tests passed.
+- Final TypeScript check, production build and whitespace validation passed.
+- No new model generation, photo upload or production deployment in this revision.
+  The prior procedural middle scene and final real macro photo remain unchanged.
