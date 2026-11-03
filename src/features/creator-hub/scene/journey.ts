@@ -59,11 +59,6 @@ export function cameraPose(progress: number, mobile: boolean) {
         [0.64, 6.3],
         [1, 8.2],
       ]) * (mobile ? 1.45 : 1),
-    yaw: interpolate(p, [
-      [0, -0.19],
-      [0.29, 0.13],
-      [0.64, -0.15],
-      [1, 0.16],
-    ]),
+    yaw: 0,
   };
 }

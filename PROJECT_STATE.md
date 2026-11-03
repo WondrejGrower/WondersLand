@@ -87,3 +87,23 @@ Desktop macro checked visually in the software 3D browser; monotonic pullback
 checked by camera-path tests. TypeScript, all 92 tests and production build passed.
 GPU FPS remains unmeasured; mobile framing was checked mathematically, not
 visually rerun for this revision.
+
+## Photographic opening — publication authorized
+
+Prepared locally: outdoor night photo landing, deliberate 1.2s descent (instant
+for reduced motion), native upward journey and a photographic final flower with
+FastBuds link. Exact source photos were encoded as WebP only, without AI editing.
+Intro and photo ending checked on desktop and 390px mobile. The original 3D
+plant remains in middle chapters. No new whole-plant model is claimed.
+
+The initial automatic review rejected public-repository upload of the personal
+photo. The user then explicitly approved that exact publication on 2026-11-03.
+The approved photo blob is now uploaded; this reviewed revision is authorized
+for synchronization into the existing Lovable preview. No production deployment.
+
+Final checks: TypeScript, 92 tests and production build passed. Desktop and
+390px mobile entry, descent, final macro, direct links and home return were
+checked in the browser before this documentation-only approval update.
+
+Bud photo blob was accepted: 7109138c954d89fef1b8d7f8c065756ff8f38a90.
+Approved night photo blob: 84fcfd3fadb2f692dea50ed62e95672bd76a53ac.

@@ -12,6 +12,16 @@ storage/Nostr events. The user explicitly authorized deleting the game feature.
 
 ## Design and behavior
 
+- Latest opening: the user's outdoor night photograph is the landing screen.
+  A deliberate click/down-scroll/swipe enters the soil; native upward ascent
+  follows. Preserve the photo without AI redrawing. Final macro uses the user's
+  real bud photograph. No automatic camera orbit. The middle plant is still the
+  prior procedural model; do not claim it has been replaced by a realistic asset.
+- On 2026-11-03 the user explicitly approved storing the personal night landing
+  photograph in the public WondrejGrower/WondersLand repository, answering yes
+  to the repository-publication question. The earlier approval block is resolved
+  for this specific image and website revision.
+
 - Camera revision 2026-11-03: start inside the root zone in macro, then
   continuously pull back while ascending to the upper flower. Never reverse
   the dolly into a zoom-in near the top.
