@@ -1,0 +1,3 @@
+WondersLand direct deployment check
+Marker: bob-cloudflare-2026-11-04-01
+Source: WondrejGrower/WondersLand main
