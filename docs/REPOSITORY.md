@@ -1,20 +1,17 @@
 # GitHub repository
 
-The desktop game lives at https://github.com/WondrejGrower/WondersLand.
+Game source: https://github.com/WondrejGrower/WondersLand/tree/game/wondersland-0.2
 
-On 2026-11-08, Wondrej requested replacing the previous website project in
-this repository with the standalone WondersLand [WL] game. The replacement
-preserves Git history; it does not force-push or erase previous commits.
+On 2026-11-08, Wondrej clarified that the purpose of uploading this project
+is source storage and analysis with ChatGPT. The game is therefore stored
+on `game/wondersland-0.2`. The `main` branch still contains the separate
+website project, whose deployment integration is left unchanged.
 
-The previous website is preserved on:
+The previous website is also preserved on
 `archive/website-before-game-2026-11-08` (commit
-`5830ff11efe82eb6eb5bdb65927a825a0d16002a`).
+`5830ff11efe82eb6eb5bdb65927a825a0d16002a`). Local uncommitted website work
+remains in its separate original checkout and is not part of that backup.
 
-The old website checkout is separate from this game project. Its uncommitted
-local work is not included in that remote backup and remains in its original
-local checkout.
-
-The previous Cloudflare website build integration is not part of this Qt
-project. It needs separate reconfiguration if website deployment is to
-continue from the archive branch or another website repository. This source
-is a native Linux desktop game, not a browser game or Cloudflare Worker.
+For game analysis, select `game/wondersland-0.2` or download that branch's
+ZIP archive. See docs/AI_REVIEW.md for the source map and product intent.
+This is a native Linux desktop game, not a browser game or Cloudflare Worker.

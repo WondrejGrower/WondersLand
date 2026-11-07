@@ -2,7 +2,7 @@
 
 # WondersLand [WL]
 
-[GitHub · WondrejGrower/WondersLand](https://github.com/WondrejGrower/WondersLand)
+[GitHub · WondrejGrower/WondersLand](https://github.com/WondrejGrower/WondersLand/tree/game/wondersland-0.2)
 
 Samostatná pixelová běhačka v bitcoinovém lese. Spusť **WondersLand [WL]**
 přes **Super + Space**.
@@ -34,6 +34,9 @@ Trénink je označený a nikdy nevymýšlí blockchainové transakce.
 načtený zásobník nebo trénink. Nové transakce vstupují do dalšího běhu,
 aktuální trať se během skoku nemění. Jde o výřez nedávných transakcí,
 nikoliv celý mempool. Podrobné zadání a budoucí funkce: [PROJECT.md](docs/PROJECT.md).
+
+Pro analýzu v ChatGPT: [mapa zdrojů a záměr hry](docs/AI_REVIEW.md).
+Hra je ve větvi `game/wondersland-0.2`; `main` obsahuje původní samostatný web.
 
 ## Vývoj
 
