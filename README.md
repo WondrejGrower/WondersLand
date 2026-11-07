@@ -2,6 +2,8 @@
 
 # WondersLand [WL]
 
+[GitHub · WondrejGrower/WondersLand](https://github.com/WondrejGrower/WondersLand)
+
 Samostatná pixelová běhačka v bitcoinovém lese. Spusť **WondersLand [WL]**
 přes **Super + Space**.
 Po spuštění se objeví Base Camp. Pohybuj se přes WASD / šipky nebo
