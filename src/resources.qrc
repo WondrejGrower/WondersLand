@@ -1,0 +1,6 @@
+<RCC><qresource prefix="/">
+<file alias="CampView.qml">CampView.qml</file>
+<file alias="Main.qml">Main.qml</file>
+<file alias="i18n/cs.json">i18n/cs.json</file>
+<file alias="i18n/en.json">i18n/en.json</file>
+</qresource></RCC>
