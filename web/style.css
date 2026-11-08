@@ -3,3 +3,5 @@
 #menu .roles{display:flex;gap:8px}#menu .roles button{flex:1;min-width:0}
 
 .inventory-summary{display:flex;gap:24px;align-items:center}.inventory-summary canvas{width:120px;height:200px;image-rendering:pixelated;flex-shrink:0}.inventory-summary>div{flex:1}.equipment-slots,.item-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#menu .equipment-slots button,#menu .item-grid button{margin:0;min-width:0;overflow-wrap:anywhere}.equipment-slots button{font-size:14px}.item-detail{border:1px solid #8d9b70;background:#213732;padding:12px;margin:16px 0}details{margin:20px 0}summary{cursor:pointer;padding:8px 0;color:#c7d6ae}@media(max-width:580px){.inventory-summary{gap:12px}.inventory-summary canvas{width:72px;height:120px}.equipment-slots,.item-grid{grid-template-columns:1fr}header{flex-wrap:wrap}#inventory{font-size:13px;padding:8px}}
+
+#menu canvas[data-training-model]{width:128px;height:100px;max-width:100%;margin:0 auto;pointer-events:none}

@@ -168,3 +168,21 @@ New camp/plant art, 420 cannabis, the capped 2% Agility time scale and corrected
 wearable attachment/deformation are implemented in both clients. See
 [the verification report](BOTANICAL_TIME_VERIFICATION.md) for observed checks,
 startup/per-frame work and the full/isolated clothing pose captures.
+
+## Plant morphology and model practice · 2026-11-08
+
+At the user's explicit request, commit `554615d` was pushed to main and
+codex/plant-morphology. The existing Cloudflare Git integration deployed it.
+Production `/health` returned 200, apex HTML returned 200, www redirected 301,
+and `/api/mempool` returned ten live rows. Production core.mjs, environment.mjs,
+plant-visual.mjs, app.mjs and balance.json matched the local build byte for byte.
+
+An actual production Chromium check exposed training canvases inheriting the
+world canvas's 100% height and intercepting lower model buttons. The follow-up
+fix gives decorative previews explicit 128×100 dimensions and disables their
+pointer events. The full browser journey and 32 unit tests pass. A separate
+Chromium check at 1280×800 and 390×844 verifies nine previews, unobstructed
+Birch/Cannabis/Sequoia buttons, starting Birch practice and jumping. The normal
+browser suite now also checks preview dimensions and button hit targets.
+Deployment dry-run passes. Existing native verification is unchanged by this
+CSS-only fix (31 Qt and 3 Python tests; native runner exits normally).
