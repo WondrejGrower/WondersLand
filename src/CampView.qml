@@ -1,3 +1,4 @@
+import "PixelArt.js" as PixelArt
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
@@ -10,13 +11,15 @@ Item {
  function description(id){return id==="home"?qsTr("Your refuge between expeditions. The fire is lit, your supplies are safe. Explore the camp, then take the eastern gate into the living forest."):id==="portal"?qsTr("Enter a forest grown from real Bitcoin transactions. Coins collected during a live expedition are added to your supplies when you fall or return home."):id==="training"?qsTr("Practice jumping with sample plants. Training coins and scores never enter your supplies or live record."):id==="forge"?qsTr("A workbench for future upgrades. Useful equipment should be affordable through ordinary play. No purchases are available yet."):id==="wardrobe"?qsTr("A home for future outfits and appearances. Skins will be longer-term goals, without extra combat power. Nothing is on sale yet."):qsTr("The first pages of your future spellbook. Skills, discoveries and combinations earned during expeditions will shape the roguelike adventure. Spell crafting comes in a future update.")}
  Connections {target:backend;function onChanged(){world.requestPaint()}}
  Canvas {
- id:world;anchors.fill:parent;renderTarget:Canvas.Image
+ id:world;anchors.fill:parent;renderTarget:Canvas.Image;smooth:false
  onPaint:{
  var c=getContext('2d');c.reset();c.scale(width/640,height/360);c.imageSmoothingEnabled=false;
  var t=s.animation;
  function r(x,y,w,h,col){c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),w,h)}
- function ellipse(x,y,rx,ry,col){c.fillStyle=col;c.save();c.translate(x,y);c.scale(rx,ry);c.beginPath();c.arc(0,0,1,0,Math.PI*2);c.restore();c.fill()}
- function glow(x,y,rad,col){var g=c.createRadialGradient(x,y,1,x,y,rad);g.addColorStop(0,col);g.addColorStop(1,'transparent');c.fillStyle=g;c.fillRect(x-rad,y-rad,rad*2,rad*2)}
+ function ellipse(x,y,rx,ry,col){for(var iy=-Math.ceil(ry);iy<=ry;iy++){var span=Math.round(rx*Math.sqrt(Math.max(0,1-iy*iy/(ry*ry))));r(x-span,y+iy,span*2+1,1,col)}}
+
+ function glow(x,y,rad,col){for(var ring=rad;ring>0;ring-=5){c.globalAlpha=.025;r(x-ring,y-ring,ring*2,ring*2,col.substring(0,7))}c.globalAlpha=1}
+
  function stone(x,y,w,h){r(x,y+2,w,h,'#263a3b');r(x,y,w,h-3,'#4b5f59');r(x+2,y+1,w-4,2,'#687b6a')}
  function tree(x,y,scale){ellipse(x,y+4,17*scale,7*scale,'#122626');r(x-3*scale,y-35*scale,6*scale,36*scale,'#674b3b');r(x-6*scale,y-9*scale,4*scale,8*scale,'#926749');for(var j=0;j<4;j++){var w=(19+j*9)*scale;r(x-w/2,y-(72-j*12)*scale,w,19*scale,j%2?'#254d40':'#2d5946');r(x-w/2+3*scale,y-(72-j*12)*scale,w*.4,5*scale,'#426f50')}}
  function lamp(x,y){glow(x,y,30,'#d8a75435');r(x-2,y,4,22,'#6b5a43');r(x-5,y-7,10,10,'#342e32');r(x-3,y-5,6,6,'#f4d48b');r(x-6,y-9,12,2,'#a08457')}
@@ -65,7 +68,7 @@ Item {
  // Player feet set the walking plane; a shadow and small bob convey depth.
  var px=s.campX,py=s.campY,step=s.moving?Math.floor(t*10)%2:0;
  ellipse(px,py+2,10,4,'#152a28');
- r(px-5,py-29-step,12,4,'#b7a25b');r(px-9,py-25-step,22,3,'#d7c380');r(px-3,py-22-step,10,8,'#d5a17a');r(px+4,py-20-step,2,2,'#202d34');r(px-5,py-14,13,8,'#69a384');r(px-7,py-12,3,7,'#44735b');r(px+8,py-12,3,5,'#d5a17a');r(px-4,py-6,4,6-step*2,'#a0b5bc');r(px+3,py-6,4,4+step*2,'#71909d');
+ PixelArt.character(c,px-12,py-40,s.profile.character,Math.floor(t*9),s.profile.hands,s.profile.boots,s.moving?"run":"idle");
  for(i=0;i<18;i++){x=(i*137+t*3)%640;y=190+Math.sin(i*3+t*.5)*75;glow(x,y,6,'#bed28d22');r(x,y,1,1,'#c4d1a0')}
  }
  }
@@ -83,17 +86,8 @@ Item {
  MouseArea {anchors.fill:parent;onClicked:backend.interact()}
  }
  Rectangle {
- anchors.centerIn:parent;width:Math.min(parent.width-26,440);height:details.implicitHeight+34;color:"#f016292f";border.color:"#859378";visible:s.station!=="";radius:theme.radius
+ anchors.centerIn:parent;width:Math.min(parent.width-26,500);height:Math.min(parent.height-20,stationPanel.implicitHeight+30);color:"#f016292f";border.color:"#859378";visible:s.station!=="";radius:theme.radius
  MouseArea {anchors.fill:parent}
- ColumnLayout {id:details;anchors.centerIn:parent;width:parent.width-34;spacing:12
- Label {text:camp.stationName(s.station);font.pixelSize:24;font.bold:true;color:"#e4d7a9";wrapMode:Text.WordWrap;Layout.fillWidth:true}
- Label {text:camp.description(s.station);wrapMode:Text.WordWrap;Layout.fillWidth:true;color:"#bac6b2";font.pixelSize:13}
- Label {visible:s.station==="forge"||s.station==="library"||s.station==="wardrobe";text:qsTr("PLANNED · no coins will be spent");font.pixelSize:10;color:"#cab780"}
- RowLayout {
- Button {objectName:"campLive";visible:s.station==="portal";text:qsTr("Enter live forest")+" [E]";enabled:s.poolSize>0;highlighted:true;onClicked:{backend.start(false);camp.focusGame()}}
- Button {objectName:"campTraining";visible:s.station==="training";text:qsTr("Start training")+" [E]";highlighted:true;onClicked:{backend.start(true);camp.focusGame()}}
- Button {text:qsTr("Back")+" [Esc]";onClicked:{backend.closeStation();camp.focusGame()}}
- }
- }
+ StationPanel {id:stationPanel;anchors.fill:parent;anchors.margins:15;onFocusGame:camp.focusGame()}
  }
 }

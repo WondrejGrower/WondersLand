@@ -1,0 +1,131 @@
+{
+  "source": "Synthetic algorithm fixture, not mainnet observations",
+  "synthetic": true,
+  "from": null,
+  "to": null,
+  "uniqueTransactions": 14,
+  "balanceVersion": "wl-0.3-draft-1",
+  "tier": 1,
+  "warning": "Draft mapping; not a whole-mempool distribution. Finite timing search is not a proof of impossibility below the apex. Human errors and the full skill economy are excluded.",
+  "valuePercentiles": {
+    "0": 0.0,
+    "25": 200000.0,
+    "50": 26000000.0,
+    "75": 7750000000.0,
+    "90": 730000000000.001,
+    "95": 4149999999999.997,
+    "99": 8829999999999.992,
+    "100": 10000000000000
+  },
+  "heightPercentiles": {
+    "0": 4.0,
+    "25": 14.5,
+    "50": 55.0,
+    "75": 148.5,
+    "90": 328.40000000000015,
+    "95": 429.04999999999995,
+    "99": 524.2099999999999,
+    "100": 548
+  },
+  "references": {
+    "beginner": {
+      "geometricallyImpossibleFraction": 0.42857142857142855,
+      "noSolutionInFiniteTimingSearchFraction": 0.5,
+      "runsByRescueBudget": {
+        "0": {
+          "medianSeconds": 5.5,
+          "meanSeconds": 6.92,
+          "stdevSeconds": 1.9363883907935413,
+          "minSeconds": 5.5,
+          "maxSeconds": 13.0,
+          "datasetExhaustedWithoutDeath": 0,
+          "seeds": 30
+        },
+        "1": {
+          "medianSeconds": 10.3,
+          "meanSeconds": 10.946666666666667,
+          "stdevSeconds": 3.256351059425599,
+          "minSeconds": 7.8,
+          "maxSeconds": 18.2,
+          "datasetExhaustedWithoutDeath": 0,
+          "seeds": 30
+        },
+        "2": {
+          "medianSeconds": 14.45,
+          "meanSeconds": 15.53,
+          "stdevSeconds": 4.2207542769825706,
+          "minSeconds": 10.3,
+          "maxSeconds": 28.6,
+          "datasetExhaustedWithoutDeath": 0,
+          "seeds": 30
+        }
+      }
+    },
+    "developed": {
+      "geometricallyImpossibleFraction": 0.35714285714285715,
+      "noSolutionInFiniteTimingSearchFraction": 0.35714285714285715,
+      "runsByRescueBudget": {
+        "0": {
+          "medianSeconds": 7.8,
+          "meanSeconds": 7.843333333333334,
+          "stdevSeconds": 3.066124952154139,
+          "minSeconds": 5.5,
+          "maxSeconds": 18.2,
+          "datasetExhaustedWithoutDeath": 0,
+          "seeds": 30
+        },
+        "1": {
+          "medianSeconds": 13.0,
+          "meanSeconds": 13.263333333333334,
+          "stdevSeconds": 4.737614261301661,
+          "minSeconds": 7.8,
+          "maxSeconds": 23.4,
+          "datasetExhaustedWithoutDeath": 0,
+          "seeds": 30
+        },
+        "2": {
+          "medianSeconds": 19.45,
+          "meanSeconds": 20.346666666666668,
+          "stdevSeconds": 6.300038800585985,
+          "minSeconds": 10.3,
+          "maxSeconds": 31.1,
+          "datasetExhaustedWithoutDeath": 0,
+          "seeds": 30
+        }
+      }
+    },
+    "aerial": {
+      "geometricallyImpossibleFraction": 0.21428571428571427,
+      "noSolutionInFiniteTimingSearchFraction": 0.2857142857142857,
+      "runsByRescueBudget": {
+        "0": {
+          "medianSeconds": 7.8,
+          "meanSeconds": 8.663333333333334,
+          "stdevSeconds": 3.460393362353798,
+          "minSeconds": 5.5,
+          "maxSeconds": 18.2,
+          "datasetExhaustedWithoutDeath": 0,
+          "seeds": 30
+        },
+        "1": {
+          "medianSeconds": 15.9,
+          "meanSeconds": 16.986666666666668,
+          "stdevSeconds": 6.921643992257588,
+          "minSeconds": 7.8,
+          "maxSeconds": 31.1,
+          "datasetExhaustedWithoutDeath": 0,
+          "seeds": 30
+        },
+        "2": {
+          "medianSeconds": 24.85,
+          "meanSeconds": 24.486666666666668,
+          "stdevSeconds": 6.875450692298085,
+          "minSeconds": 13.0,
+          "maxSeconds": 36.7,
+          "datasetExhaustedWithoutDeath": 0,
+          "seeds": 30
+        }
+      }
+    }
+  }
+}

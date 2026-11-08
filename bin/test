@@ -8,3 +8,6 @@ cd "$ROOT/build/tests"
 qmake6 "$ROOT/tests/game_tests.pro"
 make -j"${WL_JOBS:-4}"
 QT_QPA_PLATFORM=offscreen QT_QPA_PLATFORMTHEME= QT_QUICK_BACKEND=software QT_FORCE_STDERR_LOGGING=1 ./game_tests
+
+cd "$ROOT"
+python3 -m unittest discover -s tests -p test_tools.py -v

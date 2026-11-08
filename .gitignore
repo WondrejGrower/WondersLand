@@ -2,3 +2,6 @@ build/
 pkgbuild/pkg/
 pkgbuild/src/
 *.pkg.tar.zst
+
+__pycache__/
+*.pyc

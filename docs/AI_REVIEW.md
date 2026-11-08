@@ -1,6 +1,6 @@
 # WondersLand [WL] · podklady pro analýzu
 
-Analyzuj větev `game/wondersland-0.2`, nikoliv `main` (tam je jiný webový projekt).
+Analyzuj větev `game/roguelite-0.3`, nikoliv `main` (tam je jiný webový projekt).
 
 Jde o funkční ranou kostru samostatné nativní hry pro Omarchy/Linux:
 C++17, Qt Quick/QML, qmake6. Nejde o web ani plugin kiosku. Záměr a další
@@ -21,13 +21,16 @@ směr jsou v docs/PROJECT.md; aktuální ovládání a příkazy v README.md.
 
 Rostlina v živém běhu odpovídá skutečné transakci. Velikost určuje součet
 výstupů v satoshi, nikoliv čistá převáděná částka. Po kolizi se ukáže TXID
-a odkaz. Zdroj obsahuje jen nedávné transakce, ne celý mempool. Běh má
-pevný výchozí zásobník; nové příchozí transakce vstupují do dalšího běhu.
+a odkaz. Zdroj obsahuje jen nedávné transakce, ne celý mempool. Běh má doplňovanou deduplikovanou frontu; nové transakce vstupují
+do budoucí části aktuálního běhu a už viditelné překážky se nemění.
 
 Trénink má ukázkové rostliny bez TXID a nepřidává persistentní mince ani
-živé rekordy. Herní mince nejsou bitcoin. Dílna, šatník a zahrada kouzel
-zatím jen představují budoucí rozvoj. Žádné nákupy ani platby neprobíhají.
+živé rekordy. Herní mince nejsou bitcoin. Dílna, vybavení, skilly, tiery a výzkum jsou od 0.3 funkční. Nákupy
+používají pouze herní body, žádné platby neprobíhají.
 
 Budoucí směr: magický roguelike inspirovaný hlavně Magicraftem a Terrarií.
 Síla má vycházet ze skillů, synergií a hraní; základní upgrady mají být
 běžně dostupné, kosmetické skiny dražší bez bojové výhody. Ne pay-to-win.
+
+Pro aktuální revizi nejprve čti docs/BRIEF_0_3.md a docs/IMPLEMENTATION_0_3.md.
+Balanc: src/balance.json. Postup: progress.*. Fronta: transactionfeed.*.

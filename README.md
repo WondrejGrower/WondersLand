@@ -1,68 +1,71 @@
-![WondersLand Base Camp](docs/base-camp.png)
+![WondersLand 0.3](docs/preview-camp-03.png)
 
-# WondersLand [WL]
+# WondersLand [WL] · 0.3
 
-[GitHub · WondrejGrower/WondersLand](https://github.com/WondrejGrower/WondersLand/tree/game/wondersland-0.2)
+Nativní pixelová roguelite pro Linux/Omarchy. Vytvoř postavu, v táboře dojdi
+k portálu, vyber tier a startovní skill a běž mezi rostlinami ze skutečných
+bitcoinových transakcí. Největší stromy nemusí být překonatelné.
+Po nárazu se dozvíš konkrétní TXID, přesný součet výstupů a rozměr rostliny.
 
-Samostatná pixelová běhačka v bitcoinovém lese. Spusť **WondersLand [WL]**
-přes **Super + Space**.
-Po spuštění se objeví Base Camp. Pohybuj se přes WASD / šipky nebo
-kliknutím, u portálu či cvičiště stiskni E. Hra používá vlastní nativní Qt okno; nepotřebuje kiosk, Chromium ani běžící
-službu Bitcoin Forest. Nemění playlist ani nastavení KioskChy.
+Vývojová větev: [game/roguelite-0.3](https://github.com/WondrejGrower/WondersLand/tree/game/roguelite-0.3).
+Původní web v main ani KioskChy nejsou součástí hry.
 
 | Ovládání | Akce |
 | --- | --- |
-| WASD / šipky / kliknutí v táboře | Pohyb |
-| E | Otevřít stanoviště, dalším E potvrdit vstup / pokračovat |
+| WASD / šipky / klik v táboře | Pohyb |
+| E | Otevřít stanoviště, potvrdit vstup nebo pokračovat |
+| 1 / 2 / 3, případně šipky a E | Výběr startovního skillu |
+| Mezerník / ↑ / klik při běhu | Skok; držení zvýší výšku |
+| F | Jetpack, pokud jej máš; konečné palivo |
+| P / Esc | Pauza; Esc zavírá nabídku |
 | B | Návrat do Base Campu |
-| R po nárazu | Další pokus |
-| Tab / Shift+Tab, mezerník | Výběr a potvrzení tlačítek |
-| Mezerník / ↑ / kliknutí do krajiny | Skok; podržením vyskočíš výš |
-| P / Escape | Pauza a pokračování |
-| F11 | Celá obrazovka / okno |
-| ? | Nápověda |
-| Q | Ukončit |
+| R po nárazu | Nový běh |
+| Tab / Shift+Tab a mezerník | Nabídky bez myši |
+| F11 / ? / Q | Fullscreen / nápověda / konec |
 
-Živé mince a rekord se uloží po konci běhu nebo při návratu do tábora.
-Tréninkové mince a skóre se neukládají. Data jsou v
-`~/.local/share/wondersland-game/progress.json`.
-Dílna, šatník a zahrada kouzel představují místa pro další rozvoj; zatím se
-v nich nic nekupuje. Mince jsou pouze herní body.
-Obří duby a sekvoje mohou v této první verzi běh ukončit; upgrady zatím nejsou.
-Po nárazu do živé transakce můžeš otevřít její skutečný záznam v mempool.space.
-Trénink je označený a nikdy nevymýšlí blockchainové transakce.
+Dílna se otevře po prvním dokončeném živém běhu. Výzkum při 60 s v T1.
+Tři classy, skilly dočasné pro běh, trvalá dílna, diamantové vybavení,
+milníky a časovaný výzkum jsou funkční. Trénink nepřidává trvalé odměny.
+Mince jsou herní body, žádné platby ani bitcoinová peněženka zde nejsou.
 
-Živé požadavky míří přímo na mempool.space: nedávné transakce každých
-15 sekund a jednorázové ověření stavu po nárazu. Při výpadku lze použít
-načtený zásobník nebo trénink. Nové transakce vstupují do dalšího běhu,
-aktuální trať se během skoku nemění. Jde o výřez nedávných transakcí,
-nikoliv celý mempool. Podrobné zadání a budoucí funkce: [PROJECT.md](docs/PROJECT.md).
+Zdroj je **výřez nedávných transakcí** mempool.space, nikoliv celý mempool.
+Při vyčerpání se hra bezpečně zastaví do příchodu nových dat.
+Číselná konfigurace je **neověřený výchozí balanc** v `src/balance.json`.
+[Skutečný rozsah, limity a měření](docs/IMPLEMENTATION_0_3.md).
+[Závazné zadání](docs/BRIEF_0_3.md).
 
-Pro analýzu v ChatGPT: [mapa zdrojů a záměr hry](docs/AI_REVIEW.md).
-Hra je ve větvi `game/wondersland-0.2`; `main` obsahuje původní samostatný web.
+## Spuštění a vývoj
 
-## Vývoj
-
-Arch / Omarchy, GCC s C++17, Qt 6 base/declarative/wayland, qmake6, make.
-Grafika je vlastní Canvas v QML, fyzika a data jsou v C++. Žádné npm závislosti.
-Téma a jazyk následují Omarchy; přibalené jazyky jsou angličtina a čeština.
+Arch / Omarchy, GCC s C++17, Qt 6 base/declarative/wayland, qmake6 a make.
+Pro nástroje analýzy/testy Python 3. Bez Chromia, npm a kioskové služby.
 
 ```sh
 ./bin/build
 ./bin/test
 ./build/wondersland-game open
-./build/wondersland-game check --json
-QT_QPA_PLATFORMTHEME= QT_QUICK_BACKEND=software ./build/wondersland-game preview docs/base-camp.png
+./build/wondersland-game check --live --json
 ./bin/install
 ```
 
-Instalace sestaví Arch balíček přes makepkg. Odinstalace:
-`sudo pacman -R wondersland-game`. Uživatelský rekord zůstává zachovaný.
-Testy používají dočasné soubory a syntetické transakce, neprovádějí platby
-ani změny kiosku. `preview` vytváří syntetický náhled bez sítě.
+Ze spouštěče: **Super + Space → WondersLand [WL]**. Odinstalace:
+`sudo pacman -R wondersland-game`. Data jsou v
+`~/.local/share/wondersland-game/progress.json`; reset přes ozubené kolo
+vyžaduje potvrzení. Starý zůstatek se jednorázově převede po vytvoření postavy.
 
-MIT · autor Wondrej. Theme / translation scaffolding převzatý z KioskChy,
-Omarchy app templates, Omacut a Monologue: David Heinemeier Hansson (MIT).
+```sh
+QT_QUICK_BACKEND=software ./build/wondersland-game preview docs/preview-creation-03.png
+QT_QUICK_BACKEND=software ./build/wondersland-game preview docs/preview-camp-03.png --camp
+QT_QUICK_BACKEND=software ./build/wondersland-game preview docs/preview-run-03.png --runner
+QT_QUICK_BACKEND=software ./build/wondersland-game preview docs/preview-workshop-03.png --workshop --progress
+QT_QUICK_BACKEND=software ./build/wondersland-game preview docs/preview-results-03.png --results
+python3 tools/record_mempool.py --seconds 600 --output /tmp/wl-dataset.json
+python3 tools/analyze.py /tmp/wl-dataset.json --tier 1 --seeds 50
+./build/wondersland-game open --dataset /tmp/wl-dataset.json --seed 42
+```
 
-Kontrola skutečného spojení s mempoolem bez otevření hry:
-`./build/wondersland-game check --live --json`.
+Preview používá izolovaný dočasný save a označené syntetické scény, nikoliv
+uživatelovy peníze nebo údaje. `--cs` přepne náhled do češtiny, `--small`
+na 720×600. Starší obrázky v docs jsou historické; aktuální začínají preview-.
+
+MIT · Wondrej. Theme / translation scaffolding: Omarchy app templates,
+Omacut / Monologue, David Heinemeier Hansson (MIT).

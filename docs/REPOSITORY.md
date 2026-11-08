@@ -15,3 +15,6 @@ remains in its separate original checkout and is not part of that backup.
 For game analysis, select `game/wondersland-0.2` or download that branch's
 ZIP archive. See docs/AI_REVIEW.md for the source map and product intent.
 This is a native Linux desktop game, not a browser game or Cloudflare Worker.
+
+The 0.3 roguelite development is on `game/roguelite-0.3`, derived from
+`game/wondersland-0.2`. Consult that branch for the full new implementation.

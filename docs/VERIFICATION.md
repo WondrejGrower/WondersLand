@@ -40,3 +40,37 @@ malé okno 720 × 540 vizuálně zkontrolováno. Účetní pravidla se nemění.
 E otevírá i potvrzuje bránu/cvičiště, Esc zavírá nabídky, B vrací do tábora,
 R opakuje běh. Ověřen celý průchod QML klávesnicí včetně potvrzení při
 fokusu tlačítka, bezpečného čekání na chybějící data a návratu. 11 testů prošlo.
+
+## 0.3 · nové závazné zadání BRIEF_0_3.md
+
+Vývoj ve větvi game/roguelite-0.3. Celý rozsah a známé limity jsou výslovně
+popsané v IMPLEMENTATION_0_3.md; starší zápisy výše popisují historické verze.
+
+- ./bin/build: úspěšně sestaveno na Qt 6.12 / GCC 16.
+- Qt testy: 21 prošlých kontrol včetně init/cleanup; 0 selhání.
+- Dva Python testy analyzátoru: prošly.
+- Křivka: nula, monotónnost, velké hodnoty, růst nad poslední kotvou,
+  konopí bez změny rozměrů. Fronta: deduplikace, hranice, seed, doplňování,
+  žádné opakování TXID, zamčené viditelné objekty, čekání a odpočet.
+- Fyzika: skutečné trajektorie, limity obyčejného/leteckého skoku,
+  konečné palivo, opakované vstupy, záchrany proti širokým stromům.
+- T1–T3: prahy odemčení i skutečné násobitele sběru a vyplacení.
+- Postup: trénink bez odměn, nákupy a maxima, research podle hodin,
+  starý save, reset/zrušení, poškozený soubor, odměny právě jednou,
+  oddělené replay rekordy. Zrušení výběru skillu nepřidá dokončený běh.
+- Nativní QML: psaní Q/P/E do jména, tvorba postavy, E/E na bráně,
+  výběr skillu, skok, pauza a B; přepnutí fullscreen v offscreen platformě.
+- Vizuální kontrola sedmi syntetických/označených náhledů včetně češtiny
+  a 720×600. Výsledkový náhled používá zaznamenané veřejné TX a výslovně
+  uvádí, že nejde o live a aktuální potvrzení není ověřené.
+- Finální Qt síťový probe: live=true, skutečně načteno 10 nedávných TX.
+- Jeden veřejný vzorek 10 TX uložen s původem a časem; analyzátor běžel
+  s 50 seedy. Syntetický dataset zvlášť s 30 seedy. Žádné tvrzení o
+  reprezentativním mempoolu nebo ověřených měsíčních ekonomických cílech.
+
+Neprovedeno: dlouhodobá lidská herní studie, měsíce ekonomického testování,
+plný node, veřejný žebříček a produkční grafický benchmark. Tyto věci nejsou
+nahrazené syntetickým testem. Nová verze neprovádí webový deployment.
+
+Finální sestava 0.3.0-1: balíček vytvořen bez debug balíčku; instalace ověřena
+přes pacman. Živý Qt probe vrací jeden JSON s live=true a 10 transakcemi.

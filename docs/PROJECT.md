@@ -57,3 +57,11 @@ dostupné běžným hraním; skiny jsou dražší dlouhodobé kosmetické cíle 
 bojové výhody. Vyhnout se pay-to-win. Konkrétní ceny nejsou stanovené.
 Dílna, šatník a zahrada kouzel zatím obsahují popis plánů bez nákupů
 a bez strhávání mincí. Platby ani funkční skill systém zatím nepřidávat.
+
+## Nové závazné zadání a hratelná 0.3
+
+Soubor BRIEF_0_3.md ze dne 8. listopadu 2026 nahrazuje dřívější odklady skillů,
+dílny, vybavení a výzkumu i návrhy povinně průchozího generátoru. Velká
+transakce může správně vytvořit nepřekonatelnou překážku. Aktuální funkční
+stav, omezení, migrace a skutečná měření jsou v IMPLEMENTATION_0_3.md.
+Pracovní větev je game/roguelite-0.3; main zůstává původní web.
