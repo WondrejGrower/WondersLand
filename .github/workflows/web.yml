@@ -22,6 +22,7 @@ jobs:
       - run: npm run test:jump-input
       - run: npm run test:mobile
       - run: npm run test:pwa
+      - run: npm run test:admin
       - run: npm run test:verified
       - run: npm run test:monthly
       - run: npm run test:results

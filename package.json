@@ -24,7 +24,8 @@
     "test:mobile": "npm run build && node web/mobile-browser.test.mjs",
     "test:pwa": "npm run build && node web/pwa-browser.test.mjs",
     "build:checked": "npm test && npm audit --audit-level=low && npm run build",
-    "test:verified": "npm run build && node web/verified-browser.test.mjs"
+    "test:verified": "npm run build && node web/verified-browser.test.mjs",
+    "test:admin": "npm run build && node web/admin-login-browser.test.mjs"
   },
   "devDependencies": {
     "playwright": "1.64.1",

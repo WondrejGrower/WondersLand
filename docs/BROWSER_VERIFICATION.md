@@ -259,3 +259,9 @@ endpoint, headers and signed admin cookie checks. Production verification is
 performed after publishing; no fabricated production scores are inserted.
 See [SECURITY_HARDENING.md](SECURITY_HARDENING.md) for protocol bounds, admin
 key handling and the distinction between verified simulation and paid ranked.
+
+Production security check passed: signed private admin flow, cookie flags,
+unlimited isolated test coins and preserved personal save, verified/history
+board reads, CSP/HSTS and offline PWA. No public score/profile fixtures were
+created. `npm run test:admin` additionally covers fragment-only arrival on an
+already-open gate, with real signing/cookie checks handled separately.

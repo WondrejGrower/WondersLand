@@ -148,3 +148,11 @@ build plus 35 Qt and 3 Python tests, and checked deployment dry-run passed.
 A real local Workerd instance with HTTPS, native rate bindings and SQLite also
 passed live-source simulation and duplicate finish, plus real signature/cookie
 authorization of the test page. No fake production leaderboard entries are used.
+
+Production follow-up: real signed admin login, secure HttpOnly cookie, infinite
+coins in isolated test storage, unchanged normal profile, both board readers,
+CSP/HSTS and offline PWA were verified on wondersland.online without writing
+public scores/profiles. The gate now also handles a capability fragment arriving
+on an already-open page (`test:admin` regression); private links include a
+non-secret `access=1` navigation hint so an older open gate loads fresh code.
+The credential itself remains exclusively in the fragment and private cookie.
