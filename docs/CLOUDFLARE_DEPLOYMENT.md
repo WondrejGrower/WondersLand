@@ -37,7 +37,7 @@ static assets from dist bound as ASSETS, build `npm run build`, custom domains
 wondersland.online and www.wondersland.online. www redirects to the apex.
 The Worker runs before assets so the canonical redirect works on all paths.
 Only GET /api/mempool and /api/tx/<64-hex-txid>/status proxy the public
-mempool.space API. Responses are shared at the edge for 15 seconds; upstream
+mempool.space API. Recent batches are shared at the edge for 5 seconds (status responses for 15 seconds); upstream
 failures remain 502, never fake data. /health reports game/version/balance.
 All other paths go to static assets. No arbitrary proxy, keys or payments.
 

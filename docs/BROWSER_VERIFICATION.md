@@ -126,3 +126,30 @@ and availability after reset. [Czech role picker](browser/creation-role-cs.png).
 The full browser journey and the long-run/results regression also passed with
 the fixed-role creator enabled. Updated Training Grounds captures no longer
 show role switching. These UI changes preserve existing character data.
+
+## Keyboard and continuous transaction reserve · 2026-11-08
+
+Browser controls now use physical WASD/E/F/P/B codes, independent of Shift,
+Caps Lock and the selected keyboard layout. Text inputs retain normal typing;
+closing a sheet releases its hidden input focus. Browser shortcuts with
+Ctrl/Alt/Meta do not become game actions.
+
+The live recent feed now uses one scheduled, non-overlapping request with a
+12 s timeout. During expeditions a reserve below 40 polls every 5 s; otherwise
+checks are 15 s apart and skip networking at 80 pending transactions. Camp
+stops fetching at 20; hidden tabs make no feed requests. Failures back off
+from 5 s to 60 s. Recorded playback loads once. The browser bypasses its HTTP
+cache; the Worker shares recent results for 5 s at the edge. There is no
+network request per animation frame or per obstacle. Upstream still supplies
+only its latest ten real transactions per response; if unavailable or unchanged,
+the game honestly waits, never inventing or reusing TXIDs in the same run.
+
+18 unit/integration tests pass. `npm run test:input-feed` passes in Chromium:
+uppercase/physical WASD in camp and menu, exhaustion of ten synthetic zero-value
+transactions, refill with ten distinct IDs, countdown and continuation to 20.
+Synthetic rows exist only in tests. Feed tests also cover reserve limits, hidden
+tabs, backoff/recovery and one-shot recorded playback.
+
+The full Chromium journey also passes (creation, held confirmation, menus,
+languages, persistence, purchase, import/reset and four viewport sizes).
+Wrangler deploy dry-run passes with the two new client modules included.

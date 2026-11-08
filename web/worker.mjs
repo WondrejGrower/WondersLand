@@ -14,7 +14,7 @@ export async function handle(request,env,upstream=fetch,edgeCache=globalThis.cac
   const response=await upstream(endpoint,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(10000)});
   if(!response.ok)return Response.json({error:'Mempool source unavailable'},{status:502});
   const data=await response.json();if((recent&&!Array.isArray(data))||(!recent&&typeof data.confirmed!=='boolean'))throw Error('Invalid response');
-  const out=Response.json(data,{headers:{'Cache-Control':'public, max-age=15','X-Content-Type-Options':'nosniff'}});
+  const out=Response.json(data,{headers:{'Cache-Control':recent?'public, max-age=0, s-maxage=5':'public, max-age=15','X-Content-Type-Options':'nosniff'}});
   if(edgeCache)await edgeCache.put(cacheKey,out.clone());return out;
  }catch{return Response.json({error:'Mempool source unavailable'},{status:502,headers:{'Cache-Control':'no-store'}});}
 }

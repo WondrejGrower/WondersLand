@@ -2,7 +2,7 @@ import {mkdir,readFile,writeFile,copyFile,rm} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('../',import.meta.url)),out=root+'dist/';
 await rm(out,{recursive:true,force:true});await mkdir(out,{recursive:true});
-for(const name of ['index.html','style.css','app.mjs','core.mjs'])await copyFile(root+'web/'+name,out+name);
+for(const name of ['index.html','style.css','app.mjs','core.mjs','input.mjs','feed.mjs'])await copyFile(root+'web/'+name,out+name);
 for(const [a,b]of [['docs/live-recent-sample.json','recorded.json'],['src/balance.json','balance.json'],['src/i18n/cs.json','cs.json'],['pkgbuild/wondersland-game.svg','icon.svg']])await copyFile(root+a,out+b);
 let pixels=await readFile(root+'src/PixelArt.js','utf8');await writeFile(out+'pixels.mjs',pixels.replace('.pragma library','')+'\nexport {character,plant};\n');
 function paint(source){const start=source.indexOf(' onPaint:{')+11,end=source.indexOf('\n }\n }',start);return source.slice(start,end).replace("var c=getContext('2d');",'').replaceAll('win.trText','wlTranslate').replaceAll('qsTr(','wlTranslate(');}
