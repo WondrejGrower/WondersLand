@@ -41,7 +41,7 @@ mempool.space API. Responses are shared at the edge for 15 seconds; upstream
 failures remain 502, never fake data. /health reports game/version/balance.
 All other paths go to static assets. No arbitrary proxy, keys or payments.
 
-The previously connected Cloudflare Workers Git integration should watch
+The existing Cloudflare Workers Git integration watches
 repository WondrejGrower/WondersLand, production branch main, root directory
 `/`. Build command `npm run build`; deploy command `npx wrangler deploy`.
 Wrangler also declares its own build, so it can deploy from a fresh checkout.
@@ -54,6 +54,10 @@ A manual deploy, when signed into the correct Cloudflare account, is:
 npx wrangler login
 npm run deploy
 ```
+
+Production Git deployment was verified successfully (see BROWSER_VERIFICATION.md).
+The npm prebuild hook executes unit tests in Cloudflare itself. GitHub Actions
+currently cannot start because the GitHub account reports a billing lock.
 
 At preparation time dry-run succeeded but the local Wrangler CLI was not
 logged into Cloudflare. A dry-run does NOT establish a live deployment.

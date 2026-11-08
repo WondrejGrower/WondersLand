@@ -10,10 +10,11 @@
     "build": "node web/build.mjs",
     "build:web": "node web/build.mjs",
     "dev": "wrangler dev",
-    "test": "node --test --test-isolation=none web/core.test.mjs web/worker.test.mjs",
+    "test": "node --test web/core.test.mjs web/worker.test.mjs",
     "deploy:check": "wrangler deploy --dry-run",
     "deploy": "wrangler deploy",
-    "test:browser": "npm run build && node web/browser.test.mjs"
+    "test:browser": "npm run build && node web/browser.test.mjs",
+    "prebuild": "npm test"
   },
   "devDependencies": {
     "playwright": "1.64.1",

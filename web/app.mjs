@@ -3,7 +3,7 @@ import {drawCamp,drawRun} from './art.mjs';
 import * as PixelArt from './pixels.mjs';
 const [config,cs]=await Promise.all(['balance.json','cs.json'].map(p=>fetch('./'+p).then(r=>{if(!r.ok)throw Error('Cannot load game assets');return r.json();})));
 const $=id=>document.getElementById(id),escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let language=localStorage.getItem('wl-language')||'en';const languageParam=new URL(location.href).searchParams.get('lang');if(['cs','en'].includes(languageParam)){language=languageParam;localStorage.setItem('wl-language',language);}
+let language=localStorage.getItem('wl-language')||'en';const languageParam=new URL(location.href).searchParams.get('lang');if(['cs','en'].includes(languageParam)){language=languageParam;localStorage.setItem('wl-language',language);const clean=new URL(location.href);clean.searchParams.delete('lang');history.replaceState(null,'',clean);}
 const t=(key,...args)=>{let text=language==='cs'?(cs[key]||key):key;args.forEach((value,i)=>text=text.replaceAll('%'+(i+1),String(value)));return text;};
 const seedCount=n=>int(n)+' '+(language==='cs'?(n===1?'semeno':n>=2&&n<=4?'semena':'semen'):(n===1?'seed':'seeds'));
 const int=n=>new Intl.NumberFormat(language==='cs'?'cs-CZ':'en-US',{maximumFractionDigits:0}).format(typeof n==='string'?BigInt(n):n),coin=n=>int(n)+' '+(language==='cs'?(n===1?'mince':n>=2&&n<=4?'mince':'mincí'):(n===1?'coin':'coins')),btc=amount=>{const [a,b]=amount.split('.');return int(a)+(language==='cs'?',':'.')+b;};

@@ -40,3 +40,28 @@ Balance thresholds remain draft and have no long-term human calibration.
 
 Production deployment verification is recorded below after publishing. A
 successful build or dry-run alone is not a claim that the domain changed.
+
+## Actual production verification
+
+The original site was replaced through a normal Git main merge, not a force
+push, with archive/history preserved. Deployment commit 7a0f0bc received
+**Workers Builds: wondersland — success** (Cloudflare version
+`e017148e-eafb-4342-991f-f3b965ba7aaa`). Actual checks on wondersland.online:
+
+- GET /health: HTTP 200, application WondersLand [WL], version 0.3.1,
+  balance wl-0.3-journey-2.
+- GET /: HTTP 200, WondersLand game HTML instead of the old website.
+- GET /api/mempool: HTTP 200, 10 genuine recent transactions.
+- www.wondersland.online: HTTP 301 to wondersland.online.
+- A fresh Chromium profile loaded Czech, created a synthetic Willow character,
+  entered the live portal, chose a skill and ran the actual deployed client;
+  no JavaScript errors. [Live camp](browser/live-domain-camp-cs.png),
+  [live run](browser/live-domain-run-cs.png). These use the real Worker endpoint,
+  unlike the explicitly recorded dataset in the comparison screenshots.
+
+GitHub Actions did not start its runner: GitHub's annotation says the account
+is locked due to a billing issue. This is not reported as passed CI. The
+separate Cloudflare Git integration did run and deploy successfully. The root
+npm prebuild hook now runs unit tests during the Cloudflare build itself,
+independently of GitHub Actions; browser tests also passed locally.
+The CLI Cloudflare login remains unnecessary for the working Git deployment.

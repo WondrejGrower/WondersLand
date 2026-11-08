@@ -20,7 +20,7 @@ npm run dev
 ```
 
 Cloudflare: [nasazení přes GitHub](docs/CLOUDFLARE_DEPLOYMENT.md).
-[Webové náhledy a výsledky kontrol](docs/BROWSER_VERIFICATION.md).
+[Webové náhledy, výsledky kontrol a ověřené nasazení](docs/BROWSER_VERIFICATION.md).
 Postup z desktopu lze přenést v Nastavení → Importovat postup.
 
 Větev: [game/roguelite-0.3](https://github.com/WondrejGrower/WondersLand/tree/game/roguelite-0.3).
