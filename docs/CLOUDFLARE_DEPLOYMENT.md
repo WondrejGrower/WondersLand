@@ -76,7 +76,9 @@ and wl-language. English is the fresh-install default. Opening
 `https://wondersland.online/?lang=cs` stores the user's Czech choice.
 Settings switches language without reload, exports progress and imports a
 native progress.json with a keyboard-operated confirmation. The old browser
-save is backed up before import, and schema 3 recipes/unlocks migrate to 4.
+save is backed up before import, and schemas 3/4 migrate to schema 5 with separate clothing inventory and slots.
+Existing role, coins, records and legacy abilities are preserved; browser
+migration retains wl-progress-pre-v5 before persisting the upgraded save.
 The native source file is `~/.local/share/wondersland-game/progress.json`.
 No account or automatic cross-device sync exists; native and browser saves
 remain separate until explicitly imported/exported.

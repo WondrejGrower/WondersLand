@@ -14,7 +14,7 @@ class Backend : public QObject {
     explicit Backend(QString saveFile = {}, bool network = true, QObject *parent = nullptr);
     QVariantMap state() const;
     Q_INVOKABLE void createCharacter(const QString &name, const QString &classId, const QString &hair,
-                                     const QString &skin, const QString &shirt, int style);
+                                     const QString &skin, const QString &shirt, int style, const QVariantMap &outfit = {});
     Q_INVOKABLE void resetCharacter(bool confirmed);
     Q_INVOKABLE void setTier(int tier); // Compatibility only: every expedition starts at the forest edge.
     Q_INVOKABLE void changeAppearance(const QString &part);
@@ -25,6 +25,9 @@ class Backend : public QObject {
     Q_INVOKABLE void buy(const QString &branch);
     Q_INVOKABLE void craft(const QString &item);
     Q_INVOKABLE void equip(const QString &item);
+    Q_INVOKABLE void openInventory();
+    Q_INVOKABLE void takeClothing(const QString &id);
+    Q_INVOKABLE void equipClothing(const QString &id);
     Q_INVOKABLE void research(const QString &id);
     Q_INVOKABLE void excludeSkill(const QString &id);
     Q_INVOKABLE void jump();

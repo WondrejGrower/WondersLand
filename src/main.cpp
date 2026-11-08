@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
             return app.exec();
         }
         QTextStream(stdout)
-            << "{\"application\":\"WondersLand [WL]\",\"version\":\"0.3.1\",\"standalone\":true}\n";
+            << "{\"application\":\"WondersLand [WL]\",\"version\":\"0.3.2\",\"standalone\":true}\n";
         return 0;
     }
     if (command != "open" && command != "preview") {
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
     if (command == "preview") {
         const auto args = app.arguments();
         if (args.contains("--camp") || args.contains("--runner") || args.contains("--workshop") ||
-            args.contains("--results") || args.contains("--select") || args.contains("--training")) {
+            args.contains("--results") || args.contains("--select") || args.contains("--training") || args.contains("--inventory")) {
             if (backend.state()["phase"] == "creation")
                 backend.createCharacter("Willow", "gardener", "#d6b96d", "#dfaf87", "#679e86", 1);
         }
@@ -143,6 +143,7 @@ int main(int argc, char **argv) {
         }
         if (args.contains("--runner"))
             backend.previewScene();
+        if (args.contains("--inventory")) backend.openInventory();
         backend.freezePreview();
         auto window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         if (args.contains("--settings"))

@@ -1,6 +1,6 @@
 ![WondersLand v prohlížeči](docs/browser/camp-cs.png)
 
-# WondersLand [WL] · 0.3.1
+# WondersLand [WL] · 0.3.2
 
 Nativní Qt/QML hra: dojdi k portálu, stiskni E, vyber schopnost a potvrď E.
 Každý běh začíná od 0 m. Oblasti jednoho lesa se mění při 500, 1 500, 3 000
@@ -62,7 +62,7 @@ qt6-wayland; Python 3 pro analytické nástroje. Spouštěj z kořene projektu:
 
 Aplikace se objeví pod WondersLand [WL] v launcheru Super+Space.
 Data: `~/.local/share/wondersland-game/` (`progress.json`, `settings.json`,
-`last-trace.json`). Migrace starého postupu vytvoří zálohu `.pre-v4`.
+`last-trace.json`). Migrace starého postupu vytvoří zálohu `.pre-v5` (u verze 3 také `.pre-v4`).
 
 ```sh
 ./build/wondersland-game preview /tmp/camp.png --camp --cs --size 1366x768
@@ -81,7 +81,20 @@ mohou být nepřekonatelné; nevzniká povinně bezpečná cesta. Ekonomika a hr
 odemykání jsou pracovní návrh bez dlouhodobého lidského vyvážení. Tvrdý pád
 může ztratit posledních několik sekund neuložených odměn.
 
-## Pixelarty a další úkol pro Codex
+## Postava a inventář
 
 [Postava, startovní oblečení a inventář](docs/CHARACTER_INVENTORY_BRIEF.md) ·
 [Grafické podklady a náhled nové sady](assets/art-source/2026-11-08/README.md).
+
+Ve tvorbě postavy je 16 účesů a výběr základního oblečení. Inventář je od
+začátku dostupný tlačítkem v táboře, podporuje nasazení/sundání a bezplatné
+získání dalších základních kusů. Oblečení je kosmetické; původní diamantové
+schopnosti a postup zůstávají zachované. Ukládání používá schéma 5.
+Cvičiště u každého z pěti statů vysvětluje účinek česky i anglicky.
+
+```sh
+npm run test:inventory
+node tools/build-character-sprites.mjs # pouze při změně PNG; vyžaduje ImageMagick 7
+```
+
+[Produkční vrstvy a jejich generování](assets/runtime/README.md).

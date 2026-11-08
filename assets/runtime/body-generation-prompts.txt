@@ -1,0 +1,11 @@
+Tool: built-in image_gen.imagegen. Both calls requested transparent_background=true.
+
+Call 1 references:
+assets/art-source/2026-11-08/starter-customization-v2.png
+assets/art-source/2026-11-08/character-roster-reference.jpg
+
+Production game sprite asset, precise-object-edit. Use provided WondersLand art as exact style references. Create a clean modular animation sheet of ONLY the hairless human base body, wearing simple plain close-fitting neutral linen underclothes, bare hands and bare feet, NO boots, NO gloves, NO hair, NO hat, NO accessories. Match the proportions and right-facing three-quarter view of the supplied customization pieces, natural warm skin and dark outline, detailed crisp pixel art with no antialiasing, same Core Keeper inspired style. Transparent background. Exactly 12 equal cells in a 6-column x 2-row grid. No text, no guides. Each sprite centered at the same baseline, occupying the same scale, head at same height, with at least 16px transparent padding from each cell boundary. Row 1: six different consecutive frames of a right-facing run cycle, legs and arms visibly animate opposite each other, head stable. Row 2 columns 1..6: idle neutral, idle breathe, ascending jump tucked knees, falling jump, crouched landing, recoiling hit. Keep skin and body shape consistent, no extra limbs or merged sprites, no shadow or environment. All sprites complete from top of bald head to toes. Output landscape 1536 by 1024 sheet. This is a BASE under the supplied wearable hair/clothes, leave entire scalp visible.
+
+Call 2 reference: output of call 1.
+
+Background-extraction edit. Remove ONLY all brown/black backdrop and all floor shadows from the provided 12-frame character sprite sheet, replace with actual alpha transparency. Preserve exactly all 12 character silhouettes, every skin/linen pixel, their individual original coordinates, size and poses and canvas 1536x1024. Do not redraw characters or add checkerboard texture. Clean outline. Output transparent PNG with nothing behind/between the characters, including gaps under arms and between legs.

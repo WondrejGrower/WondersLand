@@ -8,7 +8,7 @@ await mkdir('docs/browser',{recursive:true});
 try{
  await page.goto(origin);await page.waitForSelector('#name');await page.fill('#name','QPE Wsad');await key('Enter');
  assert.equal(await page.inputValue('#name'),'QPE Wsad');
- for(let i=0;i<12&&await page.locator(':focus').getAttribute('data-action')!=='create';i++)await key('s');await key('e');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
+ for(let i=0;i<24&&await page.locator(':focus').getAttribute('data-action')!=='create';i++)await key('s');await key('e');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
  await key('d');await page.keyboard.down('d');await page.waitForTimeout(2300);await page.keyboard.up('d');
  // Mouse walks through the same inverse camera transform, at every tested size.
  for(const size of [{width:1280,height:720},{width:1366,height:768},{width:1920,height:1080},{width:640,height:520}]){await page.setViewportSize(size);const box=await page.locator('#scene').boundingBox();await page.mouse.click(box.x+box.width*540/640,box.y+box.height*215/360);await page.waitForTimeout(300);}

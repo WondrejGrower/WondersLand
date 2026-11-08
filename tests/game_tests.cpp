@@ -85,6 +85,42 @@ class Tests : public QObject {
         QVERIFY(b.state()["collected"].toInt() > 0);
     }
   private slots:
+    void clothingInventoryAndMigration() {
+        QTemporaryDir dir;
+        Progress p(dir.filePath("progress.json"));
+        auto c = character(); c["hairStyle"] = 15;
+        QVERIFY(p.create(c));
+        QCOMPARE(p.data["schemaVersion"].toInt(), 5);
+        QCOMPARE(p.data["inventory"].toStringList().size(), 5);
+        QVERIFY(p.data["owned"].toStringList().isEmpty());
+        QVERIFY(!p.data["hands"].toBool()); QVERIFY(!p.data["boots"].toBool());
+        QVERIFY(!p.equipClothing("head_straw_hat"));
+        QVERIFY(!p.takeClothing("hands"));
+        QVERIFY(p.takeClothing("torso_rust_coat"));
+        QVERIFY(!p.takeClothing("torso_rust_coat"));
+        QVERIFY(p.equipClothing("torso_rust_coat"));
+        QCOMPARE(p.data["equipment"].toMap()["torso"].toString(), QString("torso_rust_coat"));
+        QVERIFY(p.data["inventory"].toStringList().contains("torso_green_tunic"));
+        QVERIFY(p.equipClothing("hands_leather_work_gloves"));
+        QVERIFY(p.data["equipment"].toMap()["hands"].toString().isEmpty());
+        Progress reloaded(p.path);
+        for (auto slot : {"head", "torso", "legs", "feet", "hands", "belt"})
+            QCOMPARE(reloaded.data["equipment"].toMap()[slot].toString(), p.data["equipment"].toMap()[slot].toString());
+        QCOMPARE(reloaded.data["character"].toMap()["hairStyle"].toInt(), 15);
+        // A schema-4 save retains old gameplay abilities and all earned progress.
+        p.data["schemaVersion"] = 4; p.data.remove("inventory"); p.data.remove("equipment");
+        p.data["owned"] = QStringList{"hands", "boots"}; p.data["hands"] = true; p.data["boots"] = true;
+        p.data["coins"] = 777; QVERIFY(p.save());
+        Progress migrated(p.path);
+        QVERIFY(migrated.error.isEmpty()); QVERIFY(QFile::exists(p.path + ".pre-v5"));
+        QCOMPARE(migrated.data["character"], p.data["character"]);
+        QCOMPARE(migrated.data["owned"].toStringList(), p.data["owned"].toStringList());
+        QCOMPARE(migrated.data["coins"].toInt(), 777);
+        QVERIFY(migrated.data["hands"].toBool()); QVERIFY(migrated.data["boots"].toBool());
+        QCOMPARE(migrated.data["inventory"].toStringList().size(), 5);
+        Progress twice(p.path); QCOMPARE(twice.data["inventory"].toStringList(), migrated.data["inventory"].toStringList());
+        QVERIFY(twice.reset(true)); QVERIFY(twice.data["inventory"].toStringList().isEmpty());
+    }
     void initTestCase() { QQuickStyle::setStyle("Material"); }
     void curveIsMonotonicAndHasNoHeightCeiling() {
         double previous = 0;
@@ -335,7 +371,7 @@ class Tests : public QObject {
         p.save();
         Progress migrated(path);
         QVERIFY(migrated.error.isEmpty());
-        QCOMPARE(migrated.data["schemaVersion"].toInt(), 4);
+        QCOMPARE(migrated.data["schemaVersion"].toInt(), 5);
         QCOMPARE(migrated.data["coins"], p.data["coins"]);
         QCOMPARE(migrated.data["workshop"], p.data["workshop"]);
         QCOMPARE(migrated.data["owned"], p.data["owned"]);

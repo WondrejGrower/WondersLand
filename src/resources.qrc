@@ -3,6 +3,9 @@
 <file alias="CampView.qml">CampView.qml</file>
 <file alias="CharacterView.qml">CharacterView.qml</file>
 <file alias="StationPanel.qml">StationPanel.qml</file>
+<file alias="CharacterSprites.js">CharacterSprites.js</file>
+<file alias="art/customization.png">../assets/runtime/customization.png</file>
+<file alias="art/body-animation.png">../assets/runtime/body-animation.png</file>
 <file alias="PixelArt.js">PixelArt.js</file>
 <file>NavButton.qml</file>
 <file>MenuNavigation.qml</file>

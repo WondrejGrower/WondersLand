@@ -1,5 +1,5 @@
 pkgname=wondersland-game
-pkgver=0.3.1
+pkgver=0.3.2
 pkgrel=1
 pkgdesc='WondersLand [WL] — a pixel runner through real Bitcoin transactions'
 arch=('x86_64' 'aarch64')

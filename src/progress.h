@@ -12,6 +12,9 @@ class Progress {
     bool buy(const QString &branch);
     bool craft(const QString &item);
     bool equip(const QString &item);
+    bool takeClothing(const QString &id);
+    bool equipClothing(const QString &id);
+    static QVariantMap starterOutfit(const QVariantMap &selected);
     bool research(const QString &id, qint64 now);
     void updateResearch(qint64 now);
     bool unlocked(const QString &id) const;

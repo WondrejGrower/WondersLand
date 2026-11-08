@@ -153,3 +153,11 @@ tabs, backoff/recovery and one-shot recorded playback.
 The full Chromium journey also passes (creation, held confirmation, menus,
 languages, persistence, purchase, import/reset and four viewport sizes).
 Wrangler deploy dry-run passes with the two new client modules included.
+
+## Character inventory and Training Grounds explanations · 0.3.2
+
+The 16 hairstyle variants, initial outfits, independent clothing inventory,
+shared animated layers and schema-5 migration are implemented in both clients.
+All five Training Grounds stats now explain their real effects in English and
+Czech. See [the verification report](CHARACTER_INVENTORY_VERIFICATION.md) for
+commands, observed checks and desktop/mobile/Qt captures.

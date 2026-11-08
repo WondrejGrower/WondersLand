@@ -27,7 +27,7 @@ Progress::Progress(QString file) : path(file) {
     if (!old.contains("schemaVersion")) {
         data["legacyCoins"] = std::max(0, old["coins"].toInt());
         data["legacyBest"] = old["best"];
-    } else if (old["schemaVersion"].toInt() == 3 || old["schemaVersion"].toInt() == 4) {
+    } else if (old["schemaVersion"].toInt() == 3 || old["schemaVersion"].toInt() == 4 || old["schemaVersion"].toInt() == 5) {
         data = old;
         if (old["schemaVersion"].toInt() == 3) {
             if (!QFile::exists(path + ".pre-v4") && !QFile::copy(path, path + ".pre-v4")) {
@@ -83,6 +83,23 @@ Progress::Progress(QString file) : path(file) {
         }
     } else
         error = "Unsupported save version. File preserved.";
+    if (error.isEmpty() && data["schemaVersion"].toInt() < 5) {
+        if (QFile::exists(path) && !QFile::exists(path + ".pre-v5") && !QFile::copy(path, path + ".pre-v5")) {
+            error = "Cannot back up old progress. Migration cancelled.";
+            return;
+        }
+        data["schemaVersion"] = 5;
+        data["inventory"] = QStringList{};
+        data["equipment"] = QVariantMap{};
+        if (!data["character"].toMap().isEmpty()) {
+            auto equipment = starterOutfit({});
+            QStringList inventory;
+            for (const auto &id : equipment) if (!id.toString().isEmpty()) inventory.append(id.toString());
+            data["equipment"] = equipment;
+            data["inventory"] = inventory;
+        }
+        save();
+    }
     if (error.isEmpty()) {
         auto queue = data["announcements"].toStringList();
         if (queue.removeAll("classes") > 0) {
@@ -92,7 +109,9 @@ Progress::Progress(QString file) : path(file) {
     }
 }
 QVariantMap Progress::fresh() const {
-    return {{"schemaVersion", 4},
+    return {{"schemaVersion", 5},
+            {"inventory", QStringList{}},
+            {"equipment", QVariantMap{}},
             {"bestDistance", 0},
             {"totalDistance", 0},
             {"unlocked", QStringList{}},
@@ -145,13 +164,18 @@ bool Progress::create(const QVariantMap &c) {
         if (!color.startsWith('#') || color.size() != 7)
             return false;
     }
-    ch["hairStyle"] = std::clamp(ch["hairStyle"].toInt(), 0, 3);
+    ch["hairStyle"] = std::clamp(ch["hairStyle"].toInt(), 0, 15);
     if (data.contains("legacyCoins") && QFile::exists(path) && !QFile::exists(path + ".pre-v3")) {
         if (!QFile::copy(path, path + ".pre-v3")) {
             error = "Cannot back up old progress. Migration cancelled.";
             return false;
         }
     }
+    const auto equipment = starterOutfit(ch.take("starterEquipment").toMap());
+    QStringList inventory;
+    for (const auto &id : equipment) if (!id.toString().isEmpty()) inventory.append(id.toString());
+    data["equipment"] = equipment;
+    data["inventory"] = inventory;
     data["character"] = ch;
     data["coins"] = data["coins"].toInt() + data.take("legacyCoins").toInt();
     return commit(previous);
@@ -225,7 +249,7 @@ bool Progress::craft(const QString &id) {
 }
 bool Progress::equip(const QString &id) {
     const auto previous = data;
-    if (!data["owned"].toStringList().contains(id))
+    if (Balance::find("items", id).isEmpty() || !data["owned"].toStringList().contains(id))
         return false;
     data[id] = !data[id].toBool();
     return commit(previous);
@@ -349,4 +373,31 @@ bool Progress::commit(const QVariantMap &previous) {
         return true;
     data = previous;
     return false;
+}
+
+QVariantMap Progress::starterOutfit(const QVariantMap &selected) {
+    auto result = Balance::config()["starterEquipment"].toObject().toVariantMap();
+    for (auto it = result.begin(); it != result.end(); ++it) {
+        const auto id = selected.contains(it.key()) ? selected[it.key()].toString() : it.value().toString();
+        const auto item = Balance::find("clothing", id);
+        it.value() = item["slot"].toString() == it.key() ? QVariant(id) : QVariant();
+    }
+    return result;
+}
+bool Progress::takeClothing(const QString &id) {
+    const auto previous = data;
+    auto inventory = data["inventory"].toStringList();
+    if (data["character"].toMap().isEmpty() || Balance::find("clothing", id).isEmpty() || inventory.contains(id)) return false;
+    inventory.append(id); data["inventory"] = inventory;
+    return commit(previous);
+}
+bool Progress::equipClothing(const QString &id) {
+    const auto previous = data;
+    const auto item = Balance::find("clothing", id);
+    if (item.isEmpty() || !data["inventory"].toStringList().contains(id)) return false;
+    auto equipment = data["equipment"].toMap();
+    const auto slot = item["slot"].toString();
+    equipment[slot] = equipment[slot].toString() == id ? QVariant() : QVariant(id);
+    data["equipment"] = equipment;
+    return commit(previous);
 }

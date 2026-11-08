@@ -30,3 +30,10 @@ Další zadání postavy a inventáře: [docs/CHARACTER_INVENTORY_BRIEF.md](docs
 Pixelartové podklady jsou v assets/art-source/2026-11-08/. Jde o zdroje pro
 vrstvené sprity; obyčejné startovní boty/rukavice nesmějí aktivovat staré
 Diamond booleany hands/boots. Diamantový vzhled je vyhrazen budoucímu skinu.
+
+Inventář je implementován ve schématu 5 (`inventory` a `equipment`).
+Mince a staré `owned`/`hands`/`boots` nadále reprezentují původní herní postup.
+Katalog oblečení a výchozí set jsou v balance.json; CharacterSprites.js obsahuje
+sdílená předpočítaná pixelová data pro Qt i web. Regenerace PNG vrstev a prompty:
+assets/runtime/README.md. Ověření: npm run test:inventory. Cvičiště používá
+přeložené `workshop[].description` pro vysvětlení každého statu.

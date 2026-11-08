@@ -98,7 +98,8 @@
       "effect": 0.2,
       "curve": "sqrt",
       "baseCost": 50,
-      "growth": 1.12
+      "growth": 1.12,
+      "description": "Increases ordinary jump height, up to the 110 px jump limit. It does not shrink obstacles."
     },
     {
       "id": "agility",
@@ -107,7 +108,8 @@
       "effect": 0.04,
       "curve": "linear",
       "baseCost": 50,
-      "growth": 1.12
+      "growth": 1.12,
+      "description": "Makes jumps more forgiving: a jump pressed shortly before landing is remembered and triggers on landing."
     },
     {
       "id": "magnet",
@@ -116,7 +118,8 @@
       "effect": 0.5,
       "curve": "linear",
       "baseCost": 50,
-      "growth": 1.12
+      "growth": 1.12,
+      "description": "Pulls in coins from farther away. It does not change jump height or obstacle size."
     },
     {
       "id": "luck",
@@ -125,7 +128,8 @@
       "effect": 0.1,
       "curve": "linear",
       "baseCost": 50,
-      "growth": 1.12
+      "growth": 1.12,
+      "description": "Improves the chance of rare and epic skill offers. It does not affect transaction amounts."
     },
     {
       "id": "yield",
@@ -134,7 +138,8 @@
       "effect": 0.25,
       "curve": "linear",
       "baseCost": 50,
-      "growth": 1.12
+      "growth": 1.12,
+      "description": "Increases coins earned during live expeditions. Training and recorded runs grant no permanent rewards."
     }
   ],
   "skills": [
@@ -500,5 +505,151 @@
       "total": 6000,
       "best": 3000
     }
-  ]
+  ],
+  "hairStyles": [
+    {
+      "id": "hair_short_tousled",
+      "name": "Tousled"
+    },
+    {
+      "id": "hair_short_side_part",
+      "name": "Side part"
+    },
+    {
+      "id": "hair_short_textured",
+      "name": "Textured"
+    },
+    {
+      "id": "hair_buzz_cut",
+      "name": "Buzz cut"
+    },
+    {
+      "id": "hair_short_crop",
+      "name": "Short crop"
+    },
+    {
+      "id": "hair_short_curls",
+      "name": "Short curls"
+    },
+    {
+      "id": "hair_quiff",
+      "name": "Quiff"
+    },
+    {
+      "id": "hair_short_spiky",
+      "name": "Spiky"
+    },
+    {
+      "id": "hair_medium_wavy",
+      "name": "Wavy"
+    },
+    {
+      "id": "hair_undercut",
+      "name": "Undercut"
+    },
+    {
+      "id": "hair_compact_afro",
+      "name": "Afro"
+    },
+    {
+      "id": "hair_swept_back",
+      "name": "Swept back"
+    },
+    {
+      "id": "hair_bob",
+      "name": "Bob"
+    },
+    {
+      "id": "hair_long_loose",
+      "name": "Long loose"
+    },
+    {
+      "id": "hair_ponytail",
+      "name": "Ponytail"
+    },
+    {
+      "id": "hair_braid",
+      "name": "Braid"
+    }
+  ],
+  "clothing": [
+    {
+      "id": "head_straw_hat",
+      "slot": "head",
+      "name": "Straw hat"
+    },
+    {
+      "id": "head_forest_hood",
+      "slot": "head",
+      "name": "Forest hood"
+    },
+    {
+      "id": "torso_green_tunic",
+      "slot": "torso",
+      "name": "Green tunic"
+    },
+    {
+      "id": "torso_work_apron",
+      "slot": "torso",
+      "name": "Work apron"
+    },
+    {
+      "id": "torso_mustard_vest",
+      "slot": "torso",
+      "name": "Mustard vest"
+    },
+    {
+      "id": "torso_rust_coat",
+      "slot": "torso",
+      "name": "Rust coat"
+    },
+    {
+      "id": "torso_teal_scarf",
+      "slot": "torso",
+      "name": "Teal scarf"
+    },
+    {
+      "id": "torso_slate_cape",
+      "slot": "torso",
+      "name": "Slate cape"
+    },
+    {
+      "id": "legs_brown_trousers",
+      "slot": "legs",
+      "name": "Brown trousers"
+    },
+    {
+      "id": "legs_charcoal_trousers",
+      "slot": "legs",
+      "name": "Charcoal trousers"
+    },
+    {
+      "id": "feet_brown_leather_boots",
+      "slot": "feet",
+      "name": "Brown leather boots"
+    },
+    {
+      "id": "feet_dark_leather_boots",
+      "slot": "feet",
+      "name": "Dark leather boots"
+    },
+    {
+      "id": "hands_leather_work_gloves",
+      "slot": "hands",
+      "name": "Leather work gloves"
+    },
+    {
+      "id": "belt_leather_pouch",
+      "slot": "belt",
+      "name": "Leather pouch"
+    }
+  ],
+  "starterEquipment": {
+    "head": null,
+    "torso": "torso_green_tunic",
+    "legs": "legs_charcoal_trousers",
+    "feet": "feet_brown_leather_boots",
+    "hands": "hands_leather_work_gloves",
+    "belt": "belt_leather_pouch"
+  }
 }

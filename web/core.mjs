@@ -1,8 +1,22 @@
 // Browser simulation and save adapter. Balance, identifiers and art are shared with Qt.
-export const fresh = () => ({schemaVersion:4,character:{},coins:0,seeds:0,workshop:{},completed:[],research:[],milestones:[],owned:[],hands:false,boots:false,paidRuns:[],records:{},runs:0,lastClock:0,excluded:'',unlocked:[],announcements:[],bestDistance:0,totalDistance:0,recipes:[]});
+export const fresh = () => ({schemaVersion:5,character:{},inventory:[],equipment:{},coins:0,seeds:0,workshop:{},completed:[],research:[],milestones:[],owned:[],hands:false,boots:false,paidRuns:[],records:{},runs:0,lastClock:0,excluded:'',unlocked:[],announcements:[],bestDistance:0,totalDistance:0,recipes:[]});
+export function outfit(config,selected={}){
+ const equipment={};for(const [slot,id]of Object.entries(config.starterEquipment)){
+  const candidate=Object.hasOwn(selected,slot)?selected[slot]:id;
+  equipment[slot]=config.clothing.some(item=>item.id===candidate&&item.slot===slot)?candidate:null;
+ }return equipment;
+}
+function clothingMigration(data,config){
+ if(!Array.isArray(data.inventory)||!data.equipment||typeof data.equipment!=='object')throw Error('Invalid progress file');
+ data.inventory=[...new Set(data.inventory.filter(id=>config.clothing.some(item=>item.id===id)))];
+ const equipment={};for(const slot of Object.keys(config.starterEquipment)){
+  const id=data.equipment[slot];equipment[slot]=data.inventory.includes(id)&&config.clothing.some(item=>item.id===id&&item.slot===slot)?id:null;
+ }data.equipment=equipment;return data;
+}
 export function migrate(input,config){
  if(!input||typeof input!=='object'||Array.isArray(input))throw Error('Unsupported save version. File preserved.');
- if(input.schemaVersion===4){const data={...fresh(),...structuredClone(input)};data.announcements=data.announcements.filter(id=>id!=='classes');return data;}
+ if(input.schemaVersion===5){const data={...fresh(),...structuredClone(input)};data.announcements=data.announcements.filter(id=>id!=='classes');return clothingMigration(data,config);}
+ if(input.schemaVersion===4){const data={...fresh(),...structuredClone(input),schemaVersion:5};data.announcements=data.announcements.filter(id=>id!=='classes');if(data.character.name){data.equipment=outfit(config);data.inventory=Object.values(data.equipment).filter(Boolean);}return data;}
  if(!input.schemaVersion)return {...fresh(),legacyCoins:Math.max(0,Number(input.coins)||0),legacyBest:Number(input.best)||0};
  if(input.schemaVersion!==3)throw Error('Unsupported save version. File preserved.');
  const d={...fresh(),...structuredClone(input),schemaVersion:4};
@@ -15,7 +29,7 @@ export function migrate(input,config){
  if(d.milestones.includes('T3:180'))d.unlocked.push('research3');
  for(const [id,n]of Object.entries(d.workshop))if(n>0)d.unlocked.push('training',id);
  if(d.owned.length)d.unlocked.push('forge','wardrobe');}
- d.unlocked=[...new Set(d.unlocked)];d.milestones=config.milestones.filter(m=>best>=m.meters).map(m=>'distance:'+m.meters);return d;
+ d.unlocked=[...new Set(d.unlocked)];d.milestones=config.milestones.filter(m=>best>=m.meters).map(m=>'distance:'+m.meters);return migrate(d,config);
 }
 export function height(sats,c){
  const n=Number(sats),a=c.anchors;let h;
@@ -41,13 +55,15 @@ export class Game {
  has(id){return this.p.unlocked.includes(id)||this.c.progression.some(r=>r.id===id&&this.p.runs>=r.runs&&this.p.totalDistance>=r.total&&this.p.bestDistance>=r.best);}
  persist(){this.saveAdapter(this.p);}
  transaction(action){const old=structuredClone(this.p);try{if(!action())return false;this.persist();return true;}catch(error){this.p=old;this.notice='Cannot save progress';throw error;}}
- create(name,appearance){const role=appearance.class||'gardener';if(!name.trim()||this.p.character.name||!this.find('classes',role).id)return;this.transaction(()=>{this.p.character={...appearance,name:name.trim().slice(0,24),class:role};this.p.coins+=this.p.legacyCoins||0;delete this.p.legacyCoins;return true;});this.phase='camp';}
+ create(name,appearance,selected={}){const role=appearance.class||'gardener';if(!name.trim()||this.p.character.name||!this.find('classes',role).id)return;this.transaction(()=>{this.p.character={...appearance,hairStyle:Math.max(0,Math.min(15,Math.trunc(Number(appearance.hairStyle)||0))),name:name.trim().slice(0,24),class:role};this.p.equipment=outfit(this.c,selected);this.p.inventory=Object.values(this.p.equipment).filter(Boolean);this.p.coins+=this.p.legacyCoins||0;delete this.p.legacyCoins;return true;});this.phase='camp';}
+ takeClothing(id){if(this.phase!=='camp')return false;return this.transaction(()=>{if(!this.find('clothing',id).id||this.p.inventory.includes(id))return false;this.p.inventory.push(id);return true;});}
+ equipClothing(id){if(this.phase!=='camp')return false;return this.transaction(()=>{const item=this.find('clothing',id);if(!item.id||!this.p.inventory.includes(id))return false;this.p.equipment[item.slot]=this.p.equipment[item.slot]===id?null:id;return true;});}
  unlocks(){for(const r of this.c.progression)if(this.has(r.id)&&!this.p.unlocked.includes(r.id)){this.p.unlocked.push(r.id);this.p.announcements.push(r.id);}}
  bonus(id){const b=this.find('workshop',id),n=Math.min(50,this.p.workshop[id]||0)/50;return b.effect*(b.curve==='sqrt'?Math.sqrt(n):n);}
  price(id){const b=this.find('workshop',id),n=this.p.workshop[id]||0;return n>=50?-1:Math.ceil(b.baseCost*b.growth**n);}
  buy(id){return this.transaction(()=>{const cost=this.price(id);if(!this.has(id)||cost<0||this.p.coins<cost)return false;this.p.coins-=cost;this.p.workshop[id]=(this.p.workshop[id]||0)+1;return true;});}
  craft(id){return this.transaction(()=>{const item=this.find('items',id);if(!this.has(item.feature)||this.p.owned.includes(id)||this.p.coins<item.cost||(item.recipe&&!this.p.recipes.includes(id)&&this.p.bestDistance<Number(item.recipe.split(':')[1])))return false;this.p.coins-=item.cost;this.p.owned.push(id);return true;});}
- equip(id){return this.transaction(()=>{if(!this.p.owned.includes(id))return false;this.p[id]=!this.p[id];return true;});}
+ equip(id){return this.transaction(()=>{if(!this.find('items',id).id||!this.p.owned.includes(id))return false;this.p[id]=!this.p[id];return true;});}
  // Compatibility entry point: a saved role can only change through reset and creation.
  changeClass(){return false;}
  research(id,now=Date.now()/1000){this.updateResearch(now);return this.transaction(()=>{const r=this.find('research',id),slots=1+Number(this.has('research2'))+Number(this.has('research3'));if(!r.id||!this.has('garden')||this.p.completed.includes(id)||this.p.research.some(j=>j.id===id)||this.p.research.length>=slots||this.p.coins<r.cost||this.p.seeds<r.seeds)return false;now=Math.max(now,this.p.lastClock);this.p.coins-=r.cost;this.p.seeds-=r.seeds;this.p.research.push({id,started:now,end:now+r.seconds});return true;});}
@@ -60,7 +76,7 @@ export class Game {
  apply(offer){if(offer.id==='coins'){this.earnedMilli+=Math.round(1000*this.c.run.fallbackCoins*(1+this.stats().economy));return;}if(offer.id==='shield'&&!this.skills.shield)this.rescue();this.skills[offer.id]=offer.nextRank;this.trace.push({event:'skill',time:this.time,id:offer.id,rank:offer.nextRank});}
  rescue(){if(this.rescuesGranted<this.c.physics.rescueCap){this.rescues++;this.rescuesGranted++;}}
  receive(rows){this.q.receive(rows);if(this.phase==='connecting'&&this.q.cache.length)this.start(false);else if(this.phase==='waiting'&&this.q.pending.length&&this.q.used.size<10000){this.phase='countdown';this.countdown=3;}}
- start(demo=false,seed=Math.floor(Math.random()*2**32)){this.settle();this.moves.clear();this.target=null;this.station='';if(!demo&&!this.q.cache.length){this.phase='connecting';return;}this.demo=demo;this.runId=globalThis.crypto?.randomUUID?.()||'run-'+Date.now()+'-'+Math.random();this.paid=false;this.started=false;this.seed=seed;this.q.begin(seed);this.skills={};this.obstacles=[];this.coins=[];this.hit={};this.flying={};this.trace=[];this.y=this.velocity=this.distance=this.time=this.earned=this.spawn=this.buffer=this.invulnerable=this.checkpoint=0;this.index=this.collected=this.rescues=this.rescuesGranted=this.pickups=0;this.nextUpgrade=this.c.run.upgradeEvery;this.fuel=this.c.physics.fuel;this.glide=0;this.airUsed=this.emergency=this.held=this.jet=false;for(const set of this.c.sets)if(set.requires.every(id=>this.p[id]))for(let i=0;i<set.rescues;i++)this.rescue();this.choices=this.offers(3);this.phase='select';}
+ start(demo=false,seed=Math.floor(Math.random()*2**32)){this.settle();this.moves.clear();this.target=null;this.station='';if(!demo&&!this.q.cache.length){this.phase='connecting';return;}this.demo=demo;this.runId=globalThis.crypto?.randomUUID?.()||'run-'+Date.now()+'-'+Math.random();this.paid=false;this.started=false;this.seed=seed;this.q.begin(seed);this.skills={};this.obstacles=[];this.coins=[];this.hit={};this.flying={};this.trace=[];this.y=this.velocity=this.distance=this.time=this.earned=this.spawn=this.buffer=this.invulnerable=this.checkpoint=0;this.landing=0;this.index=this.collected=this.rescues=this.rescuesGranted=this.pickups=0;this.nextUpgrade=this.c.run.upgradeEvery;this.fuel=this.c.physics.fuel;this.glide=0;this.airUsed=this.emergency=this.held=this.jet=false;for(const set of this.c.sets)if(set.requires.every(id=>this.p[id]))for(let i=0;i<set.rescues;i++)this.rescue();this.choices=this.offers(3);this.phase='select';}
  choose(i){if(this.phase!=='select'||!this.choices[i])return;this.apply(this.choices[i]);this.started=true;this.phase='running';this.saveCheckpoint();}
  jump(){if(this.phase!=='running')return;this.held=true;this.trace.push({event:'jump',time:this.time});const f=this.c.physics;if(this.y<=.01){this.velocity=this.stats().jumpVelocity;this.airUsed=false;this.glide=this.effect('glider');}else if(!this.airUsed&&(this.skills.double||(this.p.character.class==='explorer'&&!this.emergency))){this.velocity=Math.sqrt(2*f.heldGravity*Math.max(0,f.airCap-this.y))*(this.skills.double?this.effect('double'):.65);this.airUsed=true;if(!this.skills.double)this.emergency=true;}else this.buffer=this.stats().buffer;}
  release(){this.held=false;}
@@ -71,9 +87,9 @@ export class Game {
  step(dt){if(this.phase==='camp'){this.animation+=dt;if(this.station||this.p.announcements.length)return;let dx=Number(this.moves.has('right'))-Number(this.moves.has('left')),dy=Number(this.moves.has('down'))-Number(this.moves.has('up'));if(this.target){dx=this.target.x-this.campX;dy=this.target.y-this.campY;if(Math.hypot(dx,dy)<2){this.target=null;dx=dy=0;}}const len=Math.hypot(dx,dy);if(len){this.campX=Math.max(35,Math.min(605,this.campX+dx/len*Math.min(92*dt,len)));this.campY=Math.max(175,Math.min(320,this.campY+dy/len*Math.min(92*dt,len)));}return;}
  if(this.phase==='countdown'){this.countdown-=dt;if(this.countdown<=0)this.phase='running';return;}if(this.phase!=='running')return;
  if(!this.demo&&this.spawn<=0&&(!this.q.pending.length||this.q.used.size>=10000)&&!this.obstacles.length){this.phase='waiting';this.held=this.jet=false;return;}
- const f=this.c.physics,s=this.stats();this.time+=dt;this.animation+=dt;this.invulnerable=Math.max(0,this.invulnerable-dt);this.buffer=Math.max(0,this.buffer-dt);const speed=f.speed*Math.min(f.maxSpeedFactor,1+this.time/1200);this.distance+=speed*dt/10;this.spawn-=dt;if(this.spawn<=0)this.spawnPlant();if(this.y<=.01&&this.buffer>0){this.buffer=0;const held=this.held;this.jump();this.held=held;}
+ const f=this.c.physics,s=this.stats();this.landing=Math.max(0,(this.landing||0)-dt);this.time+=dt;this.animation+=dt;this.invulnerable=Math.max(0,this.invulnerable-dt);this.buffer=Math.max(0,this.buffer-dt);const speed=f.speed*Math.min(f.maxSpeedFactor,1+this.time/1200);this.distance+=speed*dt/10;this.spawn-=dt;if(this.spawn<=0)this.spawnPlant();if(this.y<=.01&&this.buffer>0){this.buffer=0;const held=this.held;this.jump();this.held=held;}
  let gravity=this.held&&this.velocity>0?f.heldGravity:f.gravity;if(this.held&&this.velocity<0&&this.glide>0){gravity=f.gliderGravity;this.glide=Math.max(0,this.glide-dt);}if(this.jet&&this.skills.jetpack&&this.fuel>0){this.fuel=Math.max(0,this.fuel-dt);this.velocity=Math.min(this.velocity+f.jetAcceleration*dt,Math.sqrt(2*f.heldGravity*Math.max(0,f.airCap-this.y)));gravity=f.heldGravity;}
- this.velocity-=gravity*dt;this.y=Math.max(0,this.y+this.velocity*dt);if(!this.y){this.velocity=0;this.airUsed=false;this.glide=this.effect('glider');}
+ const wasAirborne=this.y>0;this.velocity-=gravity*dt;this.y=Math.max(0,this.y+this.velocity*dt);if(!this.y){if(wasAirborne)this.landing=.12;this.velocity=0;this.airUsed=false;this.glide=this.effect('glider');}
  for(const p of this.obstacles)p.x-=speed*dt;for(const coin of this.coins){coin.x-=speed*dt;if(!coin.taken&&Math.hypot(coin.x-108,coin.y-(this.y+18))<s.magnet){coin.taken=true;this.collected++;this.earnedMilli+=Math.round(1000*(1+Math.min(this.c.run.maxEconomyBonus,s.economy+(this.y>3?this.effect('aircoins'):0))));}}
  if(this.has('flying')&&this.time>=this.nextUpgrade&&!this.flying.id){this.flying={...this.offers(1,(this.pickups+1)%3===0)[0],age:-2,x:600,y:35};this.nextUpgrade+=this.c.run.upgradeEvery;}
  if(this.flying.id){const fl=this.flying,window=this.c.run.upgradeWindow+(s.class==='collector'?1:0);fl.age+=dt;fl.x=fl.age<0?132-fl.age*234:132-48*fl.age/window;fl.blocked=this.obstacles.some(p=>p.x<155&&p.x+p.w>80&&p.h>35);if(fl.blocked&&fl.age>=0)fl.age=-.05;else if(fl.age>=0&&Math.hypot(fl.x-108,35-(this.y+18))<25){this.apply(fl);this.pickups++;this.flying={};}else if(fl.age>window)this.flying={};}
@@ -85,5 +101,5 @@ export class Game {
  dismiss(){this.p.announcements.shift();this.persist();}
  nearby(){return [{id:'home',x:270,y:190},{id:'portal',x:540,y:215},{id:'training',x:465,y:290},{id:'forge',x:112,y:225},{id:'wardrobe',x:390,y:195},{id:'library',x:175,y:300}].find(p=>(['home','portal'].includes(p.id)||this.has(p.id==='library'?'garden':p.id))&&Math.hypot(this.campX-p.x,this.campY-p.y)<43)?.id||'';}
  interact(){if(this.phase!=='camp'||this.station||this.p.announcements.length)return;this.moves.clear();this.target=null;const id=this.nearby();if(id==='portal')this.start(false);else this.station=id;}
- state(){return {phase:this.phase,distance:this.distance,animation:this.animation,y:this.y,landing:0,invulnerable:this.invulnerable,profile:this.p,region:this.region(),regionIndex:this.c.regions.indexOf(this.region()),obstacles:this.obstacles,coins:this.coins,hit:this.hit,flying:this.flying,campX:this.campX,campY:this.campY,moving:this.moves.size>0||!!this.target};}
+ state(){return {phase:this.phase,distance:this.distance,animation:this.animation,y:this.y,velocity:this.velocity,landing:this.landing||0,invulnerable:this.invulnerable,profile:this.p,region:this.region(),regionIndex:this.c.regions.indexOf(this.region()),obstacles:this.obstacles,coins:this.coins,hit:this.hit,flying:this.flying,campX:this.campX,campY:this.campY,facingLeft:this.moves.has('left')||!!(this.target&&this.target.x<this.campX),moving:this.moves.size>0||!!this.target};}
 }

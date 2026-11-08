@@ -1,3 +1,4 @@
+import "PixelArt.js" as PixelArt
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
@@ -5,6 +6,8 @@ import QtQuick.Layouts
 Item {
  id:panel
  property var s:backend.state
+ property string selectedItem:""
+ function itemName(id){for(var item of s.config.clothing)if(item.id===id)return trText(item.name);return trText("Empty")}
  property string station:s.station
  signal focusGame()
  function trText(value){var lang=translator.language;return translator.text(value)}
@@ -13,14 +16,36 @@ Item {
  function close(){backend.closeStation();panel.focusGame()}
  ScrollView {anchors.fill:parent;clip:true;contentWidth:availableWidth
  ColumnLayout {width:parent.width;spacing:12
- Label {text:panel.station==="training"?qsTr("Training Grounds"):panel.station==="forge"?qsTr("Runic Workshop"):panel.station==="wardrobe"?qsTr("Wardrobe"):panel.station==="library"?qsTr("Spell Garden"):qsTr("Base Camp");font.pixelSize:24;color:"#e9d8a8";wrapMode:Text.WordWrap;Layout.fillWidth:true}
+ Label {text:panel.station==="inventory"?qsTr("Inventory"):panel.station==="training"?qsTr("Training Grounds"):panel.station==="forge"?qsTr("Runic Workshop"):panel.station==="wardrobe"?qsTr("Wardrobe"):panel.station==="library"?qsTr("Spell Garden"):qsTr("Base Camp");font.pixelSize:24;color:"#e9d8a8";wrapMode:Text.WordWrap;Layout.fillWidth:true}
+ NavButton {visible:panel.station==="home"||panel.station==="wardrobe";text:qsTr("Inventory");Layout.fillWidth:true;onClicked:backend.openInventory()}
  Label {visible:panel.station==="home";text:qsTr("Your supplies and equipment survive each expedition.")+"\n"+qsTr("Best run: %1 m · total live distance: %2 m").arg(s.profile.bestDistance||0).arg(Math.floor(s.profile.totalDistance||0));wrapMode:Text.WordWrap;Layout.fillWidth:true;color:"#b3c5ac"}
+ ColumnLayout {visible:panel.station==="inventory";Layout.fillWidth:true
+ Canvas {id:inventoryPortrait;Layout.alignment:Qt.AlignHCenter;Layout.preferredWidth:120;Layout.preferredHeight:200;smooth:false
+ property var profile:s.profile
+ onProfileChanged:requestPaint()
+ onPaint:{var c=getContext('2d');c.reset();c.scale(5,5);PixelArt.character(c,0,0,s.profile.character,0,false,false,"idle",s.profile.equipment)}
+ }
+ Label {text:qsTr("No gameplay bonuses");color:"#abc3a6";Layout.fillWidth:true;wrapMode:Text.WordWrap}
+ Repeater {model:["head","torso","legs","feet","hands","belt"]
+ Label {required property string modelData;text:panel.trText(modelData.charAt(0).toUpperCase()+modelData.slice(1))+": "+panel.itemName(s.profile.equipment[modelData]);Layout.fillWidth:true;wrapMode:Text.WordWrap;color:"#e2d6b4"}
+ }
+ NavButton {text:qsTr("Hair style %1").arg((s.profile.character.hairStyle||0)+1);Layout.fillWidth:true;onClicked:backend.changeAppearance("hairStyle")}
+ NavButton {text:qsTr("Hair color");Layout.fillWidth:true;onClicked:backend.changeAppearance("hair")}
+ NavButton {text:qsTr("Skin tone");Layout.fillWidth:true;onClicked:backend.changeAppearance("skin")}
+ Repeater {model:s.config.clothing
+ ColumnLayout {required property var modelData;Layout.fillWidth:true
+ Label {text:panel.trText(modelData.name)+" · "+panel.trText(modelData.slot.charAt(0).toUpperCase()+modelData.slot.slice(1));color:"#d6cfac";Layout.fillWidth:true;wrapMode:Text.WordWrap}
+ NavButton {Layout.fillWidth:true;text:s.profile.inventory.indexOf(modelData.id)<0?qsTr("Take · free"):s.profile.equipment[modelData.slot]===modelData.id?qsTr("Unequip"):qsTr("Equip");highlighted:s.profile.equipment[modelData.slot]===modelData.id;onClicked:{if(s.profile.inventory.indexOf(modelData.id)<0)backend.takeClothing(modelData.id);else backend.equipClothing(modelData.id)}}
+ }
+ }
+ }
  ColumnLayout {visible:panel.station==="training";Layout.fillWidth:true
  Label {text:qsTr("Permanent character development");color:"#d6c38d";Layout.fillWidth:true;wrapMode:Text.WordWrap}
  Repeater {model:s.profile.branches.filter(b=>panel.has(b.id))
  RowLayout {required property var modelData;Layout.fillWidth:true
  ColumnLayout {Layout.fillWidth:true
  Label {text:panel.trText(modelData.name)+" · "+modelData.level+" / 50";color:"#e1d8b7";wrapMode:Text.WordWrap;Layout.fillWidth:true}
+ Label {text:panel.trText(modelData.description);Layout.fillWidth:true;wrapMode:Text.WordWrap;color:"#b8cbb0";font.pixelSize:12}
  Label {text:qsTr("Effect %1 → %2").arg(Number(modelData.bonus*(modelData.id==="agility"?1000:100)).toLocaleString(Qt.locale(),'f',2)).arg(Number(modelData.nextBonus*(modelData.id==="agility"?1000:100)).toLocaleString(Qt.locale(),'f',2))+(modelData.id==="agility"?" ms":" %");color:"#9eb59d";font.pixelSize:11;wrapMode:Text.WordWrap;Layout.fillWidth:true}
  }
  NavButton {text:modelData.price<0?qsTr("Max"):qsTr("Buy · %1").arg(translator.coins(modelData.price));enabled:modelData.price>=0&&s.wallet>=modelData.price;onClicked:backend.buy(modelData.id);Layout.maximumWidth:200}

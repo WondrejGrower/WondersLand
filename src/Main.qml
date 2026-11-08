@@ -19,7 +19,7 @@ ApplicationWindow {
  Behavior on sky {ColorAnimation {duration:2200}}
  Behavior on soil {ColorAnimation {duration:2200}}
  Behavior on foliage {ColorAnimation {duration:2200}}
- property var menuRoot:resetting?resetPanel:settingsOpen?settingsPanel:help?helpPanel:s.phase==="creation"?creator:s.phase==="select"?skillPanel:s.phase==="over"||s.phase==="paused"?resultPanel:s.phase==="waiting"||s.phase==="connecting"?waitPanel:s.phase==="camp"&&s.station!==""?stationPanel:s.phase==="camp"&&s.announcement!==""?announcementPanel:settingsButton.activeFocus||helpButton.activeFocus?headerBar:null
+ property var menuRoot:resetting?resetPanel:settingsOpen?settingsPanel:help?helpPanel:s.phase==="creation"?creator:s.phase==="select"?skillPanel:s.phase==="over"||s.phase==="paused"?resultPanel:s.phase==="waiting"||s.phase==="connecting"?waitPanel:s.phase==="camp"&&s.station!==""?stationPanel:s.phase==="camp"&&s.announcement!==""?announcementPanel:inventoryButton.activeFocus||settingsButton.activeFocus||helpButton.activeFocus?headerBar:null
  function trText(value){var lang=translator.language;return translator.text(value)}
  function className(){for(var c of s.config.classes)if(c.id===s.stats.class)return trText(c.name);return ""}
  function focusGame(){gameRoot.forceActiveFocus()}
@@ -69,6 +69,7 @@ ApplicationWindow {
  Item {Layout.fillWidth:true}
  Label {text:qsTr("Best: %1 m").arg(s.best);color:"#abbba4";visible:win.width>650}
  Label {objectName:"coinBalance";text:(translator.language,translator.coins(s.wallet));font.pixelSize:20;font.bold:true;color:"#ffdf87"}
+ NavButton {id:inventoryButton;objectName:"inventory";visible:s.phase==="camp";text:qsTr("Inventory");onClicked:backend.openInventory()}
  NavButton {id:settingsButton;objectName:"settings";text:qsTr("Settings");onClicked:win.openSettings()}
  NavButton {id:helpButton;text:"?";implicitWidth:42;onClicked:{backend.stopMovement();if(s.phase==="running")backend.pause();help=!help}}
  }
@@ -101,8 +102,8 @@ ApplicationWindow {
  function plant(p){PixelArt.plant(c,p,ground)}
  var obstacles=s.obstacles||[];for(i=0;i<obstacles.length;i++)plant(obstacles[i]);
  var coins=s.coins||[];for(i=0;i<coins.length;i++){var coin=coins[i];if(!coin.taken){rect(coin.x,ground-coin.y,7,9,"#d9a94f");rect(coin.x+2,ground-coin.y+2,2,5,"#ffe6a0")}}
- var pose=s.phase==="over"?"hit":s.y>0?"jump":s.landing>0?"land":s.phase==="running"?"run":"idle";
- PixelArt.character(c,96,ground-s.y-40,s.profile.character,Math.floor(t*10),s.profile.hands,s.profile.boots,pose);
+ var pose=s.phase==="over"?"hit":s.y>0?(s.velocity<0?"fall":"jump"):s.landing>0?"land":s.phase==="running"?"run":"idle";
+ PixelArt.character(c,96,ground-s.y-40,s.profile.character,Math.floor(t*10),s.profile.hands,s.profile.boots,pose,s.profile.equipment);
  if(s.invulnerable>0){c.strokeStyle="#bfe9d4";c.strokeRect(93,ground-s.y-43,30,46)}
  if(s.flying.id&&!s.flying.blocked){var fl=s.flying;c.fillStyle=fl.age<0?"#b8a4d5":"#e4d28b";c.fillRect(Math.round(fl.x),ground-fl.y-7,10,10);c.font="9px monospace";c.fillText(win.trText(fl.name),Math.max(180,fl.x),ground-100)}
  if(s.obstacles.some(p=>p.h>ground)){c.fillStyle="#e7ba85";c.font="10px monospace";c.fillText(qsTr("Tall canopy continues above the view"),210,75)}

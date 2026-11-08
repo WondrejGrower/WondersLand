@@ -67,7 +67,7 @@ Item {
  // Player feet set the walking plane; a shadow and small bob convey depth.
  var px=s.campX,py=s.campY,step=s.moving?Math.floor(t*10)%2:0;
  ellipse(px,py+2,10,4,'#152a28');
- PixelArt.character(c,px-12,py-40,s.profile.character,Math.floor(t*9),s.profile.hands,s.profile.boots,s.moving?"run":"idle");
+ PixelArt.character(c,px-12,py-40,s.profile.character,Math.floor(t*9),s.profile.hands,s.profile.boots,s.moving?"run":"idle",s.profile.equipment,s.facingLeft);
  for(i=0;i<18;i++){x=(i*137+t*3)%640;y=190+Math.sin(i*3+t*.5)*75;glow(x,y,6,'#bed28d22');r(x,y,1,1,'#c4d1a0')}
  }
  }

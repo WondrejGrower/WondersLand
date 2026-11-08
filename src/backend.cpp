@@ -104,7 +104,7 @@ QVariantMap Backend::state() const {
             {"coins", coins},
             {"hit", hit},
             {"animation", animation},
-            {"campX", campX},
+            {"facingLeft", movement.contains("left") || (walkingTo && targetX < campX)}, {"campX", campX},
             {"campY", campY},
             {"station", station},
             {"nearby", nearbyStation()},
@@ -127,14 +127,14 @@ QVariantMap Backend::state() const {
             {"traceSize", trace.size()}};
 }
 void Backend::createCharacter(const QString &name, const QString &classId, const QString &hair,
-                              const QString &skin, const QString &shirt, int style) {
+                              const QString &skin, const QString &shirt, int style, const QVariantMap &outfit) {
     cachedStats.clear();
     if (progress.create({{"name", name},
                          {"class", classId},
                          {"hair", hair},
                          {"skin", skin},
                          {"shirt", shirt},
-                         {"hairStyle", style}})) {
+                         {"hairStyle", style}, {"starterEquipment", outfit}})) {
         phase = "camp";
         notice = "Character created";
     }
@@ -159,12 +159,12 @@ void Backend::setTier(int t) {
     tier = 1;
 }
 void Backend::changeAppearance(const QString &part) {
-    if (phase != "camp" || !progress.unlocked("wardrobe"))
+    if (phase != "camp")
         return;
     auto previous = progress.data;
     auto c = progress.data["character"].toMap();
     if (part == "hairStyle")
-        c[part] = (c[part].toInt() + 1) % 4;
+        c[part] = (c[part].toInt() + 1) % 16;
     else {
         QStringList colors = part == "hair"
                                  ? QStringList{"#5e3936", "#d6b96d", "#bcc4c5", "#302f43", "#a65c50"}
@@ -918,4 +918,17 @@ void Backend::recordEvent(QVariantMap event) {
         trace.removeAt(discard);
     }
     trace.append(event);
+}
+
+void Backend::openInventory() {
+    if (phase != "camp") return;
+    stopMovement(); station = "inventory"; emit changed();
+}
+void Backend::takeClothing(const QString &id) {
+    if (phase != "camp") return;
+    progress.takeClothing(id); emit changed();
+}
+void Backend::equipClothing(const QString &id) {
+    if (phase != "camp") return;
+    progress.equipClothing(id); emit changed();
 }
