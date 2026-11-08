@@ -74,3 +74,11 @@ nahrazené syntetickým testem. Nová verze neprovádí webový deployment.
 
 Finální sestava 0.3.0-1: balíček vytvořen bez debug balíčku; instalace ověřena
 přes pacman. Živý Qt probe vrací jeden JSON s live=true a 10 transakcemi.
+
+Kontrola skutečné desktopové relace po instalaci: okno se správným app id
+wondersland-game a titulkem WondersLand [WL] se otevřelo. Hyprland jej
+v rozdělené ploše zmenšil na 621×672, tedy pod deklarované minimum 720×600;
+pro celou herní scénu na tomto rozdělení je vhodné F11. Z agentem spuštěného
+procesu přišla nefatální výstraha registrace host portálu (spojení už má
+přiřazené app id); QML se načetlo. Automaticky nebylo otevřeno externí okno
+exploreru, takže skutečné předání odkazu portálem z této relace není potvrzené.
