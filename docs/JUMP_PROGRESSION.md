@@ -82,7 +82,7 @@ shared role/level fixtures compare web and Qt velocities and aerial limits.
 `tools/analyze.py` now reads physics and development references from balance
 instead of retaining old hard-coded 285/110/170 jump assumptions.
 
-Final checks on 2026-11-08: `npm ci`, `npm test` (35 passed),
+Final checks on 2026-11-08: `npm ci`, `npm test` (36 passed),
 `npm run test:browser`, `npm run test:environment`, `npm run deploy:check`
 (dry-run), `./bin/build`, `./bin/test` (32 Qt and 3 Python passed), and
 `node web/jump-progression-browser.mjs` all passed. The initial browser attempt
@@ -90,3 +90,10 @@ was killed with exit 137; the repeat completed successfully. The native reward
 test's old high-jump collection timing was replaced with a controlled short-hop
 fixture; the final suite includes successful coin collection without practice
 rewards. Long-term human balancing remains to be validated by actual play.
+
+The release smoke check also caught `/health` retaining a hard-coded old balance
+version while the public balance.json already contained journey-4. Health now
+reports journey-4 and has a regression comparing metadata to packaged config.
+GitHub Actions cannot start because the account reports a billing lock; local
+checks above were run directly. Production is verified against served assets
+and actual browser execution, independently of that unavailable CI.
