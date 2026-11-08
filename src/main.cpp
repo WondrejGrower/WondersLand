@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
             return app.exec();
         }
         QTextStream(stdout)
-            << "{\"application\":\"WondersLand [WL]\",\"version\":\"0.3.2\",\"standalone\":true}\n";
+            << "{\"application\":\"WondersLand [WL]\",\"version\":\"0.3.3\",\"standalone\":true}\n";
         return 0;
     }
     if (command != "open" && command != "preview") {

@@ -14,7 +14,7 @@ await page.addInitScript(p=>localStorage.setItem('wl-progress',JSON.stringify(p)
 await page.route('**/api/mempool',r=>r.fulfill({json:[{txid:'a'.repeat(64),value:'2000000000000000'}]}));
 await page.route('**/api/tx/*/status',r=>r.fulfill({status:502,json:{error:'unverified test fixture'}}));
 try {
- await page.goto('http://127.0.0.1:'+host.address().port);
+ await page.goto('http://127.0.0.1:'+host.address().port);await page.waitForFunction(()=>document.body.dataset.ready==='true');
  await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
  const translated=await page.evaluate(async p=>{
   const {drawRun}=await import('/art.mjs');const config=await(await fetch('/balance.json')).json();

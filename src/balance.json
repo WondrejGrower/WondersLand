@@ -1,5 +1,5 @@
 {
-  "balanceVersion": "wl-0.3-journey-2",
+  "balanceVersion": "wl-0.3-journey-3",
   "anchors": [
     [
       100000,
@@ -105,11 +105,11 @@
       "id": "agility",
       "name": "Agility",
       "max": 50,
-      "effect": 0.04,
+      "effect": 0.02,
       "curve": "linear",
       "baseCost": 50,
       "growth": 1.12,
-      "description": "Makes jumps more forgiving: a jump pressed shortly before landing is remembered and triggers on landing."
+      "description": "Slows expedition time very slightly, up to 2% at level 50. Movement, jumps, obstacles and run timers slow together. Camp and research keep normal time."
     },
     {
       "id": "magnet",

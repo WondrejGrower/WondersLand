@@ -6,7 +6,7 @@ await page.route('**/api/mempool',route=>route.fulfill({json:[sample]}));await p
 const key=key=>page.keyboard.press(key),button=(label)=>page.getByRole('button',{name:label,exact:true});
 await mkdir('docs/browser',{recursive:true});
 try{
- await page.goto(origin);await page.waitForSelector('#name');await page.fill('#name','QPE Wsad');await key('Enter');
+ await page.goto(origin);await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForSelector('#name');await page.fill('#name','QPE Wsad');await key('Enter');
  assert.equal(await page.inputValue('#name'),'QPE Wsad');
  for(let i=0;i<24&&await page.locator(':focus').getAttribute('data-action')!=='create';i++)await key('s');await key('e');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
  await key('d');await page.keyboard.down('d');await page.waitForTimeout(2300);await page.keyboard.up('d');
@@ -21,10 +21,10 @@ try{
  const p=fresh();Object.assign(p,{character:{name:'Willow',class:'gardener',hair:'#d6b96d',skin:'#dfaf87',shirt:'#679e86',hairStyle:1},coins:10000,runs:5,totalDistance:7000,bestDistance:3500,seeds:5,unlocked:['training','strength','agility','magnet','luck','yield','flying','forge','wardrobe','garden','classes','diamond']});
  await page.evaluate(data=>localStorage.setItem('wl-progress',JSON.stringify(data)),p);
  for(const lang of ['en','cs']){
-  await page.goto(origin+'/?recorded=1&lang='+lang);await page.waitForFunction(()=>document.querySelector('#sheet').hidden);await page.waitForTimeout(150);await page.screenshot({path:`docs/browser/camp-${lang}.png`});
+  await page.goto(origin+'/?recorded=1&lang='+lang);await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);await page.waitForTimeout(150);await page.screenshot({path:`docs/browser/camp-${lang}.png`});
   await key('F10');await page.waitForSelector('[data-action=language]');await page.screenshot({path:`docs/browser/settings-${lang}.png`});
   await key('s');await key('e');assert.equal(await page.evaluate(()=>localStorage.getItem('wl-language')),'cs');assert.equal(await page.locator('#settings').textContent(),'Nastavení');
-  await button(lang==='en'?'English':'Čeština').click();await key('Escape');await page.reload();await page.waitForFunction(()=>document.querySelector('#sheet').hidden);assert.equal(await page.locator('#settings').textContent(),lang==='en'?'Settings':'Nastavení');
+  await button(lang==='en'?'English':'Čeština').click();await key('Escape');await page.reload();await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);assert.equal(await page.locator('#settings').textContent(),lang==='en'?'Settings':'Nastavení');
   const box=await page.locator('#scene').boundingBox();await page.mouse.click(box.x+box.width*465/640,box.y+box.height*290/360);await page.waitForTimeout(1900);await key('e');await page.waitForSelector('[data-action=buy]');assert.equal(await page.locator('[data-action=class]').count(),0);await page.screenshot({path:`docs/browser/training-${lang}.png`});
   const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).workshop.strength||0);await key('e');const after=await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).workshop.strength);assert.equal(after,before+1);await key('Escape');
   {const b=await page.locator('#scene').boundingBox();await page.mouse.click(b.x+b.width*540/640,b.y+b.height*215/360);await page.waitForTimeout(1500);await key('e');await page.waitForSelector('[data-action=skill]');await page.screenshot({path:`docs/browser/skills-${lang}.png`});await key('e');await page.waitForSelector('[data-action=transaction]',{timeout:15000});await page.screenshot({path:`docs/browser/results-${lang}.png`});await key('Escape');}
@@ -35,9 +35,9 @@ try{
  await page.waitForSelector('[data-action=import-apply]');await key('s');await key('e');
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).coins),777);
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).workshop.strength),7);
- await button('Resetovat postavu a veškerý postup?').click();await button('Smazat postup').click();await page.waitForSelector('#name');assert.equal(await page.evaluate(()=>localStorage.getItem('wl-language')),'cs');await page.reload();await page.waitForSelector('#name');assert.equal(await page.locator('#settings').textContent(),'Nastavení');
+ await button('Resetovat postavu a veškerý postup?').click();await button('Smazat postup').click();await page.waitForSelector('#name');assert.equal(await page.evaluate(()=>localStorage.getItem('wl-language')),'cs');await page.reload();await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForSelector('#name');assert.equal(await page.locator('#settings').textContent(),'Nastavení');
  const dpi=await browser.newContext({viewport:{width:1366,height:768},deviceScaleFactor:2});
  const high=await dpi.newPage();await high.addInitScript(data=>{localStorage.setItem('wl-progress',JSON.stringify(data));localStorage.setItem('wl-language','cs');},p);
- await high.goto(origin+'/?recorded=1');await high.waitForFunction(()=>document.querySelector('#sheet').hidden);await high.screenshot({path:'docs/browser/camp-dpi2.png'});await dpi.close();
+ await high.goto(origin+'/?recorded=1');await high.waitForFunction(()=>document.body.dataset.ready==='true');await high.waitForFunction(()=>document.querySelector('#sheet').hidden);await high.screenshot({path:'docs/browser/camp-dpi2.png'});await dpi.close();
  assert.equal(await page.locator('#error').isVisible(),false);assert.deepEqual(errors,[]);console.log('Browser journey, keyboard, live language, reset, purchase, identity, retry and four sizes passed. Screenshots: docs/browser/');
 }catch(error){console.error('Browser state:',await page.locator('#hud').textContent(),await page.locator('#menu').textContent(),await page.locator('#error').textContent(),errors);await page.screenshot({path:'/tmp/wl-browser-failure.png'});throw error;}finally{await browser.close();await new Promise(resolve=>host.close(resolve));}

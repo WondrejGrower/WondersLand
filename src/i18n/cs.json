@@ -272,5 +272,8 @@
   "Makes jumps more forgiving: a jump pressed shortly before landing is remembered and triggers on landing.": "Usnadňuje načasování skoku: stisk krátce před dopadem si hra zapamatuje a skočí hned po přistání.",
   "Pulls in coins from farther away. It does not change jump height or obstacle size.": "Přitahuje mince z větší vzdálenosti. Nemění výšku skoku ani velikost překážek.",
   "Improves the chance of rare and epic skill offers. It does not affect transaction amounts.": "Zvyšuje šanci na vzácné a epické nabídky schopností. Neovlivňuje částky transakcí.",
-  "Increases coins earned during live expeditions. Training and recorded runs grant no permanent rewards.": "Zvyšuje počet mincí získaných při živých výpravách. Trénink ani záznamy nedávají trvalé odměny."
+  "Increases coins earned during live expeditions. Training and recorded runs grant no permanent rewards.": "Zvyšuje počet mincí získaných při živých výpravách. Trénink ani záznamy nedávají trvalé odměny.",
+  "Slows expedition time very slightly, up to 2% at level 50. Movement, jumps, obstacles and run timers slow together. Camp and research keep normal time.": "Velmi mírně zpomaluje čas výpravy, nejvýš o 2 % na úrovni 50. Pohyb, skoky, překážky i časovače zpomalují společně. Tábor a výzkum běží běžným tempem.",
+  "Time slowdown %1 → %2%": "Zpomalení času %1 → %2 %",
+  "Blackberry shrub": "Ostružinový keř"
 }

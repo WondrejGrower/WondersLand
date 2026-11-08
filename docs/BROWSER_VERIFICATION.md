@@ -161,3 +161,10 @@ shared animated layers and schema-5 migration are implemented in both clients.
 All five Training Grounds stats now explain their real effects in English and
 Czech. See [the verification report](CHARACTER_INVENTORY_VERIFICATION.md) for
 commands, observed checks and desktop/mobile/Qt captures.
+
+## Botanical camp, Agility and clothing motion · 0.3.3
+
+New camp/plant art, 420 cannabis, the capped 2% Agility time scale and corrected
+wearable attachment/deformation are implemented in both clients. See
+[the verification report](BOTANICAL_TIME_VERIFICATION.md) for observed checks,
+startup/per-frame work and the full/isolated clothing pose captures.

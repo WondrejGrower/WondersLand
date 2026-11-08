@@ -5,7 +5,7 @@ try {
  for(const [id,label] of [['gardener','Zahradník'],['explorer','Průzkumník'],['collector','Sběratel']]){
   const context=await browser.newContext({viewport:{width:1280,height:720}}),page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/api/mempool',r=>r.fulfill({json:[]}));
-  await page.goto('http://127.0.0.1:'+host.address().port+'/?lang=cs');await page.waitForSelector('#name');await page.fill('#name','Willow');await page.keyboard.press('Enter');
+  await page.goto('http://127.0.0.1:'+host.address().port+'/?lang=cs');await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForSelector('#name');await page.fill('#name','Willow');await page.keyboard.press('Enter');
   assert.equal(await page.locator('[data-action=creation-role]').count(),3);
   // Select the role using both direction families; confirming does not create the character yet.
   await page.locator('[data-action=creation-role][data-arg=gardener]').focus();
@@ -18,7 +18,7 @@ try {
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).character.class),id);
   // Simulate an established character whose old save still carries the removed unlock notice.
   await page.evaluate(()=>{const p=JSON.parse(localStorage.getItem('wl-progress'));p.coins=777;p.runs=5;p.totalDistance=7000;p.bestDistance=3500;p.unlocked=['classes','training','strength'];p.announcements=['classes'];p.workshop={strength:7};localStorage.setItem('wl-progress',JSON.stringify(p));});
-  await page.reload();await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
+  await page.reload();await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
   const box=await page.locator('#scene').boundingBox();await page.mouse.click(box.x+box.width*270/640,box.y+box.height*190/360);await page.waitForTimeout(1000);await page.keyboard.press('e');
   await page.waitForSelector('[data-action=close]');assert.equal(await page.locator('[data-action=class],[data-action=creation-role]').count(),0);
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).character.class),id);

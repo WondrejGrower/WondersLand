@@ -1,0 +1,8 @@
+Tool: built-in image_gen.imagegen; both calls used transparent_background=true.
+
+Camp reference: assets/art-source/2026-11-08/camp-props-reference.jpg
+Background-extraction edit for WondersLand production game sprites. Remove ONLY the white background of this provided 1536x1024 4-column by 3-row pixel-art reference atlas, including white holes between stems, branches and props. Replace background with actual alpha transparency. Preserve EXACTLY all 12 original objects, their colors, internal white/light details, shape, pixel details, original positions, canvas size, cell layout and scale. Do not redraw, resize, rearrange, add or remove any object. No checkerboard, backdrop, text or floor shadow. Clean transparent cutout PNG. Keep the warm cottage windows, cyan portal and lantern light opaque; remove only surrounding white.
+
+Flora reference: assets/art-source/2026-11-08/botanical-plants-reference.jpg
+Background-extraction edit for WondersLand production game sprites. Remove ONLY the white background of this provided 1536x1024 4-column by 3-row pixel-art reference atlas, including white holes between stems, branches and props. Replace background with actual alpha transparency. Preserve EXACTLY all 12 original objects, their colors, internal white/light details, shape, pixel details, original positions, canvas size, cell layout and scale. Do not redraw, resize, rearrange, add or remove any object. No checkerboard, backdrop, text or floor shadow. Clean transparent cutout PNG. In particular keep the cannabis plant at row 2 column 2, including every serrated leaf and flower cluster.
+

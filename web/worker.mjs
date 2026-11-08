@@ -2,7 +2,7 @@ const idPattern=/^\/api\/tx\/([a-f0-9]{64})\/status$/;
 export async function handle(request,env,upstream=fetch,edgeCache=globalThis.caches?.default){
  const url=new URL(request.url);
  if(url.hostname==='www.wondersland.online'){url.hostname='wondersland.online';return Response.redirect(url.toString(),301);}
- if(url.pathname==='/health')return Response.json({application:'WondersLand [WL]',version:'0.3.2',balance:'wl-0.3-journey-2'});
+ if(url.pathname==='/health')return Response.json({application:'WondersLand [WL]',version:'0.3.3',balance:'wl-0.3-journey-3'});
  if(!url.pathname.startsWith('/api/'))return env.ASSETS.fetch(request);
  if(request.method!=='GET')return new Response('Method not allowed',{status:405,headers:{Allow:'GET'}});
  const match=url.pathname.match(idPattern),recent=url.pathname==='/api/mempool';

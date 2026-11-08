@@ -42,3 +42,8 @@ pozadí a nejsou rozřezané produkční sprity; před integrací připrav průh
 výřezy, ověř pixelovou mřížku, měřítko a pivot. Dodání těchto podkladů samo
 nemění funkci stanovišť, překážek, kolize ani velikostní křivku transakcí.
 Aktuální produkční vrstvy postavy popisuje [assets/runtime/README.md](../../runtime/README.md).
+
+Integrace prostředí do verze 0.3.3 je popsaná v
+[ověření botanického tábora](../../../docs/BOTANICAL_TIME_VERIFICATION.md).
+Původní JPG zde zůstávají beze změny; průhledné produkční PNG a prompty
+jsou odděleně v assets/runtime.

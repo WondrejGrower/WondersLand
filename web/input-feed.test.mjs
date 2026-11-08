@@ -11,7 +11,7 @@ try{
  await page.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:readFileSync('web/app.mjs','utf8')+'\nwindow.fixture={get game(){return game;},feed};'}));
  await page.route('**/api/mempool',r=>r.fulfill({json:Array.from({length:10},(_,i)=>({txid:(++batch).toString(16).padStart(64,'0'),value:'0'}))}));
  await page.addInitScript(p=>localStorage.setItem('wl-progress',JSON.stringify(p)),{...fresh(),character:{name:'Test',class:'gardener'}});
- await page.goto('http://127.0.0.1:'+host.address().port);await page.waitForFunction(()=>window.fixture?.game.q.pending.length>=10);
+ await page.goto('http://127.0.0.1:'+host.address().port);await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForFunction(()=>window.fixture?.game.q.pending.length>=10);
  for(const [code,key,direction]of [['KeyW','W','up'],['KeyA','A','left'],['KeyS','S','down'],['KeyD','D','right']]){
   assert.equal(await page.evaluate(({code,key,direction})=>{document.dispatchEvent(new KeyboardEvent('keydown',{code,key,bubbles:true,shiftKey:true}));return fixture.game.moves.has(direction);},{code,key,direction}),true);
   await page.evaluate(({code,key})=>document.dispatchEvent(new KeyboardEvent('keyup',{code,key,bubbles:true})),{code,key});

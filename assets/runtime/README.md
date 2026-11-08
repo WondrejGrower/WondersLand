@@ -30,3 +30,29 @@ The original reference images remain unchanged in art-source/2026-11-08.
 
 The generation prompts are recorded in `body-generation-prompts.txt`. The PNG
 was generated and background-extracted with built-in imagegen, not its CLI.
+
+## Camp and flora · 0.3.3
+
+`camp.png` and `flora.png` are transparent cutouts prepared from the two
+approved reference JPEGs with built-in imagegen. The unchanged JPEGs remain
+in art-source. Exact prompts: `environment-generation-prompts.txt`.
+`environment-regions.json` and `src/EnvironmentRegions.js` contain measured
+bounds for all 24 motifs; they do not assume a uniform atlas grid.
+
+```sh
+node tools/build-environment-atlases.mjs # Node >=22 and ImageMagick 7
+```
+
+Browser startup decodes each of the two atlas PNGs once. Qt loads them once
+per Canvas from its bundled resources. The shared `EnvironmentArt.js` draws
+cached source regions with nearest-neighbour sampling and clips in world
+coordinates before scaling, so even a huge transaction tree uses one bounded
+blit. No frame performs an image download, pixel extraction or atlas rebuild.
+The two atlases together transfer about 5 MB before HTTP transport compression.
+
+Wearables now use pose-specific shoulder/elbow/wrist/hip/foot attachment points.
+Sleeves follow the upper arm; coat sleeves bend at the elbow and continue to
+the wrist. The body panel deforms with the shoulder/hip axis, the pouch follows
+the hips, and boots/gloves rotate with their limbs. Completed wearable layers
+are cached per item/pose. Camp idle breathing uses a slower two-frame cycle.
+[Clothed and isolated wearable poses](../../docs/browser/animated-clothing-layers.png).

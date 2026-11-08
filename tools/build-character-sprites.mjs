@@ -20,7 +20,7 @@ for(const [i,item]of manifest.components.entries()){
 const bodyBounds=[];
 for(let i=0;i<12;i++){
  const col=i%6,row=Math.floor(i/6),rect=bounds(body,[col*256,row*512,(col+1)*256,(row+1)*512]);bodyBounds.push(rect);
- const h=40,scale=40/300,headOffset=i===10?9:i===8?0:1,anchorX=12;
+ const h=40,scale=40/300,headOffset=i===10?9:i===8?0:1,anchorX=i===11?9:12;
  const headCenters=[148,400,650,905,1158,1410,145,400,642,897,1143,1372];
  const top=i===10?rect[1]-headOffset/scale:rect[1]-headOffset/scale;
  const left=headCenters[i]-anchorX/scale;

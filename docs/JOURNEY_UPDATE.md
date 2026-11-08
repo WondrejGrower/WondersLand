@@ -85,3 +85,17 @@ Verification results and screenshots: JOURNEY_VERIFICATION.md.
 Browser results keyboard clarification: Space remains a jump key and cannot activate
 result buttons, including when held across a collision. Select Try again or
 Return to Base Camp using WASD/arrows and confirm with a fresh E (or click).
+
+## Agility time scale · 0.3.3
+
+The explicit 8 November follow-up replaces Agility's extra input buffer with
+very slight time dilation: 0.04% per purchased level, capped at 2% at level 50.
+Existing levels, prices and purchases are retained. Base input buffering stays
+at the shared physics.buffer value. Only active expedition simulation dt is
+scaled, exactly once: jumps, scrolling, obstacle motion, coins, fuel, skill
+windows, distance and run time share that scale. Camp movement, countdown,
+pause, source polling and wall-clock research retain normal time. At equal
+game time jump trajectories and collision geometry are identical.
+
+Balance version is wl-0.3-journey-3. The 2% cap is a conservative initial choice,
+not a claim of completed long-term player balancing.

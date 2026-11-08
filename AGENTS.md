@@ -37,3 +37,12 @@ Katalog oblečení a výchozí set jsou v balance.json; CharacterSprites.js obsa
 sdílená předpočítaná pixelová data pro Qt i web. Regenerace PNG vrstev a prompty:
 assets/runtime/README.md. Ověření: npm run test:inventory. Cvičiště používá
 přeložené `workshop[].description` pro vysvětlení každého statu.
+
+Verze 0.3.3: nové táborové a botanické PNG v assets/runtime/camp.png a flora.png;
+EnvironmentArt.js je sdílený vykreslovač s předpočítanými regiony. PNG se načítají
+jednou, nikoli za každý snímek; obří překážky se před škálováním oříznou na viewport.
+Oblečení sleduje pózové klouby, včetně deformace trupu a ohybu rukávů.
+Obratnost už NEZVYŠUJE input buffer: zpomaluje celou simulaci výpravy o 0,04 %
+za úroveň, max. 2 %. Tábor, odpočítávání, výzkum a síť běží v reálném čase.
+Dosavadní konopné pravidlo používá prefix 420 kanonické částky v satoshi,
+nikoli TXID; zachovej částku, TXID a velikostní křivku. Ověření: npm run test:environment.

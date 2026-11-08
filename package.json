@@ -1,6 +1,6 @@
 {
   "name": "wondersland-wl",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "private": true,
   "type": "module",
   "engines": {
@@ -10,14 +10,15 @@
     "build": "node web/build.mjs",
     "build:web": "node web/build.mjs",
     "dev": "wrangler dev",
-    "test": "node --test web/core.test.mjs web/worker.test.mjs web/feed.test.mjs web/inventory.test.mjs",
+    "test": "node --test web/core.test.mjs web/worker.test.mjs web/feed.test.mjs web/inventory.test.mjs web/environment.test.mjs",
     "deploy:check": "wrangler deploy --dry-run",
     "deploy": "wrangler deploy",
     "test:browser": "npm run build && node web/browser.test.mjs",
     "test:results": "npm run build && node web/results.test.mjs",
     "test:roles": "npm run build && node web/roles.test.mjs",
     "test:input-feed": "npm run build && node web/input-feed.test.mjs",
-    "test:inventory": "npm run build && node web/inventory-browser.test.mjs"
+    "test:inventory": "npm run build && node web/inventory-browser.test.mjs",
+    "test:environment": "npm run build && node web/environment-browser.test.mjs"
   },
   "devDependencies": {
     "playwright": "1.64.1",

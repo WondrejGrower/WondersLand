@@ -78,8 +78,12 @@ ApplicationWindow {
  // Physics always stays in the 640×360 world; menus are laid out in screen pixels.
  Item {id:viewport;objectName:"viewport";anchors.centerIn:parent;width:640;height:360;scale:Math.min(parent.width/640,parent.height/360)
  Canvas {
+ property bool artReady:false
+ Component.onCompleted:loadImage("qrc:/art/flora.png")
+ onImageLoaded:{artReady=isImageLoaded("qrc:/art/flora.png");requestPaint()}
  id:scene;anchors.fill:parent;renderTarget:Canvas.Image;smooth:false;visible:s.phase!=="camp"&&s.phase!=="creation"
  onPaint:{
+ if(!artReady)return;
  var c=getContext('2d');c.reset();c.scale(width/640,height/360);c.imageSmoothingEnabled=false;
  var d=s.distance*10,t=s.animation,ground=284;
  function rect(x,y,w,h,col){c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),w,h)}
@@ -156,7 +160,7 @@ ApplicationWindow {
  ColumnLayout {id:resultContent;width:parent.width;spacing:10
  Label {objectName:"stateTitle";text:s.phase==="over"?qsTr("Your run ends here."):qsTr("Take a breath.");font.pixelSize:25;wrapMode:Text.WordWrap;Layout.fillWidth:true;color:"#e7dfb7"}
  Label {text:qsTr("%1 m · %2").arg(s.score).arg(translator.coins(s.earned));color:"#c6c6a7";wrapMode:Text.WordWrap;Layout.fillWidth:true}
- Label {visible:s.phase==="over";text:qsTr("You hit: %1").arg(win.trText(s.hit.type||""))+" · "+(s.hit.h||0)+" px";color:"#e4c681";wrapMode:Text.WordWrap;Layout.fillWidth:true}
+ Label {visible:s.phase==="over";text:qsTr("You hit: %1").arg(win.trText(s.hit.type==="rose"?"Blackberry shrub":s.hit.type||""))+" · "+(s.hit.h||0)+" px";color:"#e4c681";wrapMode:Text.WordWrap;Layout.fillWidth:true}
  Label {visible:s.phase==="over";text:qsTr("Output total: %1 BTC").arg((translator.language,translator.btc(s.hit.btc||"0.00000000")))+"\n"+(translator.language,translator.integer(s.hit.sats||"0"))+" satoshi";color:"#d8d7bd";wrapMode:Text.WordWrap;Layout.fillWidth:true}
  Label {visible:s.phase==="over"&&!s.demo;text:s.hit.txid||"";font.family:"monospace";font.pixelSize:11;color:"#9bad9c";Layout.fillWidth:true;wrapMode:Text.WrapAnywhere}
  Label {visible:s.phase==="over";text:s.demo?qsTr("Training · coins and score are not saved"):s.hit.status==="confirmed"?qsTr("Confirmed in a block"):s.hit.status==="pending"?qsTr("Still in the mempool"):s.hit.status==="checking"?qsTr("Observed in mempool · checking current status"):qsTr("Observed in mempool · current status unverified");color:"#93ab9d";wrapMode:Text.WordWrap;Layout.fillWidth:true}

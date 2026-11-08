@@ -260,7 +260,8 @@ QVariantMap Backend::stats() const {
         {"jumpVelocity", Balance::jumpVelocity(bonus)},
         {"magnet",
          Balance::number("physics", "magnet") * std::min(Balance::number("physics", "magnetCap"), magnet)},
-        {"buffer", .1 + Balance::bonus("agility", levels["agility"].toInt())},
+        {"buffer", Balance::number("physics", "buffer")},
+        {"timeScale", 1 - Balance::bonus("agility", levels["agility"].toInt())},
         {"economy", std::min(Balance::number("run", "maxEconomyBonus"),
                              cls["coins"].toDouble() + Balance::bonus("yield", levels["yield"].toInt()))},
         {"luck", Balance::bonus("luck", levels["luck"].toInt())},
@@ -585,6 +586,7 @@ void Backend::advance(double dt) {
         emit changed();
         return;
     }
+    dt *= stats()["timeScale"].toDouble();
     activeTime += dt;
     animation += dt;
     invulnerable = std::max(0., invulnerable - dt);

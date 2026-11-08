@@ -1,6 +1,6 @@
 ![WondersLand v prohlížeči](docs/browser/camp-cs.png)
 
-# WondersLand [WL] · 0.3.2
+# WondersLand [WL] · 0.3.3
 
 Nativní Qt/QML hra: dojdi k portálu, stiskni E, vyber schopnost a potvrď E.
 Každý běh začíná od 0 m. Oblasti jednoho lesa se mění při 500, 1 500, 3 000
@@ -98,3 +98,17 @@ node tools/build-character-sprites.mjs # pouze při změně PNG; vyžaduje Image
 ```
 
 [Produkční vrstvy a jejich generování](assets/runtime/README.md).
+
+## Botanický tábor a obratnost · 0.3.3
+
+Tábor i les používají nové pixelarty. Konopí se vybírá pro částky v satoshi,
+jejichž zápis začíná 420; TXID a rozměry transakce se tím nemění. Inventářové
+oděvy sledují klouby a náklon postavy při pohybu.
+
+Obratnost nově velmi mírně zpomaluje čas výpravy: 0,04 % za úroveň,
+nejvýš 2 %. Skoky a překážky zpomalují společně. Tábor a výzkum zůstávají
+běžným tempem; stávající koupené úrovně zůstávají zachované.
+
+```sh
+npm run test:environment
+```

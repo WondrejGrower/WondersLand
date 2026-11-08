@@ -85,6 +85,28 @@ class Tests : public QObject {
         QVERIFY(b.state()["collected"].toInt() > 0);
     }
   private slots:
+    void agilitySlowsGameTimeWithoutChangingPhysicsOrCamp() {
+        QTemporaryDir lowDir, highDir;
+        auto lowPath = fixture(lowDir), highPath = fixture(highDir);
+        Progress highSave(highPath);
+        highSave.data["workshop"] = QVariantMap{{"agility", 50}};
+        QVERIFY(highSave.save());
+        Backend normal(lowPath, false), slow(highPath, false);
+        QCOMPARE(normal.state()["stats"].toMap()["timeScale"].toDouble(), 1.0);
+        QCOMPARE(slow.state()["stats"].toMap()["timeScale"].toDouble(), 0.98);
+        QCOMPARE(slow.state()["stats"].toMap()["buffer"], normal.state()["stats"].toMap()["buffer"]);
+        QVariantList rows; for (int i = 0; i < 40; i++) rows.append(tx(i, 0));
+        normal.setReplay(rows, 42); slow.setReplay(rows, 42);
+        normal.start(false); slow.start(false); normal.chooseSkill(0); slow.chooseSkill(0);
+        normal.jump(); slow.jump();
+        for (int i = 0; i < 120; i++) { normal.advance(.98 / 120); slow.advance(1.0 / 120); }
+        for (auto key : {"time", "distance", "y", "velocity"})
+            QVERIFY2(std::abs(normal.state()[key].toDouble() - slow.state()[key].toDouble()) < 1e-8, key);
+        normal.returnToCamp(); slow.returnToCamp();
+        normal.setMovement("right", true); slow.setMovement("right", true);
+        normal.advance(.1); slow.advance(.1);
+        QCOMPARE(normal.state()["campX"], slow.state()["campX"]);
+    }
     void clothingInventoryAndMigration() {
         QTemporaryDir dir;
         Progress p(dir.filePath("progress.json"));
