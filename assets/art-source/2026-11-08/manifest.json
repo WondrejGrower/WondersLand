@@ -31,6 +31,24 @@
       "alpha": false,
       "bytes": 294859,
       "sha256": "e24af36d3ed8b2870637a9002c44525149f4f0f2a4d6c07a1ffa456c9b49f1c2"
+    },
+    {
+      "file": "camp-props-reference.jpg",
+      "width": 1536,
+      "height": 1024,
+      "alpha": false,
+      "bytes": 545045,
+      "sha256": "25d91e35d91cdcc1fb896a982a802dfb07f08595d3384fc710a3d2eeed67364b",
+      "kind": "camp-props-style-reference"
+    },
+    {
+      "file": "botanical-plants-reference.jpg",
+      "width": 1536,
+      "height": 1024,
+      "alpha": false,
+      "bytes": 528444,
+      "sha256": "e1d116efc472f26bc1acb470fd3225b85a4942673e6491a02e12b60f17baa67d",
+      "kind": "botanical-style-reference"
     }
   ],
   "layout": {
@@ -293,5 +311,167 @@
     "diamond_boots": "reserved for a future cosmetic skin; absent from starter art",
     "diamond_gloves": "reserved for a future cosmetic skin; absent from starter art"
   },
-  "scope": "Upload artwork and implementation brief only. The inventory and layered sprites are the next Codex implementation task."
+  "scope": "Source artwork and documentation. Additional camp and botanical atlases are visual references for future runtime integration. Implemented character layers are documented in assets/runtime/README.md.",
+  "environmentAtlases": [
+    {
+      "file": "camp-props-reference.jpg",
+      "columns": 4,
+      "rows": 3,
+      "indexing": "one-based visual positions only; inspect actual sprite bounds before cropping",
+      "components": [
+        {
+          "id": "camp_cottage",
+          "label": "Domek",
+          "row": 1,
+          "column": 1
+        },
+        {
+          "id": "camp_portal",
+          "label": "Kamenný portál",
+          "row": 1,
+          "column": 2
+        },
+        {
+          "id": "camp_training_dummy",
+          "label": "Cvičný panák",
+          "row": 1,
+          "column": 3
+        },
+        {
+          "id": "camp_archery_target",
+          "label": "Terč",
+          "row": 1,
+          "column": 4
+        },
+        {
+          "id": "camp_herbal_workbench",
+          "label": "Bylinkový pracovní stůl",
+          "row": 2,
+          "column": 1
+        },
+        {
+          "id": "camp_forge",
+          "label": "Výheň s kovadlinou",
+          "row": 2,
+          "column": 2
+        },
+        {
+          "id": "camp_chest",
+          "label": "Truhla",
+          "row": 2,
+          "column": 3
+        },
+        {
+          "id": "camp_wardrobe",
+          "label": "Šatník",
+          "row": 2,
+          "column": 4
+        },
+        {
+          "id": "camp_garden_bed",
+          "label": "Záhon",
+          "row": 3,
+          "column": 1
+        },
+        {
+          "id": "camp_fire",
+          "label": "Ohniště",
+          "row": 3,
+          "column": 2
+        },
+        {
+          "id": "camp_gardening_bench",
+          "label": "Zahradnická lavice",
+          "row": 3,
+          "column": 3
+        },
+        {
+          "id": "camp_lantern_post",
+          "label": "Sloup s lucernou",
+          "row": 3,
+          "column": 4
+        }
+      ]
+    },
+    {
+      "file": "botanical-plants-reference.jpg",
+      "columns": 4,
+      "rows": 3,
+      "indexing": "one-based visual positions only; inspect actual sprite bounds before cropping",
+      "components": [
+        {
+          "id": "flora_meadow_grass",
+          "label": "Luční trávy a květy",
+          "row": 1,
+          "column": 1
+        },
+        {
+          "id": "flora_daisies",
+          "label": "Bílé a žluté květy",
+          "row": 1,
+          "column": 2
+        },
+        {
+          "id": "flora_tulips",
+          "label": "Tulipány",
+          "row": 1,
+          "column": 3
+        },
+        {
+          "id": "flora_fern",
+          "label": "Kapradí",
+          "row": 1,
+          "column": 4
+        },
+        {
+          "id": "flora_mushrooms",
+          "label": "Skupina hub",
+          "row": 2,
+          "column": 1
+        },
+        {
+          "id": "flora_cannabis",
+          "label": "Konopí",
+          "row": 2,
+          "column": 2
+        },
+        {
+          "id": "flora_blackberry",
+          "label": "Ostružinový keř",
+          "row": 2,
+          "column": 3
+        },
+        {
+          "id": "flora_sapling",
+          "label": "Mladý stromek",
+          "row": 2,
+          "column": 4
+        },
+        {
+          "id": "flora_birch",
+          "label": "Bříza",
+          "row": 3,
+          "column": 1
+        },
+        {
+          "id": "flora_pine",
+          "label": "Jehličnan",
+          "row": 3,
+          "column": 2
+        },
+        {
+          "id": "flora_oak",
+          "label": "Rozložitý listnatý strom",
+          "row": 3,
+          "column": 3
+        },
+        {
+          "id": "flora_sequoia",
+          "label": "Obří jehličnan",
+          "row": 3,
+          "column": 4
+        }
+      ]
+    }
+  ]
 }
