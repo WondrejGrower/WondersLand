@@ -1,0 +1,105 @@
+{
+  "label": "SYNTHETIC: ideal timing, no skills, gardener, initial run speed, 120 Hz",
+  "balanceVersion": "wl-0.3-journey-4",
+  "rows": [
+    {
+      "model": "flower",
+      "sats": "50000",
+      "btc": "0.00050000",
+      "h": 10,
+      "w": 14,
+      "type": "flower",
+      "firstStrengthLevel": 0,
+      "baseLaunchPositions": 24,
+      "cumulativeStrengthCost": 0
+    },
+    {
+      "model": "tulip",
+      "sats": "250000",
+      "btc": "0.00250000",
+      "h": 17,
+      "w": 15,
+      "type": "tulip",
+      "firstStrengthLevel": 0,
+      "baseLaunchPositions": 12,
+      "cumulativeStrengthCost": 0
+    },
+    {
+      "model": "rose",
+      "sats": "600000",
+      "btc": "0.00600000",
+      "h": 23,
+      "w": 16,
+      "type": "rose",
+      "firstStrengthLevel": 4,
+      "baseLaunchPositions": 0,
+      "cumulativeStrengthCost": 241
+    },
+    {
+      "model": "fern",
+      "sats": "900000",
+      "btc": "0.00900000",
+      "h": 27,
+      "w": 17,
+      "type": "fern",
+      "firstStrengthLevel": 7,
+      "baseLaunchPositions": 0,
+      "cumulativeStrengthCost": 508
+    },
+    {
+      "model": "birch",
+      "sats": "10000000",
+      "btc": "0.10000000",
+      "h": 48,
+      "w": 21,
+      "type": "birch",
+      "firstStrengthLevel": 15,
+      "baseLaunchPositions": 0,
+      "cumulativeStrengthCost": 1871
+    },
+    {
+      "model": "pine",
+      "sats": "100000000",
+      "btc": "1.00000000",
+      "h": 72,
+      "w": 25,
+      "type": "pine",
+      "firstStrengthLevel": 21,
+      "baseLaunchPositions": 0,
+      "cumulativeStrengthCost": 4095
+    },
+    {
+      "model": "cannabis",
+      "sats": "420000",
+      "btc": "0.00420000",
+      "h": 20,
+      "w": 16,
+      "type": "cannabis",
+      "firstStrengthLevel": 0,
+      "baseLaunchPositions": 4,
+      "cumulativeStrengthCost": 0
+    },
+    {
+      "model": "oak",
+      "sats": "1000000000",
+      "btc": "10.00000000",
+      "h": 108,
+      "w": 31,
+      "type": "oak",
+      "firstStrengthLevel": 28,
+      "baseLaunchPositions": 0,
+      "cumulativeStrengthCost": 9550
+    },
+    {
+      "model": "sequoia",
+      "sats": "100000000000",
+      "btc": "1000.00000000",
+      "h": 243,
+      "w": 56,
+      "type": "sequoia",
+      "firstStrengthLevel": 45,
+      "baseLaunchPositions": 0,
+      "cumulativeStrengthCost": 67934
+    }
+  ]
+}

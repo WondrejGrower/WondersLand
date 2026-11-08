@@ -23,11 +23,11 @@ def clears(h,w,target,air=False,speed=CONFIG['physics']['speed']):
     dt=1/120
     for lead in range(10,161,6):
       for second in ([None,.2,.4,.6] if air else [None]):
-        y=0;v=min(285*math.sqrt(target/70),math.sqrt(2*570*110));t=-lead/speed;doubled=False;ok=True
+        y=0;v=math.sqrt(2*CONFIG["physics"]["heldGravity"]*min(target,CONFIG["physics"]["jumpCap"]));t=-lead/speed;doubled=False;ok=True
         while t<(w+15)/speed:
           if second is not None and not doubled and t+lead/speed>=second:
-            v=math.sqrt(2*570*max(0,170-y));doubled=True
-          g=570 if v>0 else 850;v-=g*dt;y=max(0,y+v*dt)
+            v=math.sqrt(2*CONFIG["physics"]["heldGravity"]*max(0,min(CONFIG["physics"]["airCap"],target*CONFIG["physics"]["airHeightFactor"])-y));doubled=True
+          g=CONFIG["physics"]["heldGravity"] if v>0 else CONFIG["physics"]["gravity"];v-=g*dt;y=max(0,y+v*dt)
           if 0<=t<=(w+15)/speed and y+2<h-2:ok=False;break
           t+=dt
         if ok:return True
@@ -43,7 +43,10 @@ def analyze(data,seeds=50,tier=1):
     values=list(unique.values());heights=[height(v,tier) for v in values]
     report={'source':data.get('source','unspecified'),'synthetic':bool(data.get('synthetic',False)),'from':data.get('start',data.get('capturedAt')),'to':data.get('end',data.get('capturedAt')),'uniqueTransactions':len(values),'balanceVersion':CONFIG['balanceVersion'],'regionIndependent':True,'warning':'Draft mapping; not a whole-mempool distribution. Finite timing search is not a proof of impossibility below the apex. Human errors and the full skill economy are excluded.','valuePercentiles':{str(q):percentile(values,q/100) for q in [0,25,50,75,90,95,99,100]},'heightPercentiles':{str(q):percentile(heights,q/100) for q in [0,25,50,75,90,95,99,100]},'references':{}}
     cache={}
-    for label,target,air in [('beginner',70,False),('developed',105,False),('aerial',170,True)]:
+    base=CONFIG['physics']['jumpVelocity']**2/(2*CONFIG['physics']['heldGravity'])
+    strength=next(b for b in CONFIG['workshop'] if b['id']=='strength')
+    developed=min(CONFIG['physics']['jumpCap'],base*(1+strength['effect']*(30/50)**2))
+    for label,target,air in [('beginner',base,False),('developed',developed,False),('aerial',CONFIG['physics']['jumpCap'],True)]:
       impossible=[]
       for h in heights:
         key=(h,width(h),target,air)

@@ -79,7 +79,7 @@ QString Balance::species(qulonglong v) {
 double Balance::bonus(const QString &branch, int level) {
     auto b = find("workshop", branch);
     double x = std::clamp(level, 0, 50) / 50.;
-    return b["effect"].toDouble() * (b["curve"] == "sqrt" ? std::sqrt(x) : x);
+    return b["effect"].toDouble() * (b["curve"] == "sqrt" ? std::sqrt(x) : b["curve"] == "quadratic" ? x * x : x);
 }
 int Balance::price(const QString &branch, int level) {
     auto b = find("workshop", branch);
@@ -94,8 +94,8 @@ double Balance::jumpVelocity(double bonus) {
     return std::min(base * std::sqrt(std::max(0., 1 + bonus)),
                     std::sqrt(2 * g * number("physics", "jumpCap")));
 }
-double Balance::extraImpulse(double y, double velocity, double fraction) {
+double Balance::extraImpulse(double y, double velocity, double fraction, double ceiling) {
     Q_UNUSED(velocity);
-    double available = std::max(0., number("physics", "airCap") - y);
+    double available = std::max(0., (ceiling < 0 ? number("physics", "airCap") : std::min(ceiling, number("physics", "airCap"))) - y);
     return std::sqrt(2 * number("physics", "heldGravity") * available) * std::clamp(fraction, 0., 1.);
 }

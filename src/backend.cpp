@@ -271,8 +271,14 @@ QVariantMap Backend::stats() const {
     double magnet =
         1 + cls["magnet"].toDouble() + Balance::bonus("magnet", levels["magnet"].toInt()) + effect("magnet") +
         (progress.data["hands"].toBool() ? Balance::find("items", "hands")["magnet"].toDouble() : 0);
+    const double permanentBonus = bonus - effect("leap");
+    const double permanentVelocity = Balance::jumpVelocity(permanentBonus);
+    const double airCap = std::min(Balance::number("physics", "airCap"),
+        permanentVelocity * permanentVelocity / (2 * Balance::number("physics", "heldGravity")) *
+        Balance::number("physics", "airHeightFactor"));
     cachedStats = {
         {"jumpVelocity", Balance::jumpVelocity(bonus)},
+        {"airCap", airCap},
         {"magnet",
          Balance::number("physics", "magnet") * std::min(Balance::number("physics", "magnetCap"), magnet)},
         {"buffer", Balance::number("physics", "buffer")},
@@ -508,7 +514,7 @@ void Backend::jump() {
     } else if (!airJumpUsed &&
                (skills.value("double") > 0 || (stats()["class"] == "explorer" && !emergencyUsed))) {
         double fraction = skills.value("double") ? effect("double") : .65;
-        velocity = Balance::extraImpulse(y, velocity, fraction);
+        velocity = Balance::extraImpulse(y, velocity, fraction, stats()["airCap"].toDouble());
         airJumpUsed = true;
         if (!skills.value("double"))
             emergencyUsed = true;
@@ -519,6 +525,8 @@ void Backend::releaseJump() {
     if (held && phase == "running")
         recordEvent({{"event", "release"}, {"time", activeTime}});
     held = false;
+    if (phase == "running" && velocity > Balance::number("physics", "tapVelocity"))
+        velocity = Balance::number("physics", "tapVelocity");
 }
 void Backend::fly(bool enabled) {
     if (enabled != jetHeld && phase == "running")
@@ -652,7 +660,7 @@ void Backend::advance(double dt) {
     if (jetHeld && skills.value("jetpack") > 0 && fuel > 0) {
         fuel = std::max(0., fuel - dt);
         velocity = std::min(velocity + Balance::number("physics", "jetAcceleration") * dt,
-                            Balance::extraImpulse(y, velocity));
+                            Balance::extraImpulse(y, velocity, 1, stats()["airCap"].toDouble()));
         gravity = Balance::number("physics", "heldGravity");
     }
     double oldY = y;

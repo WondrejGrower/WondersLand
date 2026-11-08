@@ -1,5 +1,5 @@
 {
-  "balanceVersion": "wl-0.3-journey-3",
+  "balanceVersion": "wl-0.3-journey-4",
   "anchors": [
     [
       100000,
@@ -35,11 +35,11 @@
     ]
   ],
   "physics": {
-    "jumpVelocity": 285,
+    "jumpVelocity": 162,
     "heldGravity": 570,
     "gravity": 850,
-    "jumpCap": 110,
-    "airCap": 170,
+    "jumpCap": 320,
+    "airCap": 450,
     "speed": 105,
     "maxSpeedFactor": 1.35,
     "spacing": [
@@ -55,7 +55,9 @@
     "rescueCap": 2,
     "invulnerability": 2,
     "gliderGravity": 130,
-    "jetAcceleration": 1500
+    "jetAcceleration": 1500,
+    "airHeightFactor": 1.5,
+    "tapVelocity": 120
   },
   "rarityWeights": [
     75,
@@ -95,11 +97,11 @@
       "id": "strength",
       "name": "Strength",
       "max": 50,
-      "effect": 0.2,
-      "curve": "sqrt",
+      "effect": 14,
+      "curve": "quadratic",
       "baseCost": 50,
       "growth": 1.12,
-      "description": "Increases ordinary jump height, up to the 110 px jump limit. It does not shrink obstacles."
+      "description": "Starts with small plants. Strength gradually unlocks shrubs and trees; tall sequoias require high levels. Ordinary jump limit: 320 px. Obstacles keep their real size."
     },
     {
       "id": "agility",
@@ -687,7 +689,7 @@
     {
       "id": "cannabis",
       "name": "Cannabis",
-      "sats": "42000000"
+      "sats": "420000"
     },
     {
       "id": "oak",

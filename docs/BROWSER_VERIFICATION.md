@@ -186,3 +186,12 @@ Birch/Cannabis/Sequoia buttons, starting Birch practice and jumping. The normal
 browser suite now also checks preview dimensions and button hit targets.
 Deployment dry-run passes. Existing native verification is unchanged by this
 CSS-only fix (31 Qt and 3 Python tests; native runner exits normally).
+
+## Strength progression · wl-0.3-journey-4
+
+The subsequent playtest request replaces the generous initial jump with a small
+~23 px peak and permanent development through shrubs and trees to late sequoias.
+Small practice cannabis is the baseline limit; all transaction size curves
+remain unchanged. Purchased levels, coins and unlocked systems are preserved.
+[The detailed report](JUMP_PROGRESSION.md) includes launch-sweep results,
+desktop/mobile practice screenshots and the actual verification commands.

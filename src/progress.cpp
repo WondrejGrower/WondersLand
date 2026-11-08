@@ -8,6 +8,7 @@
 #include <QRegularExpression>
 #include <QSaveFile>
 #include <algorithm>
+#include <cmath>
 Progress::Progress(QString file) : path(file) {
     data = fresh();
     QFile f(path);
@@ -365,6 +366,15 @@ QVariantMap Progress::view() const {
         b["price"] = Balance::price(id, lv);
         b["bonus"] = Balance::bonus(id, lv);
         b["nextBonus"] = Balance::bonus(id, std::min(50, lv + 1));
+        if (id == "strength") {
+            const auto ch = data["character"].toMap();
+            const double extras = Balance::find("classes", ch["class"].toString())["jump"].toDouble() +
+                (data["boots"].toBool() ? Balance::find("items", "boots")["jump"].toDouble() : 0);
+            b["jumpHeight"] = std::pow(Balance::jumpVelocity(extras + b["bonus"].toDouble()), 2) /
+                              (2 * Balance::number("physics", "heldGravity"));
+            b["nextJumpHeight"] = std::pow(Balance::jumpVelocity(extras + b["nextBonus"].toDouble()), 2) /
+                                  (2 * Balance::number("physics", "heldGravity"));
+        }
         branches.append(b);
     }
     out["branches"] = branches;

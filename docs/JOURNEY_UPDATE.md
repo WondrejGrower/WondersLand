@@ -110,3 +110,25 @@ sample amounts; dimensions use the same curve and collision physics as live
 expeditions. Practice starts directly with current role, attributes and equipment,
 without random starting skills or flying upgrades. Retry repeats the selected
 model. Practice never saves rewards, records, checkpoints or progression.
+
+## Strength progression · balance wl-0.3-journey-4
+
+The 8 November playtest follow-up replaces the generous ~71 px initial jump
+and +20% maximum Strength with a ~23 px initial peak and quadratic permanent
+Strength growth up to the 320 px ordinary ceiling. Level IDs, purchased levels,
+prices, coins, unlocked systems and profiles are retained. This is a mechanical
+rebalance, so records from the new balance use a new balanceVersion key.
+
+Small practice cannabis now uses exactly 420000 satoshi (20 px), the last
+baseline practice model reachable with a held jump and tight timing in all
+three roles. Taller 420-prefix transactions retain their true curve dimensions
+and may require upgrades. No transaction size/species curve was changed.
+
+Double jumps/emergency jumps/jetpack use an aerial energy ceiling equal to
+1.5 times the permanent ordinary peak, capped at 450 px. Run-only leap skills
+cannot inflate that permanent ceiling. The existing one-use Explorer emergency
+jump remains a role-specific exception, not a repeatable baseline ability.
+High jumps scroll the camera vertically after 180 px; this does not scale any
+obstacle or change world-space collision geometry.
+
+[Detailed tuning, ideal launch tests and limits](JUMP_PROGRESSION.md).

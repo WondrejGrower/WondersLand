@@ -79,14 +79,32 @@ class Tests : public QObject {
              i++) {
             for (auto v : b.state()["obstacles"].toList()) {
                 double x = v.toMap()["x"].toDouble();
-                if (x < 170 && x > 150 && b.state()["y"].toDouble() == 0)
+                if (x < 140 && x > 125 && b.state()["y"].toDouble() == 0) {
                     b.jump();
+                    b.releaseJump(); // A short controlled hop also works with high Strength.
+                }
             }
             b.advance(.016);
         }
         QVERIFY(b.state()["collected"].toInt() > 0);
     }
   private slots:
+    void sharedJumpProgressionFixtures() {
+        QFile data(QFINDTESTDATA("jump-stats.json"));
+        QVERIFY(data.open(QIODevice::ReadOnly));
+        for (const auto &entry : QJsonDocument::fromJson(data.readAll()).array()) {
+            const auto row = entry.toObject();
+            QTemporaryDir dir;
+            const auto path = fixture(dir, false, row["role"].toString());
+            Progress p(path);
+            p.data["workshop"] = QVariantMap{{"strength", row["level"].toInt()}};
+            QVERIFY(p.save());
+            Backend b(path, false);
+            const auto stats = b.state()["stats"].toMap();
+            QVERIFY(std::abs(stats["jumpVelocity"].toDouble() - row["jumpVelocity"].toDouble()) < 1e-8);
+            QVERIFY(std::abs(stats["airCap"].toDouble() - row["airCap"].toDouble()) < 1e-8);
+        }
+    }
     void sharedPlantVisualFixtures() {
         QFile source(":/PlantVisual.js");
         QVERIFY(source.open(QIODevice::ReadOnly));
@@ -257,11 +275,11 @@ class Tests : public QObject {
             begin(b, true, "leap");
             b.jump();
             double peak = 0;
-            for (int i = 0; i < 160; i++) {
+            for (int i = 0; i < 400; i++) {
                 b.advance(.005);
                 peak = std::max(peak, b.state()["y"].toDouble());
             }
-            QVERIFY2(peak <= 110.05, qPrintable(QString::number(peak)));
+            QVERIFY2(peak <= Balance::number("physics", "jumpCap") + .05, qPrintable(QString::number(peak)));
             b.returnToCamp();
             begin(b, true, "double");
             b.jump();
@@ -270,7 +288,7 @@ class Tests : public QObject {
                     b.jump();
                 b.fly(true);
                 b.advance(.005);
-                QVERIFY(b.state()["y"].toDouble() <= 170.05);
+                QVERIFY(b.state()["y"].toDouble() <= b.state()["stats"].toMap()["airCap"].toDouble() + .05);
             }
             b.fly(false);
             b.releaseJump();
@@ -280,11 +298,11 @@ class Tests : public QObject {
         }
     }
     void impulseEnergyLeavesNoInvisibleCeiling() {
-        for (double y = 0; y < 171; y += .25) {
+        for (double y = 0; y < Balance::number("physics", "airCap") + 1; y += .25) {
             double v = Balance::extraImpulse(y, 1000);
-            QVERIFY(y + v * v / (2 * 570) <= std::max(170., y) + .00001);
+            QVERIFY(y + v * v / (2 * 570) <= std::max(Balance::number("physics", "airCap"), y) + .00001);
         }
-        QVERIFY(Balance::jumpVelocity(100) < 355);
+        QVERIFY(Balance::jumpVelocity(100) <= std::sqrt(2 * 570 * Balance::number("physics", "jumpCap")) + .00001);
     }
     void giantTransactionEndsRunAndPreservesExactIdentity() {
         QTemporaryDir dir;
@@ -659,7 +677,7 @@ class Tests : public QObject {
             if (i % 30 == 0)
                 b.jump();
             b.advance(.005);
-            QVERIFY(b.state()["y"].toDouble() <= 170.05);
+            QVERIFY(b.state()["y"].toDouble() <= b.state()["stats"].toMap()["airCap"].toDouble() + .05);
         }
         QCOMPARE(b.state()["fuel"].toDouble(), 0.);
         b.fly(false);

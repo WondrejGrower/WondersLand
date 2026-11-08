@@ -287,5 +287,9 @@
   "Pine": "Smrk",
   "Cannabis": "Konopí",
   "Oak": "Dub",
-  "Sequoia": "Sekvoje"
+  "Sequoia": "Sekvoje",
+  "Ordinary jump +%1%, capped at 320 px": "Obyčejný skok +%1 %, nejvýše 320 px",
+  "One extra jump; aerial limit grows with Strength (max 450 px)": "Jeden skok navíc; vzdušný limit roste se Sílou (nejvýše 450 px)",
+  "Starts with small plants. Strength gradually unlocks shrubs and trees; tall sequoias require high levels. Ordinary jump limit: 320 px. Obstacles keep their real size.": "Začínáš u malých rostlin. Síla postupně zpřístupňuje keře a stromy; vysoké sekvoje vyžadují vysoké úrovně. Limit běžného skoku: 320 px. Překážky si zachovávají skutečnou velikost.",
+  "Ordinary jump without skills %1 → %2 px": "Běžný skok bez schopností %1 → %2 px"
 }

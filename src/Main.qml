@@ -35,7 +35,7 @@ ApplicationWindow {
   else backend.pause();
   if(!menuRoot)focusGame();
  }
- function skillDescription(offer){var effects=offer.effects||[];var value=effects[(offer.nextRank||1)-1]||0;return offer.id==="leap"?qsTr("Ordinary jump +%1%, capped at 110 px").arg(Math.round(value*100)):offer.id==="magnet"?qsTr("Collection range +%1%").arg(Math.round(value*100)):offer.id==="aircoins"?qsTr("Airborne coin bonus +%1%").arg(Math.round(value*100)):offer.id==="double"?qsTr("One extra jump, shared aerial limit 170 px"):offer.id==="glider"?qsTr("Glide up to %1 s per jump").arg(Number(value).toLocaleString(Qt.locale(),'f',1)):offer.id==="shield"?qsTr("One rescue, at most two granted per run"):qsTr("Jetpack: 3 s fuel for the whole run, hold F")}
+ function skillDescription(offer){var effects=offer.effects||[];var value=effects[(offer.nextRank||1)-1]||0;return offer.id==="leap"?qsTr("Ordinary jump +%1%, capped at 320 px").arg(Math.round(value*100)):offer.id==="magnet"?qsTr("Collection range +%1%").arg(Math.round(value*100)):offer.id==="aircoins"?qsTr("Airborne coin bonus +%1%").arg(Math.round(value*100)):offer.id==="double"?qsTr("One extra jump; aerial limit grows with Strength (max 450 px)"):offer.id==="glider"?qsTr("Glide up to %1 s per jump").arg(Number(value).toLocaleString(Qt.locale(),'f',1)):offer.id==="shield"?qsTr("One rescue, at most two granted per run"):qsTr("Jetpack: 3 s fuel for the whole run, hold F")}
  MenuNavigation {id:navigation;scope:win.menuRoot;window:win}
  onMenuRootChanged:{backend.stopMovement();if(!menuRoot)Qt.callLater(focusGame)}
  Shortcut {sequence:"E";context:Qt.ApplicationShortcut;autoRepeat:false;enabled:!win.menuRoot&&!typing;onActivated:{if(activeFocusItem&&activeFocusItem.menuChoice)activeFocusItem.clicked();else if(s.phase==="camp")backend.interact()}}
@@ -85,7 +85,8 @@ ApplicationWindow {
  onPaint:{
  if(!artReady)return;
  var c=getContext('2d');c.reset();c.scale(width/640,height/360);c.imageSmoothingEnabled=false;
- var d=s.distance*10,t=s.animation,ground=284;
+ // Follow only high late-game jumps; world sizes and physics stay unchanged.
+ var d=s.distance*10,t=s.animation,ground=284+Math.max(0,Math.round(s.y-180));
  function rect(x,y,w,h,col){c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),w,h)}
  function hill(offset,base,col){for(var x=0;x<=640;x+=8){var y=Math.round(base+Math.sin((x+offset)*.012)*18+Math.sin((x+offset)*.028)*9);rect(x,y,8,ground-y,col)}}
  rect(0,0,640,360,win.sky);

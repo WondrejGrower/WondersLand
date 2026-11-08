@@ -13,6 +13,6 @@ QString species(qulonglong sats);
 double bonus(const QString &branch, int level);
 int price(const QString &branch, int level);
 double jumpVelocity(double heightBonus);
-double extraImpulse(double y, double velocity, double fraction = 1);
+double extraImpulse(double y, double velocity, double fraction = 1, double ceiling = -1);
 QString version();
 } // namespace Balance
