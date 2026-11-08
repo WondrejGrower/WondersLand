@@ -2,7 +2,7 @@
 export const fresh = () => ({schemaVersion:4,character:{},coins:0,seeds:0,workshop:{},completed:[],research:[],milestones:[],owned:[],hands:false,boots:false,paidRuns:[],records:{},runs:0,lastClock:0,excluded:'',unlocked:[],announcements:[],bestDistance:0,totalDistance:0,recipes:[]});
 export function migrate(input,config){
  if(!input||typeof input!=='object'||Array.isArray(input))throw Error('Unsupported save version. File preserved.');
- if(input.schemaVersion===4)return {...fresh(),...structuredClone(input)};
+ if(input.schemaVersion===4){const data={...fresh(),...structuredClone(input)};data.announcements=data.announcements.filter(id=>id!=='classes');return data;}
  if(!input.schemaVersion)return {...fresh(),legacyCoins:Math.max(0,Number(input.coins)||0),legacyBest:Number(input.best)||0};
  if(input.schemaVersion!==3)throw Error('Unsupported save version. File preserved.');
  const d={...fresh(),...structuredClone(input),schemaVersion:4};
@@ -41,14 +41,15 @@ export class Game {
  has(id){return this.p.unlocked.includes(id)||this.c.progression.some(r=>r.id===id&&this.p.runs>=r.runs&&this.p.totalDistance>=r.total&&this.p.bestDistance>=r.best);}
  persist(){this.saveAdapter(this.p);}
  transaction(action){const old=structuredClone(this.p);try{if(!action())return false;this.persist();return true;}catch(error){this.p=old;this.notice='Cannot save progress';throw error;}}
- create(name,appearance){if(!name.trim()||this.p.character.name)return;this.transaction(()=>{this.p.character={...appearance,name:name.trim().slice(0,24),class:'gardener'};this.p.coins+=this.p.legacyCoins||0;delete this.p.legacyCoins;return true;});this.phase='camp';}
+ create(name,appearance){const role=appearance.class||'gardener';if(!name.trim()||this.p.character.name||!this.find('classes',role).id)return;this.transaction(()=>{this.p.character={...appearance,name:name.trim().slice(0,24),class:role};this.p.coins+=this.p.legacyCoins||0;delete this.p.legacyCoins;return true;});this.phase='camp';}
  unlocks(){for(const r of this.c.progression)if(this.has(r.id)&&!this.p.unlocked.includes(r.id)){this.p.unlocked.push(r.id);this.p.announcements.push(r.id);}}
  bonus(id){const b=this.find('workshop',id),n=Math.min(50,this.p.workshop[id]||0)/50;return b.effect*(b.curve==='sqrt'?Math.sqrt(n):n);}
  price(id){const b=this.find('workshop',id),n=this.p.workshop[id]||0;return n>=50?-1:Math.ceil(b.baseCost*b.growth**n);}
  buy(id){return this.transaction(()=>{const cost=this.price(id);if(!this.has(id)||cost<0||this.p.coins<cost)return false;this.p.coins-=cost;this.p.workshop[id]=(this.p.workshop[id]||0)+1;return true;});}
  craft(id){return this.transaction(()=>{const item=this.find('items',id);if(!this.has(item.feature)||this.p.owned.includes(id)||this.p.coins<item.cost||(item.recipe&&!this.p.recipes.includes(id)&&this.p.bestDistance<Number(item.recipe.split(':')[1])))return false;this.p.coins-=item.cost;this.p.owned.push(id);return true;});}
  equip(id){return this.transaction(()=>{if(!this.p.owned.includes(id))return false;this.p[id]=!this.p[id];return true;});}
- changeClass(id){return this.transaction(()=>{if(!this.has('classes')||!this.find('classes',id).id)return false;this.p.character.class=id;return true;});}
+ // Compatibility entry point: a saved role can only change through reset and creation.
+ changeClass(){return false;}
  research(id,now=Date.now()/1000){this.updateResearch(now);return this.transaction(()=>{const r=this.find('research',id),slots=1+Number(this.has('research2'))+Number(this.has('research3'));if(!r.id||!this.has('garden')||this.p.completed.includes(id)||this.p.research.some(j=>j.id===id)||this.p.research.length>=slots||this.p.coins<r.cost||this.p.seeds<r.seeds)return false;now=Math.max(now,this.p.lastClock);this.p.coins-=r.cost;this.p.seeds-=r.seeds;this.p.research.push({id,started:now,end:now+r.seconds});return true;});}
  updateResearch(now=Date.now()/1000){if(now<0||now>4102444800)return;now=Math.max(now,this.p.lastClock||0);this.p.lastClock=now;const done=this.p.research.filter(j=>now>=j.end);if(done.length){for(const j of done)if(!this.p.completed.includes(j.id))this.p.completed.push(j.id);this.p.research=this.p.research.filter(j=>now<j.end);this.persist();}}
  available(){return this.c.skills.filter(s=>(s.unlock==='base'||this.p.completed.includes(s.unlock))&&(s.id!=='jetpack'||this.has('diamond'))&&s.id!==this.p.excluded);}

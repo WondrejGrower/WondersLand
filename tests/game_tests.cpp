@@ -285,8 +285,9 @@ class Tests : public QObject {
         p.reward("long", 1, 300, 100, 3000, "gardener");
         QVERIFY(p.unlocked("garden"));
         QVERIFY(p.unlocked("diamond"));
-        QVERIFY(p.changeClass("explorer"));
-        QCOMPARE(p.data["character"].toMap()["class"].toString(), QString("explorer"));
+        const auto beforeRoleChange = p.data;
+        QVERIFY(!p.changeClass("explorer"));
+        QCOMPARE(p.data, beforeRoleChange);
         QCOMPARE(p.data["announcements"].toStringList().count("training"), 1);
     }
     void continuousForestStartsAtZeroAndKeepsTransactionDimensions() {
@@ -338,12 +339,35 @@ class Tests : public QObject {
         QCOMPARE(migrated.data["coins"], p.data["coins"]);
         QCOMPARE(migrated.data["workshop"], p.data["workshop"]);
         QCOMPARE(migrated.data["owned"], p.data["owned"]);
-        QVERIFY(migrated.unlocked("classes"));
+        QCOMPARE(migrated.data["character"].toMap()["class"].toString(), QString("gardener"));
         QVERIFY(migrated.unlocked("garden"));
         QVERIFY(migrated.unlocked("diamond"));
         QVERIFY(migrated.data["recipes"].toStringList().contains("boots"));
         QVERIFY(migrated.unlocked("research3"));
         QVERIFY(QFile::exists(path + ".pre-v4"));
+    }
+    void rolesAreChosenAtCreationAndRemainFixed() {
+        for (auto id : {"gardener", "explorer", "collector"}) {
+            QTemporaryDir dir;
+            Progress p(dir.filePath("role.json"));
+            QVERIFY(p.create(character(id)));
+            p.data["coins"] = 777;
+            p.data["workshop"] = QVariantMap{{"strength", 7}};
+            p.data["announcements"] = QStringList{"classes", "diamond"};
+            QVERIFY(p.save());
+            const auto before = p.data;
+            QVERIFY(!p.changeClass("gardener"));
+            QVERIFY(!p.create(character("collector")));
+            QCOMPARE(p.data, before);
+            Progress loaded(p.path);
+            QCOMPARE(loaded.data["character"].toMap()["class"].toString(), QString(id));
+            QCOMPARE(loaded.data["coins"].toInt(), 777);
+            QCOMPARE(loaded.data["workshop"].toMap()["strength"].toInt(), 7);
+            QVERIFY(!loaded.data["announcements"].toStringList().contains("classes"));
+            QVERIFY(loaded.reset(true));
+            QVERIFY(loaded.create(character("collector")));
+            QCOMPARE(loaded.data["character"].toMap()["class"].toString(), QString("collector"));
+        }
     }
     void languagePersistsIndependentlyOfCharacterReset() {
         QTemporaryDir dir;

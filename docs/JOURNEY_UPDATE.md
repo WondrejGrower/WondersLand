@@ -7,7 +7,9 @@ see BROWSER_TARGET.md and CLOUDFLARE_DEPLOYMENT.md.
 
 ## Current flow and controls
 
-Create a name and appearance; the initial class is Gardener. Walk to the gate,
+Create a name, appearance and role (Gardener, Explorer or Collector). All three
+roles are available immediately; the chosen role is permanent until character
+reset. Existing characters retain their role and progress. Walk to the gate,
 press E, select one of three skills, press E again. Each expedition starts at
 0 m, in Forest edge. Empty data shows a connecting screen with a camp exit.
 No manual difficulty/tier selection remains. The transaction queue still
@@ -36,10 +38,10 @@ limits, finite fuel, double jumps and two-rescue budget remain.
 Progression gates use completed live runs, cumulative live metres and best
 single live run separately. Training/replay contribute none. Training and
 Strength open after one live run; other stats and flying upgrades at 150/250
-cumulative metres; workshop/wardrobe at 500; garden/classes at 1000; Diamond
+cumulative metres; workshop/wardrobe at 500; garden at 1000; Diamond
 and jetpack at total 3000 AND best 1500. Additional research slots at total
 3000 and total 6000/best 3000. These are initial tuning values, not calibrated
-human playtime targets. Classes can change in camp without reset. Research
+human playtime targets. Roles are selected at character creation and cannot change in camp. Research
 completion still controls advanced skill availability; jetpack also requires
 the Diamond progression gate. Unlock notices queue individually until camp.
 

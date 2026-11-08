@@ -104,3 +104,25 @@ The complete Chromium journey also passed after the input change (creation,
 menus, live-language switching, reload persistence, purchase, native-save import,
 reset and window/DPI variants). The updated Czech/English result captures show
 the two explicit actions and navigation hint.
+
+
+## Permanent roles selected at creation
+
+The later explicit role instruction supersedes gradual class unlocking and
+free camp changes. The character creator offers Gardener, Explorer and
+Collector immediately, with effects and a clear permanent-choice notice.
+Camp/home/training no longer contain role-switch controls; both C++ and
+browser compatibility changeClass methods refuse changes. Creation itself
+refuses to replace an existing character. Only the existing confirmed reset
+opens a new choice. The progression configuration no longer contains a
+classes milestone. Old pending classes notices are removed on load without
+changing the character's selected class, coins, equipment or purchased levels.
+
+QtTest: 26 passes, Python: 3 passes. Browser/core coverage includes each of
+the three creation choices, refusing edits, save/reload, old notices and reset.
+The dedicated actual-Chromium `npm run test:roles` verifies keyboard selection
+of all three roles, absent camp switches, retained coins and level after load,
+and availability after reset. [Czech role picker](browser/creation-role-cs.png).
+The full browser journey and the long-run/results regression also passed with
+the fixed-role creator enabled. Updated Training Grounds captures no longer
+show role switching. These UI changes preserve existing character data.

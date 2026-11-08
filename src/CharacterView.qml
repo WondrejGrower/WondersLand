@@ -44,7 +44,15 @@ Item {
  NavButton {text:qsTr("Clothing color");onClicked:creator.shirtIndex=(creator.shirtIndex+1)%creator.shirtColors.length}
  }
  }
- NavButton {id:createButton;objectName:"createCharacter";Layout.alignment:Qt.AlignHCenter;text:qsTr("Make camp");highlighted:true;enabled:nameField.text.trim().length>0&&s.profile.error==="";onClicked:{backend.createCharacter(nameField.text,"gardener",creator.hairColors[creator.hairIndex],creator.skinColors[creator.skinIndex],creator.shirtColors[creator.shirtIndex],creator.style);creator.focusGame()}}
+ Label {text:qsTr("Choose your role");color:"#e2d19e";Layout.fillWidth:true;wrapMode:Text.WordWrap}
+ RowLayout {Layout.fillWidth:true;spacing:8
+ Repeater {model:s.config.classes
+ NavButton {required property var modelData;objectName:"creationRole_"+modelData.id;Layout.fillWidth:true;text:creator.trText(modelData.name);highlighted:creator.classId===modelData.id;onClicked:creator.classId=modelData.id}
+ }
+ }
+ Label {text:creator.classId==="gardener"?qsTr("Gardener: +10% coins, −10% magnet range."):creator.classId==="explorer"?qsTr("Explorer: one emergency double jump per run, −5% ordinary jump height."):qsTr("Collector: +20% magnet range, +1 s to catch upgrades, −5% ordinary jump height.");Layout.fillWidth:true;wrapMode:Text.WordWrap;color:"#b3c5ac"}
+ Label {text:qsTr("Your role is permanent. Changing it requires resetting your character and progress.");Layout.fillWidth:true;wrapMode:Text.WordWrap;color:"#c6b58c"}
+ NavButton {id:createButton;objectName:"createCharacter";Layout.alignment:Qt.AlignHCenter;text:qsTr("Make camp");highlighted:true;enabled:nameField.text.trim().length>0&&s.profile.error==="";onClicked:{backend.createCharacter(nameField.text,creator.classId,creator.hairColors[creator.hairIndex],creator.skinColors[creator.skinIndex],creator.shirtColors[creator.shirtIndex],creator.style);creator.focusGame()}}
  Label {visible:(s.profile.legacyBest||0)>0;Layout.alignment:Qt.AlignHCenter;text:qsTr("Legacy record: %1 m (old balance)").arg(s.profile.legacyBest||0);color:"#a6b09e"}
  Label {visible:(s.profile.legacyCoins||0)>0;Layout.alignment:Qt.AlignHCenter;text:qsTr("Inherited supplies: %1").arg((translator.language,translator.coins(s.profile.legacyCoins||0)));color:"#d3bd80"}
  }

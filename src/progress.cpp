@@ -83,6 +83,13 @@ Progress::Progress(QString file) : path(file) {
         }
     } else
         error = "Unsupported save version. File preserved.";
+    if (error.isEmpty()) {
+        auto queue = data["announcements"].toStringList();
+        if (queue.removeAll("classes") > 0) {
+            data["announcements"] = queue;
+            save();
+        }
+    }
 }
 QVariantMap Progress::fresh() const {
     return {{"schemaVersion", 4},
@@ -181,13 +188,9 @@ void Progress::updateUnlocks(bool announce) {
     data["announcements"] = queue;
 }
 bool Progress::changeClass(const QString &id) {
-    if (!unlocked("classes") || Balance::find("classes", id).isEmpty())
-        return false;
-    auto previous = data;
-    auto c = data["character"].toMap();
-    c["class"] = id;
-    data["character"] = c;
-    return commit(previous);
+    Q_UNUSED(id);
+    // Keep the old API inert: roles are chosen once during character creation.
+    return false;
 }
 bool Progress::buy(const QString &branch) {
     const auto previous = data;

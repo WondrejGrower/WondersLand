@@ -50,12 +50,6 @@ Item {
  }
  Label {visible:s.profile.owned.length===0;text:qsTr("Craft your first equipment in the Runic Workshop.");wrapMode:Text.WordWrap;Layout.fillWidth:true;color:"#b3c5ac"}
  }
- ColumnLayout {visible:(panel.station==="home"||panel.station==="training")&&panel.has("classes");Layout.fillWidth:true
- Label {text:qsTr("Change class");color:"#d6c28b"}
- Repeater {model:s.config.classes
- NavButton {required property var modelData;Layout.fillWidth:true;text:panel.trText(modelData.name)+" · "+panel.trText(modelData.id==="gardener"?"Gardener: +10% coins, −10% magnet range.":modelData.id==="explorer"?"Explorer: one emergency double jump per run, −5% ordinary jump height.":"Collector: +20% magnet range, +1 s to catch upgrades, −5% ordinary jump height.");highlighted:s.profile.character.class===modelData.id;onClicked:backend.changeClass(modelData.id)}
- }
- }
  ColumnLayout {visible:panel.station==="library";Layout.fillWidth:true
  Label {text:qsTr("Research slots: %1 · seeds: %2").arg(s.profile.researchSlots).arg(s.profile.seeds);color:"#d6c28b";wrapMode:Text.WordWrap;Layout.fillWidth:true}
  Label {text:qsTr("Research continues while the application is closed.");wrapMode:Text.WordWrap;Layout.fillWidth:true;color:"#aabfa8"}

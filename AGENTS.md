@@ -20,3 +20,8 @@ Web: npm ci; npm test; npm run test:browser; npm run deploy:check.
 Native: ./bin/build; ./bin/test; ./bin/install.
 Zdroj nativní hry v src/, testy v tests/, web v web/. Build, node_modules,
 .wrangler, privátní postup a přihlašovací údaje nepatří do Gitu.
+
+Aktuální pravidlo rolí: všechny tři se vybírají při tvorbě postavy. Role
+je pak neměnná; změna vyžaduje výslovný reset postavy/postupu. Nevracet
+odemykání rolí podle metrů ani přepínání rolí v táboře. Stávající roli
+a ostatní postup při aktualizaci zachovat.

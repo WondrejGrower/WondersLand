@@ -34,10 +34,12 @@ Větev: [game/roguelite-0.3](https://github.com/WondrejGrower/WondersLand/tree/g
 | Pauza a návrat | P/Esc pauza, B návrat do tábora |
 | Nastavení, nápověda, celá obrazovka | F10, ?, F11 |
 
-Nová postava začíná jako Zahradník. Cvičiště se otevře po prvním živém běhu,
+Při tvorbě postavy si vybereš Zahradníka, Průzkumníka nebo Sběratele.
+Všechny role jsou dostupné od začátku; uloženou roli změníš pouze resetem
+postavy a vytvořením nové. Cvičiště se otevře po prvním živém běhu,
 další systémy postupně podle celkových živých metrů a nejlepšího běhu.
 Statistiky jsou na Cvičišti, výroba v Runové dílně, vybavení a vzhled v Šatníku,
-výzkum v Zahradě kouzel. Třídu lze později změnit bez resetu.
+výzkum v Zahradě kouzel. Role se v táboře nemění.
 Trénink a záznamy neposkytují trvalé odměny. Platby hra neobsahuje.
 
 Nastavení obsahuje English / Čeština a přepíná celé rozhraní za běhu.

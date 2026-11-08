@@ -8,7 +8,7 @@ await mkdir('docs/browser',{recursive:true});
 try{
  await page.goto(origin);await page.waitForSelector('#name');await page.fill('#name','QPE Wsad');await key('Enter');
  assert.equal(await page.inputValue('#name'),'QPE Wsad');
- for(let i=0;i<4;i++)await key('s');await key('e');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
+ for(let i=0;i<12&&await page.locator(':focus').getAttribute('data-action')!=='create';i++)await key('s');await key('e');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
  await key('d');await page.keyboard.down('d');await page.waitForTimeout(2300);await page.keyboard.up('d');
  // Mouse walks through the same inverse camera transform, at every tested size.
  for(const size of [{width:1280,height:720},{width:1366,height:768},{width:1920,height:1080},{width:640,height:520}]){await page.setViewportSize(size);const box=await page.locator('#scene').boundingBox();await page.mouse.click(box.x+box.width*540/640,box.y+box.height*215/360);await page.waitForTimeout(300);}
@@ -25,7 +25,7 @@ try{
   await key('F10');await page.waitForSelector('[data-action=language]');await page.screenshot({path:`docs/browser/settings-${lang}.png`});
   await key('s');await key('e');assert.equal(await page.evaluate(()=>localStorage.getItem('wl-language')),'cs');assert.equal(await page.locator('#settings').textContent(),'Nastavení');
   await button(lang==='en'?'English':'Čeština').click();await key('Escape');await page.reload();await page.waitForFunction(()=>document.querySelector('#sheet').hidden);assert.equal(await page.locator('#settings').textContent(),lang==='en'?'Settings':'Nastavení');
-  const box=await page.locator('#scene').boundingBox();await page.mouse.click(box.x+box.width*465/640,box.y+box.height*290/360);await page.waitForTimeout(1900);await key('e');await page.waitForSelector('[data-action=buy]');await page.screenshot({path:`docs/browser/training-${lang}.png`});
+  const box=await page.locator('#scene').boundingBox();await page.mouse.click(box.x+box.width*465/640,box.y+box.height*290/360);await page.waitForTimeout(1900);await key('e');await page.waitForSelector('[data-action=buy]');assert.equal(await page.locator('[data-action=class]').count(),0);await page.screenshot({path:`docs/browser/training-${lang}.png`});
   const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).workshop.strength||0);await key('e');const after=await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).workshop.strength);assert.equal(after,before+1);await key('Escape');
   {const b=await page.locator('#scene').boundingBox();await page.mouse.click(b.x+b.width*540/640,b.y+b.height*215/360);await page.waitForTimeout(1500);await key('e');await page.waitForSelector('[data-action=skill]');await page.screenshot({path:`docs/browser/skills-${lang}.png`});await key('e');await page.waitForSelector('[data-action=transaction]',{timeout:15000});await page.screenshot({path:`docs/browser/results-${lang}.png`});await key('Escape');}
  }

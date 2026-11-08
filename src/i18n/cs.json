@@ -91,7 +91,7 @@
   "Clothing color": "Barva oblečení",
   "Gardener: +10% coins, −10% magnet range.": "Zahradník: +10 % mincí, −10 % dosahu magnetu.",
   "Explorer: one emergency double jump per run, −5% ordinary jump height.": "Průzkumník: jeden nouzový dvojskok za běh, −5 % výšky obyčejného skoku.",
-  "Collector: +20% magnet range, +1 s to catch upgrades, −5% ordinary jump height.": "Sběratel: +20 % dosahu magnetu, +1 s na sběr skillu, −5 % výšky obyčejného skoku.",
+  "Collector: +20% magnet range, +1 s to catch upgrades, −5% ordinary jump height.": "Sběratel: +20 % dosahu magnetu, +1 s na sběr vylepšení, −5 % výšky obyčejného skoku.",
   "Make camp": "Založit tábor",
   "Legacy supplies to inherit once: %1 coins": "Jednorázově převezmeš staré zásoby: %1 mincí",
   "Practice without rewards": "Trénink bez odměn",
@@ -219,5 +219,7 @@
   "Replace browser progress with this file?": "Nahradit postup v prohlížeči tímto souborem?",
   "Invalid progress file": "Neplatný soubor s postupem",
   "Try again": "Zkusit znovu",
-  "Return to Base Camp": "Zpět do základního tábora"
+  "Return to Base Camp": "Zpět do základního tábora",
+  "Choose your role": "Vyber si roli",
+  "Your role is permanent. Changing it requires resetting your character and progress.": "Role je trvalá. Změnit ji lze pouze resetem postavy a veškerého postupu."
 }
