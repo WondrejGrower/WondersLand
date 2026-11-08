@@ -3,6 +3,7 @@
 # WondersLand [WL] · 0.3.3
 
 **Pro hráče i LLM: [Jak funguje aktuální balance](docs/BALANCE.md).**
+[Ověřené serverové běhy, bezpečnostní opravy a dočasný admin test](docs/SECURITY_HARDENING.md).
 Mempool má přednost: i první transakce může vytvořit nepřekonatelnou sekvoji.
 
 Nativní Qt/QML hra: dojdi k portálu, stiskni E, vyber schopnost a potvrď E.
@@ -131,3 +132,12 @@ Běžné keře a kapradiny jsou dostupnější, vyšší stromy vyžadují Sílu
 Webové kontroly vyžadují Node.js 24+; přibylo `npm run test:monthly` a `npm run test:mobile`.
 Na telefonu se běh automaticky roztáhne přes dostupnou plochu, přizpůsobí se
 otočení a nabídne velká tlačítka Skok, Pauza a případně Let.
+
+## Ověřené běhy a historie
+
+V táboře otevři **Ověřené běhy**. Mají samostatný serverový postup od nuly;
+tvoje místní postava zůstává zachovaná. Nový měsíční žebříček vychází ze
+serverové simulace vstupů, nikoli z odeslaného skóre. Staré komunitní výsledky
+jsou dál dostupné jako neověřená historie. Nejde o placený ranked.
+Admin `/test` má neomezené mince, oddělené testovací uložení a vyžaduje
+soukromý časově omezený přístup. Přihlašovací odkaz není veřejnou součástí repozitáře.

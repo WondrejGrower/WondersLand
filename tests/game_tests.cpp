@@ -229,6 +229,20 @@ class Tests : public QObject {
         QVERIFY(twice.reset(true)); QVERIFY(twice.data["inventory"].toStringList().isEmpty());
     }
     void initTestCase() { QQuickStyle::setStyle("Material"); }
+    void sharedProgressValidationPreservesRejectedFiles() {
+        QFile fixtures(QFINDTESTDATA("progress-validation.json")); QVERIFY(fixtures.open(QIODevice::ReadOnly));
+        for (const auto &value : QJsonDocument::fromJson(fixtures.readAll()).array()) {
+            const auto row = value.toObject(); QTemporaryDir dir; auto path = dir.filePath("progress.json");
+            const auto bytes = QJsonDocument(row["data"].toObject()).toJson();
+            { QFile file(path); QVERIFY(file.open(QIODevice::WriteOnly)); file.write(bytes); }
+            Progress progress(path); QCOMPARE(progress.error.isEmpty(), row["valid"].toBool());
+            if (!row["valid"].toBool()) { QVERIFY(!progress.save()); QFile file(path); QVERIFY(file.open(QIODevice::ReadOnly)); QCOMPARE(file.readAll(), bytes); }
+        }
+    }
+    void malformedTransactionRowsAreBoundedAndCanonical() {
+        TransactionQueue queue; queue.receive({QVariant(), QVariantMap{{"txid", QString(64, 'a')}, {"value", QString(100000, '0')}}, QVariantMap{{"txid", QString(64, 'b')}, {"value", "2100000000000001"}}, QVariantMap{{"txid", QString(64, 'c')}, {"value", "00420000"}}});
+        queue.begin(1); const auto row = queue.take(); QCOMPARE(row["value"].toString(), QString("420000")); QCOMPARE(row["txid"].toString(), QString(64, 'c')); QVERIFY(queue.take().isEmpty());
+    }
     void curveIsMonotonicAndHasNoHeightCeiling() {
         double previous = 0;
         for (qulonglong n = 0; n < 100; n++) {

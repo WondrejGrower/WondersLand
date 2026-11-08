@@ -1,0 +1,130 @@
+[
+  {
+    "valid": true,
+    "data": {
+      "coins": 123,
+      "best": 500
+    }
+  },
+  {
+    "valid": true,
+    "data": {
+      "schemaVersion": 5,
+      "character": {
+        "name": "Willow",
+        "class": "gardener"
+      },
+      "coins": 777,
+      "inventory": [],
+      "equipment": {},
+      "workshop": {
+        "strength": 7
+      }
+    }
+  },
+  {
+    "valid": true,
+    "data": {
+      "schemaVersion": 3,
+      "character": {
+        "name": "Old",
+        "class": "collector"
+      },
+      "milestones": [
+        "T1:60"
+      ],
+      "records": {
+        "old:live:T1:collector": 500
+      }
+    }
+  },
+  {
+    "valid": false,
+    "data": {
+      "schemaVersion": 5,
+      "character": null
+    }
+  },
+  {
+    "valid": false,
+    "data": {
+      "schemaVersion": 5,
+      "character": {
+        "name": "Willow",
+        "class": "admin"
+      }
+    }
+  },
+  {
+    "valid": false,
+    "data": {
+      "schemaVersion": 5,
+      "coins": -1
+    }
+  },
+  {
+    "valid": false,
+    "data": {
+      "schemaVersion": 5,
+      "workshop": {
+        "strength": 51
+      }
+    }
+  },
+  {
+    "valid": false,
+    "data": {
+      "schemaVersion": 5,
+      "equipment": []
+    }
+  },
+  {
+    "valid": false,
+    "data": {
+      "schemaVersion": 5,
+      "research": [
+        {
+          "id": "leaf",
+          "started": 1,
+          "end": 2
+        }
+      ]
+    }
+  },
+  {
+    "valid": false,
+    "data": {
+      "schemaVersion": 5,
+      "character": {
+        "name": "Willow",
+        "class": "gardener"
+      },
+      "activeRun": {
+        "id": "forged",
+        "mode": "live",
+        "class": "gardener",
+        "seconds": 1,
+        "coins": 999999,
+        "score": 100000
+      }
+    }
+  },
+  {
+    "valid": false,
+    "data": {
+      "schemaVersion": 5,
+      "__proto__": {
+        "polluted": true
+      }
+    }
+  },
+  {
+    "valid": false,
+    "data": {
+      "schemaVersion": 5,
+      "owned": [
+        "classes"
+      ]
+    }
+  }
+]

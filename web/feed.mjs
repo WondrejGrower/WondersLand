@@ -1,3 +1,4 @@
+import {readJson} from './limits.mjs';
 // A small, bounded reserve. No networking in the animation loop.
 export class TransactionFeed {
  constructor({recorded=false,queue,active,visible,receive,status,request=(...args)=>fetch(...args),schedule=(...args)=>setTimeout(...args),cancel=id=>clearTimeout(id)}){
@@ -18,8 +19,8 @@ export class TransactionFeed {
    this.fetching=true;
    const response=await this.request(this.recorded?'./recorded.json':'/api/mempool',{cache:'no-store',signal:AbortSignal.timeout(12000)});
    if(!response.ok)throw Error('offline');
-   const payload=await response.json(),rows=this.recorded?payload.transactions:payload;
-   if(!Array.isArray(rows))throw Error('offline');
+   const payload=await readJson(response,this.recorded?2*1024*1024:128*1024),rows=this.recorded?payload.transactions:payload;
+   if(!Array.isArray(rows)||rows.length>1024)throw Error('offline');
    this.receive(rows);this.loaded=true;this.failures=0;this.status(this.recorded?'replay':'live');
    if(this.active()&&this.queue().pending.length<40)delay=5000;
   }catch{

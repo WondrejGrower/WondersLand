@@ -241,3 +241,21 @@ icon sizes, one-shot prompt UI, offline/reconnect and unchanged local storage.
 Browser journey, mobile, monthly and environment suites, 43 Node tests, native
 build/tests (33 Qt + 3 Python) and deploy dry-run also passed.
 See [PWA.md](PWA.md) for installation, cache policy, screenshots and limitations.
+
+### Security hardening, verified progression and private admin test · 2026-11-08
+
+Separate zero-based server profiles and sequenced authoritative input simulation
+replace client-reported writes. Legacy monthly results remain read-only. API
+rate/byte/time limits, indexes/cache, shared profile validation, CSP/HSTS and
+pinned/audited CI are implemented. `/test` uses an expiring signed private
+capability and separate local test storage with unlimited coins.
+
+Observed checks: npm ci; 61 Node tests; all browser journey/results/roles,
+54 input timing trials, feed/input, mobile, PWA, verified, monthly, inventory and
+environment browser checks passed. Native build and 35 Qt + 3 Python tests
+passed. Checked deploy dry-run passed. Actual local Workerd (HTTPS, native rate
+bindings, SQLite) also passed live-source simulation, duplicate finish, retired
+endpoint, headers and signed admin cookie checks. Production verification is
+performed after publishing; no fabricated production scores are inserted.
+See [SECURITY_HARDENING.md](SECURITY_HARDENING.md) for protocol bounds, admin
+key handling and the distinction between verified simulation and paid ranked.

@@ -20,6 +20,11 @@
 #include <QUuid>
 #include <algorithm>
 #include <cmath>
+static void boundReply(QNetworkReply *reply, qint64 limit) {
+    reply->setReadBufferSize(limit + 1);
+    QObject::connect(reply, &QNetworkReply::readyRead, reply, [reply, limit] { if (reply->bytesAvailable() > limit) reply->abort(); });
+    QObject::connect(reply, &QNetworkReply::metaDataChanged, reply, [reply, limit] { if (reply->header(QNetworkRequest::ContentLengthHeader).toLongLong() > limit) reply->abort(); });
+}
 static QVariantMap plantVisual(QJSEngine &engine, const QVariantMap &p, const QString &fixture) {
     if (!engine.globalObject().property("descriptor").isCallable()) {
         QFile file(":/PlantVisual.js");
@@ -239,12 +244,13 @@ void Backend::refresh() {
     QNetworkRequest req(QUrl("https://mempool.space/api/mempool/recent"));
     req.setTransferTimeout(10000);
     auto reply = net.get(req);
+    boundReply(reply, req.url().path().endsWith("/recent") ? 128 * 1024 : 16 * 1024);
     connect(reply, &QNetworkReply::finished, this, [this, reply] {
         inFlight = false;
         QJsonParseError error;
         auto doc = QJsonDocument::fromJson(reply->readAll(), &error);
         if (reply->error() == QNetworkReply::NoError && error.error == QJsonParseError::NoError &&
-            doc.isArray()) {
+            doc.isArray() && doc.array().size() <= 1024) {
             source = "live";
             updated = QDateTime::currentSecsSinceEpoch();
             acceptTransactions(doc.array().toVariantList());
@@ -830,6 +836,7 @@ void Backend::end(const QVariantMap &p) {
     QNetworkRequest req(QUrl("https://mempool.space/api/tx/" + id + "/status"));
     req.setTransferTimeout(8000);
     auto reply = net.get(req);
+    boundReply(reply, req.url().path().endsWith("/recent") ? 128 * 1024 : 16 * 1024);
     connect(reply, &QNetworkReply::finished, this, [this, id, reply] {
         if (phase == "over" && hit["txid"] == id) {
             hit["status"] = "observed";

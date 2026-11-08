@@ -1,5 +1,9 @@
 # Playability, fullscreen and monthly community records · journey-6
 
+Security update: [SECURITY_HARDENING.md](SECURITY_HARDENING.md) supersedes
+the original client-reported write protocol below. Legacy history is read-only;
+new verified runs use separate server progression and simulated inputs.
+
 This follows the user's 8 November playtest feedback. The primary target is the
 browser game. Native Qt retains the same transaction dimensions, physics,
 visual descriptors and existing save behavior, with its normal build/tests.

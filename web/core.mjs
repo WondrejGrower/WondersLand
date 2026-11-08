@@ -1,3 +1,4 @@
+import {validateProgress} from './progress-validation.mjs';
 import {descriptor} from './plant-visual.mjs';
 // Browser simulation and save adapter. Balance, identifiers and art are shared with Qt.
 export const fresh = () => ({schemaVersion:5,character:{},inventory:[],equipment:{},coins:0,seeds:0,workshop:{},completed:[],research:[],milestones:[],owned:[],hands:false,boots:false,paidRuns:[],records:{},runs:0,lastClock:0,excluded:'',unlocked:[],announcements:[],bestDistance:0,totalDistance:0,recipes:[]});
@@ -15,6 +16,7 @@ function clothingMigration(data,config){
  }data.equipment=equipment;return data;
 }
 export function migrate(input,config){
+ validateProgress(input,config);
  if(!input||typeof input!=='object'||Array.isArray(input))throw Error('Unsupported save version. File preserved.');
  if(input.schemaVersion===5){const data={...fresh(),...structuredClone(input)};data.announcements=data.announcements.filter(id=>id!=='classes');return clothingMigration(data,config);}
  if(input.schemaVersion===4){const data={...fresh(),...structuredClone(input),schemaVersion:5};data.announcements=data.announcements.filter(id=>id!=='classes');if(data.character.name){data.equipment=outfit(config);data.inventory=Object.values(data.equipment).filter(Boolean);}return data;}
@@ -42,7 +44,7 @@ export function plant(sats,c){const value=BigInt(sats).toString(),n=Number(value
 export class Queue {
  constructor(){this.cache=[];this.pending=[];this.used=new Set();this.seed=1;}
  random(){this.seed=(Math.imul(this.seed,1664525)+1013904223)>>>0;return this.seed/4294967296;}
- receive(rows){for(const raw of rows){const value=String(raw.value);if(!/^[a-f0-9]{64}$/.test(raw.txid)||!/^\d+$/.test(value)||BigInt(value)>2100000000000000n||this.cache.some(r=>r.txid===raw.txid))continue;const r={...raw,value};this.cache.push(r);if(!this.used.has(r.txid))this.pending.push(r);}
+ receive(rows){if(!Array.isArray(rows))return;for(const raw of rows.slice(0,1024)){if(!raw||typeof raw!=='object'||typeof raw.txid!=='string'||![ 'string','number'].includes(typeof raw.value))continue;const value=String(raw.value);if(value.length>16||!/^\d+$/.test(value)||BigInt(value)>2100000000000000n||!Number.isSafeInteger(Number(value))||!/^[a-f0-9]{64}$/.test(raw.txid)||this.cache.some(r=>r.txid===raw.txid))continue;const r={txid:raw.txid,value:BigInt(value).toString()};this.cache.push(r);if(!this.used.has(r.txid))this.pending.push(r);}
  this.cache=this.cache.slice(-512);this.pending=this.pending.slice(-512);}
  begin(seed){this.seed=seed>>>0;this.used.clear();this.pending=[...this.cache];}
  take(){while(this.pending.length&&this.used.size<10000){const r=this.pending.splice(Math.floor(this.random()*this.pending.length),1)[0];if(this.used.has(r.txid))continue;this.used.add(r.txid);return r;}return null;}
@@ -56,7 +58,7 @@ export class Game {
  has(id){return this.p.unlocked.includes(id)||this.c.progression.some(r=>r.id===id&&this.p.runs>=r.runs&&this.p.totalDistance>=r.total&&(this.p.bestDistance>=r.best||(r.attributeLevel&&this.c.workshop.some(b=>(this.p.workshop[b.id]||0)>=r.attributeLevel))));}
  persist(){this.saveAdapter(this.p);}
  transaction(action){const old=structuredClone(this.p);try{if(!action())return false;this.persist();return true;}catch(error){this.p=old;this.notice='Cannot save progress';throw error;}}
- create(name,appearance,selected={}){const role=appearance.class||'gardener';if(!name.trim()||this.p.character.name||!this.find('classes',role).id)return;this.transaction(()=>{this.p.character={...appearance,hairStyle:Math.max(0,Math.min(15,Math.trunc(Number(appearance.hairStyle)||0))),name:name.trim().slice(0,24),class:role};this.p.equipment=outfit(this.c,selected);this.p.inventory=Object.values(this.p.equipment).filter(Boolean);this.p.coins+=this.p.legacyCoins||0;delete this.p.legacyCoins;return true;});this.phase='camp';}
+ create(name,appearance,selected={}){const role=appearance.class||'gardener';if(!name.trim()||this.p.character.name||!this.find('classes',role).id)return;const next={...appearance,name:name.trim().slice(0,24),class:role};try{validateProgress({schemaVersion:5,character:{...next,hairStyle:Math.max(0,Math.min(15,Math.trunc(Number(appearance.hairStyle)||0)))}},this.c);}catch{throw Error('Invalid character appearance');}this.transaction(()=>{this.p.character={...appearance,hairStyle:Math.max(0,Math.min(15,Math.trunc(Number(appearance.hairStyle)||0))),name:name.trim().slice(0,24),class:role};this.p.equipment=outfit(this.c,selected);this.p.inventory=Object.values(this.p.equipment).filter(Boolean);this.p.coins+=this.p.legacyCoins||0;delete this.p.legacyCoins;return true;});this.phase='camp';}
  takeClothing(id){if(this.phase!=='camp')return false;return this.transaction(()=>{if(!this.find('clothing',id).id||this.p.inventory.includes(id))return false;this.p.inventory.push(id);return true;});}
  equipClothing(id){if(this.phase!=='camp')return false;return this.transaction(()=>{const item=this.find('clothing',id);if(!item.id||!this.p.inventory.includes(id))return false;this.p.equipment[item.slot]=this.p.equipment[item.slot]===id?null:id;return true;});}
  unlocks(){for(const r of this.c.progression)if(this.has(r.id)&&!this.p.unlocked.includes(r.id)){this.p.unlocked.push(r.id);this.p.announcements.push(r.id);}}

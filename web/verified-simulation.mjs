@@ -1,0 +1,8 @@
+import {Game} from './core.mjs';
+export const STEP=1/120;
+export function snapshot(game){const state={};for(const [key,value]of Object.entries(game))if(!['c','saveAdapter','q','moves','trace','onLiveRunFinished'].includes(key)&&!key.startsWith('_')&&typeof value!=='function')state[key]=value;return structuredClone({version:'verified-1:'+game.c.balanceVersion,state,q:{cache:game.q.cache,pending:game.q.pending,used:[...game.q.used],seed:game.q.seed},moves:[...game.moves]});}
+export function restore(config,data){if(data.version!=='verified-1:'+config.balanceVersion)throw Error('Rules updated. Start a new verified run.');const g=new Game(config,{...data.state.p,activeRun:{}});Object.assign(g,structuredClone(data.state));Object.assign(g.q,structuredClone({...data.q,used:undefined}));g.q.used=new Set(data.q.used);g.moves=new Set(data.moves);g.trace=[];g.saveAdapter=()=>{};return g;}
+export function input(g,type){if(type==='jump')g.jump();else if(type==='release')g.release();else if(type==='jetOn')g.jet=true;else if(type==='jetOff')g.jet=false;else if(type==='pause'&&g.phase!=='paused')g.pause();else if(type==='resume'&&g.phase==='paused')g.pause();else if(type==='camp')g.camp();}
+export const actions=['jump','release','jetOn','jetOff','pause','resume','camp'];
+export function advance(g,base,frames,events){let i=0;for(let frame=base;frame<base+frames;frame++){while(i<events.length&&events[i].frame===frame)input(g,events[i++].type);g.tick(STEP);}return g;}
+export function checkpoint(g){return {phase:g.phase,time:g.time,distance:g.distance,y:g.y,velocity:g.velocity,fuel:g.fuel,index:g.index,seed:g.q.seed};}

@@ -78,3 +78,7 @@ Observed locally on 2026-11-08: npm ci, 43 Node tests, PWA, mobile, browser
 journey, monthly desktop/mobile integration and environment browser checks
 passed. Native rebuild, 33 Qt + 3 Python tests and deploy dry-run also passed.
 No mechanical balance or profile schema version was changed.
+
+Security update: the offline cache was bumped to `wl-offline-v3-security` to
+refresh cached response headers after CSP/HSTS hardening. It still stores only
+the offline notice and never API, admin pages or player credentials.

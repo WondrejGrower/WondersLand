@@ -93,6 +93,7 @@ int main(int argc, char **argv) {
             QTextStream(stderr) << "Cannot read dataset\n";
             return 1;
         }
+        if (file.size() > 2 * 1024 * 1024) { QTextStream(stderr) << "Dataset too large\n"; return 1; }
         auto dataset = QJsonDocument::fromJson(file.readAll()).toVariant().toMap();
         if (dataset.value("synthetic").toBool()) {
             QTextStream(stderr) << "Synthetic datasets belong to training/tests.\n";

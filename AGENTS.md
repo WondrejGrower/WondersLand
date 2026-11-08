@@ -69,3 +69,13 @@ Nezaměňuj komunitní klientské výsledky za serverově ověřené placené ra
 PWA: [docs/PWA.md](docs/PWA.md), ověření `npm run test:pwa`. Service worker
 smí ukládat jen offline oznámení; nikdy ne API, privátní klíče ani starý herní
 shell s balancem. Nezaváděj offline replay vydávaný za živý mempool.
+
+Security update: přečti [docs/SECURITY_HARDENING.md](docs/SECURITY_HARDENING.md).
+Nový žebříček používá oddělený serverový profil a serverovou simulaci vstupů,
+nikoli klientské skóre nebo import místního buildu. Staré výsledky ponech
+jako read-only historii. Neměň stávající persistentní ID ani historii při migraci.
+Ověření `npm run test:verified`; shared validator `src/ProgressValidation.js`
+synchronizuj přes `node tools/sync-progress-validation.mjs`. Admin `/test` musí
+být ověřen serverem; privátní capability/klíč/QR nikdy nepatří do Gitu ani logu.
+`build:checked` je povinná deploy brána (Node testy + audit + build); neobcházej ji.
+Server-verified není důkaz lidské identity ani připravený placený ranked.

@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QJsonDocument>
+#include <QJSEngine>
 #include <QRegularExpression>
 #include <QSaveFile>
 #include <algorithm>
@@ -18,6 +19,10 @@ Progress::Progress(QString file) : path(file) {
         error = "Cannot read saved progress";
         return;
     }
+    if (f.size() > 2 * 1024 * 1024) {
+        error = "Invalid progress file";
+        return;
+    }
     QJsonParseError parse;
     auto doc = QJsonDocument::fromJson(f.readAll(), &parse);
     if (parse.error != QJsonParseError::NoError || !doc.isObject()) {
@@ -25,6 +30,14 @@ Progress::Progress(QString file) : path(file) {
         return;
     }
     auto old = doc.toVariant().toMap();
+    QJSEngine validator;
+    QFile validation(":/ProgressValidation.js");
+    if (!validation.open(QIODevice::ReadOnly)) qFatal("Missing ProgressValidation.js");
+    auto source = QString::fromUtf8(validation.readAll()); source.remove(".pragma library");
+    if (validator.evaluate(source).isError()) qFatal("Invalid ProgressValidation.js");
+    auto parseJson = validator.globalObject().property("JSON").property("parse");
+    auto checked = validator.globalObject().property("validateProgress").call({parseJson.call({QString::fromUtf8(doc.toJson(QJsonDocument::Compact))}), parseJson.call({QString::fromUtf8(QJsonDocument(Balance::config()).toJson(QJsonDocument::Compact))})});
+    if (checked.isError() || !checked.toBool()) { error = "Invalid progress file"; return; }
     if (!old.contains("schemaVersion")) {
         data["legacyCoins"] = std::max(0, old["coins"].toInt());
         data["legacyBest"] = old["best"];
@@ -162,7 +175,7 @@ bool Progress::create(const QVariantMap &c) {
     ch["name"] = name;
     for (auto key : {"hair", "skin", "shirt"}) {
         auto color = ch[key].toString();
-        if (!color.startsWith('#') || color.size() != 7)
+        if (!QRegularExpression("^#[0-9a-fA-F]{6}$").match(color).hasMatch())
             return false;
     }
     ch["hairStyle"] = std::clamp(ch["hairStyle"].toInt(), 0, 15);

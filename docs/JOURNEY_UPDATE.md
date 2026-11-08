@@ -1,5 +1,8 @@
 # Continuous forest and accessible menus · 0.3.1
 
+Verified server mode, preserved local progression and protected admin test:
+[SECURITY_HARDENING.md](SECURITY_HARDENING.md).
+
 Current balance reference: [BALANCE.md](BALANCE.md), rules `wl-0.3-journey-6`.
 Later explicit playtest decisions there supersede historical tuning below.
 

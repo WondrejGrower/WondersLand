@@ -1,0 +1,14 @@
+import {ADMIN_TEST_PUBLIC_KEY,ADMIN_TEST_EXPIRES} from './admin-test-key.mjs';import {readJson} from './limits.mjs';
+const decode=s=>Uint8Array.from(atob(s.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0));
+export async function verifyAdminToken(token,now=Date.now(),publicKey=ADMIN_TEST_PUBLIC_KEY,deadline=ADMIN_TEST_EXPIRES){
+ try{if(typeof token!=='string'||token.length>1024||!token.match(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/))return false;const [payload,signature]=token.split('.'),claims=JSON.parse(new TextDecoder().decode(decode(payload)));if(claims.purpose!=='wl-admin-test'||!Number.isSafeInteger(claims.expires)||claims.expires>deadline||claims.expires*1000<=now||deadline*1000<=now)return false;const key=await crypto.subtle.importKey('jwk',publicKey,{name:'ECDSA',namedCurve:'P-256'},false,['verify']);return await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},key,decode(signature),new TextEncoder().encode(payload));}catch{return false;}
+}
+export async function adminRoute(request,env){const url=new URL(request.url),headers={'Cache-Control':'no-store'};
+ if(url.pathname==='/api/admin-test/session'){
+  if(request.method!=='POST')return new Response('Method not allowed',{status:405,headers});if(request.headers.get('origin')!==url.origin||!request.headers.get('content-type')?.startsWith('application/json'))return new Response('Forbidden',{status:403,headers});let body;try{body=await readJson(request,2048);}catch{return new Response('Invalid request',{status:400,headers});}if(!await verifyAdminToken(body?.token))return new Response('Invalid or expired test link',{status:403,headers});headers['Set-Cookie']='__Host-wl-test='+body.token+'; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=28800';return Response.json({authenticated:true},{headers});
+ }
+ if(!['/test','/test/','/api/admin-test/status'].includes(url.pathname))return null;
+ if(request.method!=='GET')return new Response('Method not allowed',{status:405,headers});if(url.pathname==='/test/'){url.pathname='/test';return Response.redirect(url.toString(),302);}
+ const token=request.headers.get('cookie')?.split(';').map(s=>s.trim()).find(s=>s.startsWith('__Host-wl-test='))?.slice('__Host-wl-test='.length);
+ const authenticated=await verifyAdminToken(token);if(url.pathname==='/api/admin-test/status')return Response.json({authenticated,expires:ADMIN_TEST_EXPIRES},{status:authenticated?200:403,headers});const asset=new URL(authenticated?'/':'/test-login.html',url);let result=await env.ASSETS.fetch(new Request(asset,request));if(result.status>=300&&result.status<400){const path=new URL(result.headers.get('location')||'',asset).pathname;if(path!=='/test-login')return new Response('Test page unavailable',{status:503,headers});result=await env.ASSETS.fetch(new Request(new URL(path,url),request));}const out=new Headers(result.headers);out.set('Cache-Control','no-store');return new Response(result.body,{status:result.status,headers:out});
+}

@@ -5,6 +5,8 @@ against commit `dbfe59e`. This is the current reference for players and coding
 agents; historical briefs and earlier playtest requests may describe older rules.
 The executable source of values is [src/balance.json](../src/balance.json).
 This document describes the implementation, not a promise of calibrated playtime.
+Security update: verified server progression and historical community records
+are now separate; see the monthly-record section below.
 
 ## Pro české hráče
 
@@ -20,8 +22,8 @@ This document describes the implementation, not a promise of calibrated playtime
 - Částka je součet výstupů transakce, ne poplatek ani čistá platba. Prefix
   `420` v částce mění vzhled na konopí, nikdy mechanickou velikost.
 - Trénink používá označené modely a tvé vybavení/staty; nedává trvalé odměny
-  a nepatří do žebříčku. Žebříček je komunitní, výsledky nejsou serverově
-  ověřeným ranked režimem. Vstupné 1000 sats zatím neexistuje.
+  a nepatří do žebříčku. Nové ověřené běhy mají oddělený serverový postup od nuly; původní
+  komunitní výsledky zůstávají jako neověřená historie. Vstupné 1000 sats neexistuje.
 
 The detailed rules below are in English so players and coding agents can share
 one precise reference.
@@ -171,20 +173,35 @@ not increase permanent coins, seeds, progression or live records.
 
 ## Monthly records and future ranked runs
 
-The shared web board lists monthly **best run, total metres and attempt count**.
-A confirmed starting skill starts an attempt; cancelling the selection does not.
-Finishing at zero metres counts. The server assigns the UTC completion month.
-Data is tied to a private browser-installation key, not a verified person or a
-unique display name. Another device is a separate identity. Keep that key private.
+The browser has two explicitly separate histories. **Verified runs** use a new
+server profile starting at zero coins/upgrades. Server purchases and research
+use the same balance values. Your personal local character and upgrades remain
+unchanged and cannot be imported into server progression. Normal personal,
+training, recorded and admin-test runs do not publish verified scores.
 
-The monthly board combines builds and roles; it does not normalize Strength,
-equipment, different mempool samples or balance changes within that month.
+The server owns the mempool sample, seed, legal profile, input simulation,
+collisions and resulting metres/rewards. The client sends bounded sequenced
+controls, never a score. First-transaction sequoias, deduplication, replenishment,
+waits and frozen obstacle dimensions remain. The verified browser uses 120 fixed
+simulation steps per second; graphics/camera do not affect that clock.
 
-This is a **client-reported community board**, not authoritative anti-cheat.
-Server duration limits and duplicate protection do not prove that a run followed
-the mempool, collisions or legal upgrades. There is no paid entry, bitcoin
-custody or reward payout. The proposed **1000-sat ranked entry is future work**
-and needs an independently reviewed server-verification and payment design.
+The shared board lists monthly **best run, total metres and attempts**, segmented
+by balance version for verified records. The server assigns UTC completion month.
+A selected starting skill starts an attempt, including a zero-metre completion.
+Interrupted runs settle from their last confirmed state rather than replaying
+an unconfirmed tail. Historical community results are retained separately,
+clearly unverified, and their raw-score submission endpoints are closed.
+
+Public IDs distinguish pseudonymous server profiles and old browser installations.
+Names do not establish a verified human identity. Ownership uses the private
+browser key; profile export does not export that credential. Clearing/isolating
+browser storage may therefore create a different identity.
+
+**Server-verified means simulated inputs**, not proof of a human, bot protection
+or paid-ranked readiness. Builds/roles can still differ within the current
+ruleset and each run sees its own real mempool sample. There is no paid entry,
+bitcoin custody or payout. The proposed **1000-sat entry remains future work**.
+See [security fixes and protocol boundaries](SECURITY_HARDENING.md).
 
 ## Rules for LLMs and maintainers
 

@@ -5,7 +5,7 @@ const profile=level=>({...fresh(),character:{name:'Willow',class:'gardener'},wor
 const rows=Array.from({length:40},(_,i)=>({txid:i.toString(16).padStart(64,'0'),value:'0'}));
 function expedition(level){const g=new Game(config,profile(level));g.receive(rows);g.start(false,42);g.choose(0);return g;}
 test('agility slows the entire simulation by at most two percent, with identical trajectories in game time',()=>{
- const normal=expedition(0),slow=expedition(50);assert.equal(normal.stats().timeScale,1);assert.equal(slow.stats().timeScale,.98);assert.equal(expedition(1).stats().timeScale,.9996);assert.equal(expedition(999).stats().timeScale,.98);assert.equal(slow.stats().buffer,normal.stats().buffer);
+ const normal=expedition(0),slow=expedition(50);assert.equal(normal.stats().timeScale,1);assert.equal(slow.stats().timeScale,.98);assert.equal(expedition(1).stats().timeScale,.9996);assert.throws(()=>expedition(999),/Invalid progress/);const capped=expedition(50);capped.p.workshop.agility=999;assert.equal(capped.stats().timeScale,.98);assert.equal(slow.stats().buffer,normal.stats().buffer);
  normal.jump();slow.jump();for(let i=0;i<120;i++){normal.tick(.98/120);slow.tick(1/120);}
  for(const key of ['time','distance','y','velocity','spawn','fuel'])assert.ok(Math.abs(normal[key]-slow[key])<1e-8,key);
  const realNormal=expedition(0),realSlow=expedition(50);for(let i=0;i<120;i++){realNormal.tick(1/120);realSlow.tick(1/120);}assert.ok(Math.abs(realSlow.time/realNormal.time-.98)<1e-10);assert.ok(realSlow.distance<realNormal.distance);

@@ -1,8 +1,10 @@
 #include "transactionfeed.h"
 #include <QRegularExpression>
 #include <cmath>
+#include <algorithm>
 void TransactionQueue::receive(const QVariantList &rows) {
-    for (auto value : rows) {
+    for (int rowIndex = 0; rowIndex < std::min(qsizetype(1024), rows.size()); ++rowIndex) {
+        auto value = rows[rowIndex];
         auto row = value.toMap();
         auto id = row["txid"].toString();
         bool ok = false;
@@ -12,12 +14,12 @@ void TransactionQueue::receive(const QVariantList &rows) {
             ok = std::isfinite(n) && n >= 0 && std::floor(n) == n && n <= 2100000000000000.;
             if (ok)
                 sats = qulonglong(n);
-        } else if (QRegularExpression("^[0-9]+$").match(row["value"].toString()).hasMatch())
+        } else if (row["value"].toString().size() <= 16 && QRegularExpression("^[0-9]+$").match(row["value"].toString()).hasMatch())
             sats = row["value"].toULongLong(&ok);
-        if (!ok || !QRegularExpression("^[a-f0-9]{64}$").match(id).hasMatch() || seen.contains(id))
+        if (!ok || sats > 2100000000000000ULL || !QRegularExpression("^[a-f0-9]{64}$").match(id).hasMatch() || seen.contains(id))
             continue;
         seen.insert(id);
-        row["value"] = QString::number(sats);
+        row = {{"txid", id}, {"value", QString::number(sats)}};
         cache.append(row);
         if (!used.contains(id))
             available.append(row);

@@ -1,5 +1,5 @@
 // Cache only the explicit offline notice. Never cache API, saves or game modules.
-const CACHE='wl-offline-v2',OFFLINE='/offline.html';
+const CACHE='wl-offline-v3-security',OFFLINE='/offline.html';
 // Normalize the cached response: static hosting may redirect .html to a clean URL.
 // A redirected Response cannot satisfy a manual-redirect navigation offline.
 self.addEventListener('install',event=>{event.waitUntil((async()=>{const response=await fetch(OFFLINE,{cache:'reload'});if(!response.ok)throw Error('Offline notice unavailable');const headers=new Headers(response.headers);headers.delete('content-encoding');headers.delete('content-length');await(await caches.open(CACHE)).put(OFFLINE,new Response(await response.arrayBuffer(),{status:response.status,headers}));})());});
