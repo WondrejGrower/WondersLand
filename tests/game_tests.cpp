@@ -144,7 +144,10 @@ class Tests : public QObject {
             b.advance(.05);
         QCOMPARE(b.state()["time"], time);
         QCOMPARE(b.state()["distance"], distance);
+        b.pause();
         b.acceptTransactions({tx(2, 0)});
+        QCOMPARE(b.state()["phase"].toString(), "paused");
+        b.pause();
         QCOMPARE(b.state()["phase"].toString(), "countdown");
         for (int i = 0; i < 50; i++)
             b.advance(.05);
@@ -205,6 +208,11 @@ class Tests : public QObject {
         QCOMPARE(b.state()["hit"].toMap()["txid"], row["txid"]);
         QCOMPARE(b.state()["hit"].toMap()["sats"].toString(), row["value"].toString());
         QVERIFY(b.state()["hit"].toMap()["h"].toDouble() > 170);
+        QFile trace(dir.filePath("last-trace.json"));
+        QVERIFY(trace.open(QIODevice::ReadOnly));
+        auto diagnostic = QJsonDocument::fromJson(trace.readAll()).toVariant().toMap();
+        QCOMPARE(diagnostic["class"].toString(), QString("gardener"));
+        QVERIFY(diagnostic["result"].toMap()["seconds"].toDouble() > 0);
     }
     void trainingNeverAwardsPersistentProgress() {
         QTemporaryDir dir;

@@ -72,6 +72,11 @@ Neprovedeno: dlouhodobá lidská herní studie, měsíce ekonomického testován
 plný node, veřejný žebříček a produkční grafický benchmark. Tyto věci nejsou
 nahrazené syntetickým testem. Nová verze neprovádí webový deployment.
 
+Poslední regresní kontrola: data přijatá během pauzy při vyčerpané frontě
+po obnovení spustí odpočet. Diagnostický záznam běhu ukládá také výsledný
+čas, vzdálenost, mince a počet použitých záchran. Znovu prošlo 21 Qt kontrol
+a dva Python testy; aktualizovaný balíček byl nainstalován.
+
 Finální sestava 0.3.0-1: balíček vytvořen bez debug balíčku; instalace ověřena
 přes pacman. Živý Qt probe vrací jeden JSON s live=true a 10 transakcemi.
 

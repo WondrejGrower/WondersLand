@@ -433,6 +433,10 @@ void Backend::fly(bool enabled) {
 void Backend::pause() {
     if (phase == "paused") {
         phase = resumePhase;
+        if (phase == "waiting" && feed.size() > 0 && feed.usedCount() < 10000) {
+            phase = "countdown";
+            countdown = 3;
+        }
         elapsed.restart();
     } else if (phase == "running" || phase == "waiting" || phase == "countdown") {
         resumePhase = phase;
@@ -672,6 +676,10 @@ void Backend::settle() {
             f.write(QJsonDocument::fromVariant(
                         QVariantMap{{"source", replayMode ? "recorded dataset" : "mempool.space recent"},
                                     {"capturedAt", updated},
+                                    {"result", QVariantMap{{"seconds", activeTime},
+                                                           {"distance", distance},
+                                                           {"coins", int(earnedMilli / 1000)},
+                                                           {"rescuesUsed", rescuesGranted - rescues}}},
                                     {"balanceVersion", Balance::version()},
                                     {"tier", tier},
                                     {"class", stats()["class"]},
