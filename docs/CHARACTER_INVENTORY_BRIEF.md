@@ -23,10 +23,12 @@ Inventář ani nový renderer tímto commitem ještě nejsou implementované.
 | [starter-customization-v2.png](../assets/art-source/2026-11-08/starter-customization-v2.png) | Aktualizovaná sada: 16 účesů, 2 pokrývky hlavy, 6 oděvů, 2 kalhoty, 2 páry kožených bot, pracovní rukavice a brašna |
 | [character-roster-reference.jpg](../assets/art-source/2026-11-08/character-roster-reference.jpg) | 12 původních postav jako reference proporcí, obličejů, barev a oblečení |
 | [forest-camp-reference.jpg](../assets/art-source/2026-11-08/forest-camp-reference.jpg) | Původní reference postavy, kapradí, hub, stromů, domku a portálu |
+| [camp-props-reference.jpg](../assets/art-source/2026-11-08/camp-props-reference.jpg) | Dodatečný atlas 12 táborových objektů a stanovišť (4 × 3) |
+| [botanical-plants-reference.jpg](../assets/art-source/2026-11-08/botanical-plants-reference.jpg) | Dodatečný atlas 12 motivů rostlin, hub, keřů a stromů (4 × 3) |
 | [manifest.json](../assets/art-source/2026-11-08/manifest.json) | Názvy komponent, vizuální řádky/sloupce, výchozí set a kontrolní součty |
 | [generation-prompt.txt](../assets/art-source/2026-11-08/generation-prompt.txt) | Přesné zadání poslední grafické úpravy pro další konzistentní iterace |
 
-Nová PNG má skutečný alfa kanál; dvě původní JPG mají bílé pozadí.
+Nová PNG má skutečný alfa kanál; všechny přiložené JPG mají bílé pozadí.
 Starý atlas s diamantovými botami/rukavicemi tento balíček záměrně nenahrazuje
 ani nepřidává jako platnou startovní variantu. Autoritativní je nová sada v2.
 
