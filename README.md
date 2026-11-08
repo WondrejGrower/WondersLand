@@ -1,38 +1,80 @@
-# NoTillMan
+![WondersLand v prohlížeči](docs/browser/camp-cs.png)
 
-An interactive personal creator page: a native upward journey from dark roots to
-a living plant, with FastBuds on the flower and Higgsfield on a fan leaf.
+# WondersLand [WL] · 0.3.1
 
-The project uses React, TypeScript, TanStack Start and Three.js and remains connected to Lovable.
-The plant has real volumetric geometry, a scroll-driven camera and drag/keyboard
-rotation. Rendering stops at rest. Devices without WebGL use a lower-detail 3D
-Canvas renderer with the same perspective camera.
+Nativní Qt/QML hra: dojdi k portálu, stiskni E, vyber schopnost a potvrď E.
+Každý běh začíná od 0 m. Oblasti jednoho lesa se mění při 500, 1 500, 3 000
+a 6 000 m; rozměry skutečných transakcí určuje jediná velikostní křivka.
 
-## Run and verify
+Primární verzí je nyní **hra pro prohlížeč na wondersland.online**. Podle
+nového výslovného zadání nahrazuje původní web; ten zůstává v archivní větvi.
+Webový klient je v `web/`, původní nativní Qt/QML aplikace v `src/` funguje dál.
+Sdílejí konfiguraci, překlady a pixelovou grafiku.
 
 ```sh
-npm install
+npm ci
+npm test
+npm run test:browser
+npm run deploy:check
 npm run dev
-npx tsc --noEmit
-npx vitest run
-npm run build
 ```
 
-On entry, the night photograph automatically moves below the surface and reveals
-Wondrej’s bio underground. No click is required. The visitor then scrolls upward,
-uses the chapter markers, or presses the ascent button. Reduced motion skips the
-intro; a Skip intro control is also available. Returning to the bio does not replay
-the photograph. Key links remain available throughout the main journey.
+Cloudflare: [nasazení přes GitHub](docs/CLOUDFLARE_DEPLOYMENT.md).
+[Webové náhledy a výsledky kontrol](docs/BROWSER_VERIFICATION.md).
+Postup z desktopu lze přenést v Nastavení → Importovat postup.
 
-## Destinations
+Větev: [game/roguelite-0.3](https://github.com/WondrejGrower/WondersLand/tree/game/roguelite-0.3).
 
-Edit `src/features/creator-hub/links.ts` to configure real affiliate URLs. None have
-been supplied yet, so links currently use verified official home pages without
-referral attribution. Public Instagram/Nostr destinations are in the same file.
+| Kde | Ovládání |
+| --- | --- |
+| Všechny nabídky | WASD nebo šipky, E potvrdit, Esc zpět; funguje i myš |
+| Zadávání jména | Písmena jsou text, Enter/Esc ukončí editaci; Tab také funguje |
+| Tábor | WASD/šipky nebo kliknutí pro pohyb, E u stanoviště |
+| Běh | Mezerník/W/↑/klik pro skok, podržení pro výšku; F pro získaný jetpack |
+| Pauza a návrat | P/Esc pauza, B návrat do tábora |
+| Nastavení, nápověda, celá obrazovka | F10, ?, F11 |
 
-## Original WondersLand backup
+Nová postava začíná jako Zahradník. Cvičiště se otevře po prvním živém běhu,
+další systémy postupně podle celkových živých metrů a nejlepšího běhu.
+Statistiky jsou na Cvičišti, výroba v Runové dílně, vybavení a vzhled v Šatníku,
+výzkum v Zahradě kouzel. Třídu lze později změnit bez resetu.
+Trénink a záznamy neposkytují trvalé odměny. Platby hra neobsahuje.
 
-Before replacing the home page, the game feature was removed and the full remaining
-WondersLand source was preserved on `backup/wondersland-nostr-2026-11-02`, commit
-`6ca4b6bbbd59f4ee96f5be82c805d7e9027629d1`. No published history was rewritten.
-See PROJECT_STATE.md for the current implementation and verification.
+Nastavení obsahuje English / Čeština a přepíná celé rozhraní za běhu.
+Jazyk přežije restart i reset postavy; nová instalace má angličtinu.
+
+## Sestavení a kontroly
+
+Arch/Omarchy: GCC s C++17, make, qmake6, qt6-base, qt6-declarative,
+qt6-wayland; Python 3 pro analytické nástroje. Spouštěj z kořene projektu:
+
+```sh
+./bin/build
+./bin/test
+./build/wondersland-game open
+./build/wondersland-game check --json
+./build/wondersland-game check --live --json
+./build/wondersland-game language cs
+./bin/install
+```
+
+Aplikace se objeví pod WondersLand [WL] v launcheru Super+Space.
+Data: `~/.local/share/wondersland-game/` (`progress.json`, `settings.json`,
+`last-trace.json`). Migrace starého postupu vytvoří zálohu `.pre-v4`.
+
+```sh
+./build/wondersland-game preview /tmp/camp.png --camp --cs --size 1366x768
+./build/wondersland-game preview /tmp/training.png --training --progress --cs
+./build/wondersland-game preview /tmp/settings.png --settings --cs
+python3 tools/record_mempool.py --help
+python3 tools/analyze.py docs/live-recent-sample.json --seeds 50
+```
+
+[Popis změn a migrace](docs/JOURNEY_UPDATE.md) ·
+[Ověření a náhledy](docs/JOURNEY_VERIFICATION.md) ·
+[Konfigurace](src/balance.json).
+
+Živý zdroj vrací jen nedávné transakce, nikoliv celý mempool. Velké transakce
+mohou být nepřekonatelné; nevzniká povinně bezpečná cesta. Ekonomika a hranice
+odemykání jsou pracovní návrh bez dlouhodobého lidského vyvážení. Tvrdý pád
+může ztratit posledních několik sekund neuložených odměn.

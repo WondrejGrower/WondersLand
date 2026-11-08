@@ -1,0 +1,131 @@
+{
+  "source": "mempool.space/api/mempool/recent",
+  "synthetic": false,
+  "from": 1794098271.581955,
+  "to": 1794098271.817816,
+  "uniqueTransactions": 10,
+  "balanceVersion": "wl-0.3-journey-2",
+  "regionIndependent": true,
+  "warning": "Draft mapping; not a whole-mempool distribution. Finite timing search is not a proof of impossibility below the apex. Human errors and the full skill economy are excluded.",
+  "valuePercentiles": {
+    "0": 14714.0,
+    "25": 79650.25,
+    "50": 131069.5,
+    "75": 1641967.25,
+    "90": 29417208.899999995,
+    "95": 36111543.44999999,
+    "99": 41467011.09,
+    "100": 42805878
+  },
+  "heightPercentiles": {
+    "0": 7.0,
+    "25": 11.25,
+    "50": 13.0,
+    "75": 31.0,
+    "90": 58.39999999999999,
+    "95": 60.2,
+    "99": 61.64,
+    "100": 62
+  },
+  "references": {
+    "beginner": {
+      "geometricallyImpossibleFraction": 0.0,
+      "noSolutionInFiniteTimingSearchFraction": 0.1,
+      "runsByRescueBudget": {
+        "0": {
+          "medianSeconds": 20.7,
+          "meanSeconds": 19.162,
+          "stdevSeconds": 7.077312766862858,
+          "minSeconds": 5.5,
+          "maxSeconds": 28.6,
+          "datasetExhaustedWithoutDeath": 6,
+          "seeds": 50
+        },
+        "1": {
+          "medianSeconds": 28.6,
+          "meanSeconds": 28.6,
+          "stdevSeconds": 0.0,
+          "minSeconds": 28.6,
+          "maxSeconds": 28.6,
+          "datasetExhaustedWithoutDeath": 50,
+          "seeds": 50
+        },
+        "2": {
+          "medianSeconds": 28.6,
+          "meanSeconds": 28.6,
+          "stdevSeconds": 0.0,
+          "minSeconds": 28.6,
+          "maxSeconds": 28.6,
+          "datasetExhaustedWithoutDeath": 50,
+          "seeds": 50
+        }
+      }
+    },
+    "developed": {
+      "geometricallyImpossibleFraction": 0.0,
+      "noSolutionInFiniteTimingSearchFraction": 0.0,
+      "runsByRescueBudget": {
+        "0": {
+          "medianSeconds": 28.6,
+          "meanSeconds": 28.6,
+          "stdevSeconds": 0.0,
+          "minSeconds": 28.6,
+          "maxSeconds": 28.6,
+          "datasetExhaustedWithoutDeath": 50,
+          "seeds": 50
+        },
+        "1": {
+          "medianSeconds": 28.6,
+          "meanSeconds": 28.6,
+          "stdevSeconds": 0.0,
+          "minSeconds": 28.6,
+          "maxSeconds": 28.6,
+          "datasetExhaustedWithoutDeath": 50,
+          "seeds": 50
+        },
+        "2": {
+          "medianSeconds": 28.6,
+          "meanSeconds": 28.6,
+          "stdevSeconds": 0.0,
+          "minSeconds": 28.6,
+          "maxSeconds": 28.6,
+          "datasetExhaustedWithoutDeath": 50,
+          "seeds": 50
+        }
+      }
+    },
+    "aerial": {
+      "geometricallyImpossibleFraction": 0.0,
+      "noSolutionInFiniteTimingSearchFraction": 0.0,
+      "runsByRescueBudget": {
+        "0": {
+          "medianSeconds": 28.6,
+          "meanSeconds": 28.6,
+          "stdevSeconds": 0.0,
+          "minSeconds": 28.6,
+          "maxSeconds": 28.6,
+          "datasetExhaustedWithoutDeath": 50,
+          "seeds": 50
+        },
+        "1": {
+          "medianSeconds": 28.6,
+          "meanSeconds": 28.6,
+          "stdevSeconds": 0.0,
+          "minSeconds": 28.6,
+          "maxSeconds": 28.6,
+          "datasetExhaustedWithoutDeath": 50,
+          "seeds": 50
+        },
+        "2": {
+          "medianSeconds": 28.6,
+          "meanSeconds": 28.6,
+          "stdevSeconds": 0.0,
+          "minSeconds": 28.6,
+          "maxSeconds": 28.6,
+          "datasetExhaustedWithoutDeath": 50,
+          "seeds": 50
+        }
+      }
+    }
+  }
+}

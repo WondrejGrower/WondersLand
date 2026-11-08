@@ -1,0 +1,511 @@
+{
+  "balanceVersion": "wl-0.3-journey-2",
+  "anchors": [
+    [
+      100000,
+      12
+    ],
+    [
+      1000000,
+      28
+    ],
+    [
+      10000000,
+      48
+    ],
+    [
+      100000000,
+      72
+    ],
+    [
+      1000000000,
+      108
+    ],
+    [
+      10000000000,
+      162
+    ],
+    [
+      100000000000,
+      243
+    ],
+    [
+      1000000000000,
+      365
+    ]
+  ],
+  "physics": {
+    "jumpVelocity": 285,
+    "heldGravity": 570,
+    "gravity": 850,
+    "jumpCap": 110,
+    "airCap": 170,
+    "speed": 105,
+    "maxSpeedFactor": 1.35,
+    "spacing": [
+      2.3,
+      2.5,
+      2.7,
+      2.9
+    ],
+    "buffer": 0.1,
+    "magnet": 23,
+    "magnetCap": 2.5,
+    "fuel": 3,
+    "rescueCap": 2,
+    "invulnerability": 2,
+    "gliderGravity": 130,
+    "jetAcceleration": 1500
+  },
+  "rarityWeights": [
+    75,
+    22,
+    3
+  ],
+  "rarityEffects": {
+    "common": 1,
+    "rare": 2,
+    "epic": 3
+  },
+  "classes": [
+    {
+      "id": "gardener",
+      "name": "Gardener",
+      "coins": 0.1,
+      "magnet": -0.1,
+      "jump": 0
+    },
+    {
+      "id": "explorer",
+      "name": "Explorer",
+      "coins": 0,
+      "magnet": 0,
+      "jump": -0.05
+    },
+    {
+      "id": "collector",
+      "name": "Collector",
+      "coins": 0,
+      "magnet": 0.2,
+      "jump": -0.05
+    }
+  ],
+  "workshop": [
+    {
+      "id": "strength",
+      "name": "Strength",
+      "max": 50,
+      "effect": 0.2,
+      "curve": "sqrt",
+      "baseCost": 50,
+      "growth": 1.12
+    },
+    {
+      "id": "agility",
+      "name": "Agility",
+      "max": 50,
+      "effect": 0.04,
+      "curve": "linear",
+      "baseCost": 50,
+      "growth": 1.12
+    },
+    {
+      "id": "magnet",
+      "name": "Magnetism",
+      "max": 50,
+      "effect": 0.5,
+      "curve": "linear",
+      "baseCost": 50,
+      "growth": 1.12
+    },
+    {
+      "id": "luck",
+      "name": "Luck",
+      "max": 50,
+      "effect": 0.1,
+      "curve": "linear",
+      "baseCost": 50,
+      "growth": 1.12
+    },
+    {
+      "id": "yield",
+      "name": "Yield",
+      "max": 50,
+      "effect": 0.25,
+      "curve": "linear",
+      "baseCost": 50,
+      "growth": 1.12
+    }
+  ],
+  "skills": [
+    {
+      "id": "leap",
+      "name": "Strong leap",
+      "tag": "air",
+      "maxRank": 3,
+      "effects": [
+        0.08,
+        0.16,
+        0.25
+      ],
+      "rarity": "common",
+      "unlock": "base",
+      "tags": [
+        "air",
+        "movement"
+      ],
+      "slot": "run-skill"
+    },
+    {
+      "id": "magnet",
+      "name": "Magnetic roots",
+      "tag": "collection",
+      "maxRank": 3,
+      "effects": [
+        0.15,
+        0.3,
+        0.45
+      ],
+      "rarity": "common",
+      "unlock": "base",
+      "tags": [
+        "collection"
+      ],
+      "slot": "run-skill"
+    },
+    {
+      "id": "aircoins",
+      "name": "Air collection",
+      "tag": "air",
+      "maxRank": 3,
+      "effects": [
+        0.1,
+        0.2,
+        0.3
+      ],
+      "rarity": "common",
+      "unlock": "base",
+      "tags": [
+        "air",
+        "collection"
+      ],
+      "slot": "run-skill"
+    },
+    {
+      "id": "glider",
+      "name": "Leaf glider",
+      "tag": "air",
+      "maxRank": 3,
+      "effects": [
+        0.4,
+        0.7,
+        1.0
+      ],
+      "rarity": "rare",
+      "unlock": "leaf",
+      "tags": [
+        "air"
+      ],
+      "slot": "run-skill"
+    },
+    {
+      "id": "double",
+      "name": "Double jump",
+      "tag": "air",
+      "maxRank": 3,
+      "effects": [
+        0.65,
+        0.8,
+        1
+      ],
+      "rarity": "rare",
+      "unlock": "air",
+      "tags": [
+        "air",
+        "movement"
+      ],
+      "slot": "run-skill"
+    },
+    {
+      "id": "shield",
+      "name": "Mycelial shield",
+      "tag": "protection",
+      "maxRank": 1,
+      "effects": [
+        1
+      ],
+      "rarity": "epic",
+      "unlock": "spore",
+      "tags": [
+        "protection"
+      ],
+      "slot": "run-skill"
+    },
+    {
+      "id": "jetpack",
+      "name": "Jetpack",
+      "tag": "air",
+      "maxRank": 3,
+      "effects": [
+        1,
+        1,
+        1
+      ],
+      "rarity": "epic",
+      "unlock": "air",
+      "tags": [
+        "air",
+        "movement"
+      ],
+      "slot": "run-skill"
+    }
+  ],
+  "items": [
+    {
+      "id": "hands",
+      "name": "Diamond Hands",
+      "cost": 2000,
+      "magnet": 0.1,
+      "jump": 0,
+      "recipe": "",
+      "feature": "forge"
+    },
+    {
+      "id": "boots",
+      "name": "Diamond Boots",
+      "cost": 5000,
+      "magnet": 0,
+      "jump": 0.05,
+      "recipe": "best:1500",
+      "feature": "diamond"
+    }
+  ],
+  "research": [
+    {
+      "id": "leaf",
+      "name": "Leaf work",
+      "cost": 100,
+      "seeds": 0,
+      "seconds": 600
+    },
+    {
+      "id": "air",
+      "name": "Air technique",
+      "cost": 500,
+      "seeds": 1,
+      "seconds": 1800
+    },
+    {
+      "id": "spore",
+      "name": "Spore protection",
+      "cost": 750,
+      "seeds": 1,
+      "seconds": 3600
+    },
+    {
+      "id": "stable",
+      "name": "Stable offers",
+      "cost": 1000,
+      "seeds": 1,
+      "seconds": 7200
+    }
+  ],
+  "milestones": [
+    {
+      "meters": 300,
+      "coins": 10,
+      "seeds": 0
+    },
+    {
+      "meters": 600,
+      "coins": 20,
+      "seeds": 1
+    },
+    {
+      "meters": 1200,
+      "coins": 40,
+      "seeds": 0
+    },
+    {
+      "meters": 1800,
+      "coins": 60,
+      "seeds": 1
+    },
+    {
+      "meters": 3000,
+      "coins": 100,
+      "seeds": 1
+    },
+    {
+      "meters": 4800,
+      "coins": 160,
+      "seeds": 0
+    }
+  ],
+  "run": {
+    "upgradeEvery": 30,
+    "upgradeWindow": 3,
+    "checkpointEvery": 5,
+    "maxSkills": 6,
+    "maxEconomyBonus": 1,
+    "fallbackCoins": 5
+  },
+  "width": {
+    "base": 12,
+    "slope": 0.18,
+    "min": 14,
+    "max": 96
+  },
+  "sets": [
+    {
+      "id": "diamond",
+      "requires": [
+        "hands",
+        "boots"
+      ],
+      "rescues": 1
+    }
+  ],
+  "regions": [
+    {
+      "id": "edge",
+      "name": "Forest edge",
+      "meters": 0,
+      "sky": "#101d2b",
+      "soil": "#77523c",
+      "foliage": "#557f48"
+    },
+    {
+      "id": "grove",
+      "name": "Dense growth",
+      "meters": 500,
+      "sky": "#142c30",
+      "soil": "#65533c",
+      "foliage": "#42744d"
+    },
+    {
+      "id": "ancient",
+      "name": "Ancient forest",
+      "meters": 1500,
+      "sky": "#172526",
+      "soil": "#504c39",
+      "foliage": "#60845b"
+    },
+    {
+      "id": "mycelial",
+      "name": "Mycelial depths",
+      "meters": 3000,
+      "sky": "#241e36",
+      "soil": "#50405d",
+      "foliage": "#9982b2"
+    },
+    {
+      "id": "deep",
+      "name": "Deep forest",
+      "meters": 6000,
+      "sky": "#101b29",
+      "soil": "#353e4c",
+      "foliage": "#477978"
+    }
+  ],
+  "progression": [
+    {
+      "id": "training",
+      "name": "Training Grounds",
+      "runs": 1,
+      "total": 0,
+      "best": 0
+    },
+    {
+      "id": "strength",
+      "name": "Strength",
+      "runs": 1,
+      "total": 0,
+      "best": 0
+    },
+    {
+      "id": "agility",
+      "name": "Agility",
+      "runs": 1,
+      "total": 150,
+      "best": 0
+    },
+    {
+      "id": "magnet",
+      "name": "Magnetism",
+      "runs": 1,
+      "total": 150,
+      "best": 0
+    },
+    {
+      "id": "luck",
+      "name": "Luck",
+      "runs": 1,
+      "total": 250,
+      "best": 0
+    },
+    {
+      "id": "yield",
+      "name": "Yield",
+      "runs": 1,
+      "total": 250,
+      "best": 0
+    },
+    {
+      "id": "flying",
+      "name": "Flying upgrades",
+      "runs": 1,
+      "total": 250,
+      "best": 0
+    },
+    {
+      "id": "forge",
+      "name": "Runic Workshop",
+      "runs": 1,
+      "total": 500,
+      "best": 0
+    },
+    {
+      "id": "wardrobe",
+      "name": "Wardrobe",
+      "runs": 1,
+      "total": 500,
+      "best": 0
+    },
+    {
+      "id": "garden",
+      "name": "Spell Garden",
+      "runs": 1,
+      "total": 1000,
+      "best": 0
+    },
+    {
+      "id": "classes",
+      "name": "New classes",
+      "runs": 1,
+      "total": 1000,
+      "best": 0
+    },
+    {
+      "id": "diamond",
+      "name": "Diamond set and jetpack",
+      "runs": 1,
+      "total": 3000,
+      "best": 1500
+    },
+    {
+      "id": "research2",
+      "name": "Second research slot",
+      "runs": 1,
+      "total": 3000,
+      "best": 0
+    },
+    {
+      "id": "research3",
+      "name": "Third research slot",
+      "runs": 1,
+      "total": 6000,
+      "best": 3000
+    }
+  ]
+}

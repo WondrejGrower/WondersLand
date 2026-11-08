@@ -1,42 +1,14 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+build/
+pkgbuild/pkg/
+pkgbuild/src/
+*.pkg.tar.zst
 
-node_modules
-dist
-dist-ssr
-.output
-.vinxi
-.tanstack/**
-.nitro
-*.local
+__pycache__/
+*.pyc
 
-# Wrangler / Cloudflare
+node_modules/
+dist/
 .wrangler/
-.dev.vars
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Env / secrets
 .env
 .env.*
-!.env.example
-*.pem
-*.key
-
-# Build info
-tsconfig.tsbuildinfo
+.dev.vars*

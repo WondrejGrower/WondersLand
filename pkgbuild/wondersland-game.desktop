@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=WondersLand [WL]
+Comment=Jump through a forest of real Bitcoin transactions
+Comment[cs]=Přeskakuj rostliny ze skutečných bitcoinových transakcí
+Exec=wondersland-game open
+Icon=wondersland-game
+Terminal=false
+Categories=Game;ArcadeGame;
+StartupWMClass=wondersland-game
