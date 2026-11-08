@@ -1,0 +1,947 @@
+[
+  {
+    "sats": "0",
+    "txid": "",
+    "fixture": "example",
+    "h": 4,
+    "w": 14,
+    "visual": {
+      "version": 1,
+      "seed": 3249346825,
+      "variant": 1,
+      "mirror": 0,
+      "tone": 0,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "0",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 4,
+    "w": 14,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "0",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 4,
+    "w": 14,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "1",
+    "txid": "",
+    "fixture": "example",
+    "h": 4,
+    "w": 14,
+    "visual": {
+      "version": 1,
+      "seed": 1213966422,
+      "variant": 2,
+      "mirror": 1,
+      "tone": 0,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "1",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 4,
+    "w": 14,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "1",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 4,
+    "w": 14,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "99999",
+    "txid": "",
+    "fixture": "example",
+    "h": 12,
+    "w": 14,
+    "visual": {
+      "version": 1,
+      "seed": 3290235450,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "99999",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 12,
+    "w": 14,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "99999",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 12,
+    "w": 14,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "100000",
+    "txid": "",
+    "fixture": "example",
+    "h": 12,
+    "w": 14,
+    "visual": {
+      "version": 1,
+      "seed": 2835181691,
+      "variant": 3,
+      "mirror": 0,
+      "tone": 1,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "100000",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 12,
+    "w": 14,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "100000",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 12,
+    "w": 14,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "349999",
+    "txid": "",
+    "fixture": "example",
+    "h": 19,
+    "w": 15,
+    "visual": {
+      "version": 1,
+      "seed": 3537013765,
+      "variant": 1,
+      "mirror": 1,
+      "tone": 1,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "349999",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 19,
+    "w": 15,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "349999",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 19,
+    "w": 15,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "350000",
+    "txid": "",
+    "fixture": "example",
+    "h": 19,
+    "w": 15,
+    "visual": {
+      "version": 1,
+      "seed": 3849761819,
+      "variant": 3,
+      "mirror": 0,
+      "tone": 1,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "350000",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 19,
+    "w": 15,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "350000",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 19,
+    "w": 15,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "799999",
+    "txid": "",
+    "fixture": "example",
+    "h": 26,
+    "w": 17,
+    "visual": {
+      "version": 1,
+      "seed": 957570351,
+      "variant": 3,
+      "mirror": 1,
+      "tone": 1,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "799999",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 26,
+    "w": 17,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "799999",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 26,
+    "w": 17,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "800000",
+    "txid": "",
+    "fixture": "example",
+    "h": 26,
+    "w": 17,
+    "visual": {
+      "version": 1,
+      "seed": 1701227581,
+      "variant": 1,
+      "mirror": 1,
+      "tone": 1,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "800000",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 26,
+    "w": 17,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "800000",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 26,
+    "w": 17,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "999999",
+    "txid": "",
+    "fixture": "example",
+    "h": 28,
+    "w": 17,
+    "visual": {
+      "version": 1,
+      "seed": 1844990023,
+      "variant": 3,
+      "mirror": 1,
+      "tone": 0,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "999999",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 28,
+    "w": 17,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "999999",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 28,
+    "w": 17,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "1000000",
+    "txid": "",
+    "fixture": "example",
+    "h": 28,
+    "w": 17,
+    "visual": {
+      "version": 1,
+      "seed": 2356043543,
+      "variant": 3,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "1000000",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 28,
+    "w": 17,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "1000000",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 28,
+    "w": 17,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "10000000",
+    "txid": "",
+    "fixture": "example",
+    "h": 48,
+    "w": 21,
+    "visual": {
+      "version": 1,
+      "seed": 3853741553,
+      "variant": 1,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 2
+    }
+  },
+  {
+    "sats": "10000000",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 48,
+    "w": 21,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 2
+    }
+  },
+  {
+    "sats": "10000000",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 48,
+    "w": 21,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 2
+    }
+  },
+  {
+    "sats": "99999999",
+    "txid": "",
+    "fixture": "example",
+    "h": 72,
+    "w": 25,
+    "visual": {
+      "version": 1,
+      "seed": 2409093716,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "99999999",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 72,
+    "w": 25,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "99999999",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 72,
+    "w": 25,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "100000000",
+    "txid": "",
+    "fixture": "example",
+    "h": 72,
+    "w": 25,
+    "visual": {
+      "version": 1,
+      "seed": 3064983991,
+      "variant": 3,
+      "mirror": 1,
+      "tone": 0,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "100000000",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 72,
+    "w": 25,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "100000000",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 72,
+    "w": 25,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "999999999",
+    "txid": "",
+    "fixture": "example",
+    "h": 108,
+    "w": 31,
+    "visual": {
+      "version": 1,
+      "seed": 1176906663,
+      "variant": 3,
+      "mirror": 1,
+      "tone": 1,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "999999999",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 108,
+    "w": 31,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "999999999",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 108,
+    "w": 31,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "1000000000",
+    "txid": "",
+    "fixture": "example",
+    "h": 108,
+    "w": 31,
+    "visual": {
+      "version": 1,
+      "seed": 1609969100,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "1000000000",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 108,
+    "w": 31,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "1000000000",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 108,
+    "w": 31,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "99999999999",
+    "txid": "",
+    "fixture": "example",
+    "h": 243,
+    "w": 56,
+    "visual": {
+      "version": 1,
+      "seed": 3045816222,
+      "variant": 2,
+      "mirror": 1,
+      "tone": 0,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "99999999999",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 243,
+    "w": 56,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "99999999999",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 243,
+    "w": 56,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "100000000000",
+    "txid": "",
+    "fixture": "example",
+    "h": 243,
+    "w": 56,
+    "visual": {
+      "version": 1,
+      "seed": 554298844,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 0,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "100000000000",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 243,
+    "w": 56,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "100000000000",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 243,
+    "w": 56,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "1000000000000",
+    "txid": "",
+    "fixture": "example",
+    "h": 365,
+    "w": 78,
+    "visual": {
+      "version": 1,
+      "seed": 656415108,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 1,
+      "growth": 1
+    }
+  },
+  {
+    "sats": "1000000000000",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 365,
+    "w": 78,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 1
+    }
+  },
+  {
+    "sats": "1000000000000",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 365,
+    "w": 78,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 1
+    }
+  },
+  {
+    "sats": "10000000000000",
+    "txid": "",
+    "fixture": "example",
+    "h": 548,
+    "w": 96,
+    "visual": {
+      "version": 1,
+      "seed": 3409992796,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 0,
+      "growth": 2
+    }
+  },
+  {
+    "sats": "10000000000000",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 548,
+    "w": 96,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 2
+    }
+  },
+  {
+    "sats": "10000000000000",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 548,
+    "w": 96,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 2
+    }
+  },
+  {
+    "sats": "420",
+    "txid": "",
+    "fixture": "example",
+    "h": 5,
+    "w": 14,
+    "visual": {
+      "version": 1,
+      "seed": 2948430031,
+      "variant": 3,
+      "mirror": 1,
+      "tone": 0,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "420",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 5,
+    "w": 14,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "420",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 5,
+    "w": 14,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 0
+    }
+  },
+  {
+    "sats": "42000000",
+    "txid": "",
+    "fixture": "example",
+    "h": 62,
+    "w": 23,
+    "visual": {
+      "version": 1,
+      "seed": 4280738889,
+      "variant": 1,
+      "mirror": 0,
+      "tone": 1,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "42000000",
+    "txid": "0000000000000000000000000000000000000000000000000000000000000001",
+    "fixture": "",
+    "h": 62,
+    "w": 23,
+    "visual": {
+      "version": 1,
+      "seed": 3336137010,
+      "variant": 2,
+      "mirror": 0,
+      "tone": 2,
+      "growth": 3
+    }
+  },
+  {
+    "sats": "42000000",
+    "txid": "420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "fixture": "",
+    "h": 62,
+    "w": 23,
+    "visual": {
+      "version": 1,
+      "seed": 396571484,
+      "variant": 0,
+      "mirror": 1,
+      "tone": 2,
+      "growth": 3
+    }
+  }
+]

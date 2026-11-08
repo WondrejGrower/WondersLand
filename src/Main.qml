@@ -164,7 +164,7 @@ ApplicationWindow {
  Label {visible:s.phase==="over";text:qsTr("Output total: %1 BTC").arg((translator.language,translator.btc(s.hit.btc||"0.00000000")))+"\n"+(translator.language,translator.integer(s.hit.sats||"0"))+" satoshi";color:"#d8d7bd";wrapMode:Text.WordWrap;Layout.fillWidth:true}
  Label {visible:s.phase==="over"&&!s.demo;text:s.hit.txid||"";font.family:"monospace";font.pixelSize:11;color:"#9bad9c";Layout.fillWidth:true;wrapMode:Text.WrapAnywhere}
  Label {visible:s.phase==="over";text:s.demo?qsTr("Training · coins and score are not saved"):s.hit.status==="confirmed"?qsTr("Confirmed in a block"):s.hit.status==="pending"?qsTr("Still in the mempool"):s.hit.status==="checking"?qsTr("Observed in mempool · checking current status"):qsTr("Observed in mempool · current status unverified");color:"#93ab9d";wrapMode:Text.WordWrap;Layout.fillWidth:true}
- NavButton {objectName:"playLive";text:s.phase==="paused"?qsTr("Continue"):qsTr("Next run");Layout.fillWidth:true;onClicked:{if(s.phase==="paused")backend.pause();else backend.start(s.demo)}}
+ NavButton {objectName:"playLive";text:s.phase==="paused"?qsTr("Continue"):qsTr("Next run");Layout.fillWidth:true;onClicked:{if(s.phase==="paused")backend.pause();else if(s.practiceModel)backend.startPractice(s.practiceModel);else backend.start(s.demo)}}
  NavButton {objectName:"returnCamp";text:qsTr("Base Camp");Layout.fillWidth:true;onClicked:backend.returnToCamp()}
  NavButton {visible:s.phase==="over"&&!s.demo;text:qsTr("View transaction");Layout.fillWidth:true;onClicked:backend.openTransaction()}
  }

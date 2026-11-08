@@ -4,7 +4,7 @@ const c=JSON.parse(readFileSync(new URL('../src/balance.json',import.meta.url)))
 const profile=()=>({...fresh(),character:{name:'Willow',class:'gardener',hair:'#5e3936',skin:'#dfaf87',shirt:'#679e86',hairStyle:0}}),tx=(n,value='0')=>({txid:n.toString(16).padStart(64,'0'),value});
 test('transaction identity and continuous uncapped size curve',()=>{let prev=0;for(let n=100;n<2.1e15;n*=1.1){const p=plant(String(Math.floor(n)),c);assert.ok(p.h>=prev);prev=p.h;}assert.equal(plant('2100000000000000',c).btc,'21000000.00000000');assert.equal(plant('4200000000',c).type,'cannabis');});
 test('queue bounded, deduplicated, refreshed and never reused during a run',()=>{const q=new Queue();q.receive(Array.from({length:800},(_,i)=>tx(i+1)));assert.equal(q.cache.length,512);q.begin(1);const ids=new Set();for(let i=0;i<512;i++){const r=q.take();assert.ok(!ids.has(r.txid));ids.add(r.txid);}assert.equal(q.take(),null);q.receive([tx(900)]);assert.equal(q.take().txid,tx(900).txid);q.receive([tx(900),tx(901,'-2')]);assert.equal(q.take(),null);});
-test('live short attempts progressively unlock and reward once; training pays nothing',()=>{const g=new Game(c,profile());assert.equal(g.has('training'),false);for(let i=0;i<10;i++){g.receive([tx(i+1)]);g.start();g.choose(0);g.distance=50;g.earned=5;g.camp();}assert.equal(g.p.totalDistance,500);assert.equal(g.has('forge'),true);assert.equal(g.has('garden'),false);const saved=JSON.stringify(g.p);g.start(true);g.choose(0);g.distance=10000;g.earned=10000;g.camp();assert.equal(JSON.stringify(g.p),saved);});
+test('live short attempts progressively unlock and reward once; training pays nothing',()=>{const g=new Game(c,profile());assert.equal(g.has('training'),false);for(let i=0;i<10;i++){g.receive([tx(i+1)]);g.start();g.choose(0);g.distance=50;g.earned=5;g.camp();}assert.equal(g.p.totalDistance,500);assert.equal(g.has('forge'),false);assert.equal(g.has('wardrobe'),false);assert.equal(g.has('garden'),false);const saved=JSON.stringify(g.p);g.start(true);g.choose(0);g.distance=10000;g.earned=10000;g.camp();assert.equal(JSON.stringify(g.p),saved);});
 test('every new run starts from zero and region changes do not resize obstacles',()=>{const g=new Game(c,profile());g.receive(Array.from({length:100},(_,i)=>tx(i+1)));g.start(false,42);g.choose(0);while(g.distance<499)g.tick(.1);const before=g.obstacles.map(p=>({...p}));while(g.distance<501)g.tick(.01);assert.equal(g.region().id,'grove');for(const p of before){const same=g.obstacles.find(o=>o.txid===p.txid);if(same){assert.equal(same.h,p.h);assert.equal(same.w,p.w);}}g.camp();g.start();assert.equal(g.distance,0);assert.equal(g.region().id,'edge');});
 test('ordinary jump and repeated air inputs obey caps; jetpack has finite fuel',()=>{const d=profile();d.runs=5;d.totalDistance=7000;d.bestDistance=3500;d.completed=['air','leaf','spore'];d.workshop={strength:50};const g=new Game(c,d);g.start(true);g.choose(0);g.skills={leap:3,double:3,jetpack:3,glider:3};g.jump();g.jet=true;for(let i=0;i<800;i++){if(i%30===0)g.jump();g.tick(.005);assert.ok(g.y<=170.05);}assert.equal(g.fuel,0);g.jet=g.held=false;for(let i=0;i<600;i++)g.tick(.005);assert.equal(g.y,0);});
 test('giant transaction collides with exact TXID and a rescue resolves a wide instance once',()=>{const d=profile();d.hands=d.boots=true;const g=new Game(c,d);g.receive([tx(1,'2000000000000000'),tx(2,'2000000000000000')]);g.start();g.choose(0);for(let i=0;i<1500&&g.phase==='running';i++)g.tick(.016);assert.equal(g.phase,'over');assert.equal(g.rescuesGranted,1);assert.ok(g.hit.h>170);assert.ok([tx(1).txid,tx(2).txid].includes(g.hit.txid));const before=g.p.coins;g.settle();assert.equal(g.p.coins,before);});
@@ -17,3 +17,28 @@ test('cancelled skill selection is never checkpointed or rewarded on page blur',
 test('coin bonuses accumulate in exact milli-coins instead of dropping fractions',()=>{const g=new Game(c,profile());g.start(true);g.choose(0);g.earnedMilli=0;for(let i=0;i<2;i++)g.apply({id:'coins'});assert.equal(g.earned,11);});
 
 test('all three roles are available at creation and require reset to change',()=>{for(const role of ['gardener','explorer','collector']){const g=new Game(c);g.create('Willow',{class:role,hair:'#5e3936',skin:'#dfaf87',shirt:'#679e86',hairStyle:0});assert.equal(g.p.character.class,role);g.p.coins=777;g.p.workshop.strength=7;const before=JSON.stringify(g.p);g.changeClass('collector');g.create('Replacement',{class:'collector'});assert.equal(JSON.stringify(g.p),before);const loaded=new Game(c,{...g.p,announcements:['classes','diamond']});assert.equal(loaded.p.character.class,role);assert.deepEqual(loaded.p.announcements,['diamond']);assert.equal(loaded.p.coins,777);const reset=new Game(c);reset.create('New',{class:'collector'});assert.equal(reset.p.character.class,'collector');}});
+
+test('buildings require a single live distance or ten levels in one attribute',()=>{
+ const g=new Game(c,profile());g.p.runs=1;g.p.totalDistance=10000;
+ for(const [distance,wardrobe,forge] of [[499,false,false],[500,true,false],[999,true,false],[1000,true,true]]){
+  g.p.bestDistance=distance;assert.equal(g.has('wardrobe'),wardrobe);assert.equal(g.has('forge'),forge);
+ }
+ g.p.bestDistance=50;g.p.coins=100000;g.p.workshop={strength:9,agility:9};
+ assert.equal(g.has('forge'),false);assert.ok(g.buy('strength'));assert.equal(g.has('forge'),true);assert.equal(g.has('wardrobe'),false);
+ assert.equal(g.p.announcements.filter(x=>x==='forge').length,1);g.buy('strength');assert.equal(g.p.announcements.filter(x=>x==='forge').length,1);
+ const restored=new Game(c,g.p);assert.equal(restored.has('forge'),true);
+ const existing=profile();existing.unlocked=['forge','wardrobe'];const old=new Game(c,existing);assert.ok(old.has('forge'));assert.ok(old.has('wardrobe'));
+});
+
+test('practice catalogue covers every obstacle and repeats a chosen model with current build and no rewards',()=>{
+ const d=profile();d.runs=3;d.bestDistance=1000;d.totalDistance=4000;d.coins=1234;d.workshop={strength:10,agility:20};d.hands=true;
+ const g=new Game(c,d),saved=JSON.stringify(g.p),stats=g.stats();
+ assert.deepEqual(new Set(c.trainingModels.map(m=>plant(m.sats,c).type)),new Set(['flower','tulip','rose','fern','birch','pine','cannabis','oak','sequoia']));
+ assert.equal(g.startPractice('missing'),false);
+ for(const m of c.trainingModels){
+  assert.ok(g.startPractice(m.id));assert.equal(g.phase,'running');assert.deepEqual(g.skills,{});assert.deepEqual(g.stats(),stats);
+  for(let i=0;i<3;i++){g.spawnPlant();assert.equal(g.obstacles.at(-1).type,m.id);assert.equal(g.obstacles.at(-1).sats,m.sats);assert.equal(g.obstacles.at(-1).h,plant(m.sats,c).h);}
+  g.time=100;g.tick(.01);assert.deepEqual(g.flying,{});g.saveCheckpoint();g.camp();assert.equal(JSON.stringify(g.p),saved);
+ }
+ g.startPractice();for(const m of c.trainingModels){g.spawnPlant();assert.equal(g.obstacles.at(-1).type,m.id);}g.camp();assert.equal(JSON.stringify(g.p),saved);
+});

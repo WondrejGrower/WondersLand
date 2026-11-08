@@ -4,6 +4,8 @@
 #include "../src/theme.h"
 #include "../src/translator.h"
 #include <QFile>
+#include <QJSEngine>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QQmlApplicationEngine>
@@ -85,6 +87,28 @@ class Tests : public QObject {
         QVERIFY(b.state()["collected"].toInt() > 0);
     }
   private slots:
+    void sharedPlantVisualFixtures() {
+        QFile source(":/PlantVisual.js");
+        QVERIFY(source.open(QIODevice::ReadOnly));
+        QString script = QString::fromUtf8(source.readAll());
+        script.remove(".pragma library");
+        QJSEngine engine;
+        QVERIFY(!engine.evaluate(script).isError());
+        QFile fixtures(QFINDTESTDATA("plant-visual.json"));
+        QVERIFY(fixtures.open(QIODevice::ReadOnly));
+        for (const auto &value : QJsonDocument::fromJson(fixtures.readAll()).array()) {
+            const auto f = value.toObject();
+            const auto sats = f["sats"].toString().toULongLong();
+            QCOMPARE(Balance::height(sats), f["h"].toDouble());
+            QCOMPARE(Balance::width(Balance::height(sats)), f["w"].toDouble());
+            const auto visual = engine.globalObject().property("descriptor").call({
+                Balance::species(sats), f["sats"].toString(), f["h"].toDouble(),
+                f["txid"].toString(), f["fixture"].toString()});
+            QVERIFY(!visual.isError());
+            QCOMPARE(QJsonObject::fromVariantMap(visual.toVariant().toMap()), f["visual"].toObject());
+        }
+    }
+
     void agilitySlowsGameTimeWithoutChangingPhysicsOrCamp() {
         QTemporaryDir lowDir, highDir;
         auto lowPath = fixture(lowDir), highPath = fixture(highDir);
@@ -320,6 +344,44 @@ class Tests : public QObject {
         p.reward("another", 1, 300, 0, 3000, "gardener");
         QCOMPARE(p.data["seeds"].toInt(), 3);
     }
+    void practiceRepeatsSelectedModelWithoutRewards() {
+        QTemporaryDir dir;
+        Backend b(fixture(dir, true), false);
+        const auto profile = b.state()["profile"].toMap();
+        for (const auto &entry : Balance::list("trainingModels")) {
+            const auto model = entry.toMap();
+            b.startPractice(model["id"].toString());
+            QCOMPARE(b.state()["phase"].toString(), QString("running"));
+            QVERIFY(b.state()["skills"].toMap().isEmpty());
+            b.advance(.01);
+            const auto obstacle = b.state()["obstacles"].toList().first().toMap();
+            QCOMPARE(obstacle["type"].toString(), model["id"].toString());
+            QCOMPARE(obstacle["sats"].toString(), model["sats"].toString());
+            b.returnToCamp();
+            QCOMPARE(b.state()["profile"].toMap(), profile);
+        }
+    }
+    void buildingProgression() {
+        QTemporaryDir dir;
+        Progress p(fixture(dir));
+        p.reward("first", 1, 1, 0, 499, "gardener");
+        QVERIFY(!p.unlocked("wardrobe"));
+        QVERIFY(!p.unlocked("forge"));
+        p.reward("second", 1, 1, 0, 500, "gardener");
+        QVERIFY(p.unlocked("wardrobe"));
+        QVERIFY(!p.unlocked("forge"));
+        p.data["coins"] = 100000;
+        p.data["workshop"] = QVariantMap{{"strength", 9}, {"agility", 9}};
+        QVERIFY(!p.unlocked("forge"));
+        QVERIFY(p.buy("strength"));
+        QVERIFY(p.unlocked("forge"));
+        QCOMPARE(p.data["announcements"].toStringList().count("forge"), 1);
+        Progress distance(dir.filePath("distance.json"));
+        distance.reward("999", 1, 1, 0, 999, "gardener");
+        QVERIFY(!distance.unlocked("forge"));
+        distance.reward("1000", 1, 1, 0, 1000, "gardener");
+        QVERIFY(distance.unlocked("forge"));
+    }
     void distanceProgressionAccumulatesShortLiveRuns() {
         QTemporaryDir dir;
         Progress p(fixture(dir));
@@ -333,7 +395,8 @@ class Tests : public QObject {
             p.reward(QString("short%1").arg(i + 2), 1, 1, 10, 50, "gardener");
         QCOMPARE(p.data["totalDistance"].toInt(), 500);
         QCOMPARE(p.data["bestDistance"].toInt(), 50);
-        QVERIFY(p.unlocked("forge"));
+        QVERIFY(!p.unlocked("forge"));
+        QVERIFY(!p.unlocked("wardrobe"));
         QVERIFY(!p.unlocked("garden"));
         QVERIFY(!p.unlocked("diamond"));
         auto before = p.data;

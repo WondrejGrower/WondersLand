@@ -18,7 +18,7 @@ try{
  await page.waitForSelector('[data-action=transaction]',{timeout:12000});assert.equal(await page.locator('code').textContent(),sample.txid);
  await key('e');await page.waitForSelector('[data-action=skill]');assert.match(await page.locator('#hud').textContent(),/^0 m/);await key('Escape');
  // A rich, isolated fixture exercises every station without altering user data.
- const p=fresh();Object.assign(p,{character:{name:'Willow',class:'gardener',hair:'#d6b96d',skin:'#dfaf87',shirt:'#679e86',hairStyle:1},coins:10000,runs:5,totalDistance:7000,bestDistance:3500,seeds:5,unlocked:['training','strength','agility','magnet','luck','yield','flying','forge','wardrobe','garden','classes','diamond']});
+ const p=fresh();Object.assign(p,{character:{name:'Willow',class:'gardener',hair:'#d6b96d',skin:'#dfaf87',shirt:'#679e86',hairStyle:1},coins:10000,runs:5,totalDistance:7000,bestDistance:3500,seeds:5,unlocked:['training','strength','agility','magnet','luck','yield','flying','forge','wardrobe','garden','classes','diamond','research2','research3']});
  await page.evaluate(data=>localStorage.setItem('wl-progress',JSON.stringify(data)),p);
  for(const lang of ['en','cs']){
   await page.goto(origin+'/?recorded=1&lang='+lang);await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);await page.waitForTimeout(150);await page.screenshot({path:`docs/browser/camp-${lang}.png`});
@@ -26,7 +26,15 @@ try{
   await key('s');await key('e');assert.equal(await page.evaluate(()=>localStorage.getItem('wl-language')),'cs');assert.equal(await page.locator('#settings').textContent(),'Nastavení');
   await button(lang==='en'?'English':'Čeština').click();await key('Escape');await page.reload();await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);assert.equal(await page.locator('#settings').textContent(),lang==='en'?'Settings':'Nastavení');
   const box=await page.locator('#scene').boundingBox();await page.mouse.click(box.x+box.width*465/640,box.y+box.height*290/360);await page.waitForTimeout(1900);await key('e');await page.waitForSelector('[data-action=buy]');assert.equal(await page.locator('[data-action=class]').count(),0);await page.screenshot({path:`docs/browser/training-${lang}.png`});
-  const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).workshop.strength||0);await key('e');const after=await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).workshop.strength);assert.equal(after,before+1);await key('Escape');
+  const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).workshop.strength||0);await key('e');const after=await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).workshop.strength);assert.equal(after,before+1);
+  assert.equal(await page.locator('[data-training-model]').count(),9);
+  for(const canvas of await page.locator('[data-training-model]').all())assert.ok(await canvas.evaluate(c=>c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>0)));
+  const practiceSave=await page.evaluate(()=>localStorage.getItem('wl-progress'));
+  await page.locator('[data-action=practice][data-arg=sequoia]').click();await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
+  assert.equal(await page.locator('[data-action=skill]').count(),0);
+  await page.waitForSelector('[data-action=run]',{timeout:20000});assert.equal(await page.locator('[data-action=transaction]').count(),0);
+  await page.locator('[data-action=run]').click();await page.waitForFunction(()=>document.querySelector('#sheet').hidden);await key('p');await page.locator('[data-action=camp]').click();
+  assert.equal(await page.evaluate(()=>localStorage.getItem('wl-progress')),practiceSave);
   {const b=await page.locator('#scene').boundingBox();await page.mouse.click(b.x+b.width*540/640,b.y+b.height*215/360);await page.waitForTimeout(1500);await key('e');await page.waitForSelector('[data-action=skill]');await page.screenshot({path:`docs/browser/skills-${lang}.png`});await key('e');await page.waitForSelector('[data-action=transaction]',{timeout:15000});await page.screenshot({path:`docs/browser/results-${lang}.png`});await key('Escape');}
  }
  await key('F10');

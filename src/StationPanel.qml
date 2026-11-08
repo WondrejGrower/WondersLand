@@ -51,8 +51,18 @@ Item {
  NavButton {text:modelData.price<0?qsTr("Max"):qsTr("Buy · %1").arg(translator.coins(modelData.price));enabled:modelData.price>=0&&s.wallet>=modelData.price;onClicked:backend.buy(modelData.id);Layout.maximumWidth:200}
  }
  }
- Label {text:qsTr("Practice with sample plants. No permanent rewards.");wrapMode:Text.WordWrap;Layout.fillWidth:true;color:"#bbc5aa"}
- NavButton {objectName:"campTraining";text:qsTr("Start training");Layout.fillWidth:true;onClicked:{backend.start(true);panel.focusGame()}}
+ Label {text:qsTr("Choose a model to practice repeatedly, or try them all. Uses your current attributes and equipment, without random skill upgrades. No permanent rewards.");wrapMode:Text.WordWrap;Layout.fillWidth:true;color:"#bbc5aa"}
+ NavButton {objectName:"campTraining";text:qsTr("Try all models");Layout.fillWidth:true;onClicked:{backend.startPractice("all");panel.focusGame()}}
+ Repeater {model:s.config.trainingModels
+ ColumnLayout {required property var modelData;Layout.fillWidth:true
+ Canvas {Layout.alignment:Qt.AlignHCenter;Layout.preferredWidth:128;Layout.preferredHeight:100;smooth:false
+ Component.onCompleted:loadImage("qrc:/art/flora.png")
+ onImageLoaded:requestPaint()
+ onPaint:{var c=getContext('2d');c.reset();var p=backend.previewPlant(modelData.sats);var scale=Math.min(1,84/p.h,112/p.w);p.x=64-p.w*scale/2;p.w*=scale;p.h*=scale;if(isImageLoaded("qrc:/art/flora.png"))PixelArt.plant(c,p,92)}
+ }
+ NavButton {text:qsTr("Try %1").arg(panel.trText(modelData.name));Layout.fillWidth:true;onClicked:{backend.startPractice(modelData.id);panel.focusGame()}}
+ }
+ }
  }
  ColumnLayout {visible:panel.station==="forge";Layout.fillWidth:true
  Label {text:qsTr("Craft equipment for your expeditions.");wrapMode:Text.WordWrap;Layout.fillWidth:true;color:"#b9cbb4"}

@@ -2,6 +2,7 @@
 #include "progress.h"
 #include "transactionfeed.h"
 #include <QElapsedTimer>
+#include <QJSEngine>
 #include <QNetworkAccessManager>
 #include <QObject>
 #include <QRandomGenerator>
@@ -21,6 +22,8 @@ class Backend : public QObject {
     Q_INVOKABLE void changeClass(const QString &id);
     Q_INVOKABLE void dismissAnnouncement();
     Q_INVOKABLE void start(bool demo = false);
+    Q_INVOKABLE QVariantMap previewPlant(const QString &sats) const;
+    Q_INVOKABLE void startPractice(const QString &model = "all");
     Q_INVOKABLE void chooseSkill(int choice);
     Q_INVOKABLE void buy(const QString &branch);
     Q_INVOKABLE void craft(const QString &item);
@@ -53,6 +56,7 @@ class Backend : public QObject {
     static QVariantMap plant(qulonglong sats, int tier = 1);
 
   private:
+    QJSEngine visualEngine; // Destroy before the application and Qt global JS caches.
     mutable QVariantMap cachedStats;
     Progress progress;
     TransactionQueue feed;
@@ -72,6 +76,7 @@ class Backend : public QObject {
     quint32 replaySeed = 0;
     bool networkEnabled, active = true, inFlight = false, demoMode = false, held = false, jetHeld = false,
                          airJumpUsed = false, emergencyUsed = false, paid = false;
+    QString practiceModel;
     int tier = 1, index = 0, score = 0, collected = 0, rescues = 0, rescuesGranted = 0, pickups = 0;
     quint32 seed = 0;
     qint64 updated = 0, lastResearch = 0;

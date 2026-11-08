@@ -28,7 +28,46 @@ test('torso, gloves, boots and pouch deform with the six run poses instead of st
  assert.ok(glove0.some(([x,y])=>Math.hypot(x-2.5,y-22.9)<2));assert.ok(glove1.some(([x,y])=>Math.hypot(x-9.3,y-22.4)<2));
  assert.deepEqual(renderer.wearablePixels(null,0),[]);
 });
-test('all environment motifs have unique regions; giant plants use a single viewport-bounded blit',()=>{
+test('all environment motifs have unique regions; giant plants use bounded visible modules',()=>{
  const Data=Function(read('EnvironmentRegions.js')+'\nreturn {regions};')();assert.equal(Object.keys(Data.regions).length,24);assert.ok(Data.regions.flora_cannabis);assert.equal(new Set(Object.values(Data.regions).map(r=>r.atlas+':'+r.rect)).size,24);
- const environment=Function('Data',read('EnvironmentArt.js')+'\nreturn {plant};')(Data);const calls=[],ctx={drawImage:(...args)=>calls.push(args)};environment.plant(ctx,{type:'sequoia',x:500,w:96,h:1e12},284);assert.equal(calls.length,1);assert.ok(calls[0].slice(1).every(Number.isFinite));assert.ok(calls[0].at(-1)<=360);assert.ok(calls[0].at(-3)>=0);
+ const Visual=Function(read('PlantVisual.js')+'\nreturn {descriptor};')();const environment=Function('Data','Visual',read('EnvironmentArt.js')+'\nreturn {plant};')(Data,Visual);const calls=[],ctx={save(){},restore(){},translate(){},scale(){},fillRect(){},drawImage:(...args)=>calls.push(args)};environment.plant(ctx,{type:'sequoia',x:500,w:96,h:1e12},284);assert.ok(calls.length>0&&calls.length<100);for(const call of calls){assert.ok(call.slice(1).every(Number.isFinite));assert.ok(call.at(-1)<=360);assert.ok(call.at(-3)>=0);}
+});
+
+const Visual=Function(read('PlantVisual.js')+'\nreturn {descriptor};')();
+const Data=Function(read('EnvironmentRegions.js')+'\nreturn {regions};')();
+const botanical=Function('Data','Visual',read('EnvironmentArt.js')+'\nreturn {plant};')(Data,Visual);
+function drawing(p){const calls=[];const c={save(){},restore(){},translate(...a){calls.push(['translate',...a]);},scale(...a){calls.push(['scale',...a]);},drawImage(...a){calls.push(['image',...a]);},fillRect(...a){calls.push(['fill',this.fillStyle,...a]);}};botanical.plant(c,p,284);return calls;}
+test('species boundaries, zero, anchors and unbounded height retain the current monotone curve',()=>{
+ const bounds=[0,100000,350000,800000,1000000,100000000,1000000000,100000000000];
+ const types=['flower','tulip','rose','fern','birch','pine','oak','sequoia'];
+ for(let i=0;i<bounds.length;i++){
+  const a=bounds[i],b=bounds[i+1]||1e12,values=[a,a+1,Math.floor(Math.sqrt(Math.max(1,a)*b)),b-1,b].sort((a,b)=>a-b);
+  let prev=0;for(const v of values){const p=plant(String(v),config);assert.ok(p.h>=prev);prev=p.h;}
+  assert.equal(plant(String(a),config).type,types[i]);if(i)assert.equal(plant(String(a-1),config).type,types[i-1]);
+ }
+ assert.equal(height('0',config),4);assert.equal(height('1',config),4);
+ for(const [v,h]of config.anchors)assert.equal(height(String(v),config),h);
+ assert.ok(height('10000000000000',config)>365);
+ assert.equal(plant('42000000',config).type,'cannabis');assert.equal(plant('1000000',config).type,'birch');
+});
+test('shared Qt/web fixtures, generated adapter and deterministic drawing agree',()=>{
+ const fixtures=JSON.parse(readFileSync(new URL('../tests/plant-visual.json',import.meta.url)));
+ assert.equal(readFileSync(new URL('./plant-visual.mjs',import.meta.url),'utf8'),readFileSync(new URL('../src/PlantVisual.js',import.meta.url),'utf8').replace('.pragma library','// Generated from src/PlantVisual.js by tools/sync-plant-visual.mjs.')+'\nexport {descriptor};\n');
+ for(const f of fixtures){const p=plant(f.sats,config);assert.equal(p.h,f.h);assert.equal(p.w,f.w);assert.deepEqual(Visual.descriptor(p.type,p.sats,p.h,f.txid,f.fixture),f.visual);p.visual=f.visual;p.x=200;assert.deepEqual(drawing(p),drawing(structuredClone(p)));}
+ for(const sats of ['70000','200000','600000','900000','90000000','900000000','90000000000','300000000000','42000000']){
+  const p={...plant(sats,config),x:200};const pictures=new Set();for(let i=0;i<4;i++){p.visual=Visual.descriptor(p.type,p.sats,p.h,String(i).padStart(64,'0'),'');pictures.add(JSON.stringify(drawing(p)));}assert.equal(pictures.size,4,p.type);
+ }
+});
+test('visual creation consumes no random stream; frozen obstacles survive incoming data and waiting freezes resources',()=>{
+ const g=expedition(0);g.spawnPlant();const before=structuredClone(g.obstacles);g.receive([{txid:'e'.repeat(64),value:'1000000000'}]);assert.deepEqual(g.obstacles,before);
+ const random=Math.random;try{Math.random=()=>{throw Error('visual RNG leaked');};for(let i=0;i<50;i++)Visual.descriptor('birch','10000000',48,String(i),'');}finally{Math.random=random;}
+ g.phase='waiting';const state=[g.time,g.distance,g.fuel,g.spawn,g.invulnerable];g.tick(.25);assert.deepEqual([g.time,g.distance,g.fuel,g.spawn,g.invulnerable],state);
+});
+test('viewport clipping bounds work and coordinates independently of total height',()=>{
+ for(const h of [365,1e6,1e12])for(const x of [-80,0,600,700]){
+  const p={type:'sequoia',sats:'1000000000000',txid:'420',x,w:96,h};const ops=drawing(p);assert.ok(ops.length<350);
+  for(const a of ops)for(const v of a.slice(1))if(typeof v==='number')assert.ok(Number.isFinite(v));
+  for(const a of ops.filter(a=>a[0]==='image')){const [dx,dy,dw,dh]=a.slice(-4);assert.ok(dx>=0&&dy>=0&&dx+dw<=640.00001&&dy+dh<=360.00001);}
+  if(x===700)assert.equal(ops.length,0);
+ }
 });

@@ -3,6 +3,7 @@
 <file alias="CampView.qml">CampView.qml</file>
 <file alias="CharacterView.qml">CharacterView.qml</file>
 <file alias="StationPanel.qml">StationPanel.qml</file>
+<file alias="PlantVisual.js">PlantVisual.js</file>
 <file alias="EnvironmentArt.js">EnvironmentArt.js</file>
 <file alias="EnvironmentRegions.js">EnvironmentRegions.js</file>
 <file alias="art/camp.png">../assets/runtime/camp.png</file>

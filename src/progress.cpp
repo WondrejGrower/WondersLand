@@ -191,9 +191,14 @@ QStringList Progress::unlocks() const {
     auto result = data["unlocked"].toStringList();
     for (auto v : Balance::list("progression")) {
         auto rule = v.toMap();
+        bool attributeReached = false;
+        if (rule["attributeLevel"].toInt() > 0)
+            for (auto branch : Balance::list("workshop"))
+                if (data["workshop"].toMap().value(branch.toMap()["id"].toString()).toInt() >= rule["attributeLevel"].toInt())
+                    attributeReached = true;
         if (data["runs"].toInt() >= rule["runs"].toInt() &&
             data["totalDistance"].toDouble() >= rule["total"].toDouble() &&
-            data["bestDistance"].toDouble() >= rule["best"].toDouble())
+            (data["bestDistance"].toDouble() >= rule["best"].toDouble() || attributeReached))
             if (!result.contains(rule["id"].toString()))
                 result.append(rule["id"].toString());
     }
@@ -226,6 +231,7 @@ bool Progress::buy(const QString &branch) {
         return false;
     levels[branch] = level + 1;
     data["workshop"] = levels;
+    updateUnlocks();
     data["coins"] = data["coins"].toInt() - cost;
     return commit(previous);
 }

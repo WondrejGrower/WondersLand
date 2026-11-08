@@ -1,6 +1,8 @@
 #include "backend.h"
 #include "balance.h"
 #include <QClipboard>
+#include <QJSEngine>
+#include <QFile>
 #include <QDateTime>
 #include <QDesktopServices>
 #include <QDir>
@@ -18,6 +20,18 @@
 #include <QUuid>
 #include <algorithm>
 #include <cmath>
+static QVariantMap plantVisual(QJSEngine &engine, const QVariantMap &p, const QString &fixture) {
+    if (!engine.globalObject().property("descriptor").isCallable()) {
+        QFile file(":/PlantVisual.js");
+        if (!file.open(QIODevice::ReadOnly)) qFatal("Missing PlantVisual.js");
+        QString source = QString::fromUtf8(file.readAll());
+        source.remove(".pragma library");
+        if (engine.evaluate(source).isError()) qFatal("Invalid PlantVisual.js");
+    }
+    return engine.globalObject().property("descriptor").call({
+        p["type"].toString(), p["sats"].toString(), p["h"].toDouble(),
+        p["txid"].toString(), fixture}).toVariant().toMap();
+}
 static QString saveLocation(QString p) {
     return p.isEmpty()
                ? QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/progress.json"
@@ -91,6 +105,7 @@ QVariantMap Backend::state() const {
             {"poolSize",
              (phase == "camp" || phase == "over" || phase == "select") ? feed.recent().size() : feed.size()},
             {"demo", demoMode},
+            {"practiceModel", practiceModel},
             {"replay", replayMode},
             {"y", y},
             {"velocity", velocity},
@@ -354,6 +369,24 @@ void Backend::applySkill(const QVariantMap &offer) {
     notice = offer["name"].toString();
     recordEvent(QVariantMap{{"event", "skill"}, {"time", activeTime}, {"id", id}, {"rank", next}});
 }
+QVariantMap Backend::previewPlant(const QString &sats) const {
+    const auto value = sats.toULongLong();
+    const auto h = Balance::height(value, 1);
+    return {{"h", h}, {"w", Balance::width(h)}, {"type", Balance::species(value)}};
+}
+void Backend::startPractice(const QString &model) {
+    if (model != "all" && Balance::find("trainingModels", model).isEmpty())
+        return;
+    start(true);
+    if (!demoMode || phase != "select")
+        return;
+    practiceModel = model;
+    choices.clear();
+    runStarted = true;
+    phase = "running";
+    elapsed.restart();
+    emit changed();
+}
 void Backend::start(bool demo) {
     cachedStats.clear();
     if (progress.data["character"].toMap().isEmpty() || !progress.error.isEmpty())
@@ -372,6 +405,7 @@ void Backend::start(bool demo) {
     station.clear();
     tier = 1;
     demoMode = demo;
+    practiceModel.clear();
     runId = QUuid::createUuid().toString(QUuid::WithoutBraces);
     paid = false;
     runStarted = false;
@@ -517,16 +551,21 @@ void Backend::setActive(bool enabled) {
 }
 void Backend::spawnPlant() {
     QVariantMap row;
+    QString fixture;
     if (demoMode) {
-        static const qulonglong values[] = {50000,     250000,   600000,     900000,         10000000,
-                                            100000000, 42000000, 1000000000, 100000000000ULL};
-        row = {{"txid", ""}, {"value", QString::number(values[index % 9])}};
+        const auto models = Balance::list("trainingModels");
+        const auto model = !practiceModel.isEmpty() && practiceModel != "all"
+                               ? Balance::find("trainingModels", practiceModel)
+                               : models[index % models.size()].toMap();
+        fixture = model["id"].toString();
+        row = {{"txid", ""}, {"value", model["sats"]}};
     } else
         row = feed.take();
     if (row.isEmpty())
         return;
     auto p = plant(row["value"].toULongLong(), tier);
     p["txid"] = row["txid"];
+    p["visual"] = plantVisual(visualEngine, p, fixture);
     p["status"] = demoMode ? "demo" : "observed";
     p["observedAt"] = row["observedAt"];
     p["x"] = 680.;
@@ -645,7 +684,7 @@ void Backend::advance(double dt) {
         }
         v = c;
     }
-    if (progress.unlocked("flying") && activeTime >= nextUpgrade && flying.isEmpty()) {
+    if (practiceModel.isEmpty() && progress.unlocked("flying") && activeTime >= nextUpgrade && flying.isEmpty()) {
         auto offer = offers(1, (pickups + 1) % 3 == 0).first().toMap();
         offer["age"] = -2.;
         offer["x"] = 600.;

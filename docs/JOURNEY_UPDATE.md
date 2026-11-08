@@ -38,7 +38,8 @@ limits, finite fuel, double jumps and two-rescue budget remain.
 Progression gates use completed live runs, cumulative live metres and best
 single live run separately. Training/replay contribute none. Training and
 Strength open after one live run; other stats and flying upgrades at 150/250
-cumulative metres; workshop/wardrobe at 500; garden at 1000; Diamond
+cumulative metres; Runic Workshop at best single live run 1000 m OR level 10 in any one
+Training Grounds attribute; Wardrobe on reaching the second region (best 500 m); garden at 1000; Diamond
 and jetpack at total 3000 AND best 1500. Additional research slots at total
 3000 and total 6000/best 3000. These are initial tuning values, not calibrated
 human playtime targets. Roles are selected at character creation and cannot change in camp. Research
@@ -99,3 +100,13 @@ game time jump trajectories and collision geometry are identical.
 
 Balance version is wl-0.3-journey-3. The 2% cap is a conservative initial choice,
 not a claim of completed long-term player balancing.
+
+## Practice models
+
+Training Grounds retains permanent stat purchases and now offers a catalogue
+of every expedition obstacle model, with previews, single-model repetition
+and an all-model sequence. `trainingModels` in balance.json defines canonical
+sample amounts; dimensions use the same curve and collision physics as live
+expeditions. Practice starts directly with current role, attributes and equipment,
+without random starting skills or flying upgrades. Retry repeats the selected
+model. Practice never saves rewards, records, checkpoints or progression.

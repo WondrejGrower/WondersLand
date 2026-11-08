@@ -46,8 +46,8 @@ node tools/build-environment-atlases.mjs # Node >=22 and ImageMagick 7
 Browser startup decodes each of the two atlas PNGs once. Qt loads them once
 per Canvas from its bundled resources. The shared `EnvironmentArt.js` draws
 cached source regions with nearest-neighbour sampling and clips in world
-coordinates before scaling, so even a huge transaction tree uses one bounded
-blit. No frame performs an image download, pixel extraction or atlas rebuild.
+coordinates before scaling, so even a huge transaction tree uses a bounded number of visible
+modules. No frame performs an image download, pixel extraction or atlas rebuild.
 The two atlases together transfer about 5 MB before HTTP transport compression.
 
 Wearables now use pose-specific shoulder/elbow/wrist/hip/foot attachment points.
@@ -56,3 +56,11 @@ the wrist. The body panel deforms with the shoulder/hip axis, the pouch follows
 the hips, and boots/gloves rotate with their limbs. Completed wearable layers
 are cached per item/pose. Camp idle breathing uses a slower two-frame cycle.
 [Clothed and isolated wearable poses](../../docs/browser/animated-clothing-layers.png).
+
+## Transaction morphology · graphics v1
+
+`EnvironmentArt.js` now assembles crowns/shoots from the existing regions,
+with stems and bark at whole logical pixels. `PlantVisual.js` supplies stable
+amount growth bands and FNV-1a TXID architectures, shared with the native backend.
+No PNG inputs or atlas coordinates changed; the atlas regeneration command above
+remains authoritative. [Implementation, test results and synthetic gallery](../../docs/PLANT_MORPHOLOGY.md).

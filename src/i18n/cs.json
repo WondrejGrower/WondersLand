@@ -275,5 +275,17 @@
   "Increases coins earned during live expeditions. Training and recorded runs grant no permanent rewards.": "Zvyšuje počet mincí získaných při živých výpravách. Trénink ani záznamy nedávají trvalé odměny.",
   "Slows expedition time very slightly, up to 2% at level 50. Movement, jumps, obstacles and run timers slow together. Camp and research keep normal time.": "Velmi mírně zpomaluje čas výpravy, nejvýš o 2 % na úrovni 50. Pohyb, skoky, překážky i časovače zpomalují společně. Tábor a výzkum běží běžným tempem.",
   "Time slowdown %1 → %2%": "Zpomalení času %1 → %2 %",
-  "Blackberry shrub": "Ostružinový keř"
+  "Blackberry shrub": "Ostružinový keř",
+  "Test your build": "Vyzkoušej svůj build",
+  "Choose a model to practice repeatedly, or try them all. Uses your current attributes and equipment, without random skill upgrades. No permanent rewards.": "Vyber model pro opakované pokusy, nebo vyzkoušej všechny. Použijí se tvé současné atributy a výbava, bez náhodných vylepšení schopností. Bez trvalých odměn.",
+  "Try all models": "Vyzkoušet všechny modely",
+  "Try %1": "Vyzkoušet: %1",
+  "Flower": "Luční květ",
+  "Tulip": "Tulipán",
+  "Fern": "Kapradina",
+  "Birch": "Bříza",
+  "Pine": "Smrk",
+  "Cannabis": "Konopí",
+  "Oak": "Dub",
+  "Sequoia": "Sekvoje"
 }

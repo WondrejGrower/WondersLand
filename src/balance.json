@@ -467,15 +467,16 @@
       "id": "forge",
       "name": "Runic Workshop",
       "runs": 1,
-      "total": 500,
-      "best": 0
+      "total": 0,
+      "best": 1000,
+      "attributeLevel": 10
     },
     {
       "id": "wardrobe",
       "name": "Wardrobe",
       "runs": 1,
-      "total": 500,
-      "best": 0
+      "total": 0,
+      "best": 500
     },
     {
       "id": "garden",
@@ -651,5 +652,52 @@
     "feet": "feet_brown_leather_boots",
     "hands": "hands_leather_work_gloves",
     "belt": "belt_leather_pouch"
-  }
+  },
+  "trainingModels": [
+    {
+      "id": "flower",
+      "name": "Flower",
+      "sats": "50000"
+    },
+    {
+      "id": "tulip",
+      "name": "Tulip",
+      "sats": "250000"
+    },
+    {
+      "id": "rose",
+      "name": "Blackberry shrub",
+      "sats": "600000"
+    },
+    {
+      "id": "fern",
+      "name": "Fern",
+      "sats": "900000"
+    },
+    {
+      "id": "birch",
+      "name": "Birch",
+      "sats": "10000000"
+    },
+    {
+      "id": "pine",
+      "name": "Pine",
+      "sats": "100000000"
+    },
+    {
+      "id": "cannabis",
+      "name": "Cannabis",
+      "sats": "42000000"
+    },
+    {
+      "id": "oak",
+      "name": "Oak",
+      "sats": "1000000000"
+    },
+    {
+      "id": "sequoia",
+      "name": "Sequoia",
+      "sats": "100000000000"
+    }
+  ]
 }
