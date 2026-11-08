@@ -60,3 +60,12 @@ měsíčního žebříčku spusť také npm run test:monthly. Společná cloudov
 v SQLite Durable Objectu MonthlyLeaderboard, binding LEADERBOARD, jméno
 monthly-v1. Při aktualizaci tato persistentní ID nemaž/nepřejmenovávej bez migrace.
 Podrobnosti a limity komunitních výsledků: docs/FULLSCREEN_MONTHLY.md.
+
+Aktuální závazný přehled balancu pro hráče a LLM: [docs/BALANCE.md](docs/BALANCE.md).
+Před mechanickou změnou ho přečti; starší návrh hranice malého konopí byl
+později nahrazen výslovným schválením základního skoku přes keře a kapradiny.
+Nezaměňuj komunitní klientské výsledky za serverově ověřené placené ranked běhy.
+
+PWA: [docs/PWA.md](docs/PWA.md), ověření `npm run test:pwa`. Service worker
+smí ukládat jen offline oznámení; nikdy ne API, privátní klíče ani starý herní
+shell s balancem. Nezaváděj offline replay vydávaný za živý mempool.

@@ -330,5 +330,13 @@
   "Your character name and live results appear in the monthly leaderboard.": "Jméno tvé postavy a živé výsledky se zobrazují v měsíčním žebříčku.",
   "Jump": "Skok",
   "Fly": "Let",
-  "Fuel %1 s · hold Fly": "Palivo %1 s · drž Let"
+  "Fuel %1 s · hold Fly": "Palivo %1 s · drž Let",
+  "Install WondersLand": "Nainstalovat WondersLand",
+  "Install app": "Nainstalovat aplikaci",
+  "App installed": "Aplikace je nainstalovaná",
+  "Add WondersLand to your home screen to open it like an app.": "Přidej WondersLand na plochu a otevírej ho jako aplikaci.",
+  "Android: open the browser menu and choose Install app or Add to Home screen.": "Android: otevři nabídku prohlížeče a vyber Nainstalovat aplikaci nebo Přidat na plochu.",
+  "iPhone / iPad: open this site in Safari, tap Share, then Add to Home Screen. Keep Open as Web App enabled if offered.": "iPhone / iPad: otevři web v Safari, klepni na Sdílet a Přidat na plochu. Pokud se nabídne Otevřít jako webovou aplikaci, nech to zapnuté.",
+  "An internet connection is needed to open the game and receive live transactions. Your progress is saved on this device.": "K otevření hry a příjmu živých transakcí potřebuješ internet. Postup se ukládá na tomto zařízení.",
+  "Before installing, export your progress in Settings. If the installed app opens with a new character, import that file; some browsers keep app storage separate.": "Před instalací si v Nastavení exportuj postup. Pokud aplikace otevře novou postavu, soubor importuj; některé prohlížeče mají pro aplikaci oddělené úložiště."
 }

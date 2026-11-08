@@ -230,3 +230,14 @@ thumb controls and orientation/VisualViewport resizing. Training previews have
 independent clipping. See FULLSCREEN_MONTHLY.md and `npm run test:mobile` for
 four emulated phone sizes and touch input coverage. Real phone testing remains
 Wondrej's device check; browser fullscreen availability is platform-dependent.
+
+### Installable mobile PWA · 2026-11-08
+
+Manifest, install icons, Apple home-screen metadata, EN/CS installation guidance
+and a network-first navigation service worker are implemented. Only the offline
+notice is cached; live APIs and private player data are excluded.
+`npm run test:pwa` passed Chromium CDP installability with a persistent profile,
+icon sizes, one-shot prompt UI, offline/reconnect and unchanged local storage.
+Browser journey, mobile, monthly and environment suites, 43 Node tests, native
+build/tests (33 Qt + 3 Python) and deploy dry-run also passed.
+See [PWA.md](PWA.md) for installation, cache policy, screenshots and limitations.

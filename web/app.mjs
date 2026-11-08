@@ -2,6 +2,7 @@ import {Game,fresh,migrate,outfit,plant} from './core.mjs';
 import {drawCamp,drawRun} from './art.mjs';
 import {descriptor} from './plant-visual.mjs';
 import {inputKey} from './input.mjs';
+import {setupPwa} from './pwa.mjs';
 import {viewport,screenToWorld,worldToPercent} from './viewport.mjs';
 import {LeaderboardClient} from './leaderboard-client.mjs';
 import {TransactionFeed} from './feed.mjs';
@@ -30,6 +31,7 @@ async function toggleFullscreen(){if(document.fullscreenElement)await document.e
 document.addEventListener('fullscreenchange',syncFullscreen);$('fullscreen').onclick=()=>toggleFullscreen();$('leave-fullscreen').onclick=()=>toggleFullscreen();
 let overlay='',lastView='',revision=0,net='connecting',appearance={hair:'#5e3936',skin:'#dfaf87',shirt:'#679e86',hairStyle:0},nameDraft='',lastClock=0;
 let boardMonth='',boardMonthExplicit=false,boardMetric='best',boardData=null,boardLoading=false,boardFailed=false,boardRequest=0;
+const pwa=setupPwa(()=>touch());
 const board=new LeaderboardClient({onChange:()=>touch()});
 function bindScores(){game.onLiveRunFinished=result=>board.finish(result);}
 bindScores();board.recover(data?.activeRun);board.flush();addEventListener('online',()=>board.flush());
@@ -71,7 +73,8 @@ function menuHtml(){const g=game,d=g.p;
  if(overlay==='inventory')return inventoryHtml();
  if(overlay==='import-confirm')return title(t('Replace browser progress with this file?'))+button(t('Cancel'),'settings')+button(t('Import progress'),'import-apply');
  if(overlay==='reset')return title(t('Reset character and all progress?'))+p(t('This erases the character, coins, equipment, research and records.'))+p(t('Public monthly leaderboard entries are kept.'))+button(t('Cancel'),'settings')+button(t('Reset progress'),'reset');
- if(overlay==='settings')return title(t('Settings'))+'<h2>'+t('Language')+'</h2>'+button('English','language','en',false,language==='en')+button('Čeština','language','cs',false,language==='cs')+button(t('Export progress'),'export')+button(t('Import progress'),'import')+p(t('Import can also transfer progress from the native app. The selected file replaces browser progress after confirmation.'))+button(t('Reset character and all progress?'),'reset-confirm')+button(t('Back'),'back');
+ if(overlay==='install')return title(t('Install WondersLand'))+p(t('Add WondersLand to your home screen to open it like an app.'))+(pwa.canInstall?button(t('Install app'),'install-native'):'')+p(t('Android: open the browser menu and choose Install app or Add to Home screen.'))+p(t('iPhone / iPad: open this site in Safari, tap Share, then Add to Home Screen. Keep Open as Web App enabled if offered.'))+p(t('An internet connection is needed to open the game and receive live transactions. Your progress is saved on this device.'))+p(t('Before installing, export your progress in Settings. If the installed app opens with a new character, import that file; some browsers keep app storage separate.'))+button(t('Back'),'settings');
+ if(overlay==='settings')return title(t('Settings'))+'<h2>'+t('Language')+'</h2>'+button('English','language','en',false,language==='en')+button('Čeština','language','cs',false,language==='cs')+button(t(pwa.installed?'App installed':'Install app'),'install','',pwa.installed)+button(t('Export progress'),'export')+button(t('Import progress'),'import')+p(t('Import can also transfer progress from the native app. The selected file replaces browser progress after confirmation.'))+button(t('Reset character and all progress?'),'reset-confirm')+button(t('Back'),'back');
  if(overlay==='help')return title(t('A small field guide'))+p(t('MENUS: WASD or arrows to select, E to confirm, Esc to go back. Mouse also works.\nCAMP: WASD or arrows to walk, E at the portal to choose a skill and start from 0 m.\nRUN: Space / W / Up or click to jump; hold for height. F operates an acquired jetpack. P / Esc pauses. B returns to camp. F11 changes fullscreen.\n\nExplore one continuous forest. Systems unlock through live expeditions and distance. Training grants no permanent rewards. Coins are game points, not bitcoin.'))+button(t('Back'),'back');
  if(g.phase==='creation')return title(t('Create your wanderer'))+p(t('One character. Endless expeditions.'))+(blocked?p(t('Saved progress is damaged. It was not overwritten. Reset requires confirmation.')):'')+`<input id="name" type="text" maxlength="24" autocomplete="off" placeholder="${escape(t('Name'))}" value="${escape(nameDraft)}"><div class="appearance"><canvas id="portrait" width="24" height="40"></canvas><div>${appearanceButtons()}</div></div>`+'<h2>'+t('Starting outfit')+'</h2><div class="equipment-slots">'+outfitButtons()+'</div>'+'<h2>'+t('Choose your role')+'</h2><div class="roles">'+config.classes.map(c=>button(t(c.name),'creation-role',c.id,false,creationRole===c.id)).join('')+'</div>'+p(roleDescription(creationRole))+p(t('Your role is permanent. Changing it requires resetting your character and progress.'))+button(t('Make camp'),'create','',!nameDraft.trim()||blocked);
  if(g.phase==='select')return title(t('Choose your starting skill'))+g.choices.map((s,i)=>button(t(s.name)+'\n'+skillText(s),'skill',i)).join('')+(!g.demo&&!g.replay?p(t('Your character name and live results appear in the monthly leaderboard.')):'')+p(t('WASD / arrows · select   E · confirm   Esc · camp'));
@@ -100,6 +103,8 @@ function back(){if(document.activeElement?.tagName==='INPUT'){document.activeEle
 function download(name,obj){const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function action(act,arg){try{
  if(act==='leaderboard'||act==='settings'||act==='help'||(act==='inventory'&&game.phase==='camp')){game.moves.clear();game.target=null;if(['running','waiting','countdown'].includes(game.phase))game.pause();overlay=act;if(act==='leaderboard'){if(!boardMonthExplicit)boardMonth='';if(board.queue.length)board.flush().then(()=>loadBoard());else loadBoard();}}
+ else if(act==='install')overlay='install';
+ else if(act==='install-native'){pwa.install();}
  else if(act==='board-metric'){boardMetric=arg;loadBoard();}
  else if(act==='board-refresh'){board.flush().then(()=>loadBoard());}
  else if(act==='language'){language=arg;localStorage.setItem('wl-language',arg);document.documentElement.lang=arg;}

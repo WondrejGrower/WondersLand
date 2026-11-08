@@ -1,5 +1,8 @@
 # Continuous forest and accessible menus · 0.3.1
 
+Current balance reference: [BALANCE.md](BALANCE.md), rules `wl-0.3-journey-6`.
+Later explicit playtest decisions there supersede historical tuning below.
+
 This revision supersedes the tier selection, onboarding, language and viewport
 sections of BRIEF_0_3.md and IMPLEMENTATION_0_3.md. Native Qt/QML implementation
 on game/roguelite-0.3. The primary delivery target is now the browser game on wondersland.online:

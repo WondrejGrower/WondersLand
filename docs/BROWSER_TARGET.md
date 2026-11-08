@@ -9,7 +9,7 @@ A working browser client now lives in web/ (Canvas/ES modules), with a
 Cloudflare Worker and a repeatable root npm build. Native Qt/QML remains
 functional in src/. Balance, translations and art are shared. The simulation
 ports have separate runtime code and tests; their RNG streams are not claimed
-to be identical. Preserve IDs, exact decimal satoshi strings, schema 4, camera
+to be identical. Preserve IDs, exact decimal satoshi strings, schema 5, camera
 independence and migration behavior across both implementations.
 
 Build/deployment: CLOUDFLARE_DEPLOYMENT.md.

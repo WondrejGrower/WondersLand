@@ -2,6 +2,9 @@
 
 # WondersLand [WL] · 0.3.3
 
+**Pro hráče i LLM: [Jak funguje aktuální balance](docs/BALANCE.md).**
+Mempool má přednost: i první transakce může vytvořit nepřekonatelnou sekvoji.
+
 Nativní Qt/QML hra: dojdi k portálu, stiskni E, vyber schopnost a potvrď E.
 Každý běh začíná od 0 m. Oblasti jednoho lesa se mění při 500, 1 500, 3 000
 a 6 000 m; rozměry skutečných transakcí určuje jediná velikostní křivka.
@@ -18,6 +21,9 @@ npm run test:browser
 npm run deploy:check
 npm run dev
 ```
+
+**Mobilní aplikace (PWA):** [instalace na Android/iPhone](docs/PWA.md).
+V Nastavení hry vyber Nainstalovat aplikaci; na iPhonu použij Safari → Sdílet → Přidat na plochu.
 
 Cloudflare: [nasazení přes GitHub](docs/CLOUDFLARE_DEPLOYMENT.md).
 [Webové náhledy, výsledky kontrol a ověřené nasazení](docs/BROWSER_VERIFICATION.md).
