@@ -1,0 +1,297 @@
+{
+  "version": 1,
+  "date": "2026-11-08",
+  "project": "WondersLand",
+  "status": "visual-source-not-runtime-sprite-atlas",
+  "brief": "../../../docs/CHARACTER_INVENTORY_BRIEF.md",
+  "sources": [
+    {
+      "file": "starter-customization-v2.png",
+      "kind": "approved-style-edited-customization-source",
+      "width": 1374,
+      "height": 1145,
+      "alpha": true,
+      "bytes": 1243389,
+      "sha256": "7af4d4d548887a1f1351d65758afc95ff5d773d7b14109ada136aa504c1ec82f"
+    },
+    {
+      "file": "character-roster-reference.jpg",
+      "kind": "character-style-reference",
+      "width": 1448,
+      "height": 1086,
+      "alpha": false,
+      "bytes": 291024,
+      "sha256": "2c8f5b837744fdc409c8bbf6c045c8a02b390d7eb130a11bc8f6d324597884b1"
+    },
+    {
+      "file": "forest-camp-reference.jpg",
+      "kind": "environment-style-reference",
+      "width": 1536,
+      "height": 768,
+      "alpha": false,
+      "bytes": 294859,
+      "sha256": "e24af36d3ed8b2870637a9002c44525149f4f0f2a4d6c07a1ffa456c9b49f1c2"
+    }
+  ],
+  "layout": {
+    "columns": 6,
+    "rows": 5,
+    "indexing": "one-based visual positions only; inspect actual sprite bounds before cropping",
+    "warning": "Source artwork is not aligned animation layers. Do not infer runtime frame coordinates or resize the full sheet into a character."
+  },
+  "components": [
+    {
+      "id": "hair_short_tousled",
+      "row": 1,
+      "column": 1,
+      "slot": "appearance.hairStyle",
+      "category": "short_or_boyish_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hair_short_side_part",
+      "row": 1,
+      "column": 2,
+      "slot": "appearance.hairStyle",
+      "category": "short_or_boyish_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hair_short_textured",
+      "row": 1,
+      "column": 3,
+      "slot": "appearance.hairStyle",
+      "category": "short_or_boyish_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hair_buzz_cut",
+      "row": 1,
+      "column": 4,
+      "slot": "appearance.hairStyle",
+      "category": "short_or_boyish_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hair_short_crop",
+      "row": 1,
+      "column": 5,
+      "slot": "appearance.hairStyle",
+      "category": "short_or_boyish_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hair_short_curls",
+      "row": 1,
+      "column": 6,
+      "slot": "appearance.hairStyle",
+      "category": "short_or_boyish_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hair_quiff",
+      "row": 2,
+      "column": 1,
+      "slot": "appearance.hairStyle",
+      "category": "short_or_boyish_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hair_short_spiky",
+      "row": 2,
+      "column": 2,
+      "slot": "appearance.hairStyle",
+      "category": "short_or_boyish_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hair_medium_wavy",
+      "row": 2,
+      "column": 3,
+      "slot": "appearance.hairStyle",
+      "category": "short_or_boyish_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hair_undercut",
+      "row": 2,
+      "column": 4,
+      "slot": "appearance.hairStyle",
+      "category": "short_or_boyish_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hair_compact_afro",
+      "row": 2,
+      "column": 5,
+      "slot": "appearance.hairStyle",
+      "category": "short_or_boyish_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hair_swept_back",
+      "row": 2,
+      "column": 6,
+      "slot": "appearance.hairStyle",
+      "category": "short_or_boyish_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hair_bob",
+      "row": 3,
+      "column": 1,
+      "slot": "appearance.hairStyle",
+      "category": "longer_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hair_long_loose",
+      "row": 3,
+      "column": 2,
+      "slot": "appearance.hairStyle",
+      "category": "longer_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hair_ponytail",
+      "row": 3,
+      "column": 3,
+      "slot": "appearance.hairStyle",
+      "category": "longer_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hair_braid",
+      "row": 3,
+      "column": 4,
+      "slot": "appearance.hairStyle",
+      "category": "longer_hairstyle",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "head_straw_hat",
+      "row": 3,
+      "column": 5,
+      "slot": "head",
+      "category": "basic_starter_clothing",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "head_forest_hood",
+      "row": 3,
+      "column": 6,
+      "slot": "head",
+      "category": "basic_starter_clothing",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "torso_green_tunic",
+      "row": 4,
+      "column": 1,
+      "slot": "torso",
+      "category": "basic_starter_clothing",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "torso_work_apron",
+      "row": 4,
+      "column": 2,
+      "slot": "torso",
+      "category": "basic_starter_clothing",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "torso_mustard_vest",
+      "row": 4,
+      "column": 3,
+      "slot": "torso",
+      "category": "basic_starter_clothing",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "torso_rust_coat",
+      "row": 4,
+      "column": 4,
+      "slot": "torso",
+      "category": "basic_starter_clothing",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "torso_teal_scarf",
+      "row": 4,
+      "column": 5,
+      "slot": "torso",
+      "category": "basic_starter_clothing",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "torso_slate_cape",
+      "row": 4,
+      "column": 6,
+      "slot": "torso",
+      "category": "basic_starter_clothing",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "legs_brown_trousers",
+      "row": 5,
+      "column": 1,
+      "slot": "legs",
+      "category": "basic_starter_clothing",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "legs_charcoal_trousers",
+      "row": 5,
+      "column": 2,
+      "slot": "legs",
+      "category": "basic_starter_clothing",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "feet_brown_leather_boots",
+      "row": 5,
+      "column": 3,
+      "slot": "feet",
+      "category": "basic_starter_clothing",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "feet_dark_leather_boots",
+      "row": 5,
+      "column": 4,
+      "slot": "feet",
+      "category": "basic_starter_clothing",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "hands_leather_work_gloves",
+      "row": 5,
+      "column": 5,
+      "slot": "hands",
+      "category": "basic_starter_clothing",
+      "grantsGameplayBonus": false
+    },
+    {
+      "id": "belt_leather_pouch",
+      "row": 5,
+      "column": 6,
+      "slot": "belt",
+      "category": "basic_starter_clothing",
+      "grantsGameplayBonus": false
+    }
+  ],
+  "starterEquipment": {
+    "head": null,
+    "torso": "torso_green_tunic",
+    "legs": "legs_charcoal_trousers",
+    "feet": "feet_brown_leather_boots",
+    "hands": "hands_leather_work_gloves",
+    "belt": "belt_leather_pouch"
+  },
+  "futureCosmetics": {
+    "diamond_boots": "reserved for a future cosmetic skin; absent from starter art",
+    "diamond_gloves": "reserved for a future cosmetic skin; absent from starter art"
+  },
+  "scope": "Upload artwork and implementation brief only. The inventory and layered sprites are the next Codex implementation task."
+}

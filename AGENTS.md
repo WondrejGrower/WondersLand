@@ -25,3 +25,8 @@ Aktuální pravidlo rolí: všechny tři se vybírají při tvorbě postavy. Rol
 je pak neměnná; změna vyžaduje výslovný reset postavy/postupu. Nevracet
 odemykání rolí podle metrů ani přepínání rolí v táboře. Stávající roli
 a ostatní postup při aktualizaci zachovat.
+
+Další zadání postavy a inventáře: [docs/CHARACTER_INVENTORY_BRIEF.md](docs/CHARACTER_INVENTORY_BRIEF.md).
+Pixelartové podklady jsou v assets/art-source/2026-11-08/. Jde o zdroje pro
+vrstvené sprity; obyčejné startovní boty/rukavice nesmějí aktivovat staré
+Diamond booleany hands/boots. Diamantový vzhled je vyhrazen budoucímu skinu.
