@@ -1,8 +1,11 @@
+import balance from '../src/balance.json' with {type:'json'};
+export {MonthlyLeaderboard} from './leaderboard-worker.mjs';
 const idPattern=/^\/api\/tx\/([a-f0-9]{64})\/status$/;
 export async function handle(request,env,upstream=fetch,edgeCache=globalThis.caches?.default){
  const url=new URL(request.url);
  if(url.hostname==='www.wondersland.online'){url.hostname='wondersland.online';return Response.redirect(url.toString(),301);}
- if(url.pathname==='/health')return Response.json({application:'WondersLand [WL]',version:'0.3.3',balance:'wl-0.3-journey-5'});
+ if(url.pathname==='/health')return Response.json({application:'WondersLand [WL]',version:'0.3.3',balance:balance.balanceVersion});
+ if(/^\/api\/leaderboard(?:\/(?:start|finish))?$/.test(url.pathname)){if(!env.LEADERBOARD)return Response.json({error:'Leaderboard unavailable'},{status:503});try{return await env.LEADERBOARD.getByName('monthly-v1').fetch(request);}catch{return Response.json({error:'Leaderboard unavailable'},{status:503});}}
  if(!url.pathname.startsWith('/api/'))return env.ASSETS.fetch(request);
  if(request.method!=='GET')return new Response('Method not allowed',{status:405,headers:{Allow:'GET'}});
  const match=url.pathname.match(idPattern),recent=url.pathname==='/api/mempool';

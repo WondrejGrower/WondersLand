@@ -146,3 +146,19 @@ recharging every ten active game seconds. Starts have fixed rank-one effects;
 economy skills move to subsequent offers. Existing exclusions still apply.
 Double Jump recharge freezes with game simulation; landing cannot reset it.
 [Current mechanics and real keyboard/mouse/touch regression](JUMP_PROGRESSION.md).
+
+## Full viewport and monthly community board · journey-6
+
+The user chose to make common shrubs/ferns approachable at baseline, retaining
+upgrade-based taller trees. Basic impulse 90, Strength coefficient 9, existing
+130/170 gravity; amount curves, skills, bought levels and prices stay intact.
+The mempool rule is paramount: even the first live transaction may be an
+impossible sequoia. There is no amount/profile-based transaction filtering.
+
+The browser now fills its available viewport with a uniform responsive camera,
+with explicit Fullscreen/F11 and an immersive fallback. Shared art clips to the
+visible world bounds without altering transaction geometry. Online monthly
+community records store best distance, total distance and completed live attempt
+count in a persistent SQLite Durable Object; training/recorded runs are excluded.
+Month assignment uses server UTC. This is not the future paid ranked mode.
+[Implementation, screenshots and actual verification](FULLSCREEN_MONTHLY.md).

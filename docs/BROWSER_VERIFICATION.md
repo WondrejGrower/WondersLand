@@ -211,3 +211,14 @@ regression; environment browser regression; low/late-game crossing previews;
 Wrangler dry-run; native build; 33 Qt + 3 Python tests. All passed locally.
 [Detailed tuning and screenshots](JUMP_PROGRESSION.md). GitHub Actions retains
 the previously documented account billing restriction.
+
+## Responsive fullscreen and persistent monthly records · journey-6
+
+[Full verification report](FULLSCREEN_MONTHLY.md): 43 unit tests; full browser
+journey; 54 actual keyboard/mouse/touch trials; real browser plus shared SQLite
+ranking integration on desktop/mobile; results, roles, input/refill, inventory,
+environment and packaging checks all passed locally. Native build plus 33 Qt
+and 3 Python tests passed. A real local Workerd/SQLite binding was also exercised.
+The first-sequoia rule is covered in isolated and end-to-end regressions; no
+safe-start filtering was introduced. Public leaderboard checks after deployment
+must be read-only: local synthetic fixture scores must never be seeded there.

@@ -1,3 +1,4 @@
+import {clickWorld} from './test-camera.mjs';
 import {chromium} from 'playwright';import {existsSync} from 'node:fs';import assert from 'node:assert/strict';import {server} from './serve.mjs';import {fresh} from './core.mjs';import {mkdir,readFile} from 'node:fs/promises';
 const host=server();await new Promise(resolve=>host.listen(0,'127.0.0.1',resolve));const origin='http://127.0.0.1:'+host.address().port;
 const browser=await chromium.launch({executablePath:process.env.WL_CHROMIUM||(existsSync('/usr/bin/chromium')?'/usr/bin/chromium':chromium.executablePath()),headless:true,args:['--no-sandbox']});const page=await browser.newPage({viewport:{width:1366,height:768}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -11,7 +12,7 @@ try{
  for(let i=0;i<24&&await page.locator(':focus').getAttribute('data-action')!=='create';i++)await key('s');await key('e');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
  await key('d');await page.keyboard.down('d');await page.waitForTimeout(2300);await page.keyboard.up('d');
  // Mouse walks through the same inverse camera transform, at every tested size.
- for(const size of [{width:1280,height:720},{width:1366,height:768},{width:1920,height:1080},{width:640,height:520}]){await page.setViewportSize(size);const box=await page.locator('#scene').boundingBox();await page.mouse.click(box.x+box.width*540/640,box.y+box.height*215/360);await page.waitForTimeout(300);}
+ for(const size of [{width:1280,height:720},{width:1366,height:768},{width:1920,height:1080},{width:640,height:520}]){await page.setViewportSize(size);const box=await page.locator('#scene').boundingBox();await clickWorld(page,540,215);await page.waitForTimeout(300);}
  await page.setViewportSize({width:1366,height:768});await page.waitForTimeout(2400);await page.waitForSelector('#interact:not([hidden])');
  await page.keyboard.down('e');await page.waitForSelector('[data-action=skill]');await page.keyboard.press('e');assert.equal(await page.locator('[data-action=skill]').count(),3);await page.keyboard.up('e');
  await key('s');await key('ArrowUp');await key('e');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
@@ -25,7 +26,7 @@ try{
   await key('F10');await page.waitForSelector('[data-action=language]');await page.screenshot({path:`docs/browser/settings-${lang}.png`});
   await key('s');await key('e');assert.equal(await page.evaluate(()=>localStorage.getItem('wl-language')),'cs');assert.equal(await page.locator('#settings').textContent(),'Nastavení');
   await button(lang==='en'?'English':'Čeština').click();await key('Escape');await page.reload();await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);assert.equal(await page.locator('#settings').textContent(),lang==='en'?'Settings':'Nastavení');
-  const box=await page.locator('#scene').boundingBox();await page.mouse.click(box.x+box.width*465/640,box.y+box.height*290/360);await page.waitForTimeout(1900);await key('e');await page.waitForSelector('[data-action=buy]');assert.equal(await page.locator('[data-action=class]').count(),0);await page.screenshot({path:`docs/browser/training-${lang}.png`});
+  const box=await page.locator('#scene').boundingBox();await clickWorld(page,465,290);await page.waitForTimeout(1900);await key('e');await page.waitForSelector('[data-action=buy]');assert.equal(await page.locator('[data-action=class]').count(),0);await page.screenshot({path:`docs/browser/training-${lang}.png`});
   for(const id of ['birch','cannabis','sequoia']){const preview=page.locator(`[data-training-model="${id}"]`);const bounds=await preview.boundingBox();assert.ok(bounds.width<=128&&bounds.height===100);await page.locator(`[data-action=practice][data-arg="${id}"]`).click({trial:true});}
   const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).workshop.strength||0);await key('e');const after=await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).workshop.strength);assert.equal(after,before+1);
   assert.equal(await page.locator('[data-training-model]').count(),9);
@@ -36,7 +37,7 @@ try{
   await page.waitForSelector('[data-action=run]',{timeout:20000});assert.equal(await page.locator('[data-action=transaction]').count(),0);
   await page.locator('[data-action=run]').click();await page.waitForFunction(()=>document.querySelector('#sheet').hidden);await key('p');await page.locator('[data-action=camp]').click();
   assert.equal(await page.evaluate(()=>localStorage.getItem('wl-progress')),practiceSave);
-  {const b=await page.locator('#scene').boundingBox();await page.mouse.click(b.x+b.width*540/640,b.y+b.height*215/360);await page.waitForTimeout(1500);await key('e');await page.waitForSelector('[data-action=skill]');await page.screenshot({path:`docs/browser/skills-${lang}.png`});await key('e');await page.waitForSelector('[data-action=transaction]',{timeout:15000});await page.screenshot({path:`docs/browser/results-${lang}.png`});await key('Escape');}
+  {const b=await page.locator('#scene').boundingBox();await clickWorld(page,540,215);await page.waitForTimeout(1500);await key('e');await page.waitForSelector('[data-action=skill]');await page.screenshot({path:`docs/browser/skills-${lang}.png`});await key('e');await page.waitForSelector('[data-action=transaction]',{timeout:15000});await page.screenshot({path:`docs/browser/results-${lang}.png`});await key('Escape');}
  }
  await key('F10');
  const imported={...fresh(),schemaVersion:3,character:{name:'Native transfer',class:'gardener',hair:'#5e3936',skin:'#dfaf87',shirt:'#679e86',hairStyle:0},coins:777,owned:['hands'],workshop:{strength:7},runs:1,milestones:['T1:60','T2:120']};

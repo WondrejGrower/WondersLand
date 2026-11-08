@@ -76,8 +76,8 @@ test('shared high-jump camera keeps the character visible without scaling transa
  const source=readFileSync(new URL('../src/Main.qml',import.meta.url),'utf8'),start=source.indexOf(' onPaint:{')+11,end=source.indexOf('\n }\n }',start),body=source.slice(start,end);
  const paint=Function('PixelArt','s','win','width','height','getContext','artReady','Qt','qsTr',body);
  const g=expedition(0);g.spawnPlant();const state=g.state(),plantCalls=[],characterCalls=[];
- const c={reset(){},scale(){},fillRect(){},strokeRect(){},fillText(){}};
- const art={plant:(c,p,ground)=>plantCalls.push({h:p.h,w:p.w,ground}),character:(c,x,y)=>characterCalls.push({x,y})};
+ const c={reset(){},scale(){},translate(){},fillRect(){},strokeRect(){},fillText(){}};
+ const art={viewport(){},plant:(c,p,ground)=>plantCalls.push({h:p.h,w:p.w,ground}),character:(c,x,y)=>characterCalls.push({x,y})};
  for(const y of [0,100,180,243,320,450]){
   state.y=y;plantCalls.length=characterCalls.length=0;
   paint(art,state,{sky:'#10202b',soil:'#513c30',foliage:'#779e53',trText:v=>v},640,360,()=>c,true,{darker:v=>v,lighter:v=>v},v=>v);

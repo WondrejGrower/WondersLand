@@ -10,7 +10,7 @@ try{
   await page.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:readFileSync('web/app.mjs','utf8')+`\nwindow.fixture={get game(){return game;},setup(model,role){overlay='';if(!game.p.character.name)game.create('Synthetic input check',{class:role,hair:'#5e3936',skin:'#dfaf87',hairStyle:0});game.p.character.class=role;game.p.workshop.strength=0;game.startPractice(model);game.spawnPlant();game.spawn=1e9;game.coins=[];touch();}};`}));
   await page.goto('http://127.0.0.1:'+host.address().port);await page.waitForFunction(()=>document.body.dataset.ready==='true');
   const cases=[];
-  for(const role of ['gardener','explorer','collector'])for(const model of ['flower','tulip','cannabis','rose'])cases.push({role,model,kind:mobile?'touch':'Space',offset:0,pass:model!=='rose'});
+  for(const role of ['gardener','explorer','collector'])for(const model of ['flower','tulip','cannabis','rose','fern','birch'])cases.push({role,model,kind:mobile?'touch':'Space',offset:0,pass:model!=='birch'});
   if(!mobile){for(const kind of ['w','ArrowUp','mouse'])for(const model of ['tulip','cannabis'])cases.push({role:'gardener',model,kind,offset:0,pass:true});}
   for(const model of ['flower','tulip','cannabis'])for(const sign of [-1,1])cases.push({role:'collector',model,kind:mobile?'touch':'Space',offset:sign*(model==='cannabis'?4:10),pass:true});
   for(const f of cases){

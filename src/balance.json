@@ -1,5 +1,5 @@
 {
-  "balanceVersion": "wl-0.3-journey-5",
+  "balanceVersion": "wl-0.3-journey-6",
   "anchors": [
     [
       100000,
@@ -35,7 +35,7 @@
     ]
   ],
   "physics": {
-    "jumpVelocity": 72,
+    "jumpVelocity": 90,
     "heldGravity": 130,
     "gravity": 170,
     "jumpCap": 320,
@@ -57,7 +57,7 @@
     "gliderGravity": 130,
     "jetAcceleration": 1500,
     "airHeightFactor": 1.5,
-    "tapVelocity": 72
+    "tapVelocity": 90
   },
   "rarityWeights": [
     75,
@@ -97,11 +97,11 @@
       "id": "strength",
       "name": "Strength",
       "max": 50,
-      "effect": 14,
+      "effect": 9,
       "curve": "quadratic",
       "baseCost": 50,
       "growth": 1.12,
-      "description": "Starts with small plants. Strength gradually unlocks shrubs and trees; tall sequoias require high levels. Basic Jump limit: 320 px. Obstacles keep their real size."
+      "description": "Basic Jump clears common shrubs and ferns. Strength gradually unlocks taller trees; sequoias need long-term upgrades. Basic Jump limit: 320 px."
     },
     {
       "id": "agility",

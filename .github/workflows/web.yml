@@ -19,6 +19,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
       - run: npm run test:jump-input
+      - run: npm run test:monthly
       - run: npm run test:results
       - run: npm run test:roles
       - run: npm run test:input-feed

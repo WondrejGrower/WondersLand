@@ -13,7 +13,7 @@ It shares balance.json, the Czech catalog and native pixel art with Qt.
 `npm run build` generates `dist/`; no Qt runtime is required in a browser.
 The native app remains in src/ and is built with ./bin/build.
 
-Prerequisite: Node.js >=22 (CI uses 24), npm. Dependencies are pinned in
+Prerequisite: Node.js >=24 (CI uses 24), npm. Dependencies are pinned in
 package-lock.json, including Wrangler and Playwright.
 
 ```sh
@@ -94,3 +94,12 @@ The old site is retained in the archive branch and original main history.
 Any rollback must be an explicit new deployment of that archived website,
 not deletion of game progress. Normal updates push to main after checks;
 feature work can continue on game/roguelite-0.3.
+
+## Monthly community storage
+
+`MonthlyLeaderboard` is a SQLite Durable Object exported by web/worker.mjs.
+`LEADERBOARD` is its binding; `monthly-v1` is the shared object name. Wrangler's
+`exports` declaration provisions its state through the same Git deployment.
+Keep these identities stable to preserve monthly history across releases.
+This community board does not implement paid ranked entry or anti-cheat proof.
+[Architecture, commands and verification](FULLSCREEN_MONTHLY.md).

@@ -114,3 +114,5 @@ function character(c,x,y,ch,frame,hands,boots,mode,equipment,facingLeft){
 }
 function plant(c,p,ground){Environment.plant(c,p,ground);}
 function prop(c,id,x,y,w,h){Environment.prop(c,id,x,y,w,h);}
+
+function viewport(left,top,width,height){Environment.viewport(left,top,width,height);}

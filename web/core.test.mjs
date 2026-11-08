@@ -49,24 +49,24 @@ test('permanent strength spans meadow plants to late sequoias while keeping exac
  for(const role of ['gardener','explorer','collector']){
   assert.ok(windows('250000',0,role).length,'tulip '+role);
   assert.ok(windows('420000',0,role).length,'small cannabis '+role);
-  assert.equal(windows('600000',0,role).length,0,'shrub '+role);
-  assert.equal(windows('900000',0,role).length,0,'fern '+role);
+  assert.ok(windows('600000',0,role).length>=20,'shrub '+role);
+  assert.ok(windows('900000',0,role).length>=20,'fern '+role);
  }
  for(const role of ['gardener','explorer','collector']){assert.ok(windows('50000',0,role,false).length>=50,'flower timing margin');assert.ok(windows('250000',0,role,false).length>=30,'tulip timing margin');assert.ok(windows('420000',0,role,false).length>=12,'cannabis timing margin');}
- for(const [sats,locked,unlocked]of [['600000',0,8],['900000',0,12],['10000000',8,20],['100000000',15,25],['1000000000',20,32],['100000000000',40,50]]){
+ for(const [sats,locked,unlocked]of [['10000000',0,20],['100000000',8,25],['1000000000',15,32],['100000000000',35,50]]){
   const size=plant(sats,c);assert.equal(windows(sats,locked).length,0);assert.ok(windows(sats,unlocked).length);assert.deepEqual(plant(sats,c),size);
  }
  const base=new Game(c,profile());for(let level=0;level<=50;level++){
   base.p.workshop.strength=level;const stats=base.stats(),apex=stats.jumpVelocity**2/(2*c.physics.heldGravity);
   assert.ok(Math.abs(base.jumpHeight()-apex)<1e-9);assert.ok(stats.airCap>=apex);assert.ok(stats.airCap<=c.physics.airCap);
  }
- base.p.workshop.strength=0;base.skills={double:3,jetpack:3,leap:3};assert.ok(base.stats().airCap<40,'early aerial abilities cannot skip tree progression');
+ base.p.workshop.strength=0;base.skills={double:3,jetpack:3,leap:3};assert.ok(base.stats().airCap<60,'early aerial abilities cannot skip tree progression');
  const existing={...profile(),coins:777,workshop:{strength:37},runs:9,bestDistance:1000};const restored=new Game(c,existing);assert.equal(restored.p.workshop.strength,37);assert.equal(restored.p.coins,777);
 });
 
 test('releasing jump still allows low controlled hops after long-term Strength upgrades',()=>{
  function peak(level,release,basic=false){const g=new Game(c,{...profile(),workshop:{strength:level}});g.startPractice('flower');g.spawn=1e9;if(basic)g.skills={leap:1};g.jump();if(release)g.release();let peak=0;for(let i=0;i<960;i++){g.tick(1/240);peak=Math.max(peak,g.y);}return peak;}
- assert.ok(peak(0,false)>18&&peak(0,false)<22);assert.ok(peak(50,false)>280);assert.ok(peak(50,true)<22);assert.ok(peak(0,true)<22);assert.ok(peak(0,true,true)>peak(0,true)*1.14);assert.ok(Math.abs(peak(0,true,true)-peak(0,false,true))<.05);
+ assert.ok(peak(0,false)>28&&peak(0,false)<34);assert.ok(peak(50,false)>280);assert.ok(peak(50,true)<34);assert.ok(peak(0,true)<34);assert.ok(peak(0,true,true)>peak(0,true)*1.14);assert.ok(Math.abs(peak(0,true,true)-peak(0,false,true))<.05);
 });
 
 test('starting choices are complementary movement skills with fixed first ranks',()=>{
@@ -92,4 +92,11 @@ test('Time Slow scales the whole expedition once and Double Jump recharges after
  for(let i=0;i<1190;i++)g.tick(1/120);assert.ok(g.doubleCooldown>0);g.tick(.1);assert.equal(g.doubleCooldown,0);
  g.y=0;g.jump();g.tick(.01);g.jump();assert.equal(g.doubleCooldown,10);assert.ok(g.airUsed);
  g.camp();g.start(true);g.choose(2);assert.equal(g.doubleCooldown,0);
+});
+
+test('mempool rule: a fresh live run may start with an impossible sequoia, without filtering or substitution',()=>{
+ const txid='f'.repeat(64),g=new Game(c,profile());g.receive([{txid,value:'100000000000'}]);g.start(false,42);g.choose(0);g.tick(1/120);
+ assert.equal(g.obstacles[0].txid,txid);assert.equal(g.obstacles[0].sats,'100000000000');assert.equal(g.obstacles[0].type,'sequoia');assert.equal(g.obstacles[0].h,243);
+ g.jump();for(let i=0;i<1500&&g.phase==='running';i++)g.tick(1/120);assert.equal(g.phase,'over');assert.equal(g.hit.txid,txid);assert.equal(g.p.runs,1);
+ const firstIds=new Set();for(let i=1;i<=24;i++){const run=new Game(c,profile());run.receive([{txid,value:'100000000000'},{txid:'a'.repeat(64),value:'50000'}]);run.start(false,(i*2654435761)>>>0);run.choose(0);run.tick(1/120);firstIds.add(run.obstacles[0].txid);}assert.ok(firstIds.has(txid),'even with small transactions available a sequoia may start the run');assert.ok(firstIds.has('a'.repeat(64)));
 });

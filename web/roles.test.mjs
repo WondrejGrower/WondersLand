@@ -1,3 +1,4 @@
+import {clickWorld} from './test-camera.mjs';
 import {chromium} from 'playwright';import {existsSync} from 'node:fs';import assert from 'node:assert/strict';import {server} from './serve.mjs';
 const host=server();await new Promise(r=>host.listen(0,'127.0.0.1',r));
 const browser=await chromium.launch({executablePath:process.env.WL_CHROMIUM||(existsSync('/usr/bin/chromium')?'/usr/bin/chromium':chromium.executablePath()),headless:true,args:['--no-sandbox']});const errors=[];
@@ -19,7 +20,7 @@ try {
   // Simulate an established character whose old save still carries the removed unlock notice.
   await page.evaluate(()=>{const p=JSON.parse(localStorage.getItem('wl-progress'));p.coins=777;p.runs=5;p.totalDistance=7000;p.bestDistance=3500;p.unlocked=['classes','training','strength'];p.announcements=['classes'];p.workshop={strength:7};localStorage.setItem('wl-progress',JSON.stringify(p));});
   await page.reload();await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
-  const box=await page.locator('#scene').boundingBox();await page.mouse.click(box.x+box.width*270/640,box.y+box.height*190/360);await page.waitForTimeout(1000);await page.keyboard.press('e');
+  const box=await page.locator('#scene').boundingBox();await clickWorld(page,270,190);await page.waitForTimeout(1000);await page.keyboard.press('e');
   await page.waitForSelector('[data-action=close]');assert.equal(await page.locator('[data-action=class],[data-action=creation-role]').count(),0);
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).character.class),id);
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).coins),777);

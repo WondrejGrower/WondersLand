@@ -3,6 +3,8 @@
 .import "PlantVisual.js" as Visual
 var campAtlas="qrc:/art/camp.png";
 var floraAtlas="qrc:/art/flora.png";
+var viewLeft=0,viewTop=0,viewRight=640,viewBottom=360;
+function viewport(left,top,width,height){viewLeft=Math.floor(left);viewTop=Math.floor(top);viewRight=Math.ceil(left+width);viewBottom=Math.ceil(top+height);}
 function setAtlases(camp,flora){campAtlas=camp;floraAtlas=flora;}
 function draw(c,id,x,y,w,h){
  var region=Data.regions[id];if(!region||w<=0||h<=0)return;
@@ -10,7 +12,7 @@ function draw(c,id,x,y,w,h){
  c.imageSmoothingEnabled=false;
  // One cached atlas image, one clipped blit. Work never grows with giant TX height.
  // Crop before scaling to avoid browser/Qt limits when a tree extends far above view.
- var top=Math.max(0,-y),bottom=Math.min(h,360-y),left=Math.max(0,-x),right=Math.min(w,640-x);
+ var top=Math.max(0,viewTop-y),bottom=Math.min(h,viewBottom-y),left=Math.max(0,viewLeft-x),right=Math.min(w,viewRight-x);
  if(bottom<=top||right<=left)return;
  c.drawImage(atlas,r[0]+left/w*r[2],r[1]+top/h*r[3],(right-left)/w*r[2],(bottom-top)/h*r[3],x+left,y+top,right-left,bottom-top);
 }
@@ -27,7 +29,7 @@ function appearance(p){
 function module(c,id,x,y,w,h,crown,mirror,ground){
  x=Math.round(x);y=Math.round(y);w=Math.max(1,Math.round(w));h=Math.max(1,Math.round(h));
  var r=Data.regions[id].rect,sh=Math.round(r[3]*(crown ? .67 : 1));
- var l=Math.max(0,-x),t=Math.max(0,-y),rr=Math.min(w,640-x),b=Math.min(h,360-y,ground-y);
+ var l=Math.max(0,viewLeft-x),t=Math.max(0,viewTop-y),rr=Math.min(w,viewRight-x),b=Math.min(h,viewBottom-y,ground-y);
  if(rr<=l||b<=t)return;
  c.save();if(mirror){c.translate(2*x+w,0);c.scale(-1,1);var old=l;l=w-rr;rr=w-old;}
  c.imageSmoothingEnabled=false;
@@ -35,7 +37,7 @@ function module(c,id,x,y,w,h,crown,mirror,ground){
 }
 function plant(c,p,ground){
  var x=Math.round(p.x),h=Math.round(p.h),w=Math.round(p.w),bottom=Math.round(ground),top=bottom-h;
- if(x+w<=0||x>=640||bottom<=0||top>=360||h<=0||w<=0)return;
+ if(x+w<=viewLeft||x>=viewRight||bottom<=viewTop||top>=viewBottom||h<=0||w<=0)return;
  var d=appearance(p),id=names[p.type]||names.flower;
  var tree=p.type==='birch'||p.type==='pine'||p.type==='oak'||p.type==='sequoia';
  // Small plants use several independently anchored botanical shoots. Taller
@@ -43,7 +45,7 @@ function plant(c,p,ground){
  var tiers=tree?2+d.growth:1+d.growth,step=tree?18:12;
  var crownH=Math.min(h,tree?32:24),crownW=Math.min(w,tree?48:28);
  var trunk=Math.max(1,Math.min(tree?7:3,Math.round(w*(tree ? .09 : .04))));
- var cx=x+Math.floor(w/2),yy=Math.max(0,top),end=Math.min(360,bottom);
+ var cx=x+Math.floor(w/2),yy=Math.max(viewTop,top),end=Math.min(viewBottom,bottom);
  // Structural trunk/stem and bark highlights, all in logical whole pixels.
  c.fillStyle=tree?(p.type==='birch'?'#d5d7bf':'#705038'):'#426449';
  c.fillRect(cx-Math.floor(trunk/2),yy,trunk,Math.max(0,end-yy));
@@ -55,8 +57,8 @@ function plant(c,p,ground){
  var spacing=Math.max(step,Math.floor((h-crownH)/Math.max(1,tiers)));
  var count=Math.max(tiers,Math.ceil((h-crownH)/32));
  spacing=Math.max(step,Math.floor((h-crownH)/Math.max(1,count)));
- var first=Math.max(0,Math.ceil((-top-crownH)/spacing));
- var last=Math.min(count,Math.floor((360-top)/spacing));
+ var first=Math.max(0,Math.ceil((viewTop-top-crownH)/spacing));
+ var last=Math.min(count,Math.floor((viewBottom-top)/spacing));
  for(var i=first;i<=last;i++){
   var y=top+i*spacing;
   if(y+crownH>bottom)y=bottom-crownH;

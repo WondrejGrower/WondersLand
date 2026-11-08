@@ -1,5 +1,8 @@
 # Long-term jump progression · wl-0.3-journey-5
 
+Historical journey-5 tuning. The current, explicitly easier journey-6 and
+responsive/leaderboard changes are documented in [FULLSCREEN_MONTHLY.md](FULLSCREEN_MONTHLY.md).
+
 Requested after production playtesting on 8 November 2026: small plants should
 be the initial challenge; shrubs/medium transactions must matter, and sequoias
 should require substantial permanent development. Small cannabis is explicitly

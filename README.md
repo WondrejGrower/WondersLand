@@ -112,3 +112,14 @@ běžným tempem; stávající koupené úrovně zůstávají zachované.
 ```sh
 npm run test:environment
 ```
+
+## Celá herní plocha a měsíční žebříček
+
+Web nyní využívá celou dostupnou herní plochu i na mobilu; tlačítko Fullscreen
+nebo F11 přepne do celoobrazovkového režimu. Měsíční komunitní žebříček sdílí
+nejlepší běh, celkové metry a počet živých pokusů. Trénink a záznamy se nepočítají.
+První transakce může stále být nepřekonatelná sekvoje — fronta se nefiltruje.
+Běžné keře a kapradiny jsou dostupnější, vyšší stromy vyžadují Sílu.
+
+[Mechaniky, ukládání, omezení a náhledy](docs/FULLSCREEN_MONTHLY.md).
+Webové kontroly vyžadují Node.js 24+; přibylo `npm run test:monthly`.

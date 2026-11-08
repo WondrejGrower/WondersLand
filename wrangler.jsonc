@@ -24,5 +24,19 @@
   },
   "build": {
     "command": "npm run build"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "LEADERBOARD",
+        "class_name": "MonthlyLeaderboard"
+      }
+    ]
+  },
+  "exports": {
+    "MonthlyLeaderboard": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
   }
 }

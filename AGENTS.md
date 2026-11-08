@@ -46,3 +46,17 @@ Obratnost už NEZVYŠUJE input buffer: zpomaluje celou simulaci výpravy o 0,04 
 za úroveň, max. 2 %. Tábor, odpočítávání, výzkum a síť běží v reálném čase.
 Dosavadní konopné pravidlo používá prefix 420 kanonické částky v satoshi,
 nikoli TXID; zachovej částku, TXID a velikostní křivku. Ověření: npm run test:environment.
+
+Nejdůležitější pravidlo mempoolu (výslovně potvrzeno Wondrejem): živý běh může
+začít libovolnou skutečnou transakcí včetně nepřekonatelné sekvoje. Nikdy
+nefiltruj, nenahrazuj ani neodkládej velké TX kvůli bezpečnému začátku nebo
+síle postavy. Ladění obtížnosti mění schopnosti/ovládání, nikoli částku či
+rozměr transakce. Zachovej deduplikaci, doplňování a poctivé čekání bez replay.
+Budoucí ranked běhy za 1000 sats vyžadují samostatné serverové ověřování a
+platební návrh. Komunitní žebříček s klientským výsledkem není placený ranked.
+
+Webové testy nyní vyžadují Node.js 24+ (vestavěné SQLite). Po změně kamery nebo
+měsíčního žebříčku spusť také npm run test:monthly. Společná cloudová data jsou
+v SQLite Durable Objectu MonthlyLeaderboard, binding LEADERBOARD, jméno
+monthly-v1. Při aktualizaci tato persistentní ID nemaž/nepřejmenovávej bez migrace.
+Podrobnosti a limity komunitních výsledků: docs/FULLSCREEN_MONTHLY.md.

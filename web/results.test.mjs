@@ -1,3 +1,4 @@
+import {clickWorld} from './test-camera.mjs';
 import {chromium} from 'playwright';
 import {existsSync} from 'node:fs';
 import assert from 'node:assert/strict';
@@ -26,7 +27,7 @@ try {
  assert.ok(translated.includes('Tall canopy continues above the view'),'Tall-tree labels must also translate safely');
 
  const box=await page.locator('#scene').boundingBox();
- await page.mouse.click(box.x+box.width*540/640,box.y+box.height*215/360);await page.waitForTimeout(2600);
+ await clickWorld(page,540,215);await page.waitForTimeout(2600);
  await page.keyboard.press('e');await page.waitForSelector('[data-action=skill]');await page.keyboard.press('e');
  await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
  await page.keyboard.down('Space');

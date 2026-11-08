@@ -16,12 +16,12 @@ Item {
  id:world;anchors.fill:parent;renderTarget:Canvas.Image;smooth:false
  onPaint:{
  if(!artReady)return;
- var c=getContext('2d');c.reset();c.scale(width/640,height/360);c.imageSmoothingEnabled=false;
+ var c=getContext('2d');c.reset();var view=s.viewport||{left:0,top:0,width:640,height:360};var pixelScale=Math.min(width/view.width,height/view.height);c.scale(pixelScale,pixelScale);c.translate(-view.left,-view.top);c.imageSmoothingEnabled=false;PixelArt.viewport(view.left,view.top,view.width,view.height);
  var t=s.animation,px=s.campX,py=s.campY;
  function r(x,y,w,h,col){c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),w,h)}
  function ellipse(x,y,rx,ry,col){for(var iy=-Math.ceil(ry);iy<=ry;iy++){var span=Math.round(rx*Math.sqrt(Math.max(0,1-iy*iy/(ry*ry))));r(x-span,y+iy,span*2+1,1,col)}}
- r(0,0,640,360,'#10272c');
- for(var i=0;i<900;i++)r((i*53.31)%640,(i*79.17)%360,2+i%3,1,i%5?'#193832':'#2b4836');
+ r(view.left,view.top,view.width,view.height,'#10272c');
+ for(var i=0;i<Math.ceil(view.width*view.height/256);i++)r(view.left+(i*53.31)%view.width,view.top+(i*79.17)%view.height,2+i%3,1,i%5?'#193832':'#2b4836');
  ellipse(320,245,268,99,'#29473b');ellipse(320,250,252,88,'#344c3c');
  r(257,172,29,154,'#73624b');r(93,220,458,23,'#73624b');r(160,234,24,67,'#6a5d47');r(452,237,25,57,'#6a5d47');
  for(i=0;i<140;i++)r(90+(i*31)%470,224+(i%5)*3,4,2,i%3?'#8b7858':'#5f5845');
