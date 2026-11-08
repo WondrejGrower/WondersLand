@@ -35,7 +35,7 @@ ApplicationWindow {
   else backend.pause();
   if(!menuRoot)focusGame();
  }
- function skillDescription(offer){var effects=offer.effects||[];var value=effects[(offer.nextRank||1)-1]||0;return offer.id==="leap"?qsTr("Ordinary jump +%1%, capped at 110 px").arg(Math.round(value*100)):offer.id==="magnet"?qsTr("Collection range +%1%").arg(Math.round(value*100)):offer.id==="aircoins"?qsTr("Airborne coin bonus +%1%").arg(Math.round(value*100)):offer.id==="double"?qsTr("One extra jump, shared aerial limit 170 px"):offer.id==="glider"?qsTr("Glide up to %1 s per jump").arg(value):offer.id==="shield"?qsTr("One rescue, at most two granted per run"):qsTr("Jetpack: 3 s fuel for the whole run, hold F")}
+ function skillDescription(offer){var effects=offer.effects||[];var value=effects[(offer.nextRank||1)-1]||0;return offer.id==="leap"?qsTr("Ordinary jump +%1%, capped at 110 px").arg(Math.round(value*100)):offer.id==="magnet"?qsTr("Collection range +%1%").arg(Math.round(value*100)):offer.id==="aircoins"?qsTr("Airborne coin bonus +%1%").arg(Math.round(value*100)):offer.id==="double"?qsTr("One extra jump, shared aerial limit 170 px"):offer.id==="glider"?qsTr("Glide up to %1 s per jump").arg(Number(value).toLocaleString(Qt.locale(),'f',1)):offer.id==="shield"?qsTr("One rescue, at most two granted per run"):qsTr("Jetpack: 3 s fuel for the whole run, hold F")}
  MenuNavigation {id:navigation;scope:win.menuRoot;window:win}
  onMenuRootChanged:{backend.stopMovement();if(!menuRoot)Qt.callLater(focusGame)}
  Shortcut {sequence:"E";context:Qt.ApplicationShortcut;autoRepeat:false;enabled:!win.menuRoot&&!typing;onActivated:{if(activeFocusItem&&activeFocusItem.menuChoice)activeFocusItem.clicked();else if(s.phase==="camp")backend.interact()}}
@@ -125,7 +125,7 @@ ApplicationWindow {
  }
  }
  } // End world camera. All following menus use screen coordinates.
- Label {visible:s.skillHud.some(sk=>sk.id==="jetpack");anchors.right:parent.right;anchors.bottom:parent.bottom;anchors.margins:8;text:qsTr("Fuel %1 s · hold F").arg(s.fuel.toFixed(1));color:"#d4cb8c"}
+ Label {visible:s.skillHud.some(sk=>sk.id==="jetpack");anchors.right:parent.right;anchors.bottom:parent.bottom;anchors.margins:8;text:qsTr("Fuel %1 s · hold F").arg(Number(s.fuel).toLocaleString(Qt.locale(),'f',1));color:"#d4cb8c"}
  CharacterView {id:creator;anchors.fill:parent;anchors.margins:12;visible:s.phase==="creation";onFocusGame:win.focusGame()}
  Rectangle {anchors.centerIn:parent;width:Math.min(parent.width-16,620);height:Math.min(parent.height-12,490);color:"#16292f";border.color:"#859378";visible:s.phase==="camp"&&s.station!==""
  StationPanel {id:stationPanel;anchors.fill:parent;anchors.margins:16;onFocusGame:win.focusGame()}

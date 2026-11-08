@@ -56,7 +56,7 @@ npm run deploy
 ```
 
 Production Git deployment was verified successfully (see BROWSER_VERIFICATION.md).
-The npm prebuild hook executes unit tests in Cloudflare itself. GitHub Actions
+GitHub Actions
 currently cannot start because the GitHub account reports a billing lock.
 
 At preparation time dry-run succeeded but the local Wrangler CLI was not

@@ -61,7 +61,12 @@ push, with archive/history preserved. Deployment commit 7a0f0bc received
 
 GitHub Actions did not start its runner: GitHub's annotation says the account
 is locked due to a billing issue. This is not reported as passed CI. The
-separate Cloudflare Git integration did run and deploy successfully. The root
-npm prebuild hook now runs unit tests during the Cloudflare build itself,
-independently of GitHub Actions; browser tests also passed locally.
+separate Cloudflare Git integration did run and deploy successfully. Unit and browser tests passed locally. GitHub Actions verification remains
+blocked by the account, separately from the Cloudflare Git deployment.
 The CLI Cloudflare login remains unnecessary for the working Git deployment.
+
+Follow-up browser checks confirmed native save import (coins and Strength),
+2× DPI, and persistence of both language choices after reload. The initial
+?lang=cs parameter is consumed after storing the preference, so it cannot
+silently override a later English choice. Fractional fuel/glide values also
+format with the selected locale in both clients.
