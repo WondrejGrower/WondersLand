@@ -40,7 +40,8 @@ An internet connection is required to open the game and receive live data.
   instructions. `appinstalled` and standalone display suppress the install CTA.
 - `web/sw.js` has root scope but intercepts **only GET root/index document
   navigations**. Network comes first. If navigation fails, the app serves a
-  self-contained, clearly marked English/Czech offline notice.
+  self-contained, clearly marked English/Czech offline notice. Static-host clean-URL
+  redirects are normalized before caching so offline navigation can reuse it.
 - Only `/offline.html` is in its single-entry Cache Storage cache. No API data,
   authenticated requests, game modules, live/replay transactions, saves or board
   keys are cached by the service worker. Existing browser HTTP caching remains
