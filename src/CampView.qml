@@ -90,9 +90,9 @@ Item {
  Label {text:camp.description(s.station);wrapMode:Text.WordWrap;Layout.fillWidth:true;color:"#bac6b2";font.pixelSize:13}
  Label {visible:s.station==="forge"||s.station==="library"||s.station==="wardrobe";text:qsTr("PLANNED · no coins will be spent");font.pixelSize:10;color:"#cab780"}
  RowLayout {
- Button {objectName:"campLive";visible:s.station==="portal";text:qsTr("Enter live forest");enabled:s.poolSize>0;highlighted:true;onClicked:{backend.start(false);camp.focusGame()}}
- Button {objectName:"campTraining";visible:s.station==="training";text:qsTr("Start training");highlighted:true;onClicked:{backend.start(true);camp.focusGame()}}
- Button {text:qsTr("Back");onClicked:{backend.closeStation();camp.focusGame()}}
+ Button {objectName:"campLive";visible:s.station==="portal";text:qsTr("Enter live forest")+" [E]";enabled:s.poolSize>0;highlighted:true;onClicked:{backend.start(false);camp.focusGame()}}
+ Button {objectName:"campTraining";visible:s.station==="training";text:qsTr("Start training")+" [E]";highlighted:true;onClicked:{backend.start(true);camp.focusGame()}}
+ Button {text:qsTr("Back")+" [Esc]";onClicked:{backend.closeStation();camp.focusGame()}}
  }
  }
  }

@@ -169,6 +169,8 @@ class Tests : public QObject {
         QVERIFY(!engine.rootObjects().isEmpty());
         auto window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         QVERIFY(window);
+        window->requestActivate();
+        QTest::qWait(40);
         window->findChild<QQuickItem *>("gameRoot")->forceActiveFocus();
         auto campX = b.state()["campX"].toDouble();
         QTest::keyPress(window, Qt::Key_D);
@@ -185,20 +187,53 @@ class Tests : public QObject {
         QTest::qWait(80);
         QVERIFY(button->isVisible());
         QVERIFY(button->width() > 0);
-        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier,
-                          button->mapToScene(QPointF(button->width() / 2, button->height() / 2)).toPoint());
+        button->forceActiveFocus();
+        QTest::keyClick(window, Qt::Key_E);
         QTRY_COMPARE(b.state()["phase"].toString(), "running");
         QTest::keyPress(window, Qt::Key_Space);
         QTest::qWait(120);
         QVERIFY(b.state()["y"].toDouble() > 0);
         QTest::keyRelease(window, Qt::Key_Space);
-        b.pause();
+        QTest::keyClick(window, Qt::Key_P);
         QTest::qWait(50);
+        QCOMPARE(b.state()["phase"].toString(), "paused");
         QCOMPARE(translator.language(), QString("cs"));
         QCOMPARE(window->findChild<QObject *>("stateTitle")->property("text").toString(),
                  QString("Chvilka na vydechnutí."));
         QVERIFY(window->grabWindow().save("/tmp/wondersland-game-cs.png"));
-        b.returnToCamp();
+        QTest::keyClick(window, Qt::Key_B);
+        QCOMPARE(b.state()["phase"].toString(), "camp");
+        // Reach the live gate using keyboard movement, then confirm with E.
+        QTest::keyPress(window, Qt::Key_D);
+        for (int i = 0; i < 16; i++)
+            b.advance(.05);
+        QTest::keyRelease(window, Qt::Key_D);
+        QTest::keyPress(window, Qt::Key_W);
+        for (int i = 0; i < 16; i++)
+            b.advance(.05);
+        QTest::keyRelease(window, Qt::Key_W);
+        QTest::keyClick(window, Qt::Key_E);
+        QCOMPARE(b.state()["station"].toString(), "portal");
+        QTest::keyClick(window, Qt::Key_E);
+        QCOMPARE(b.state()["phase"].toString(), "camp"); // No live data yet.
+        b.acceptTransactions({QVariantMap{{"txid", QString(64, 'a')}, {"value", 1000}}});
+        QTest::keyClick(window, Qt::Key_E);
+        QCOMPARE(b.state()["phase"].toString(), "running");
+        QCOMPARE(b.state()["demo"].toBool(), false);
+        QTest::keyClick(window, Qt::Key_Escape);
+        QCOMPARE(b.state()["phase"].toString(), "paused");
+        QTest::keyClick(window, Qt::Key_E);
+        QCOMPARE(b.state()["phase"].toString(), "running");
+        for (int i = 0; i < 1000 && b.state()["phase"] == "running"; i++)
+            b.advance(.016);
+        QCOMPARE(b.state()["phase"].toString(), "over");
+        QTest::keyClick(window, Qt::Key_R);
+        QCOMPARE(b.state()["phase"].toString(), "running");
+        QTest::keyClick(window, Qt::Key_B);
+        QTest::keyClick(window, Qt::Key_E);
+        QCOMPARE(b.state()["station"].toString(), "portal");
+        QTest::keyClick(window, Qt::Key_Escape);
+        QCOMPARE(b.state()["station"].toString(), "");
         QTest::qWait(60);
         QVERIFY(window->grabWindow().save("/tmp/wondersland-game-camp-cs.png"));
         QVERIFY(language.open(QIODevice::WriteOnly | QIODevice::Truncate));

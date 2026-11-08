@@ -10,11 +10,14 @@ ApplicationWindow {
  Material.theme: Material.Dark; Material.accent: theme.accent; Material.roundedScale: theme.radius
  property var s: backend.state
  property bool help: false
- function action(){if(s.phase==="camp"){backend.interact();return;}if(s.phase === "ready" || s.phase === "over")backend.start(s.demo);else if(s.phase === "paused")backend.pause();else backend.jump()}
+ function action(){if(help){help=false;gameRoot.forceActiveFocus();return;}if(s.phase==="camp"){backend.interact();return;}if(s.phase === "ready" || s.phase === "over")backend.start(s.demo);else if(s.phase === "paused")backend.pause();else backend.jump()}
+ Shortcut {sequence:"E";context:Qt.ApplicationShortcut;autoRepeat:false;onActivated:{win.action();gameRoot.forceActiveFocus()}}
+ Shortcut {sequence:"B";context:Qt.ApplicationShortcut;enabled:s.phase!=="camp"&&!help;onActivated:{backend.returnToCamp();gameRoot.forceActiveFocus()}}
+ Shortcut {sequence:"R";context:Qt.ApplicationShortcut;enabled:s.phase==="over"&&!help;onActivated:{backend.start(s.demo);gameRoot.forceActiveFocus()}}
  Shortcut {sequence:"Q";onActivated:win.close()}
  Shortcut {sequence:"?";onActivated:{help=!help;if(s.phase==="running")backend.pause()}}
  Shortcut {sequence:"P";onActivated:backend.pause()}
- Shortcut {sequence:"Escape";onActivated:{if(s.phase==="camp")backend.closeStation();else backend.pause()}}
+ Shortcut {sequence:"Escape";context:Qt.ApplicationShortcut;onActivated:{if(help)help=false;else if(s.phase==="camp")backend.closeStation();else backend.pause();gameRoot.forceActiveFocus()}}
  Shortcut {sequence:"F11";onActivated:win.visibility=win.visibility===Window.FullScreen?Window.Windowed:Window.FullScreen}
  onActiveChanged: if(!active){backend.stopMovement();if(s.phase==="running")backend.pause()}
  Component.onCompleted:gameRoot.forceActiveFocus()
@@ -29,7 +32,7 @@ ApplicationWindow {
   if(event.isAutoRepeat)return;
   if(s.phase==="camp"){
    var d=direction(event.key);if(d){backend.setMovement(d,true);event.accepted=true}
-   else if(event.key===Qt.Key_E||event.key===Qt.Key_Space){backend.interact();event.accepted=true}
+   else if(event.key===Qt.Key_Space){win.action();event.accepted=true}
   }else if(event.key===Qt.Key_Space||event.key===Qt.Key_Up){win.action();event.accepted=true}
  }
  Keys.onReleased: event=>{if(event.isAutoRepeat)return;var d=direction(event.key);if(d)backend.setMovement(d,false);if(event.key===Qt.Key_Space||event.key===Qt.Key_Up)backend.releaseJump()}
@@ -124,7 +127,7 @@ ApplicationWindow {
  Button {objectName:"playLive";text:s.phase==="paused"?qsTr("Continue"):qsTr("Run live");enabled:s.phase==="paused"||s.poolSize>0;highlighted:true;onClicked:{if(s.phase==="paused")backend.pause();else backend.start(false);gameRoot.forceActiveFocus()}}
  Button {objectName:"playDemo";visible:s.phase!=="paused";text:qsTr("Training");onClicked:{backend.start(true);gameRoot.forceActiveFocus()}}
  Button {visible:s.phase==="over"&&!s.demo;text:qsTr("View transaction ↗");onClicked:backend.openTransaction()}
- Button {objectName:"returnCamp";text:qsTr("Base Camp");onClicked:{backend.returnToCamp();gameRoot.forceActiveFocus()}}
+ Button {objectName:"returnCamp";text:qsTr("Base Camp")+" [B]";onClicked:{backend.returnToCamp();gameRoot.forceActiveFocus()}}
  }
  Label {visible:s.phase==="ready";text:qsTr("SPACE / ↑ / click · jump     P · pause     F11 · fullscreen");font.pixelSize:10;wrapMode:Text.WordWrap;Layout.fillWidth:true;color:"#819a8c"}
  }
@@ -134,14 +137,14 @@ ApplicationWindow {
  Rectangle {width:6;height:6;color:s.source==="live"?"#9ecb83":"#d6aa6b"}
  Label {Layout.fillWidth:true;font.pixelSize:11;color:"#93a99a";text:s.source==="live"?qsTr("Live mempool.space · %1 recent transactions buffered").arg(s.poolSize):s.source==="save-error"?qsTr("Could not save progress"):s.source==="offline"?qsTr("Source unavailable · cached transactions / training available"):qsTr("Connecting to mempool.space…");wrapMode:Text.WordWrap}
  Button {visible:s.phase!=="camp";text:qsTr("Pause");enabled:s.phase==="running"||s.phase==="paused";onClicked:backend.pause()}
- Label {visible:s.phase==="camp";text:qsTr("WASD / arrows · move   E · interact");font.pixelSize:10;color:"#c4c3a1"}
+ Label {visible:s.phase==="camp";text:qsTr("WASD / arrows · move   E · open / confirm");font.pixelSize:10;color:"#c4c3a1"}
  ToolButton {text:"?";onClicked:{help=!help;if(s.phase==="running")backend.pause()}}
  }
  }
  Rectangle {anchors.fill:parent;color:"#f0101d2b";visible:help
  ColumnLayout {anchors.centerIn:parent;width:Math.min(parent.width-60,520);spacing:18
  Label {text:qsTr("A small field guide");font.pixelSize:26;color:"#e8dfb5"}
- Label {text:qsTr("CAMP: WASD / arrows / click to move. E to interact.\nRUN: SPACE / ↑ / click to jump; hold for height.\nP / Esc: pause. F11: fullscreen. Q: quit.\n\nReturn home from the pause or results screen. Training earns no saved coins or live records.\n\nSkills and affordable upgrades will come later; rare skins will be cosmetic goals. Coins are game points, not bitcoin.");wrapMode:Text.WordWrap;Layout.fillWidth:true;color:"#b9c8b6"}
+ Label {text:qsTr("CAMP: WASD / arrows / click to move. E to open / confirm. Esc to close.\nRUN: SPACE / ↑ / click to jump; hold for height.\nP / Esc: pause. B: Base Camp. R: retry. F11: fullscreen. Q: quit.\n\nUse Tab / Shift+Tab and Space to choose menu buttons. Training earns no saved coins or live records.\n\nSkills and affordable upgrades will come later; rare skins will be cosmetic goals. Coins are game points, not bitcoin.");wrapMode:Text.WordWrap;Layout.fillWidth:true;color:"#b9c8b6"}
  Button {text:qsTr("Back");onClicked:help=false}
  }
  }

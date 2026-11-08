@@ -344,6 +344,18 @@ QString Backend::nearbyStation() const {
 void Backend::interact() {
     if (phase != "camp")
         return;
+    if (station == "portal") {
+        start(false);
+        return;
+    }
+    if (station == "training") {
+        start(true);
+        return;
+    }
+    if (!station.isEmpty()) {
+        closeStation();
+        return;
+    }
     station = nearbyStation();
     stopMovement();
     emit changed();

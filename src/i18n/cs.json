@@ -65,5 +65,7 @@
   "COINS": "MINCE",
   "Training · not saved": "Trénink · neukládá se",
   "+ %1 this expedition": "+ %1 na této výpravě",
-  "Saved supplies": "Uložené zásoby"
+  "Saved supplies": "Uložené zásoby",
+  "WASD / arrows · move   E · open / confirm": "WASD / šipky · pohyb   E · otevřít / potvrdit",
+  "CAMP: WASD / arrows / click to move. E to open / confirm. Esc to close.\nRUN: SPACE / ↑ / click to jump; hold for height.\nP / Esc: pause. B: Base Camp. R: retry. F11: fullscreen. Q: quit.\n\nUse Tab / Shift+Tab and Space to choose menu buttons. Training earns no saved coins or live records.\n\nSkills and affordable upgrades will come later; rare skins will be cosmetic goals. Coins are game points, not bitcoin.": "TÁBOR: WASD / šipky / klik pro pohyb. E otevře a potvrdí. Esc zavře nabídku.\nBĚH: MEZERNÍK / ↑ / klik pro skok, podržení pro vyšší skok.\nP / Esc: pauza. B: Base Camp. R: další pokus. F11: celá obrazovka. Q: konec.\n\nTab / Shift+Tab a mezerník vybírají tlačítka nabídek. Trénink nepřidává uložené mince ani živé rekordy.\n\nSkilly a dostupné upgrady přijdou později; vzácné skiny budou kosmetické cíle. Mince jsou herní body, nikoliv bitcoin."
 }

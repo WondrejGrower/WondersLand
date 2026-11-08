@@ -34,3 +34,9 @@ Výrazný zlatý ukazatel uložených mincí v horním panelu zůstává viditel
 v táboře i při běhu. Při živém běhu zvlášť uvádí přírůstek z výpravy,
 v tréninku informaci, že se odměny neukládají. Všech 11 testů prošlo;
 malé okno 720 × 540 vizuálně zkontrolováno. Účetní pravidla se nemění.
+
+## 0.2.0-3 · ovládání bez myši
+
+E otevírá i potvrzuje bránu/cvičiště, Esc zavírá nabídky, B vrací do tábora,
+R opakuje běh. Ověřen celý průchod QML klávesnicí včetně potvrzení při
+fokusu tlačítka, bezpečného čekání na chybějící data a návratu. 11 testů prošlo.

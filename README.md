@@ -13,7 +13,10 @@ službu Bitcoin Forest. Nemění playlist ani nastavení KioskChy.
 | Ovládání | Akce |
 | --- | --- |
 | WASD / šipky / kliknutí v táboře | Pohyb |
-| E v táboře | Interakce s blízkým stanovištěm |
+| E | Otevřít stanoviště, dalším E potvrdit vstup / pokračovat |
+| B | Návrat do Base Campu |
+| R po nárazu | Další pokus |
+| Tab / Shift+Tab, mezerník | Výběr a potvrzení tlačítek |
 | Mezerník / ↑ / kliknutí do krajiny | Skok; podržením vyskočíš výš |
 | P / Escape | Pauza a pokračování |
 | F11 | Celá obrazovka / okno |
