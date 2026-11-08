@@ -27,3 +27,10 @@ Samostatný Qt klient skutečně načetl 10 živých transakcí příkazem
 
 Finální výsledek 0.2: 11 testů prošlo, 0 selhání. Český tábor a malé
 anglické okno vizuálně zkontrolované. Balíček 0.2.0-1 nainstalovaný.
+
+## 0.2.0-2 · mince
+
+Výrazný zlatý ukazatel uložených mincí v horním panelu zůstává viditelný
+v táboře i při běhu. Při živém běhu zvlášť uvádí přírůstek z výpravy,
+v tréninku informaci, že se odměny neukládají. Všech 11 testů prošlo;
+malé okno 720 × 540 vizuálně zkontrolováno. Účetní pravidla se nemění.

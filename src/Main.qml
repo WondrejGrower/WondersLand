@@ -40,11 +40,24 @@ ApplicationWindow {
  ColumnLayout {spacing:2
  Label {text:"WONDERSLAND [WL]";font.pixelSize:22;font.bold:true;font.letterSpacing:3;color:"#e6dfb8"}
  Label {text:qsTr("BITCOIN FOREST · EXPEDITIONS / 0.2");font.pixelSize:10;font.letterSpacing:2;color:"#769888"}
+ Label {text:qsTr("BEST %1 m").arg(s.best);font.pixelSize:11;color:"#b9b497"}
  }
  Item{Layout.fillWidth:true}
- ColumnLayout {spacing:2
- Label {text:qsTr("BEST %1 m").arg(s.best);font.family:"monospace";color:"#ebcc7d";Layout.alignment:Qt.AlignRight}
- Label {text:qsTr("WALLET %1 coins").arg(s.wallet);font.pixelSize:11;color:"#93ac9d";Layout.alignment:Qt.AlignRight}
+ Rectangle {
+ Layout.preferredWidth:190;Layout.preferredHeight:72
+ color:"#253029";border.color:"#aa8b48";radius:theme.radius
+ RowLayout {
+ anchors.fill:parent;anchors.margins:10;spacing:10
+ Item {Layout.preferredWidth:24;Layout.preferredHeight:28
+ Rectangle {anchors.centerIn:parent;width:22;height:24;radius:7;color:"#d5a64e";border.width:2;border.color:"#f2d78c"}
+ Rectangle {anchors.centerIn:parent;width:4;height:13;color:"#ffecb2"}
+ }
+ ColumnLayout {spacing:0;Layout.fillWidth:true
+ Label {text:qsTr("COINS");font.pixelSize:10;font.letterSpacing:2;color:"#e2c780"}
+ Label {objectName:"coinBalance";text:Number(s.wallet).toLocaleString(Qt.locale(),'f',0);font.pixelSize:26;font.bold:true;font.family:"monospace";color:"#ffdf87";Layout.fillWidth:true;elide:Text.ElideRight}
+ Label {text:s.phase!=="camp"&&s.demo?qsTr("Training · not saved"):(s.phase==="running"||s.phase==="paused")?qsTr("+ %1 this expedition").arg(s.collected):qsTr("Saved supplies");font.pixelSize:10;color:"#c8c0a0";Layout.fillWidth:true;elide:Text.ElideRight}
+ }
+ }
  }
  }
  Rectangle {
