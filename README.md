@@ -122,4 +122,6 @@ První transakce může stále být nepřekonatelná sekvoje — fronta se nefil
 Běžné keře a kapradiny jsou dostupnější, vyšší stromy vyžadují Sílu.
 
 [Mechaniky, ukládání, omezení a náhledy](docs/FULLSCREEN_MONTHLY.md).
-Webové kontroly vyžadují Node.js 24+; přibylo `npm run test:monthly`.
+Webové kontroly vyžadují Node.js 24+; přibylo `npm run test:monthly` a `npm run test:mobile`.
+Na telefonu se běh automaticky roztáhne přes dostupnou plochu, přizpůsobí se
+otočení a nabídne velká tlačítka Skok, Pauza a případně Let.

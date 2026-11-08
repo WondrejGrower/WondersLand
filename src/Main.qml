@@ -86,17 +86,18 @@ ApplicationWindow {
  if(!artReady)return;
  var c=getContext('2d');c.reset();var view=s.viewport||{left:0,top:0,width:640,height:360};var pixelScale=Math.min(width/view.width,height/view.height);c.scale(pixelScale,pixelScale);c.translate(-view.left,-view.top);c.imageSmoothingEnabled=false;PixelArt.viewport(view.left,view.top,view.width,view.height);
  // Follow only high late-game jumps; world sizes and physics stay unchanged.
- var d=s.distance*10,t=s.animation,ground=view.height-76+Math.max(0,Math.round(s.y-(view.height-180)));
+ var floorInset=view.controls?100:76,baseGround=view.height-floorInset;
+ var d=s.distance*10,t=s.animation,ground=baseGround+Math.max(0,Math.round(s.y-(baseGround-104)));
  function rect(x,y,w,h,col){c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),w,h)}
  function hill(offset,base,col){for(var x=view.left;x<=view.left+view.width;x+=8){var y=Math.round(base+Math.sin((x+offset)*.012)*18+Math.sin((x+offset)*.028)*9);rect(x,y,8,ground-y,col)}}
  rect(view.left,view.top,view.width,view.height,win.sky);
  for(var i=0;i<65;i++){var sx=view.left+(i*149.3)%view.width,sy=(i*i*17.3)%Math.max(183,view.height-100);rect(sx,sy,i%7===0?2:1,1,i%3?"#425e70":"#b6c7b2")}
  rect(542,38,23,23,"#e3d7a1");rect(535,32,19,22,win.sky);
- hill(d*.12,224,Qt.darker(win.sky,1.1));hill(d*.25,247,Qt.lighter(win.foliage,.65));
+ hill(d*.12,ground-60,Qt.darker(win.sky,1.1));hill(d*.25,ground-37,Qt.lighter(win.foliage,.65));
  for(i=0;i<s.regionIndex*5;i++)rect((i*137-d*.2+64000)%640,190+(i*29)%80,3,3,win.foliage);
  for(i=0;i<13;i++){var bx=((i*83-d*.4)%760+760)%760-60;c.globalAlpha=.5;PixelArt.plant(c,{x:bx,h:65+(i%3)*14,w:34,type:i%2?"pine":"birch",txid:"ab12"},ground-7);c.globalAlpha=1}
- rect(view.left,ground,view.width,76,win.soil);rect(view.left,ground+12,view.width,64,"#513c30");
- for(i=0;i<180;i++)rect(((i*37-d)%680+680)%680-20,ground+7+(i*13)%64,3,2,i%3?"#805b42":"#aa7b53");
+ rect(view.left,ground,view.width,Math.max(76,view.height-ground),win.soil);rect(view.left,ground+12,view.width,Math.max(64,view.height-ground-12),"#513c30");
+ for(i=0;i<180;i++)rect(((i*37-d)%680+680)%680-20,ground+7+(i*13)%Math.max(64,floorInset-12),3,2,i%3?"#805b42":"#aa7b53");
  // Non-colliding regional roots, mushrooms and spores stay separate from transaction geometry.
  for(i=0;i<s.regionIndex*6;i++){
   var decorX=((i*113-d*.55)%700+700)%700-30;

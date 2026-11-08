@@ -148,3 +148,31 @@ selection cancellation, training and recorded-mode exclusion, and all ranking
 tabs. SQLite tests additionally cover UTC rollover, storage recreation, missing
 credentials, expired tickets, invalid/implausible results and offline retry.
 GitHub Actions remains subject to the previously documented account billing lock.
+
+## Phone controls (2026-11-08)
+
+The client detects coarse pointers and narrow viewports, without a device-name
+list. A running mobile game fills the available page automatically; pausing
+restores navigation. Viewport resize, rotation and VisualViewport height changes
+update the layout without changing simulation coordinates, transaction order,
+hitboxes or jump physics. Safe-area insets protect controls from notches and the
+home indicator. Browser chrome may remain on platforms that restrict fullscreen.
+
+Thumb buttons provide Jump (including the available Double Jump), Pause and,
+when acquired, hold-to-Fly. Buttons are at least 64 CSS pixels; cancellation
+releases held flight/jump input. The ground reserves space for the controls.
+Training model canvases set their own clipping viewport rather than inheriting
+the cropped camp camera. Their nine previews remain visible on portrait phones.
+English and Czech labels are included; profile and balance versions are unchanged.
+
+`npm run test:mobile` checks 390×844, 844×390, 320×568 and 430×932, full play
+area, rotation, touch target bounds, all nine training previews, actual touch
+jump/double-jump, pause freeze, and held-flight cancellation. The screenshot
+[mobile training](browser/mobile-touch-training.png) is explicitly test data.
+These are Chromium mobile-emulation checks, not a claim of testing on physical
+iOS/Android hardware.
+
+Phone-patch verification: 43 Node tests, mobile touch suite, normal browser
+journey, shared monthly browser/SQLite suite, environment and inventory browser
+suites passed. Native rebuild, 33 Qt tests and 3 Python tests passed; Cloudflare
+deploy dry-run passed. All 54 real keyboard/mouse/touch input timing trials also passed.

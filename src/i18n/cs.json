@@ -327,5 +327,8 @@
   "Retry upload": "Zkusit odeslat znovu",
   "Walk to gate →": "Dojít k bráně →",
   "Public monthly leaderboard entries are kept.": "Veřejné záznamy v měsíčním žebříčku zůstávají zachované.",
-  "Your character name and live results appear in the monthly leaderboard.": "Jméno tvé postavy a živé výsledky se zobrazují v měsíčním žebříčku."
+  "Your character name and live results appear in the monthly leaderboard.": "Jméno tvé postavy a živé výsledky se zobrazují v měsíčním žebříčku.",
+  "Jump": "Skok",
+  "Fly": "Let",
+  "Fuel %1 s · hold Fly": "Palivo %1 s · drž Let"
 }

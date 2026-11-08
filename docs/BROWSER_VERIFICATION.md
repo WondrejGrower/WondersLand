@@ -222,3 +222,11 @@ and 3 Python tests passed. A real local Workerd/SQLite binding was also exercise
 The first-sequoia rule is covered in isolated and end-to-end regressions; no
 safe-start filtering was introduced. Public leaderboard checks after deployment
 must be read-only: local synthetic fixture scores must never be seeded there.
+
+### Automatic phone layout · 2026-11-08
+
+Mobile play now uses the full available page automatically, with safe-area-aware
+thumb controls and orientation/VisualViewport resizing. Training previews have
+independent clipping. See FULLSCREEN_MONTHLY.md and `npm run test:mobile` for
+four emulated phone sizes and touch input coverage. Real phone testing remains
+Wondrej's device check; browser fullscreen availability is platform-dependent.
