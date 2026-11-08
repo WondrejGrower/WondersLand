@@ -1,4 +1,4 @@
-![WondersLand continuous forest](docs/journey-camp-cs.png)
+![WondersLand v prohlížeči](docs/browser/camp-cs.png)
 
 # WondersLand [WL] · 0.3.1
 
@@ -6,9 +6,22 @@ Nativní Qt/QML hra: dojdi k portálu, stiskni E, vyber schopnost a potvrď E.
 Každý běh začíná od 0 m. Oblasti jednoho lesa se mění při 500, 1 500, 3 000
 a 6 000 m; rozměry skutečných transakcí určuje jediná velikostní křivka.
 
-Primární cílový provoz bude **v prohlížeči na doméně**. Tato revize dokončuje
-stávající nativní aplikaci; [rozhodnutí o platformě](docs/BROWSER_TARGET.md)
-je uložené pro další vývoj. Web zatím nenasazuje.
+Primární verzí je nyní **hra pro prohlížeč na wondersland.online**. Podle
+nového výslovného zadání nahrazuje původní web; ten zůstává v archivní větvi.
+Webový klient je v `web/`, původní nativní Qt/QML aplikace v `src/` funguje dál.
+Sdílejí konfiguraci, překlady a pixelovou grafiku.
+
+```sh
+npm ci
+npm test
+npm run test:browser
+npm run deploy:check
+npm run dev
+```
+
+Cloudflare: [nasazení přes GitHub](docs/CLOUDFLARE_DEPLOYMENT.md).
+[Webové náhledy a výsledky kontrol](docs/BROWSER_VERIFICATION.md).
+Postup z desktopu lze přenést v Nastavení → Importovat postup.
 
 Větev: [game/roguelite-0.3](https://github.com/WondrejGrower/WondersLand/tree/game/roguelite-0.3).
 

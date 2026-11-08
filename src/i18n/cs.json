@@ -212,5 +212,10 @@
   "Second research slot": "Druhé místo pro výzkum",
   "Third research slot": "Třetí místo pro výzkum",
   "MENUS: WASD or arrows to select, E to confirm, Esc to go back. Mouse also works.\nCAMP: WASD or arrows to walk, E at the portal to choose a skill and start from 0 m.\nRUN: Space / W / Up or click to jump; hold for height. F operates an acquired jetpack. P / Esc pauses. B returns to camp. F11 changes fullscreen.\n\nExplore one continuous forest. Systems unlock through live expeditions and distance. Training grants no permanent rewards. Coins are game points, not bitcoin.": "NABÍDKY: WASD nebo šipky vybírají, E potvrzuje, Esc vrací zpět. Funguje i myš.\nTÁBOR: WASD nebo šipky pro chůzi, E u portálu otevře schopnosti a nový běh od 0 m.\nBĚH: Mezerník / W / ↑ nebo kliknutí pro skok; podržení zvýší skok. F ovládá získaný tryskový batoh. P / Esc pozastaví hru. B vrací do tábora. F11 přepíná celou obrazovku.\n\nProzkoumávej jeden souvislý les. Systémy odemykáš živými výpravami a uběhnutými metry. Trénink neposkytuje trvalé odměny. Mince jsou herní body, nikoliv bitcoin.",
-  "Inherited supplies: %1": "Zděděné zásoby: %1"
+  "Inherited supplies: %1": "Zděděné zásoby: %1",
+  "Export progress": "Exportovat postup",
+  "Import progress": "Importovat postup",
+  "Import can also transfer progress from the native app. The selected file replaces browser progress after confirmation.": "Importem lze přenést i postup z nativní aplikace. Vybraný soubor po potvrzení nahradí postup v prohlížeči.",
+  "Replace browser progress with this file?": "Nahradit postup v prohlížeči tímto souborem?",
+  "Invalid progress file": "Neplatný soubor s postupem"
 }

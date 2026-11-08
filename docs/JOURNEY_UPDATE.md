@@ -2,8 +2,8 @@
 
 This revision supersedes the tier selection, onboarding, language and viewport
 sections of BRIEF_0_3.md and IMPLEMENTATION_0_3.md. Native Qt/QML implementation
-on game/roguelite-0.3. The primary future delivery target is a browser on a
-domain: see BROWSER_TARGET.md.
+on game/roguelite-0.3. The primary delivery target is now the browser game on wondersland.online:
+see BROWSER_TARGET.md and CLOUDFLARE_DEPLOYMENT.md.
 
 ## Current flow and controls
 

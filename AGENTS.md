@@ -1,10 +1,22 @@
 # WondersLand [WL]
 
-Samostatná nativní C++17 / Qt Quick hra, nikoliv kiosk ani web wondersland.
-Přečti docs/PROJECT.md před rozšířením. Zachovej skutečné TXID v živém režimu
-a explicitní označení tréninku; satoshi zpracovávej celočíselně. Nikdy nezaměňuj
-herní mince za bitcoin. Nové zadání v docs/BRIEF_0_3.md výslovně požaduje funkční skilly a upgrady.
-Platby a produkční webové nasazení nejsou součástí práce. Zdrojové soubory patří do src/, testy do tests/.
-Ověření: ./bin/build a ./bin/test. Instalace pro uživatele: ./bin/install.
+Primárně prohlížečová hra pro wondersland.online; současně zachovaná nativní
+C++17 / Qt Quick/QML aplikace. Není součástí kiosku.
 
-Aktuální změny ovládání, souvislého lesa, odemykání, jazyků a scény: docs/JOURNEY_UPDATE.md. Tyto části nahrazují starší zadání. Primární cílový provoz bude v prohlížeči na doméně: docs/BROWSER_TARGET.md. Současná implementace zůstává nativní Qt/QML.
+Přečti docs/JOURNEY_UPDATE.md pro herní pravidla a docs/BROWSER_TARGET.md
+pro aktuální cílovou platformu. Výslovný pokyn Wondreje z 8. listopadu 2026:
+hra má na wondersland.online nahradit původní web. Starší pravidlo ponechat
+web na main je tím nahrazené. Archiv původního webu musí zůstat zachovaný.
+
+Sdílené: src/balance.json, src/i18n/cs.json, src/PixelArt.js. Webový runtime
+je web/core.mjs + app.mjs; build generuje dist bez uživatelských dat.
+Cloudflare konfigurace a ověření: docs/CLOUDFLARE_DEPLOYMENT.md.
+
+Zachovej skutečné TXID v živém režimu a označení tréninku/záznamu. Satoshi
+přenášej přesné jako desetinné řetězce, mince nejsou bitcoin. Nezaváděj
+platby. Zachovej existující postup, interní ID a migraci schématu.
+
+Web: npm ci; npm test; npm run test:browser; npm run deploy:check.
+Native: ./bin/build; ./bin/test; ./bin/install.
+Zdroj nativní hry v src/, testy v tests/, web v web/. Build, node_modules,
+.wrangler, privátní postup a přihlašovací údaje nepatří do Gitu.
