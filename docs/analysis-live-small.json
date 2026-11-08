@@ -4,8 +4,8 @@
   "from": 1794098271.581955,
   "to": 1794098271.817816,
   "uniqueTransactions": 10,
-  "balanceVersion": "wl-0.3-draft-1",
-  "tier": 1,
+  "balanceVersion": "wl-0.3-journey-2",
+  "regionIndependent": true,
   "warning": "Draft mapping; not a whole-mempool distribution. Finite timing search is not a proof of impossibility below the apex. Human errors and the full skill economy are excluded.",
   "valuePercentiles": {
     "0": 14714.0,

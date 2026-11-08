@@ -13,7 +13,7 @@ def height(value,tier=1):
         if i+1==len(anchors): result=h*1.5**math.log10(value/v)
         else:
             nv,nh=anchors[i+1];t=math.log(value/v)/math.log(nv/v);result=math.exp(math.log(h)+t*math.log(nh/h))
-    return math.floor(result*CONFIG['tiers'][tier-1]['size']+.5)
+    return math.floor(result+.5)
 def width(h):return min(96,max(14,math.floor(12+.18*h+.5)))
 def clears(h,w,target,air=False,speed=CONFIG['physics']['speed']):
     """Search finite launch timings and double-jump timings across the entire hitbox.
@@ -41,7 +41,7 @@ def analyze(data,seeds=50,tier=1):
     else:rows=data.get('transactions',[])
     unique={r['txid']:int(r.get('value',r.get('sats',0))) for r in rows if r.get('txid')}
     values=list(unique.values());heights=[height(v,tier) for v in values]
-    report={'source':data.get('source','unspecified'),'synthetic':bool(data.get('synthetic',False)),'from':data.get('start',data.get('capturedAt')),'to':data.get('end',data.get('capturedAt')),'uniqueTransactions':len(values),'balanceVersion':CONFIG['balanceVersion'],'tier':tier,'warning':'Draft mapping; not a whole-mempool distribution. Finite timing search is not a proof of impossibility below the apex. Human errors and the full skill economy are excluded.','valuePercentiles':{str(q):percentile(values,q/100) for q in [0,25,50,75,90,95,99,100]},'heightPercentiles':{str(q):percentile(heights,q/100) for q in [0,25,50,75,90,95,99,100]},'references':{}}
+    report={'source':data.get('source','unspecified'),'synthetic':bool(data.get('synthetic',False)),'from':data.get('start',data.get('capturedAt')),'to':data.get('end',data.get('capturedAt')),'uniqueTransactions':len(values),'balanceVersion':CONFIG['balanceVersion'],'regionIndependent':True,'warning':'Draft mapping; not a whole-mempool distribution. Finite timing search is not a proof of impossibility below the apex. Human errors and the full skill economy are excluded.','valuePercentiles':{str(q):percentile(values,q/100) for q in [0,25,50,75,90,95,99,100]},'heightPercentiles':{str(q):percentile(heights,q/100) for q in [0,25,50,75,90,95,99,100]},'references':{}}
     cache={}
     for label,target,air in [('beginner',70,False),('developed',105,False),('aerial',170,True)]:
       impossible=[]

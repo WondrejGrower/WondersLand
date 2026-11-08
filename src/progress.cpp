@@ -27,13 +27,69 @@ Progress::Progress(QString file) : path(file) {
     if (!old.contains("schemaVersion")) {
         data["legacyCoins"] = std::max(0, old["coins"].toInt());
         data["legacyBest"] = old["best"];
-    } else if (old["schemaVersion"].toInt() == 3) {
+    } else if (old["schemaVersion"].toInt() == 3 || old["schemaVersion"].toInt() == 4) {
         data = old;
+        if (old["schemaVersion"].toInt() == 3) {
+            if (!QFile::exists(path + ".pre-v4") && !QFile::copy(path, path + ".pre-v4")) {
+                error = "Cannot back up old progress. Migration cancelled.";
+                return;
+            }
+            int best = 0;
+            auto records = old["records"].toMap();
+            for (auto it = records.cbegin(); it != records.cend(); ++it)
+                if (it.key().contains(":live:"))
+                    best = std::max(best, it.value().toInt());
+            QStringList milestones;
+            for (auto key : old["milestones"].toStringList()) {
+                int seconds = key.section(':', 1).toInt();
+                best = std::max(best, int(seconds * 10.5));
+            }
+            for (auto v : Balance::list("milestones"))
+                if (best >= v.toMap()["meters"].toInt())
+                    milestones.append("distance:" + v.toMap()["meters"].toString());
+            data["milestones"] = milestones;
+            data["recipes"] =
+                old["milestones"].toStringList().contains("T2:120") ? QStringList{"boots"} : QStringList{};
+            data["bestDistance"] = best;
+            data["totalDistance"] = best; // Historical totals were not recorded; keep a lower bound.
+            QStringList preserved;
+            if (!old["character"].toMap().isEmpty()) {
+                preserved << "classes"; // Every old character could already choose these classes.
+                if (old["runs"].toInt() > 0)
+                    preserved << "training" << "strength" << "agility" << "magnet" << "luck"
+                              << "yield" << "flying" << "forge" << "wardrobe";
+                if (old["milestones"].toStringList().contains("T1:60") ||
+                    !old["completed"].toStringList().isEmpty() || !old["research"].toList().isEmpty())
+                    preserved << "garden";
+                if (old["milestones"].toStringList().contains("T2:120") ||
+                    old["owned"].toStringList().contains("boots") ||
+                    old["completed"].toStringList().contains("air"))
+                    preserved << "diamond" << "research2";
+                if (old["milestones"].toStringList().contains("T3:180"))
+                    preserved << "research3";
+                auto levels = old["workshop"].toMap();
+                for (auto it = levels.cbegin(); it != levels.cend(); ++it)
+                    if (it.value().toInt() > 0)
+                        preserved << "training" << it.key();
+                if (!old["owned"].toStringList().isEmpty())
+                    preserved << "forge" << "wardrobe";
+            }
+            preserved.removeDuplicates();
+            data["unlocked"] = preserved;
+            data["announcements"] = QStringList{};
+            data["schemaVersion"] = 4;
+            updateUnlocks(false);
+            save();
+        }
     } else
         error = "Unsupported save version. File preserved.";
 }
 QVariantMap Progress::fresh() const {
-    return {{"schemaVersion", 3},
+    return {{"schemaVersion", 4},
+            {"bestDistance", 0},
+            {"totalDistance", 0},
+            {"unlocked", QStringList{}},
+            {"announcements", QStringList{}},
             {"character", QVariantMap{}},
             {"coins", 0},
             {"seeds", 0},
@@ -100,12 +156,42 @@ bool Progress::reset(bool confirmed) {
     error.clear();
     return save();
 }
-bool Progress::hasMilestone(int tier, int seconds) const {
-    return data["milestones"].toStringList().contains(QString("T%1:%2").arg(tier).arg(seconds));
+QStringList Progress::unlocks() const {
+    auto result = data["unlocked"].toStringList();
+    for (auto v : Balance::list("progression")) {
+        auto rule = v.toMap();
+        if (data["runs"].toInt() >= rule["runs"].toInt() &&
+            data["totalDistance"].toDouble() >= rule["total"].toDouble() &&
+            data["bestDistance"].toDouble() >= rule["best"].toDouble())
+            if (!result.contains(rule["id"].toString()))
+                result.append(rule["id"].toString());
+    }
+    return result;
+}
+bool Progress::unlocked(const QString &id) const { return unlocks().contains(id); }
+void Progress::updateUnlocks(bool announce) {
+    auto previous = data["unlocked"].toStringList();
+    auto current = unlocks();
+    auto queue = data["announcements"].toStringList();
+    if (announce)
+        for (auto id : current)
+            if (!previous.contains(id))
+                queue.append(id);
+    data["unlocked"] = current;
+    data["announcements"] = queue;
+}
+bool Progress::changeClass(const QString &id) {
+    if (!unlocked("classes") || Balance::find("classes", id).isEmpty())
+        return false;
+    auto previous = data;
+    auto c = data["character"].toMap();
+    c["class"] = id;
+    data["character"] = c;
+    return commit(previous);
 }
 bool Progress::buy(const QString &branch) {
     const auto previous = data;
-    if (data["runs"].toInt() < 1 || Balance::find("workshop", branch).isEmpty())
+    if (!unlocked(branch) || Balance::find("workshop", branch).isEmpty())
         return false;
     auto levels = data["workshop"].toMap();
     int level = levels[branch].toInt(), cost = Balance::price(branch, level);
@@ -119,14 +205,12 @@ bool Progress::buy(const QString &branch) {
 bool Progress::craft(const QString &id) {
     const auto previous = data;
     auto item = Balance::find("items", id);
-    if (data["runs"].toInt() < 1 || item.isEmpty() || data["owned"].toStringList().contains(id))
+    if (!unlocked(item["feature"].toString()) || item.isEmpty() || data["owned"].toStringList().contains(id))
         return false;
     auto recipe = item["recipe"].toString();
-    if (!recipe.isEmpty()) {
-        auto match = QRegularExpression("^T([1-6]):([0-9]+)$").match(recipe);
-        if (!match.hasMatch() || !hasMilestone(match.captured(1).toInt(), match.captured(2).toInt()))
-            return false;
-    }
+    if (!recipe.isEmpty() && !data["recipes"].toStringList().contains(id) &&
+        data["bestDistance"].toInt() < recipe.section(':', 1).toInt())
+        return false;
     int cost = item["cost"].toInt();
     if (data["coins"].toInt() < cost)
         return false;
@@ -147,10 +231,10 @@ bool Progress::research(const QString &id, qint64 now) {
     const auto previous = data;
     updateResearch(now);
     auto project = Balance::find("research", id);
-    if (project.isEmpty() || !hasMilestone(1, 60) || data["completed"].toStringList().contains(id))
+    if (project.isEmpty() || !unlocked("garden") || data["completed"].toStringList().contains(id))
         return false;
     auto jobs = data["research"].toList();
-    int slotCount = 1 + int(hasMilestone(2, 120)) + int(hasMilestone(3, 180));
+    int slotCount = 1 + int(unlocked("research2")) + int(unlocked("research3"));
     for (auto j : jobs)
         if (j.toMap()["id"] == id)
             return false;
@@ -213,20 +297,21 @@ void Progress::reward(const QString &run, int tier, double seconds, int coins, i
 
     data["coins"] = data["coins"].toInt() + coins;
     data["runs"] = data["runs"].toInt() + 1;
+    Q_UNUSED(seconds);
+    data["bestDistance"] = std::max(data["bestDistance"].toInt(), score);
+    data["totalDistance"] = data["totalDistance"].toDouble() + std::max(0, score);
     auto milestones = data["milestones"].toStringList();
     for (auto v : Balance::list("milestones")) {
         auto m = v.toMap();
-        auto key = QString("T%1:%2").arg(tier).arg(m["seconds"].toInt());
-        if (seconds >= m["seconds"].toInt() && !milestones.contains(key)) {
+        auto key = "distance:" + m["meters"].toString();
+        if (score >= m["meters"].toInt() && !milestones.contains(key)) {
             milestones.append(key);
             data["coins"] = data["coins"].toInt() + m["coins"].toInt();
             data["seeds"] = data["seeds"].toInt() + m["seeds"].toInt();
         }
     }
     data["milestones"] = milestones;
-    int threshold = Balance::list("tiers")[tier - 1].toMap()["unlock"].toInt();
-    if (threshold > 0 && seconds >= threshold)
-        data["tier"] = std::max(data["tier"].toInt(), std::min(6, tier + 1));
+    updateUnlocks();
     auto records = data["records"].toMap();
     QString key = Balance::version() + QString(":live:T%1:").arg(tier) + classId;
     records[key] = std::max(records[key].toInt(), score);
@@ -250,8 +335,9 @@ QVariantMap Progress::view() const {
         branches.append(b);
     }
     out["branches"] = branches;
+    out["unlocked"] = unlocks();
     out["researchSlots"] =
-        hasMilestone(1, 60) ? 1 + int(hasMilestone(2, 120)) + int(hasMilestone(3, 180)) : 0;
+        unlocked("garden") ? 1 + int(unlocked("research2")) + int(unlocked("research3")) : 0;
     return out;
 }
 

@@ -1,3 +1,5 @@
+Aktualizace 0.3.1: aktuální změny popisuje [JOURNEY_UPDATE.md](JOURNEY_UPDATE.md), ověření [JOURNEY_VERIFICATION.md](JOURNEY_VERIFICATION.md). Následující text zachycuje předchozí verzi 0.3.
+
 # Ověření 0.1.0 · 8. listopadu 2026
 
 - Qt 6.12 / GCC 16, sestavení qmake6 a make.

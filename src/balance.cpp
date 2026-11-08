@@ -57,9 +57,8 @@ double Balance::height(qulonglong sats, int tier) {
             h = std::exp(std::log(base) + t * std::log(b[1].toDouble() / base));
         }
     }
-    auto tiers = list("tiers");
-    double factor = tiers[std::clamp(tier, 1, 6) - 1].toMap()["size"].toDouble();
-    return std::round(h * factor);
+    Q_UNUSED(tier); // Legacy API argument: transaction dimensions are region independent.
+    return std::round(h);
 }
 double Balance::width(double h) {
     return std::clamp(std::round(number("width", "base") + number("width", "slope") * h),

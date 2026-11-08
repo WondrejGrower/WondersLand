@@ -7,12 +7,9 @@
 #include <QTimer>
 #include <QTranslator>
 
-// Follows the language picked under Omarchy's Setup > Language. Catalogs are
-// flat JSON objects from English source text to translation, one per Omarchy
-// language code (i18n/da.json, i18n/pt-BR.json), so QML keeps plain
-// qsTr("Save") and C++ keeps tr("Save"). A counted string,
-// qsTr("%n clips", "", count), maps to an object of plural forms keyed by
-// CLDR category ({"one": "%n klip", "other": "%n klip"}).
+// Per-application English/Czech choice, persisted independently of progress.
+// English source keys are shared by QML, configuration and Canvas labels.
+// An explicit choice overrides the desktop language; new installs use English.
 class Translator : public QTranslator {
     Q_OBJECT
     Q_PROPERTY(QString language READ language NOTIFY changed)
@@ -21,6 +18,12 @@ class Translator : public QTranslator {
     explicit Translator(const QString &languageFile = {}, const QString &catalogDirectory = ":/i18n",
                         QObject *parent = nullptr);
 
+    Q_INVOKABLE void setLanguage(const QString &code);
+    Q_INVOKABLE QString text(const QString &source) const;
+    Q_INVOKABLE QString integer(const QString &digits) const;
+    Q_INVOKABLE QString btc(const QString &amount) const;
+    Q_INVOKABLE QString coins(int count) const;
+    Q_INVOKABLE QString seeds(int count) const;
     QString language() const { return m_language; }
     bool isEmpty() const override { return m_strings.isEmpty(); }
     QString translate(const char *context, const char *sourceText, const char *disambiguation = nullptr,
@@ -36,6 +39,8 @@ class Translator : public QTranslator {
   private:
     void reload();
 
+    QString m_settingsPath;
+    QString m_selected;
     QString m_languageFile;
     QString m_catalogDirectory;
     QString m_language;

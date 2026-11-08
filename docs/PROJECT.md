@@ -65,3 +65,10 @@ dílny, vybavení a výzkumu i návrhy povinně průchozího generátoru. Velká
 transakce může správně vytvořit nepřekonatelnou překážku. Aktuální funkční
 stav, omezení, migrace a skutečná měření jsou v IMPLEMENTATION_0_3.md.
 Pracovní větev je game/roguelite-0.3; main zůstává původní web.
+
+## Souvislý les a cílová platforma
+
+Aktuální stav a nahrazení tierů: [JOURNEY_UPDATE.md](JOURNEY_UPDATE.md).
+Primární cílový provoz je prohlížeč na doméně: [BROWSER_TARGET.md](BROWSER_TARGET.md).
+Starší odstavce tohoto dokumentu jsou historie; popis opakujícího se snapshotu
+a odložených nákupů neplatí pro současnou implementaci.

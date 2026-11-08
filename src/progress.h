@@ -14,7 +14,10 @@ class Progress {
     bool equip(const QString &item);
     bool research(const QString &id, qint64 now);
     void updateResearch(qint64 now);
-    bool hasMilestone(int tier, int seconds) const;
+    bool unlocked(const QString &id) const;
+    QStringList unlocks() const;
+    void updateUnlocks(bool announce = true);
+    bool changeClass(const QString &id);
     void reward(const QString &runId, int tier, double seconds, int coins, int score, const QString &classId,
                 const QString &mode = "live");
     QVariantMap view() const;

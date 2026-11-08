@@ -16,7 +16,10 @@ class Backend : public QObject {
     Q_INVOKABLE void createCharacter(const QString &name, const QString &classId, const QString &hair,
                                      const QString &skin, const QString &shirt, int style);
     Q_INVOKABLE void resetCharacter(bool confirmed);
-    Q_INVOKABLE void setTier(int tier);
+    Q_INVOKABLE void setTier(int tier); // Compatibility only: every expedition starts at the forest edge.
+    Q_INVOKABLE void changeAppearance(const QString &part);
+    Q_INVOKABLE void changeClass(const QString &id);
+    Q_INVOKABLE void dismissAnnouncement();
     Q_INVOKABLE void start(bool demo = false);
     Q_INVOKABLE void chooseSkill(int choice);
     Q_INVOKABLE void buy(const QString &branch);

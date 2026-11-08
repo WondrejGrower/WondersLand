@@ -8,6 +8,7 @@
 #include <QJsonObject>
 #include <QLocale>
 #include <QRegularExpression>
+#include <QSaveFile>
 #include <QStandardPaths>
 
 Translator::Translator(const QString &languageFile, const QString &catalogDirectory, QObject *parent)
@@ -22,6 +23,15 @@ Translator::Translator(const QString &languageFile, const QString &catalogDirect
     connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, [this] { m_debounce.start(); });
     connect(&m_watcher, &QFileSystemWatcher::fileChanged, this, [this] { m_debounce.start(); });
     connect(&m_debounce, &QTimer::timeout, this, &Translator::reload);
+    m_settingsPath =
+        languageFile.isEmpty()
+            ? QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/settings.json"
+            : languageFile + ".settings";
+    QFile settings(m_settingsPath);
+    if (settings.open(QIODevice::ReadOnly))
+        m_selected = QJsonDocument::fromJson(settings.readAll()).object()["language"].toString();
+    if (m_selected != "en" && m_selected != "cs")
+        m_selected = languageFile.isEmpty() ? "en" : readLanguage(languageFile);
     reload();
 }
 
@@ -136,8 +146,8 @@ void Translator::reload() {
     if (QFileInfo::exists(m_languageFile))
         m_watcher.addPath(m_languageFile);
 
-    // Catalogs are compiled in, so only a different language needs a reload.
-    const QString language = readLanguage(m_languageFile);
+    // The persisted app choice overrides the watched desktop language file.
+    const QString language = m_selected;
     if (language == m_language)
         return;
 
@@ -165,4 +175,51 @@ void Translator::reload() {
     QLocale::setDefault(locale);
     QGuiApplication::setLayoutDirection(locale.textDirection());
     emit changed();
+}
+
+void Translator::setLanguage(const QString &code) {
+    if (code != "en" && code != "cs")
+        return;
+    QDir().mkpath(QFileInfo(m_settingsPath).absolutePath());
+    QSaveFile f(m_settingsPath);
+    if (!f.open(QIODevice::WriteOnly))
+        return;
+    f.write(QJsonDocument(QJsonObject{{"language", code}}).toJson());
+    if (!f.commit())
+        return;
+    m_selected = code;
+    reload();
+}
+QString Translator::text(const QString &source) const {
+    auto bytes = source.toUtf8();
+    auto translated = translate(nullptr, bytes.constData());
+    return translated.isEmpty() ? source : translated;
+}
+QString Translator::integer(const QString &digits) const {
+    // Group the decimal string directly, preserving every satoshi beyond JS integer precision.
+    QString out = digits;
+    const QString separator = formatLocale(m_language).groupSeparator();
+    int first = out.startsWith('-') ? 1 : 0;
+    for (int i = out.size() - 3; i > first; i -= 3)
+        out.insert(i, separator);
+    return out;
+}
+QString Translator::btc(const QString &amount) const {
+    auto parts = amount.split('.');
+    return integer(parts.value(0)) + formatLocale(m_language).decimalPoint() + parts.value(1, "00000000");
+}
+QString Translator::coins(int count) const {
+    QString noun = m_language == "cs" ? (count == 1                 ? "mince"
+                                         : count >= 2 && count <= 4 ? "mince"
+                                                                    : "mincí")
+                                      : (count == 1 ? "coin" : "coins");
+    return integer(QString::number(count)) + " " + noun;
+}
+
+QString Translator::seeds(int count) const {
+    const QString noun = m_language == "cs" ? (count == 1                 ? "semeno"
+                                               : count >= 2 && count <= 4 ? "semena"
+                                                                          : "semen")
+                                            : (count == 1 ? "seed" : "seeds");
+    return integer(QString::number(count)) + " " + noun;
 }

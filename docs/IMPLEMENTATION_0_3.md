@@ -1,3 +1,5 @@
+Aktualizace 0.3.1: aktuální změny popisuje [JOURNEY_UPDATE.md](JOURNEY_UPDATE.md), ověření [JOURNEY_VERIFICATION.md](JOURNEY_VERIFICATION.md). Následující text zachycuje předchozí verzi 0.3.
+
 # WondersLand 0.3 · stav implementace
 
 Vývojová větev: `game/roguelite-0.3`, odvozená z herní větve 0.2.

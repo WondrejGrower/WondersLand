@@ -70,7 +70,19 @@ QVariantMap Backend::state() const {
     }
     while (hud.size() < 6)
         hud.append(QVariantMap{{"name", "—"}, {"rank", 0}});
-    return {{"config", Balance::config().toVariantMap()},
+    auto regions = Balance::list("regions");
+    int regionIndex = 0;
+    for (int i = 1; i < regions.size(); ++i)
+        if (distance >= regions[i].toMap()["meters"].toDouble())
+            regionIndex = i;
+    auto announcements = profile["announcements"].toStringList();
+    QString announcement;
+    if (!announcements.isEmpty())
+        announcement = Balance::find("progression", announcements.first())["name"].toString();
+    return {{"region", regions[regionIndex]},
+            {"regionIndex", regionIndex},
+            {"announcement", announcement},
+            {"config", Balance::config().toVariantMap()},
             {"phase", phase},
             {"newMilestones", newMilestones},
             {"landing", landing},
@@ -143,8 +155,46 @@ void Backend::resetCharacter(bool confirmed) {
     emit changed();
 }
 void Backend::setTier(int t) {
-    if (phase == "camp")
-        tier = std::clamp(t, 1, progress.data["tier"].toInt());
+    Q_UNUSED(t);
+    tier = 1;
+}
+void Backend::changeAppearance(const QString &part) {
+    if (phase != "camp" || !progress.unlocked("wardrobe"))
+        return;
+    auto previous = progress.data;
+    auto c = progress.data["character"].toMap();
+    if (part == "hairStyle")
+        c[part] = (c[part].toInt() + 1) % 4;
+    else {
+        QStringList colors = part == "hair"
+                                 ? QStringList{"#5e3936", "#d6b96d", "#bcc4c5", "#302f43", "#a65c50"}
+                             : part == "skin"  ? QStringList{"#dfaf87", "#b97e5f", "#82533f", "#f0cbb2"}
+                             : part == "shirt" ? QStringList{"#679e86", "#9278aa", "#c18b65", "#638ba9"}
+                                               : QStringList{};
+        if (colors.isEmpty())
+            return;
+        c[part] = colors[(colors.indexOf(c[part].toString()) + 1) % colors.size()];
+    }
+    progress.data["character"] = c;
+    if (!progress.save())
+        progress.data = previous;
+    emit changed();
+}
+void Backend::changeClass(const QString &id) {
+    if (phase != "camp")
+        return;
+    if (progress.changeClass(id))
+        cachedStats.clear();
+    emit changed();
+}
+void Backend::dismissAnnouncement() {
+    if (phase != "camp")
+        return;
+    auto queue = progress.data["announcements"].toStringList();
+    if (!queue.isEmpty())
+        queue.removeFirst();
+    progress.data["announcements"] = queue;
+    progress.save();
     emit changed();
 }
 void Backend::acceptTransactions(const QVariantList &rows) {
@@ -156,6 +206,10 @@ void Backend::acceptTransactions(const QVariantList &rows) {
         observed.append(row);
     }
     feed.receive(observed);
+    if (phase == "connecting" && !feed.recent().isEmpty()) {
+        start(false);
+        return;
+    }
     if (phase == "waiting" && feed.size() > 0 && feed.usedCount() < 10000) {
         phase = "countdown";
         countdown = 3;
@@ -221,6 +275,8 @@ QVariantList Backend::availableSkills(bool forRun) const {
         auto id = m["id"].toString();
         if (m["unlock"] != "base" && !completed.contains(m["unlock"].toString()))
             continue;
+        if (id == "jetpack" && !progress.unlocked("diamond"))
+            continue;
         if (id == progress.data["excluded"].toString())
             continue;
         int rank = skills.value(id);
@@ -285,8 +341,7 @@ void Backend::applySkill(const QVariantMap &offer) {
     if (id == "coins") {
         int amount = int(Balance::number("run", "fallbackCoins"));
         collected += amount;
-        earnedMilli += 1000 * amount * (1 + stats()["economy"].toDouble()) *
-                       Balance::list("tiers")[tier - 1].toMap()["coins"].toDouble();
+        earnedMilli += 1000 * amount * (1 + stats()["economy"].toDouble());
         return;
     }
     int next =
@@ -303,13 +358,18 @@ void Backend::start(bool demo) {
     if (progress.data["character"].toMap().isEmpty() || !progress.error.isEmpty())
         return;
     if (!demo && feed.recent().isEmpty()) {
-        notice = "No recent transactions available";
+        settle();
+        stopMovement();
+        station.clear();
+        phase = "connecting";
+        notice.clear();
         emit changed();
         return;
     }
     settle();
     stopMovement();
     station.clear();
+    tier = 1;
     demoMode = demo;
     runId = QUuid::createUuid().toString(QUuid::WithoutBraces);
     paid = false;
@@ -579,12 +639,11 @@ void Backend::advance(double dt) {
             c["taken"] = true;
             collected++;
             double bonus = stats()["economy"].toDouble() + (y > 3 ? effect("aircoins") : 0);
-            earnedMilli += 1000 * (1 + std::min(Balance::number("run", "maxEconomyBonus"), bonus)) *
-                           Balance::list("tiers")[tier - 1].toMap()["coins"].toDouble();
+            earnedMilli += 1000 * (1 + std::min(Balance::number("run", "maxEconomyBonus"), bonus));
         }
         v = c;
     }
-    if (activeTime >= nextUpgrade && flying.isEmpty()) {
+    if (progress.unlocked("flying") && activeTime >= nextUpgrade && flying.isEmpty()) {
         auto offer = offers(1, (pickups + 1) % 3 == 0).first().toMap();
         offer["age"] = -2.;
         offer["x"] = 600.;
@@ -766,28 +825,27 @@ QString Backend::nearbyStation() const {
     };
     const Spot spots[] = {{"home", 270, 190},  {"portal", 540, 215},   {"training", 465, 290},
                           {"forge", 112, 225}, {"wardrobe", 390, 195}, {"library", 175, 300}};
-    for (auto spot : spots)
+    for (auto spot : spots) {
+        QString feature = QString(spot.id) == "library" ? "garden" : QString(spot.id);
+        if (feature != "home" && feature != "portal" && !progress.unlocked(feature))
+            continue;
         if (std::hypot(campX - spot.x, campY - spot.y) < 43)
             return spot.id;
+    }
     return {};
 }
 void Backend::interact() {
     if (phase != "camp")
         return;
-    if (station == "portal") {
+    if (!station.isEmpty())
+        return;
+    auto nearby = nearbyStation();
+    stopMovement();
+    if (nearby == "portal") {
         start(false);
         return;
     }
-    if (station == "training") {
-        start(true);
-        return;
-    }
-    if (!station.isEmpty()) {
-        closeStation();
-        return;
-    }
-    station = nearbyStation();
-    stopMovement();
+    station = nearby;
     emit changed();
 }
 void Backend::closeStation() {

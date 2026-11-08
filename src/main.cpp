@@ -14,7 +14,7 @@
 #include <QTimer>
 int main(int argc, char **argv) {
     const QString command = argc > 1 ? QString::fromLocal8Bit(argv[1]) : "open";
-    if (command == "check" || command == "preview") {
+    if (command == "check" || command == "preview" || command == "language") {
         qputenv("QT_QPA_PLATFORM", "offscreen");
         qputenv("QT_QPA_PLATFORMTHEME", "");
     }
@@ -23,23 +23,32 @@ int main(int argc, char **argv) {
     app.setDesktopFileName("wondersland-game");
     app.setWindowIcon(QIcon::fromTheme("wondersland-game"));
     QQuickStyle::setStyle("Material");
+    if (command == "language") {
+        const QString code = app.arguments().value(2);
+        if (code != "cs" && code != "en")
+            return 1;
+        Translator translator;
+        translator.setLanguage(code);
+        return translator.language() == code ? 0 : 1;
+    }
     if (command == "check") {
         if (app.arguments().contains("--live")) {
             QTemporaryDir probeDirectory;
             Backend probe(probeDirectory.filePath("progress.json"), true);
-            bool completed=false;
+            bool completed = false;
             QObject::connect(&probe, &Backend::changed, &app, [&] {
-                if(completed)return;
+                if (completed)
+                    return;
                 const auto state = probe.state();
                 if (state["source"] == "live") {
-                    completed=true;
+                    completed = true;
                     QTextStream(stdout)
                         << QJsonDocument::fromVariant(
                                QVariantMap{{"live", true}, {"transactions", state["poolSize"]}})
                                .toJson();
                     app.exit(0);
                 } else if (state["source"] == "offline") {
-                    completed=true;
+                    completed = true;
                     QTextStream(stderr) << "Mempool source unavailable.\n";
                     app.exit(1);
                 }
@@ -48,7 +57,7 @@ int main(int argc, char **argv) {
             return app.exec();
         }
         QTextStream(stdout)
-            << "{\"application\":\"WondersLand [WL]\",\"version\":\"0.3.0\",\"standalone\":true}\n";
+            << "{\"application\":\"WondersLand [WL]\",\"version\":\"0.3.1\",\"standalone\":true}\n";
         return 0;
     }
     if (command != "open" && command != "preview") {
@@ -66,7 +75,10 @@ int main(int argc, char **argv) {
                         {"shirt", "#679e86"},
                         {"hairStyle", 1}});
         fixture.data["coins"] = 10000;
-        fixture.data["runs"] = 1;
+        fixture.data["runs"] = 5;
+        fixture.data["totalDistance"] = 7000;
+        fixture.data["bestDistance"] = 3500;
+        fixture.updateUnlocks(false);
         fixture.data["tier"] = 3;
         fixture.data["seeds"] = 3;
         fixture.data["milestones"] = QStringList{"T1:60", "T2:120"};
@@ -92,11 +104,11 @@ int main(int argc, char **argv) {
     }
     Theme theme;
     QString previewLanguage;
-    if (command == "preview" && app.arguments().contains("--cs")) {
+    if (command == "preview") {
         previewLanguage = previewDirectory.filePath("language");
         QFile language(previewLanguage);
         if (language.open(QIODevice::WriteOnly))
-            language.write("cs\n");
+            language.write(app.arguments().contains("--cs") ? "cs\n" : "en\n");
     }
     Translator translator(previewLanguage);
     app.installTranslator(&translator);
@@ -111,7 +123,7 @@ int main(int argc, char **argv) {
     if (command == "preview") {
         const auto args = app.arguments();
         if (args.contains("--camp") || args.contains("--runner") || args.contains("--workshop") ||
-            args.contains("--results") || args.contains("--select")) {
+            args.contains("--results") || args.contains("--select") || args.contains("--training")) {
             if (backend.state()["phase"] == "creation")
                 backend.createCharacter("Willow", "gardener", "#d6b96d", "#dfaf87", "#679e86", 1);
         }
@@ -123,8 +135,8 @@ int main(int argc, char **argv) {
                     backend.advance(.016);
             }
         }
-        if (args.contains("--workshop")) {
-            backend.walkTo(112, 225);
+        if (args.contains("--workshop") || args.contains("--training")) {
+            backend.walkTo(args.contains("--training") ? 465 : 112, args.contains("--training") ? 290 : 225);
             for (int i = 0; i < 200; i++)
                 backend.advance(.05);
             backend.interact();
@@ -133,6 +145,13 @@ int main(int argc, char **argv) {
             backend.previewScene();
         backend.freezePreview();
         auto window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        if (args.contains("--settings"))
+            window->setProperty("settingsOpen", true);
+        int sizeIndex = args.indexOf("--size");
+        if (sizeIndex >= 0) {
+            auto dimensions = args.value(sizeIndex + 1).split('x');
+            window->resize(dimensions.value(0).toInt(), dimensions.value(1).toInt());
+        }
         if (args.contains("--small"))
             window->resize(720, 600);
         QString output = argc > 2 ? QString::fromLocal8Bit(argv[2]) : "preview.png";

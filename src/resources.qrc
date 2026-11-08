@@ -4,6 +4,8 @@
 <file alias="CharacterView.qml">CharacterView.qml</file>
 <file alias="StationPanel.qml">StationPanel.qml</file>
 <file alias="PixelArt.js">PixelArt.js</file>
+<file>NavButton.qml</file>
+<file>MenuNavigation.qml</file>
 <file alias="Main.qml">Main.qml</file>
 <file alias="i18n/cs.json">i18n/cs.json</file>
 <file alias="i18n/en.json">i18n/en.json</file>

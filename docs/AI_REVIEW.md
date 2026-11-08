@@ -3,7 +3,7 @@
 Analyzuj větev `game/roguelite-0.3`, nikoliv `main` (tam je jiný webový projekt).
 
 Jde o funkční ranou kostru samostatné nativní hry pro Omarchy/Linux:
-C++17, Qt Quick/QML, qmake6. Nejde o web ani plugin kiosku. Záměr a další
+C++17, Qt Quick/QML, qmake6. Současná implementace je nativní; primární cílový provoz bude v prohlížeči na doméně (BROWSER_TARGET.md). Nejde o plugin kiosku. Záměr a další
 směr jsou v docs/PROJECT.md; aktuální ovládání a příkazy v README.md.
 
 ## Kde co hledat
@@ -12,7 +12,7 @@ směr jsou v docs/PROJECT.md; aktuální ovládání a příkazy v README.md.
   pohyb v táboře, živé transakce přes Qt Network.
 - src/Main.qml: okno, vstupy, běžecká scéna a výsledky po nárazu.
 - src/CampView.qml: průchozí Base Camp, kreslení a interakce stanovišť.
-- src/theme.* a translator.*: Omarchy téma a jazyk; cs/en v src/i18n/.
+- src/theme.* a translator.*: Omarchy téma a samostatná volba jazyka; cs/en v src/i18n/.
 - tests/game_tests.cpp: trénink bez odměn, živé mince právě jednou,
   pohyb, skok, kolize, persistence, snapshot a skutečné ovládání QML.
 - pkgbuild/: lokální Arch balíček, desktopový spouštěč a ikona.
@@ -25,7 +25,7 @@ a odkaz. Zdroj obsahuje jen nedávné transakce, ne celý mempool. Běh má dopl
 do budoucí části aktuálního běhu a už viditelné překážky se nemění.
 
 Trénink má ukázkové rostliny bez TXID a nepřidává persistentní mince ani
-živé rekordy. Herní mince nejsou bitcoin. Dílna, vybavení, skilly, tiery a výzkum jsou od 0.3 funkční. Nákupy
+živé rekordy. Herní mince nejsou bitcoin. Dílna, vybavení, skilly a výzkum jsou funkční. Ruční tiery nahradil souvislý les podle metrů; aktuální změny a migrace popisuje JOURNEY_UPDATE.md. Nákupy
 používají pouze herní body, žádné platby neprobíhají.
 
 Budoucí směr: magický roguelike inspirovaný hlavně Magicraftem a Terrarií.

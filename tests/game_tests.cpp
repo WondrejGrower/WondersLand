@@ -16,6 +16,14 @@
 #include <cmath>
 class Tests : public QObject {
     Q_OBJECT
+    QQuickItem *itemNamed(QQuickItem *root, const QString &name) {
+        if (root->objectName() == name)
+            return root;
+        for (auto item : root->childItems())
+            if (auto found = itemNamed(item, name))
+                return found;
+        return nullptr;
+    }
     QVariantMap character(QString cls = "gardener") {
         return {{"name", "Willow"},  {"class", cls},       {"hair", "#5e3936"},
                 {"skin", "#dfaf87"}, {"shirt", "#679e86"}, {"hairStyle", 1}};
@@ -26,7 +34,10 @@ class Tests : public QObject {
         p.create(character(cls));
         if (strong) {
             p.data["coins"] = 100000;
-            p.data["runs"] = 1;
+            p.data["runs"] = 5;
+            p.data["totalDistance"] = 7000;
+            p.data["bestDistance"] = 3500;
+            p.updateUnlocks(false);
             p.data["tier"] = 6;
             p.data["workshop"] =
                 QVariantMap{{"strength", 50}, {"agility", 50}, {"magnet", 50}, {"luck", 50}, {"yield", 50}};
@@ -93,7 +104,7 @@ class Tests : public QObject {
         auto herb = Backend::plant(420000000000ULL);
         QCOMPARE(herb["type"].toString(), "cannabis");
         QCOMPARE(herb["h"].toDouble(), Balance::height(420000000000ULL));
-        QVERIFY(Backend::plant(1000000000, 3)["h"].toDouble() >
+        QVERIFY(Backend::plant(1000000000, 3)["h"].toDouble() ==
                 Backend::plant(1000000000, 1)["h"].toDouble());
     }
     void queueIsBoundedReproducibleAndDoesNotRepeat() {
@@ -237,63 +248,123 @@ class Tests : public QObject {
         auto path = fixture(dir);
         {
             Progress p(path);
-            p.reward("run-one", 1, 300, 50, 900, "gardener");
+            p.reward("run-one", 1, 300, 50, 3000, "gardener");
             auto before = p.data;
-            p.reward("run-one", 1, 300, 50, 900, "gardener");
+            p.reward("run-one", 1, 300, 50, 3000, "gardener");
             QCOMPARE(p.data, before);
-            QCOMPARE(p.data["tier"].toInt(), 2);
+            QCOMPARE(p.data["bestDistance"].toInt(), 3000);
             QCOMPARE(p.data["seeds"].toInt(), 3);
         }
         Progress p(path);
         auto before = p.data;
-        p.reward("run-one", 1, 300, 50, 900, "gardener");
+        p.reward("run-one", 1, 300, 50, 3000, "gardener");
         QCOMPARE(p.data, before);
-        p.reward("another", 1, 300, 0, 800, "gardener");
+        p.reward("another", 1, 300, 0, 3000, "gardener");
         QCOMPARE(p.data["seeds"].toInt(), 3);
     }
-    void firstThreeTiersUnlockAndApplyTheirCoinMultipliers() {
+    void distanceProgressionAccumulatesShortLiveRuns() {
         QTemporaryDir dir;
-        auto path = fixture(dir);
-        Progress p(path);
-        p.reward("t1-short", 1, 179, 0, 1, "gardener");
-        QCOMPARE(p.data["tier"].toInt(), 1);
-        p.reward("t1", 1, 180, 0, 2, "gardener");
-        QCOMPARE(p.data["tier"].toInt(), 2);
-        p.reward("t2-short", 2, 239, 0, 2, "gardener");
-        QCOMPARE(p.data["tier"].toInt(), 2);
-        p.reward("t2", 2, 240, 0, 3, "gardener");
-        QCOMPARE(p.data["tier"].toInt(), 3);
-        p.reward("t3", 3, 300, 0, 4, "gardener");
-        QCOMPARE(p.data["tier"].toInt(), 4);
-        for (int tier = 1; tier <= 3; tier++) {
-            QTemporaryDir runDir;
-            auto runPath = fixture(runDir);
-            Progress setup(runPath);
-            setup.data["tier"] = 3;
-            setup.save();
-            Backend b(runPath, false);
-            b.setTier(tier);
-            QVariantList rows;
-            for (int i = 1; i < 20; i++)
-                rows.append(tx(i, 0));
-            b.acceptTransactions(rows);
-            begin(b, false, "magnet");
-            for (int i = 0; i < 1800 && b.state()["collected"].toInt() < 2; i++) {
-                for (auto value : b.state()["obstacles"].toList()) {
-                    double x = value.toMap()["x"].toDouble();
-                    if (x < 170 && x > 150 && b.state()["y"].toDouble() == 0)
-                        b.jump();
+        Progress p(fixture(dir));
+        QVERIFY(!p.unlocked("training"));
+        QVERIFY(!p.buy("strength"));
+        p.reward("short1", 1, 1, 10, 50, "gardener");
+        QVERIFY(p.unlocked("training"));
+        QVERIFY(p.unlocked("strength"));
+        QVERIFY(!p.unlocked("agility"));
+        for (int i = 0; i < 9; i++)
+            p.reward(QString("short%1").arg(i + 2), 1, 1, 10, 50, "gardener");
+        QCOMPARE(p.data["totalDistance"].toInt(), 500);
+        QCOMPARE(p.data["bestDistance"].toInt(), 50);
+        QVERIFY(p.unlocked("forge"));
+        QVERIFY(!p.unlocked("garden"));
+        QVERIFY(!p.unlocked("diamond"));
+        auto before = p.data;
+        p.reward("training", 1, 1000, 10000, 10000, "gardener", "replay:2");
+        QCOMPARE(p.data["totalDistance"], before["totalDistance"]);
+        QVERIFY(!p.unlocked("garden"));
+        p.reward("long", 1, 300, 100, 3000, "gardener");
+        QVERIFY(p.unlocked("garden"));
+        QVERIFY(p.unlocked("diamond"));
+        QVERIFY(p.changeClass("explorer"));
+        QCOMPARE(p.data["character"].toMap()["class"].toString(), QString("explorer"));
+        QCOMPARE(p.data["announcements"].toStringList().count("training"), 1);
+    }
+    void continuousForestStartsAtZeroAndKeepsTransactionDimensions() {
+        QTemporaryDir dir;
+        Backend b(fixture(dir), false);
+        QVariantList rows;
+        for (int i = 1; i < 200; i++)
+            rows.append(tx(i, 0));
+        b.acceptTransactions(rows);
+        b.setTier(6);
+        begin(b, false);
+        QCOMPARE(b.state()["distance"].toDouble(), 0.);
+        QCOMPARE(b.state()["regionIndex"].toInt(), 0);
+        while (b.state()["distance"].toDouble() < 499)
+            b.advance(.05);
+        auto before = b.state()["obstacles"].toList();
+        while (b.state()["distance"].toDouble() < 501)
+            b.advance(.01);
+        QCOMPARE(b.state()["phase"].toString(), QString("running"));
+        QCOMPARE(b.state()["regionIndex"].toInt(), 1);
+        for (auto v : before) {
+            auto original = v.toMap();
+            for (auto next : b.state()["obstacles"].toList()) {
+                auto after = next.toMap();
+                if (after["txid"] == original["txid"]) {
+                    QCOMPARE(after["h"], original["h"]);
+                    QCOMPARE(after["w"], original["w"]);
                 }
-                b.advance(.008);
             }
-            int collected = b.state()["collected"].toInt();
-            QVERIFY(collected >= 2);
-            double multiplier = Balance::list("tiers")[tier - 1].toMap()["coins"].toDouble();
-            int earned = int(collected * 1.1 * multiplier);
-            QCOMPARE(b.state()["earned"].toInt(), earned);
-            b.returnToCamp();
-            QCOMPARE(b.state()["wallet"].toInt(), earned);
         }
+        b.returnToCamp();
+        begin(b, false);
+        QCOMPARE(b.state()["distance"].toDouble(), 0.);
+        QCOMPARE(b.state()["regionIndex"].toInt(), 0);
+    }
+    void oldSaveMigrationPreservesPurchasesAndAccess() {
+        QTemporaryDir dir;
+        auto path = fixture(dir, true);
+        Progress p(path);
+        p.data["schemaVersion"] = 3;
+        p.data.remove("unlocked");
+        p.data.remove("totalDistance");
+        p.data.remove("bestDistance");
+        p.data["milestones"] = QStringList{"T1:60", "T2:120", "T3:180"};
+        p.save();
+        Progress migrated(path);
+        QVERIFY(migrated.error.isEmpty());
+        QCOMPARE(migrated.data["schemaVersion"].toInt(), 4);
+        QCOMPARE(migrated.data["coins"], p.data["coins"]);
+        QCOMPARE(migrated.data["workshop"], p.data["workshop"]);
+        QCOMPARE(migrated.data["owned"], p.data["owned"]);
+        QVERIFY(migrated.unlocked("classes"));
+        QVERIFY(migrated.unlocked("garden"));
+        QVERIFY(migrated.unlocked("diamond"));
+        QVERIFY(migrated.data["recipes"].toStringList().contains("boots"));
+        QVERIFY(migrated.unlocked("research3"));
+        QVERIFY(QFile::exists(path + ".pre-v4"));
+    }
+    void languagePersistsIndependentlyOfCharacterReset() {
+        QTemporaryDir dir;
+        auto file = dir.filePath("language");
+        Translator translator(file);
+        QCOMPARE(translator.language(), QString("en"));
+        translator.setLanguage("cs");
+        QCOMPARE(translator.text("Base Camp"), QString::fromUtf8("Základní tábor"));
+        QCOMPARE(translator.coins(1), QString::fromUtf8("1 mince"));
+        QCOMPARE(translator.coins(2), QString::fromUtf8("2 mince"));
+        QCOMPARE(translator.coins(5), QString::fromUtf8("5 mincí"));
+        auto exact = translator.integer("2100000000000001");
+        exact.remove(QChar(0xa0));
+        exact.remove(' ');
+        QCOMPARE(exact, QString("2100000000000001"));
+        Progress p(fixture(dir));
+        p.reset(true);
+        Translator loaded(file);
+        QCOMPARE(loaded.language(), QString("cs"));
+        loaded.setLanguage("en");
+        QCOMPARE(loaded.text("Base Camp"), QString("Base Camp"));
     }
     void recordedDatasetsHaveSeparateRecordsAndNoRewards() {
         QTemporaryDir dir;
@@ -475,6 +546,70 @@ class Tests : public QObject {
         QVERIFY(count >= 2);
         QVERIFY(b.state()["rescuesGranted"].toInt() <= 2);
     }
+    void nativeMenusLanguagesAndScaledMouseCoordinates() {
+        QTemporaryDir dir;
+        Backend b(fixture(dir, true), false);
+        Theme theme(dir.path());
+        Translator translator(dir.filePath("language"));
+        QCoreApplication::installTranslator(&translator);
+        QQmlApplicationEngine engine;
+        connect(&translator, &Translator::changed, &engine, &QQmlApplicationEngine::retranslate);
+        engine.rootContext()->setContextProperty("backend", &b);
+        engine.rootContext()->setContextProperty("theme", &theme);
+        engine.rootContext()->setContextProperty("translator", &translator);
+        engine.load(QUrl("qrc:/Main.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        window->requestActivate();
+        auto viewport = itemNamed(window->contentItem(), "viewport");
+        QVERIFY(viewport);
+        for (auto size : {QSize(1280, 720), QSize(1366, 768), QSize(1920, 1080), QSize(640, 520)}) {
+            window->resize(size);
+            QTest::qWait(30);
+            QVERIFY(viewport->scale() > .85);
+            auto point = viewport->mapToScene(QPointF(540, 215));
+            QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point.toPoint());
+            for (int i = 0; i < 180; i++)
+                b.advance(.05);
+            QVERIFY(std::abs(b.state()["campX"].toDouble() - 540) < 3);
+            QVERIFY(std::abs(b.state()["campY"].toDouble() - 215) < 3);
+        }
+        b.walkTo(465, 290);
+        for (int i = 0; i < 180; i++)
+            b.advance(.05);
+        QTest::keyClick(window, Qt::Key_E);
+        QTest::qWait(30);
+        QCOMPARE(b.state()["station"].toString(), QString("training"));
+        auto focus = window->activeFocusItem();
+        QVERIFY(focus);
+        auto levels = b.state()["profile"].toMap()["workshop"];
+        // The maxed strength button is disabled: focus skips it to the training action.
+        QCOMPARE(focus->objectName(), QString("campTraining"));
+        QTest::keyClick(window, Qt::Key_S);
+        QVERIFY(window->activeFocusItem() != focus);
+        QTest::keyClick(window, Qt::Key_W);
+        QCOMPARE(window->activeFocusItem(), focus);
+        QTest::keyClick(window, Qt::Key_Right);
+        QVERIFY(window->activeFocusItem() != focus);
+        QTest::keyClick(window, Qt::Key_Left);
+        QVERIFY(window->activeFocusItem());
+        QCOMPARE(b.state()["profile"].toMap()["workshop"], levels);
+        QTest::keyClick(window, Qt::Key_Escape);
+        QCOMPARE(b.state()["station"].toString(), QString());
+        QTest::keyClick(window, Qt::Key_F10);
+        QTest::qWait(30);
+        QCOMPARE(window->property("settingsOpen").toBool(), true);
+        QTest::keyClick(window, Qt::Key_S);
+        QTest::keyClick(window, Qt::Key_E);
+        QCOMPARE(translator.language(), QString("cs"));
+        QCOMPARE(itemNamed(window->contentItem(), "settings")->property("text").toString(),
+                 QString::fromUtf8("Nastavení"));
+        QTest::keyClick(window, Qt::Key_Up);
+        QTest::keyClick(window, Qt::Key_E);
+        QCOMPARE(translator.language(), QString("en"));
+        QTest::keyClick(window, Qt::Key_Escape);
+        QCOMPARE(window->property("settingsOpen").toBool(), false);
+    }
     void nativeKeyboardCycleAndTypingDoesNotTriggerShortcuts() {
         QTemporaryDir dir;
         Backend b(dir.filePath("save"), false);
@@ -501,15 +636,29 @@ class Tests : public QObject {
         create->forceActiveFocus();
         QTest::keyClick(window, Qt::Key_Space);
         QTRY_COMPARE(b.state()["phase"].toString(), "camp");
-        b.acceptTransactions({tx(1, 1000000000000000ULL)});
+        QVariantList pathRows;
+        for (int i = 1; i <= 40; i++)
+            pathRows.append(tx(i, 0));
+        b.acceptTransactions(pathRows);
         b.walkTo(540, 215);
         for (int i = 0; i < 200; i++)
             b.advance(.05);
-        QTest::keyClick(window, Qt::Key_E);
-        QCOMPARE(b.state()["station"].toString(), "portal");
-        QTest::keyClick(window, Qt::Key_E);
+        QTest::keyPress(window, Qt::Key_E);
         QCOMPARE(b.state()["phase"].toString(), "select");
-        QTest::keyClick(window, Qt::Key_1);
+        QTest::qWait(30);
+        QKeyEvent repeated(QEvent::KeyPress, Qt::Key_E, Qt::NoModifier, "e", true, 1);
+        QCoreApplication::sendEvent(window, &repeated);
+        QCOMPARE(b.state()["phase"].toString(), "select");
+        QTest::keyRelease(window, Qt::Key_E);
+        auto skill0 = itemNamed(window->contentItem(), "skill0");
+        QVERIFY(skill0);
+        QCOMPARE(window->activeFocusItem(), skill0);
+        QTest::keyClick(window, Qt::Key_S);
+        QVERIFY(window->activeFocusItem() != skill0);
+        QTest::keyClick(window, Qt::Key_Up);
+        QCOMPARE(window->activeFocusItem(), skill0);
+        QTest::keyClick(window, Qt::Key_E);
+        QTest::qWait(30);
         QCOMPARE(b.state()["phase"].toString(), "running");
         QTest::keyPress(window, Qt::Key_Space);
         QTest::qWait(100);
@@ -517,7 +666,21 @@ class Tests : public QObject {
         QVERIFY(b.state()["y"].toDouble() > 0);
         QTest::keyClick(window, Qt::Key_P);
         QCOMPARE(b.state()["phase"].toString(), "paused");
-        QTest::keyClick(window, Qt::Key_B);
+        QTest::qWait(30);
+        QTest::keyClick(window, Qt::Key_E); // Focused Continue on the pause screen.
+        QCOMPARE(b.state()["phase"].toString(), QString("running"));
+        for (int i = 0; i < 1600 && b.state()["distance"].toDouble() < 501; i++)
+            b.advance(.05);
+        QCOMPARE(b.state()["regionIndex"].toInt(), 1);
+        b.acceptTransactions({tx(999, 2000000000000000ULL)});
+        for (int i = 0; i < 4000 && b.state()["phase"] == "running"; i++)
+            b.advance(.05);
+        QCOMPARE(b.state()["phase"].toString(), QString("over"));
+        QTest::qWait(30);
+        QTest::keyClick(window, Qt::Key_E); // Focused Next run.
+        QCOMPARE(b.state()["phase"].toString(), QString("select"));
+        QCOMPARE(b.state()["distance"].toDouble(), 0.);
+        QTest::keyClick(window, Qt::Key_Escape);
         QCOMPARE(b.state()["phase"].toString(), "camp");
         QTest::qWait(60);
         QVERIFY(window->grabWindow().save("/tmp/wl-03-camp.png"));

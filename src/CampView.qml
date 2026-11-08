@@ -7,8 +7,7 @@ Item {
  id:camp
  property var s: backend.state
  signal focusGame()
- function stationName(id){return id==="home"?qsTr("Hearth & home"):id==="portal"?qsTr("Mempool gate"):id==="training"?qsTr("Training grounds"):id==="forge"?qsTr("Runic workshop"):id==="wardrobe"?qsTr("Wardrobe"):id==="library"?qsTr("Spell garden"):""}
- function description(id){return id==="home"?qsTr("Your refuge between expeditions. The fire is lit, your supplies are safe. Explore the camp, then take the eastern gate into the living forest."):id==="portal"?qsTr("Enter a forest grown from real Bitcoin transactions. Coins collected during a live expedition are added to your supplies when you fall or return home."):id==="training"?qsTr("Practice jumping with sample plants. Training coins and scores never enter your supplies or live record."):id==="forge"?qsTr("A workbench for future upgrades. Useful equipment should be affordable through ordinary play. No purchases are available yet."):id==="wardrobe"?qsTr("A home for future outfits and appearances. Skins will be longer-term goals, without extra combat power. Nothing is on sale yet."):qsTr("The first pages of your future spellbook. Skills, discoveries and combinations earned during expeditions will shape the roguelike adventure. Spell crafting comes in a future update.")}
+ function stationName(id){return id==="home"?qsTr("Hearth & home"):id==="portal"?qsTr("Mempool Gate"):id==="training"?qsTr("Training Grounds"):id==="forge"?qsTr("Runic Workshop"):id==="wardrobe"?qsTr("Wardrobe"):id==="library"?qsTr("Spell Garden"):""}
  Connections {target:backend;function onChanged(){world.requestPaint()}}
  Canvas {
  id:world;anchors.fill:parent;renderTarget:Canvas.Image;smooth:false
@@ -75,19 +74,14 @@ Item {
  MouseArea {anchors.fill:parent;onClicked:mouse=>{camp.focusGame();backend.walkTo(mouse.x/width*640,mouse.y/height*360)}}
  Repeater {
  model:[{code:"home",x:270,y:194},{code:"forge",x:112,y:242},{code:"wardrobe",x:390,y:210},{code:"portal",x:540,y:242},{code:"library",x:175,y:329},{code:"training",x:465,y:313}]
- Label {required property var modelData;x:modelData.x/640*camp.width-width/2;y:modelData.y/360*camp.height;text:camp.stationName(modelData.code);font.pixelSize:Math.max(9,Math.min(12,camp.width/80));color:s.nearby===modelData.code?"#f0ddb0":"#a9bda9";padding:3;background:Rectangle{color:"#b0152b2d"}}
+ Label {required property var modelData;visible:modelData.code==="home"||modelData.code==="portal"||s.profile.unlocked.indexOf(modelData.code==="library"?"garden":modelData.code)>=0; width:Math.min(160,implicitWidth);wrapMode:Text.WordWrap;horizontalAlignment:Text.AlignHCenter;x:Math.max(2,Math.min(camp.width-width-2,modelData.x/640*camp.width-width/2));y:modelData.y/360*camp.height;text:camp.stationName(modelData.code);font.pixelSize:Math.max(9,Math.min(12,camp.width/80));color:s.nearby===modelData.code?"#f0ddb0":"#a9bda9";padding:3;background:Rectangle{color:"#b0152b2d"}}
  }
  Column {anchors.left:parent.left;anchors.top:parent.top;anchors.margins:14;spacing:3
- Label {text:qsTr("BASE CAMP");font.pixelSize:21;font.bold:true;font.letterSpacing:3;color:"#e2d8ac"}
+ Label {text:qsTr("Base Camp");font.pixelSize:21;font.bold:true;font.letterSpacing:3;color:"#e2d8ac"}
  Label {text:qsTr("A little home between worlds");font.pixelSize:11;color:"#9eb2a0"}
  }
  Rectangle {anchors.horizontalCenter:parent.horizontalCenter;anchors.bottom:parent.bottom;anchors.bottomMargin:10;width:prompt.implicitWidth+26;height:30;color:"#df162c30";border.color:"#5c7560";visible:s.nearby!==""&&s.station===""
  Label {id:prompt;anchors.centerIn:parent;text:qsTr("E · %1").arg(camp.stationName(s.nearby));color:"#e5d9b0";font.pixelSize:12}
  MouseArea {anchors.fill:parent;onClicked:backend.interact()}
- }
- Rectangle {
- anchors.centerIn:parent;width:Math.min(parent.width-26,500);height:Math.min(parent.height-20,stationPanel.implicitHeight+30);color:"#f016292f";border.color:"#859378";visible:s.station!=="";radius:theme.radius
- MouseArea {anchors.fill:parent}
- StationPanel {id:stationPanel;anchors.fill:parent;anchors.margins:15;onFocusGame:camp.focusGame()}
  }
 }

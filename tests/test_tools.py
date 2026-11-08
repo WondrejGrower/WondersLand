@@ -1,3 +1,5 @@
+import json
+import re
 import importlib.util
 from pathlib import Path
 import unittest
@@ -14,3 +16,15 @@ class AnalysisTests(unittest.TestCase):
   self.assertEqual(report['uniqueTransactions'],1)
   self.assertTrue(report['synthetic'])
   self.assertEqual(report['references']['beginner']['runsByRescueBudget']['0']['datasetExhaustedWithoutDeath'],3)
+
+ def test_all_visible_source_and_configuration_keys_have_czech_translations(self):
+  source=path.parents[1]/'src'
+  catalog=json.loads((source/'i18n/cs.json').read_text())
+  keys=set()
+  for qml in source.glob('*.qml'):
+   for literal in re.findall(r'qsTr\("((?:[^"\\]|\\.)*)"\)',qml.read_text()):
+    keys.add(json.loads('"'+literal+'"'))
+  config=json.loads((source/'balance.json').read_text())
+  for group in ['classes','regions','skills','items','research','workshop','progression']:
+   keys.update(row['name'] for row in config[group])
+  self.assertEqual(sorted(key for key in keys if not catalog.get(key)),[])
