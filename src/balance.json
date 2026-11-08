@@ -1,5 +1,5 @@
 {
-  "balanceVersion": "wl-0.3-journey-4",
+  "balanceVersion": "wl-0.3-journey-5",
   "anchors": [
     [
       100000,
@@ -35,9 +35,9 @@
     ]
   ],
   "physics": {
-    "jumpVelocity": 162,
-    "heldGravity": 570,
-    "gravity": 850,
+    "jumpVelocity": 72,
+    "heldGravity": 130,
+    "gravity": 170,
     "jumpCap": 320,
     "airCap": 450,
     "speed": 105,
@@ -57,7 +57,7 @@
     "gliderGravity": 130,
     "jetAcceleration": 1500,
     "airHeightFactor": 1.5,
-    "tapVelocity": 120
+    "tapVelocity": 72
   },
   "rarityWeights": [
     75,
@@ -101,7 +101,7 @@
       "curve": "quadratic",
       "baseCost": 50,
       "growth": 1.12,
-      "description": "Starts with small plants. Strength gradually unlocks shrubs and trees; tall sequoias require high levels. Ordinary jump limit: 320 px. Obstacles keep their real size."
+      "description": "Starts with small plants. Strength gradually unlocks shrubs and trees; tall sequoias require high levels. Basic Jump limit: 320 px. Obstacles keep their real size."
     },
     {
       "id": "agility",
@@ -147,13 +147,13 @@
   "skills": [
     {
       "id": "leap",
-      "name": "Strong leap",
+      "name": "Basic Jump",
       "tag": "air",
       "maxRank": 3,
       "effects": [
-        0.08,
-        0.16,
-        0.25
+        0.15,
+        0.3,
+        0.45
       ],
       "rarity": "common",
       "unlock": "base",
@@ -217,7 +217,7 @@
     },
     {
       "id": "double",
-      "name": "Double jump",
+      "name": "Double Jump",
       "tag": "air",
       "maxRank": 3,
       "effects": [
@@ -226,12 +226,13 @@
         1
       ],
       "rarity": "rare",
-      "unlock": "air",
+      "unlock": "base",
       "tags": [
         "air",
         "movement"
       ],
-      "slot": "run-skill"
+      "slot": "run-skill",
+      "cooldown": 10
     },
     {
       "id": "shield",
@@ -260,6 +261,24 @@
       ],
       "rarity": "epic",
       "unlock": "air",
+      "tags": [
+        "air",
+        "movement"
+      ],
+      "slot": "run-skill"
+    },
+    {
+      "id": "timeslow",
+      "name": "Time Slow",
+      "tag": "movement",
+      "maxRank": 3,
+      "effects": [
+        0.15,
+        0.2,
+        0.25
+      ],
+      "rarity": "common",
+      "unlock": "base",
       "tags": [
         "air",
         "movement"
@@ -701,5 +720,10 @@
       "name": "Sequoia",
       "sats": "100000000000"
     }
+  ],
+  "startingSkills": [
+    "leap",
+    "timeslow",
+    "double"
   ]
 }

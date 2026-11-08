@@ -291,5 +291,17 @@
   "Ordinary jump +%1%, capped at 320 px": "Obyčejný skok +%1 %, nejvýše 320 px",
   "One extra jump; aerial limit grows with Strength (max 450 px)": "Jeden skok navíc; vzdušný limit roste se Sílou (nejvýše 450 px)",
   "Starts with small plants. Strength gradually unlocks shrubs and trees; tall sequoias require high levels. Ordinary jump limit: 320 px. Obstacles keep their real size.": "Začínáš u malých rostlin. Síla postupně zpřístupňuje keře a stromy; vysoké sekvoje vyžadují vysoké úrovně. Limit běžného skoku: 320 px. Překážky si zachovávají skutečnou velikost.",
-  "Ordinary jump without skills %1 → %2 px": "Běžný skok bez schopností %1 → %2 px"
+  "Ordinary jump without skills %1 → %2 px": "Běžný skok bez schopností %1 → %2 px",
+  "Basic Jump": "Základní skok",
+  "Double Jump": "Dvojskok",
+  "Time Slow": "Zpomalení času",
+  "Basic Jump height +%1%, capped at 320 px": "Výška základního skoku +%1 %, nejvýše 320 px",
+  "Basic Jump without skills %1 → %2 px": "Základní skok bez schopností %1 → %2 px",
+  "Slows expedition time by %1%. Jumps and obstacles slow together.": "Zpomaluje čas výpravy o %1 %. Skok i překážky zpomalují společně.",
+  "One extra jump every %1 s; aerial limit grows with Strength (max 450 px)": "Jeden skok navíc každých %1 s; vzdušný limit roste se Sílou (nejvýše 450 px)",
+  "Double Jump ready": "Dvojskok připraven",
+  "Double Jump · %1 s": "Dvojskok · %1 s",
+  "Starts with small plants. Strength gradually unlocks shrubs and trees; tall sequoias require high levels. Basic Jump limit: 320 px. Obstacles keep their real size.": "Začínáš u malých rostlin. Síla postupně zpřístupňuje keře a stromy; vysoké sekvoje vyžadují vysoké úrovně. Limit základního skoku: 320 px. Překážky si zachovávají skutečnou velikost.",
+  "Explorer: one emergency double jump per run, −5% Basic Jump height.": "Průzkumník: jeden nouzový dvojskok za běh, −5 % výšky základního skoku.",
+  "Collector: +20% magnet range, +1 s to catch upgrades, −5% Basic Jump height.": "Sběratel: +20 % dosahu magnetu, +1 s na sběr vylepšení, −5 % výšky základního skoku."
 }

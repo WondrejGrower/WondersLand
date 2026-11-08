@@ -4,11 +4,11 @@ import {readFileSync} from 'node:fs';import {fileURLToPath} from 'node:url';
 export const config=JSON.parse(readFileSync(new URL('../src/balance.json',import.meta.url)));
 export function windows(sats,level,role='gardener',held=true){
  const result=[];
- for(let x=116;x<=300;x++){
+ for(let x=116;x<=480;x++){
   const game=new Game(config,{...fresh(),character:{name:'Synthetic jump test',class:role},workshop:{strength:level}});
   game.startPractice('flower');game.spawn=1e9;game.obstacles=[{...plant(sats,config),x,resolved:false,txid:'',status:'demo'}];game.jump();if(!held)game.release();
-  for(let i=0;i<400&&game.phase==='running'&&game.obstacles[0].x+game.obstacles[0].w>100;i++)game.tick(1/120);
-  if(game.phase==='running')result.push(x);
+  for(let i=0;i<960&&game.phase==='running'&&game.obstacles[0].x+game.obstacles[0].w>100;i++)game.tick(1/120);
+  if(game.phase==='running'&&game.obstacles[0].x+game.obstacles[0].w<=100)result.push(x);
  }
  return result;
 }

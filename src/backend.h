@@ -56,6 +56,7 @@ class Backend : public QObject {
     static QVariantMap plant(qulonglong sats, int tier = 1);
 
   private:
+    friend class Tests; // Isolated native fixtures may grant non-starting abilities.
     QJSEngine visualEngine; // Destroy before the application and Qt global JS caches.
     mutable QVariantMap cachedStats;
     Progress progress;
@@ -84,6 +85,7 @@ class Backend : public QObject {
            invulnerable = 0, fuel = 3, glide = 0, inputBuffer = 0, countdown = 3, earnedMilli = 0,
            checkpoint = 0;
     double landing = 0;
+    double doubleCooldown = 0;
     double campX = 320, campY = 235, targetX = 320, targetY = 235;
     bool walkingTo = false;
     QString nearbyStation() const;

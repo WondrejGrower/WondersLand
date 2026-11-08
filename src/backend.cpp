@@ -133,6 +133,7 @@ QVariantMap Backend::state() const {
             {"skillHud", hud},
             {"flying", flying},
             {"fuel", fuel},
+            {"doubleCooldown", doubleCooldown},
             {"rescues", rescues},
             {"rescuesGranted", rescuesGranted},
             {"invulnerable", invulnerable},
@@ -278,11 +279,13 @@ QVariantMap Backend::stats() const {
         Balance::number("physics", "airHeightFactor"));
     cachedStats = {
         {"jumpVelocity", Balance::jumpVelocity(bonus)},
+        {"tapVelocity", Balance::number("physics", "tapVelocity") * std::sqrt(std::max(0.,
+            1 + bonus - Balance::bonus("strength", levels["strength"].toInt())))},
         {"airCap", airCap},
         {"magnet",
          Balance::number("physics", "magnet") * std::min(Balance::number("physics", "magnetCap"), magnet)},
         {"buffer", Balance::number("physics", "buffer")},
-        {"timeScale", 1 - Balance::bonus("agility", levels["agility"].toInt())},
+        {"timeScale", (1 - Balance::bonus("agility", levels["agility"].toInt())) * (1 - effect("timeslow"))},
         {"economy", std::min(Balance::number("run", "maxEconomyBonus"),
                              cls["coins"].toDouble() + Balance::bonus("yield", levels["yield"].toInt()))},
         {"luck", Balance::bonus("luck", levels["luck"].toInt())},
@@ -442,7 +445,18 @@ void Backend::start(bool demo) {
             for (int i = 0; i < set["rescues"].toInt(); i++)
                 grantRescue();
     }
-    choices = offers(3);
+    doubleCooldown = 0;
+    choices.clear();
+    const auto available = availableSkills(false);
+    for (const auto &id : Balance::config()["startingSkills"].toArray())
+        for (const auto &value : available) {
+            auto offer = value.toMap();
+            if (offer["id"].toString() != id.toString()) continue;
+            offer["rarity"] = "common";
+            offer["gain"] = offer["nextRank"] = 1;
+            choices.append(offer);
+            break;
+        }
     phase = "select";
     emit changed();
 }
@@ -512,11 +526,14 @@ void Backend::jump() {
         airJumpUsed = false;
         glide = effect("glider");
     } else if (!airJumpUsed &&
-               (skills.value("double") > 0 || (stats()["class"] == "explorer" && !emergencyUsed))) {
-        double fraction = skills.value("double") ? effect("double") : .65;
+               ((skills.value("double") > 0 && doubleCooldown <= 0) || (stats()["class"] == "explorer" && !emergencyUsed))) {
+        const bool ready = skills.value("double") > 0 && doubleCooldown <= 0;
+        double fraction = ready ? effect("double") : .65;
         velocity = Balance::extraImpulse(y, velocity, fraction, stats()["airCap"].toDouble());
         airJumpUsed = true;
-        if (!skills.value("double"))
+        if (ready)
+            doubleCooldown = Balance::find("skills", "double")["cooldown"].toDouble();
+        else
             emergencyUsed = true;
     } else
         inputBuffer = stats()["buffer"].toDouble();
@@ -525,8 +542,8 @@ void Backend::releaseJump() {
     if (held && phase == "running")
         recordEvent({{"event", "release"}, {"time", activeTime}});
     held = false;
-    if (phase == "running" && velocity > Balance::number("physics", "tapVelocity"))
-        velocity = Balance::number("physics", "tapVelocity");
+    if (phase == "running" && velocity > stats()["tapVelocity"].toDouble())
+        velocity = stats()["tapVelocity"].toDouble();
 }
 void Backend::fly(bool enabled) {
     if (enabled != jetHeld && phase == "running")
@@ -634,6 +651,7 @@ void Backend::advance(double dt) {
         return;
     }
     dt *= stats()["timeScale"].toDouble();
+    doubleCooldown = std::max(0., doubleCooldown - dt);
     activeTime += dt;
     animation += dt;
     invulnerable = std::max(0., invulnerable - dt);
@@ -651,7 +669,7 @@ void Backend::advance(double dt) {
         jump();
         held = stillHeld;
     }
-    double gravity = held && velocity > 0 ? Balance::number("physics", "heldGravity")
+    double gravity = velocity > 0 ? Balance::number("physics", "heldGravity")
                                           : Balance::number("physics", "gravity");
     if (held && velocity < 0 && glide > 0) {
         gravity = Balance::number("physics", "gliderGravity");

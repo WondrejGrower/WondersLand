@@ -195,3 +195,19 @@ Small practice cannabis is the baseline limit; all transaction size curves
 remain unchanged. Purchased levels, coins and unlocked systems are preserved.
 [The detailed report](JUMP_PROGRESSION.md) includes launch-sweep results,
 desktop/mobile practice screenshots and the actual verification commands.
+
+## Playable tap timing and movement starters · wl-0.3-journey-5
+
+Journey-4's theoretical cannabis clearance required as little as 19 ms launch
+precision. User feedback triggered a slower low jump and ascent-preserving tap
+control. All baseline plant trials now run through actual DOM input handlers
+and browser animation frames: Space/W/Up, mouse and touch; all three roles;
+early/late offsets; fresh shrubs still blocked. Forty-two such trials passed.
+The three starting choices are Basic Jump +15%, Time Slow 15%, and Double Jump
+with a ten-active-second cooldown, visible in the HUD. Practice stays skill-free.
+
+Final checks: npm ci; 38 unit tests; full browser journey; jump-input browser
+regression; environment browser regression; low/late-game crossing previews;
+Wrangler dry-run; native build; 33 Qt + 3 Python tests. All passed locally.
+[Detailed tuning and screenshots](JUMP_PROGRESSION.md). GitHub Actions retains
+the previously documented account billing restriction.

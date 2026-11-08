@@ -55,23 +55,23 @@ class Tests : public QObject {
         return {{"txid", QString("%1").arg(i, 64, 16, QChar('0'))}, {"value", QString::number(sats)}};
     }
     void begin(Backend &b, bool demo = true, QString id = "") {
+        b.start(demo);
+        QCOMPARE(b.state()["phase"].toString(), "select");
+        const auto options = b.state()["choices"].toList();
         int chosen = 0;
         bool found = id.isEmpty();
-        for (int attempt = 0; attempt < 100; attempt++) {
-            b.start(demo);
-            QCOMPARE(b.state()["phase"].toString(), "select");
-            auto options = b.state()["choices"].toList();
-            for (int i = 0; i < options.size(); i++)
-                if (options[i].toMap()["id"] == id) {
-                    chosen = i;
-                    found = true;
-                    break;
-                }
-            if (found)
-                break;
-        }
-        QVERIFY(found);
+        for (int i = 0; i < options.size(); i++)
+            if (options[i].toMap()["id"] == id) { chosen = i; found = true; break; }
         b.chooseSkill(chosen);
+        if (!found) {
+            // Advanced abilities are fixtures, not entries in the new starter menu.
+            b.skills.clear();
+            b.cachedStats.clear();
+            auto offer = Balance::find("skills", id);
+            QVERIFY(!offer.isEmpty());
+            offer["nextRank"] = offer["gain"] = 1;
+            b.applySkill(offer);
+        }
         QCOMPARE(b.state()["phase"].toString(), "running");
     }
     void collect(Backend &b) {
@@ -89,6 +89,49 @@ class Tests : public QObject {
         QVERIFY(b.state()["collected"].toInt() > 0);
     }
   private slots:
+    void movementStartersAndCooldowns() {
+        QTemporaryDir dir;
+        Backend b(fixture(dir), false);
+        b.start(true);
+        const auto choices = b.state()["choices"].toList();
+        QCOMPARE(choices.size(), 3);
+        const QStringList ids{"leap", "timeslow", "double"};
+        for (int i = 0; i < 3; i++) {
+            QCOMPARE(choices[i].toMap()["id"].toString(), ids[i]);
+            QCOMPARE(choices[i].toMap()["nextRank"].toInt(), 1);
+        }
+        QCOMPARE(choices[0].toMap()["name"].toString(), QString("Basic Jump"));
+        QCOMPARE(choices[0].toMap()["effects"].toList()[0].toDouble(), .15);
+        b.chooseSkill(2);
+        b.spawn = 1e9;
+        b.jump(); b.advance(.1); b.jump();
+        QCOMPARE(b.doubleCooldown, 10.);
+        QVERIFY(b.airJumpUsed);
+        for (const auto &phase : {"paused", "waiting", "countdown"}) {
+            b.phase = phase; b.countdown = 3;
+            b.advance(.1);
+            QCOMPARE(b.doubleCooldown, 10.);
+        }
+        b.phase = "running";
+        b.y = 0; b.jump(); b.advance(.01); b.jump();
+        QVERIFY(!b.airJumpUsed);
+        for (int i = 0; i < 1190; i++) b.advance(1. / 120);
+        QVERIFY(b.doubleCooldown > 0);
+        b.advance(.1);
+        QCOMPARE(b.doubleCooldown, 0.);
+        b.y = 0; b.jump(); b.advance(.01); b.jump();
+        QCOMPARE(b.doubleCooldown, 10.);
+        QTemporaryDir normalDir, slowDir;
+        Backend normal(fixture(normalDir), false), slow(fixture(slowDir), false);
+        begin(normal); normal.skills.clear(); normal.cachedStats.clear();
+        begin(slow, true, "timeslow");
+        normal.spawn = slow.spawn = 1e9;
+        normal.jump(); slow.jump();
+        QCOMPARE(slow.stats()["timeScale"].toDouble(), .85);
+        for (int i = 0; i < 120; i++) { normal.advance(.85 / 120); slow.advance(1. / 120); }
+        QVERIFY(std::abs(normal.y - slow.y) < 1e-8);
+        QVERIFY(std::abs(normal.distance - slow.distance) < 1e-8);
+    }
     void sharedJumpProgressionFixtures() {
         QFile data(QFINDTESTDATA("jump-stats.json"));
         QVERIFY(data.open(QIODevice::ReadOnly));
@@ -273,6 +316,7 @@ class Tests : public QObject {
             QTemporaryDir dir;
             Backend b(fixture(dir, true, cls), false);
             begin(b, true, "leap");
+            b.spawn = 1e9;
             b.jump();
             double peak = 0;
             for (int i = 0; i < 400; i++) {
@@ -282,6 +326,7 @@ class Tests : public QObject {
             QVERIFY2(peak <= Balance::number("physics", "jumpCap") + .05, qPrintable(QString::number(peak)));
             b.returnToCamp();
             begin(b, true, "double");
+            b.spawn = 1e9;
             b.jump();
             for (int i = 0; i < 250; i++) {
                 if (i % 5 == 0)
@@ -300,9 +345,9 @@ class Tests : public QObject {
     void impulseEnergyLeavesNoInvisibleCeiling() {
         for (double y = 0; y < Balance::number("physics", "airCap") + 1; y += .25) {
             double v = Balance::extraImpulse(y, 1000);
-            QVERIFY(y + v * v / (2 * 570) <= std::max(Balance::number("physics", "airCap"), y) + .00001);
+            QVERIFY(y + v * v / (2 * Balance::number("physics", "heldGravity")) <= std::max(Balance::number("physics", "airCap"), y) + .00001);
         }
-        QVERIFY(Balance::jumpVelocity(100) <= std::sqrt(2 * 570 * Balance::number("physics", "jumpCap")) + .00001);
+        QVERIFY(Balance::jumpVelocity(100) <= std::sqrt(2 * Balance::number("physics", "heldGravity") * Balance::number("physics", "jumpCap")) + .00001);
     }
     void giantTransactionEndsRunAndPreservesExactIdentity() {
         QTemporaryDir dir;
@@ -605,18 +650,7 @@ class Tests : public QObject {
         Backend b(fixture(dir, true), false);
         b.acceptTransactions(
             {tx(1, 2000000000000000ULL), tx(2, 2000000000000000ULL), tx(3, 2000000000000000ULL)});
-        bool found = false;
-        for (int attempt = 0; attempt < 60 && !found; attempt++) {
-            b.start(false);
-            auto offers = b.state()["choices"].toList();
-            for (int i = 0; i < offers.size(); i++)
-                if (offers[i].toMap()["id"] == "shield") {
-                    b.chooseSkill(i);
-                    found = true;
-                    break;
-                }
-        }
-        QVERIFY(found);
+        begin(b, false, "shield");
         QCOMPARE(b.state()["rescuesGranted"].toInt(), 2);
         int previous = 2, transitions = 0;
         for (int i = 0; i < 1500 && b.state()["phase"] == "running"; i++) {
@@ -660,18 +694,8 @@ class Tests : public QObject {
     void jetpackRunsOutAndNeverBreachesAirCap() {
         QTemporaryDir dir;
         Backend b(fixture(dir, true, "explorer"), false);
-        bool found = false;
-        for (int a = 0; a < 80 && !found; a++) {
-            b.start(true);
-            auto choices = b.state()["choices"].toList();
-            for (int i = 0; i < choices.size(); i++)
-                if (choices[i].toMap()["id"] == "jetpack") {
-                    b.chooseSkill(i);
-                    found = true;
-                    break;
-                }
-        }
-        QVERIFY(found);
+        begin(b, true, "jetpack");
+        b.spawn = 1e9;
         b.fly(true);
         for (int i = 0; i < 800; i++) {
             if (i % 30 == 0)

@@ -35,7 +35,7 @@ ApplicationWindow {
   else backend.pause();
   if(!menuRoot)focusGame();
  }
- function skillDescription(offer){var effects=offer.effects||[];var value=effects[(offer.nextRank||1)-1]||0;return offer.id==="leap"?qsTr("Ordinary jump +%1%, capped at 320 px").arg(Math.round(value*100)):offer.id==="magnet"?qsTr("Collection range +%1%").arg(Math.round(value*100)):offer.id==="aircoins"?qsTr("Airborne coin bonus +%1%").arg(Math.round(value*100)):offer.id==="double"?qsTr("One extra jump; aerial limit grows with Strength (max 450 px)"):offer.id==="glider"?qsTr("Glide up to %1 s per jump").arg(Number(value).toLocaleString(Qt.locale(),'f',1)):offer.id==="shield"?qsTr("One rescue, at most two granted per run"):qsTr("Jetpack: 3 s fuel for the whole run, hold F")}
+ function skillDescription(offer){var effects=offer.effects||[];var value=effects[(offer.nextRank||1)-1]||0;return offer.id==="leap"?qsTr("Basic Jump height +%1%, capped at 320 px").arg(Math.round(value*100)):offer.id==="magnet"?qsTr("Collection range +%1%").arg(Math.round(value*100)):offer.id==="aircoins"?qsTr("Airborne coin bonus +%1%").arg(Math.round(value*100)):offer.id==="timeslow"?qsTr("Slows expedition time by %1%. Jumps and obstacles slow together.").arg(Math.round(value*100)):offer.id==="double"?qsTr("One extra jump every %1 s; aerial limit grows with Strength (max 450 px)").arg(offer.cooldown||10):offer.id==="glider"?qsTr("Glide up to %1 s per jump").arg(Number(value).toLocaleString(Qt.locale(),'f',1)):offer.id==="shield"?qsTr("One rescue, at most two granted per run"):qsTr("Jetpack: 3 s fuel for the whole run, hold F")}
  MenuNavigation {id:navigation;scope:win.menuRoot;window:win}
  onMenuRootChanged:{backend.stopMovement();if(!menuRoot)Qt.callLater(focusGame)}
  Shortcut {sequence:"E";context:Qt.ApplicationShortcut;autoRepeat:false;enabled:!win.menuRoot&&!typing;onActivated:{if(activeFocusItem&&activeFocusItem.menuChoice)activeFocusItem.clicked();else if(s.phase==="camp")backend.interact()}}
@@ -126,7 +126,7 @@ ApplicationWindow {
  Row {visible:s.phase!=="camp"&&s.phase!=="creation";anchors.left:parent.left;anchors.bottom:parent.bottom;anchors.margins:6;spacing:3
  Repeater {model:s.skillHud.filter(sk=>sk.rank>0)
  Rectangle {required property var modelData;width:98;height:25;color:"#e0192d31";border.color:"#526655"
- Label {anchors.centerIn:parent;text:win.trText(modelData.name)+" "+modelData.rank;font.pixelSize:8;color:"#d7d5af"}
+ Label {anchors.centerIn:parent;text:modelData.id==="double"?(s.doubleCooldown>0?qsTr("Double Jump · %1 s").arg(Math.ceil(s.doubleCooldown)):qsTr("Double Jump ready")):win.trText(modelData.name)+" "+modelData.rank;font.pixelSize:8;color:"#d7d5af"}
  }
  }
  }

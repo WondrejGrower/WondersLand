@@ -58,7 +58,7 @@ Item {
  NavButton {required property var modelData;objectName:"creationRole_"+modelData.id;Layout.fillWidth:true;text:creator.trText(modelData.name);highlighted:creator.classId===modelData.id;onClicked:creator.classId=modelData.id}
  }
  }
- Label {text:creator.classId==="gardener"?qsTr("Gardener: +10% coins, −10% magnet range."):creator.classId==="explorer"?qsTr("Explorer: one emergency double jump per run, −5% ordinary jump height."):qsTr("Collector: +20% magnet range, +1 s to catch upgrades, −5% ordinary jump height.");Layout.fillWidth:true;wrapMode:Text.WordWrap;color:"#b3c5ac"}
+ Label {text:creator.classId==="gardener"?qsTr("Gardener: +10% coins, −10% magnet range."):creator.classId==="explorer"?qsTr("Explorer: one emergency double jump per run, −5% Basic Jump height."):qsTr("Collector: +20% magnet range, +1 s to catch upgrades, −5% Basic Jump height.");Layout.fillWidth:true;wrapMode:Text.WordWrap;color:"#b3c5ac"}
  Label {text:qsTr("Your role is permanent. Changing it requires resetting your character and progress.");Layout.fillWidth:true;wrapMode:Text.WordWrap;color:"#c6b58c"}
  NavButton {id:createButton;objectName:"createCharacter";Layout.alignment:Qt.AlignHCenter;text:qsTr("Make camp");highlighted:true;enabled:nameField.text.trim().length>0&&s.profile.error==="";onClicked:{backend.createCharacter(nameField.text,creator.classId,creator.hairColors[creator.hairIndex],creator.skinColors[creator.skinIndex],creator.shirtColors[creator.shirtIndex],creator.style,creator.outfit);creator.focusGame()}}
  Label {visible:(s.profile.legacyBest||0)>0;Layout.alignment:Qt.AlignHCenter;text:qsTr("Legacy record: %1 m (old balance)").arg(s.profile.legacyBest||0);color:"#a6b09e"}

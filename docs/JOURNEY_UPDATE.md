@@ -132,3 +132,17 @@ High jumps scroll the camera vertically after 180 px; this does not scale any
 obstacle or change world-space collision geometry.
 
 [Detailed tuning, ideal launch tests and limits](JUMP_PROGRESSION.md).
+
+## Playability and starting skills · balance wl-0.3-journey-5
+
+User playtesting found journey-4's 19–38 ms cannabis launch window too harsh.
+Journey-5 keeps small-plant height but lengthens airborne crossing time and
+makes ordinary quick clicks retain the full baseline hop. Releasing an upgraded
+jump limits the remaining impulse to its basic/skill/role value, so high Strength
+still allows controlled low hops. Baseline shrubs remain a progression barrier.
+
+The initial menu now offers Basic Jump +15%, Time Slow 15%, or a Double Jump
+recharging every ten active game seconds. Starts have fixed rank-one effects;
+economy skills move to subsequent offers. Existing exclusions still apply.
+Double Jump recharge freezes with game simulation; landing cannot reset it.
+[Current mechanics and real keyboard/mouse/touch regression](JUMP_PROGRESSION.md).

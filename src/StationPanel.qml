@@ -46,7 +46,7 @@ Item {
  ColumnLayout {Layout.fillWidth:true
  Label {text:panel.trText(modelData.name)+" · "+modelData.level+" / 50";color:"#e1d8b7";wrapMode:Text.WordWrap;Layout.fillWidth:true}
  Label {text:panel.trText(modelData.description);Layout.fillWidth:true;wrapMode:Text.WordWrap;color:"#b8cbb0";font.pixelSize:12}
- Label {text:modelData.id==="strength"?qsTr("Ordinary jump without skills %1 → %2 px").arg(Number(modelData.jumpHeight).toLocaleString(Qt.locale(),'f',1)).arg(Number(modelData.nextJumpHeight).toLocaleString(Qt.locale(),'f',1)):(modelData.id==="agility"?qsTr("Time slowdown %1 → %2%"):qsTr("Effect %1 → %2")).arg(Number(modelData.bonus*100).toLocaleString(Qt.locale(),'f',2)).arg(Number(modelData.nextBonus*100).toLocaleString(Qt.locale(),'f',2))+(modelData.id==="agility"?"":" %");color:"#9eb59d";font.pixelSize:11;wrapMode:Text.WordWrap;Layout.fillWidth:true}
+ Label {text:modelData.id==="strength"?qsTr("Basic Jump without skills %1 → %2 px").arg(Number(modelData.jumpHeight).toLocaleString(Qt.locale(),'f',1)).arg(Number(modelData.nextJumpHeight).toLocaleString(Qt.locale(),'f',1)):(modelData.id==="agility"?qsTr("Time slowdown %1 → %2%"):qsTr("Effect %1 → %2")).arg(Number(modelData.bonus*100).toLocaleString(Qt.locale(),'f',2)).arg(Number(modelData.nextBonus*100).toLocaleString(Qt.locale(),'f',2))+(modelData.id==="agility"?"":" %");color:"#9eb59d";font.pixelSize:11;wrapMode:Text.WordWrap;Layout.fillWidth:true}
  }
  NavButton {text:modelData.price<0?qsTr("Max"):qsTr("Buy · %1").arg(translator.coins(modelData.price));enabled:modelData.price>=0&&s.wallet>=modelData.price;onClicked:backend.buy(modelData.id);Layout.maximumWidth:200}
  }
