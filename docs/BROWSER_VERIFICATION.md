@@ -70,3 +70,13 @@ Follow-up browser checks confirmed native save import (coins and Strength),
 ?lang=cs parameter is consumed after storing the preference, so it cannot
 silently override a later English choice. Fractional fuel/glide values also
 format with the selected locale in both clients.
+
+Final production source commit **ccf48d4** also received
+**Workers Builds: wondersland — success**, build
+`99bd3b40-7ffb-4986-bfa0-e89ebde4e65f`, deployed version
+`a8975a0f-6db7-4386-9573-5b7dcaabfe62`. The published app.mjs was checked for
+the final locale-formatting code. The unnecessary nested npm prebuild hook
+was removed; the explicit build/deploy dry-run and 14 local tests pass.
+A fresh live browser profile confirmed ?lang=cs stores Czech, removes the
+one-time parameter, and a later English choice survives reload without
+JavaScript errors. GitHub Actions remains separately blocked by billing.
