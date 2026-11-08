@@ -1,0 +1,23 @@
+Use case: precise-object-edit.
+Asset type: WondersLand modular pixel-art character customization atlas, updated starter wardrobe.
+Input image 1 is the EDIT TARGET (hair / clothes / boots / gloves atlas). Input image 2 is a STYLE reference (12 complete adventurers).
+Preserve the approved warm, detailed, crisp pixel-art style, small dark outlines, earthy forest colors and three-quarter view facing RIGHT. Match the pixel density of the references. Do not turn into smooth digital illustration. Every shape must have clear deliberate pixel steps.
+
+Replace and expand the atlas into EXACTLY 6 columns x 5 rows of evenly spaced isolated components, 30 cells total. All components centered inside their own cells with generous empty margins, consistent scale, no overlapping.
+
+ROWS 1-2: TWELVE DISTINCT SHORT MASCULINE/BOYISH HAIRSTYLES. Auburn/copper neutral hair color consistent across all hair for later palette variants. Individual styles, left to right:
+Row 1: short messy side-swept hair; classic short side part; very short crew cut; buzz cut with clearly visible close-cropped hair; short textured crop; short curly top.
+Row 2: short quiff with clipped sides; short spiky hair; tousled medium-short waves; short undercut; compact curly afro; short swept-back hair.
+No ponytails, buns or braids in these first 12 cells. Show meaningful silhouette differences, not merely recolors. Hair components only, with empty face openings and no heads/faces/eyes.
+
+ROW 3: four longer hairstyles then two existing starter headwear choices, left to right: chin-length bob; long loose hair; ponytail; single braid; rustic straw hat with green band and small leaf; simple forest-green hood. Hair color stays copper/auburn. Hair choice is cosmetic and usable by any character.
+
+ROW 4: preserve SIX STARTER TORSO OUTFITS in the style of the original: green lace-up tunic and brown belt; cream shirt with simple brown work apron; cream shirt and mustard vest; muted rust-red plain coat; teal tunic and rust scarf; dark green tunic with slate-blue short cape. All simple cloth or leather, modest trim, no magic items. Detached torso clothing, no head, no full character, no trousers included.
+
+ROW 5 left to right: plain brown trousers; plain charcoal trousers; pair of ordinary brown leather boots; pair of ordinary dark leather boots; pair of plain brown leather work gloves; simple brown belt pouch. Each PAIR of boots or gloves belongs together within its single cell.
+
+CRITICAL USER EDIT: completely REMOVE the turquoise/diamond/crystal boots AND the turquoise/diamond/crystal gloves from this starter atlas. No gems, crystal, turquoise metal, glow, magical armor, fancy equipment or weapons anywhere. Basic leather boots and gloves only. Keep the straw hat, green hood, forest clothes and leather pouch aesthetic.
+
+Background: true alpha transparency, no white matte, no checkerboard drawn into the image.
+No text, title, numbers, labels, watermark, grid lines, shadows on the background or frames.
+This is a clean modular sprite art SOURCE atlas, not a promotional poster.

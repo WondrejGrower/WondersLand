@@ -80,3 +80,8 @@ python3 tools/analyze.py docs/live-recent-sample.json --seeds 50
 mohou být nepřekonatelné; nevzniká povinně bezpečná cesta. Ekonomika a hranice
 odemykání jsou pracovní návrh bez dlouhodobého lidského vyvážení. Tvrdý pád
 může ztratit posledních několik sekund neuložených odměn.
+
+## Pixelarty a další úkol pro Codex
+
+[Postava, startovní oblečení a inventář](docs/CHARACTER_INVENTORY_BRIEF.md) ·
+[Grafické podklady a náhled nové sady](assets/art-source/2026-11-08/README.md).
