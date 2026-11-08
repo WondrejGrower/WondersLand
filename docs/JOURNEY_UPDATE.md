@@ -79,3 +79,7 @@ the same transform. Header/footer have compact margins. Narrow aspect bars
 are expected; there is no independent X/Y stretching.
 
 Verification results and screenshots: JOURNEY_VERIFICATION.md.
+
+Browser results keyboard clarification: Space remains a jump key and cannot activate
+result buttons, including when held across a collision. Select Try again or
+Return to Base Camp using WASD/arrows and confirm with a fresh E (or click).

@@ -39,5 +39,5 @@ try{
  const dpi=await browser.newContext({viewport:{width:1366,height:768},deviceScaleFactor:2});
  const high=await dpi.newPage();await high.addInitScript(data=>{localStorage.setItem('wl-progress',JSON.stringify(data));localStorage.setItem('wl-language','cs');},p);
  await high.goto(origin+'/?recorded=1');await high.waitForFunction(()=>document.querySelector('#sheet').hidden);await high.screenshot({path:'docs/browser/camp-dpi2.png'});await dpi.close();
- assert.deepEqual(errors,[]);console.log('Browser journey, keyboard, live language, reset, purchase, identity, retry and four sizes passed. Screenshots: docs/browser/');
+ assert.equal(await page.locator('#error').isVisible(),false);assert.deepEqual(errors,[]);console.log('Browser journey, keyboard, live language, reset, purchase, identity, retry and four sizes passed. Screenshots: docs/browser/');
 }catch(error){console.error('Browser state:',await page.locator('#hud').textContent(),await page.locator('#menu').textContent(),await page.locator('#error').textContent(),errors);await page.screenshot({path:'/tmp/wl-browser-failure.png'});throw error;}finally{await browser.close();await new Promise(resolve=>host.close(resolve));}

@@ -217,5 +217,7 @@
   "Import progress": "Importovat postup",
   "Import can also transfer progress from the native app. The selected file replaces browser progress after confirmation.": "Importem lze přenést i postup z nativní aplikace. Vybraný soubor po potvrzení nahradí postup v prohlížeči.",
   "Replace browser progress with this file?": "Nahradit postup v prohlížeči tímto souborem?",
-  "Invalid progress file": "Neplatný soubor s postupem"
+  "Invalid progress file": "Neplatný soubor s postupem",
+  "Try again": "Zkusit znovu",
+  "Return to Base Camp": "Zpět do základního tábora"
 }

@@ -80,3 +80,27 @@ was removed; the explicit build/deploy dry-run and 14 local tests pass.
 A fresh live browser profile confirmed ?lang=cs stores Czech, removes the
 one-time parameter, and a later English choice survives reload without
 JavaScript errors. GitHub Actions remains separately blocked by billing.
+
+## Results and long-run rendering fix
+
+The generated Canvas renderer used `t` both for animation time and translation.
+A flying upgrade label (after 30 seconds) or tall-canopy label called the
+numeric animation clock, throwing `t is not a function` and preventing the
+interface from updating. Generated renderer functions now use a distinct
+`wlTranslate` callback while keeping animation timing unchanged.
+
+Space is reserved for jumping: menu keydown AND keyup suppress browser-default
+button activation. Enter is handled explicitly without auto-repeat; E and
+mouse activation remain supported. Result actions read Try again / Return to
+Base Camp, with a visible navigation hint. Saves and reward logic are unchanged.
+
+`npm run test:results` reproduces a synthetic giant collision with jump held
+across death, repeated/fresh jump presses on the results, explicit retry from
+0 m, and keyboard return to camp. It also directly renders a flying upgrade
+and a tall tree and checks both translated labels. The test passes and checks
+caught error UI as well as uncaught browser exceptions. Unit/Python checks and
+Wrangler deploy dry-run also pass. No synthetic fixture is used in production.
+The complete Chromium journey also passed after the input change (creation,
+menus, live-language switching, reload persistence, purchase, native-save import,
+reset and window/DPI variants). The updated Czech/English result captures show
+the two explicit actions and navigation hint.
