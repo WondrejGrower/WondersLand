@@ -1,9 +1,13 @@
+> Architecture update (2026-11-09): desktop and mobile use the same web/PWA game.
+> Qt, QML and native build notes below are historical. See BROWSER_TARGET.md and
+> WEB_PWA_TIMING.md. Current balance is journey-7; saves and migrations remain.
+
 # Continuous forest and accessible menus · 0.3.1
 
 Verified server mode, preserved local progression and protected admin test:
 [SECURITY_HARDENING.md](SECURITY_HARDENING.md).
 
-Current balance reference: [BALANCE.md](BALANCE.md), rules `wl-0.3-journey-6`.
+Current balance reference: [BALANCE.md](BALANCE.md), rules `wl-0.3-journey-7`.
 Later explicit playtest decisions there supersede historical tuning below.
 
 This revision supersedes the tier selection, onboarding, language and viewport
@@ -168,3 +172,14 @@ community records store best distance, total distance and completed live attempt
 count in a persistent SQLite Durable Object; training/recorded runs are excluded.
 Month assignment uses server UTC. This is not the future paid ranked mode.
 [Implementation, screenshots and actual verification](FULLSCREEN_MONTHLY.md).
+
+## Higher baseline hop and continuous flight animation · journey-7
+
+9 November playtest: Wondrej found the new character’s ordinary jump too small
+and its animation awkward. Launch/tap impulse is now 140, ascent gravity 210
+and descent gravity 280: about 46.67 px ideal peak, up from 31.15 px, with a
+slightly shorter complete hop. Strength’s quadratic coefficient is 5.7 to keep
+level-50 height close to the previous value. The shared sprite extends its legs
+smoothly before contact and uses a shallow 0.16 s landing compression. Existing
+progress, prices and obstacle amounts/dimensions remain intact. This revision is
+prepared locally; verification and deployment status: [JUMP_FEEL.md](JUMP_FEEL.md).

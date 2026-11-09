@@ -1,6 +1,6 @@
 {
   "label": "SYNTHETIC: ideal timing, no skills, gardener, initial run speed, 120 Hz",
-  "balanceVersion": "wl-0.3-journey-6",
+  "balanceVersion": "wl-0.3-journey-7",
   "rows": [
     {
       "model": "flower",
@@ -21,7 +21,7 @@
       "w": 15,
       "type": "tulip",
       "firstStrengthLevel": 0,
-      "baseLaunchPositions": 80,
+      "baseLaunchPositions": 86,
       "cumulativeStrengthCost": 0
     },
     {
@@ -32,7 +32,7 @@
       "w": 16,
       "type": "rose",
       "firstStrengthLevel": 0,
-      "baseLaunchPositions": 60,
+      "baseLaunchPositions": 76,
       "cumulativeStrengthCost": 0
     },
     {
@@ -43,7 +43,7 @@
       "w": 17,
       "type": "fern",
       "firstStrengthLevel": 0,
-      "baseLaunchPositions": 44,
+      "baseLaunchPositions": 66,
       "cumulativeStrengthCost": 0
     },
     {
@@ -53,9 +53,9 @@
       "h": 48,
       "w": 21,
       "type": "birch",
-      "firstStrengthLevel": 12,
+      "firstStrengthLevel": 2,
       "baseLaunchPositions": 0,
-      "cumulativeStrengthCost": 1212
+      "cumulativeStrengthCost": 107
     },
     {
       "model": "pine",
@@ -64,9 +64,9 @@
       "h": 72,
       "w": 25,
       "type": "pine",
-      "firstStrengthLevel": 19,
+      "firstStrengthLevel": 16,
       "baseLaunchPositions": 0,
-      "cumulativeStrengthCost": 3181
+      "cumulativeStrengthCost": 2145
     },
     {
       "model": "cannabis",
@@ -76,7 +76,7 @@
       "w": 16,
       "type": "cannabis",
       "firstStrengthLevel": 0,
-      "baseLaunchPositions": 70,
+      "baseLaunchPositions": 81,
       "cumulativeStrengthCost": 0
     },
     {
@@ -86,9 +86,9 @@
       "h": 108,
       "w": 31,
       "type": "oak",
-      "firstStrengthLevel": 27,
+      "firstStrengthLevel": 25,
       "baseLaunchPositions": 0,
-      "cumulativeStrengthCost": 8483
+      "cumulativeStrengthCost": 6679
     },
     {
       "model": "sequoia",

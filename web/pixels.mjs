@@ -1,6 +1,5 @@
-.pragma library
-.import "CharacterSprites.js" as Sprites
-.import "EnvironmentArt.js" as Environment
+import * as Sprites from './sprites.mjs';
+import * as Environment from './environment.mjs';
 var cache={}
 var hairIds=["hair_short_tousled","hair_short_side_part","hair_short_textured","hair_buzz_cut","hair_short_crop","hair_short_curls","hair_quiff","hair_short_spiky","hair_medium_wavy","hair_undercut","hair_compact_afro","hair_swept_back","hair_bob","hair_long_loose","hair_ponytail","hair_braid"];
 // Shoulder/elbow/wrist, hip and foot pivots measured in the registered base poses.
@@ -61,9 +60,9 @@ function wearablePixels(id,pose){
  }
  var pixels=[];for(var n in out)pixels.push([Number(n)%24,Math.floor(Number(n)/24),Sprites.palette[out[n]]]);wearableCache[key]=pixels;return pixels;
 }
-function character(c,x,y,ch,frame,hands,boots,mode,equipment,facingLeft){
+function character(c,x,y,ch,frame,hands,boots,mode,equipment,facingLeft,motion){
  ch=ch||{};equipment=equipment||{};mode=mode||"idle";frame=Math.floor(frame||0)%6;
- var pose=mode==="run"?frame:mode==="jump"?8:mode==="fall"?9:mode==="land"?10:mode==="hit"?11:6+(frame%2);
+ var pose=mode==="run"?frame:mode==="jump"?8:mode==="fall"?(motion?8:9):mode==="land"?(motion?frame:10):mode==="hit"?11:6+(frame%2);
  var key=JSON.stringify([ch,pose,equipment]);var pixels=cache[key];
  if(!pixels){
   var grid=new Array(24*40),rig=rigs[pose],head=rig.head||0,shift=rig.shiftX||0;
@@ -110,9 +109,45 @@ function character(c,x,y,ch,frame,hands,boots,mode,equipment,facingLeft){
   pixels=[];for(var i=0;i<grid.length;i++)if(grid[i])pixels.push([i%24,Math.floor(i/24),grid[i]]);
   if(Object.keys(cache).length>256)cache={};cache[key]=pixels;
  }
- for(var i=0;i<pixels.length;i++){var p=pixels[i];c.fillStyle=p[2];c.fillRect(Math.round(x)+(facingLeft?23-p[0]:p[0]),Math.round(y)+p[1],1,1);}
+ // Keep the dressed takeoff silhouette throughout flight. Legs extend gradually
+ // through the apex instead of snapping between two unrelated whole-body frames.
+ // Everything, including clothes and hair, follows the same pixel deformation.
+ var airborne=motion&&(mode==="jump"||mode==="fall"),extend=0,lean=0,scaleX=1,scaleY=1;
+ if(airborne){
+  var velocity=Number(motion.velocity)||0;
+  var blend=Math.max(0,Math.min(1,(25-velocity)/125));extend=blend*blend*(3-2*blend);
+  lean=.8*(1-extend);scaleY=1+.04*Math.max(0,Math.min(1,velocity/140));
+ }else if(motion&&mode==="land"){
+  // A brief foot-anchored compression flows back into running, without the
+  // former nine-pixel head drop. No delayed takeoff or physics displacement.
+  var progress=1-Math.max(0,Math.min(1,(motion.landing||0)/.16));
+  var spring=Math.sin(Math.PI*progress);scaleX=1+.04*spring;scaleY=1-.1*spring;
+ }
+ function point(px,py){
+  if(airborne){
+   if(py>=27){
+    var side=px<12?0:1,from=rigs[8].feet[side],to=rigs[9].feet[side];
+    var along=Math.max(0,Math.min(1,(py-27)/(from[1]-27)))*extend;
+    px+=(to[0]-from[0])*along;py+=(to[1]-from[1])*along;
+   }else if(py>=18){
+    if(px<7)px-=extend;if(px>17)px+=extend;
+   }
+   px+=lean*(38-py)/38;
+  }
+  px=12+(px-12)*scaleX;py=38+(py-38)*scaleY;
+  return [Math.round(x)+(facingLeft?24-px:px),Math.round(y)+py];
+ }
+ for(var i=0;i<pixels.length;i++){
+  var p=pixels[i];c.fillStyle=p[2];
+  if(!airborne&&scaleY===1){c.fillRect(Math.round(x)+(facingLeft?23-p[0]:p[0]),Math.round(y)+p[1],1,1);continue;}
+  var a=point(p[0],p[1]),b=point(p[0]+1,p[1]+1);
+  var left=Math.round(Math.min(a[0],b[0])),top=Math.round(a[1]);
+  c.fillRect(left,top,Math.max(1,Math.round(Math.max(a[0],b[0]))-left),Math.max(1,Math.round(b[1])-top));
+ }
 }
 function plant(c,p,ground){Environment.plant(c,p,ground);}
 function prop(c,id,x,y,w,h){Environment.prop(c,id,x,y,w,h);}
 
 function viewport(left,top,width,height){Environment.viewport(left,top,width,height);}
+
+export {character,plant,prop,wearablePixels,viewport};

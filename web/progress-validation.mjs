@@ -1,5 +1,4 @@
-// Generated from src/ProgressValidation.js; keep in sync.
-// Structural validation, not proof of earned progress. Shared by Qt and web.
+// Structural validation, not proof of earned progress. Used by client imports and server progression.
 function validateProgress(input,config){
  function bad(){throw Error('Invalid progress file');}
  function object(x){return x!==null&&typeof x==='object'&&!Array.isArray(x);}

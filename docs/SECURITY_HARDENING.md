@@ -1,3 +1,7 @@
+> Architecture update, 2026-11-09: one browser/PWA JavaScript implementation;
+> Qt-specific descriptions below are historical. Current source map: AI_REVIEW.md.
+> Structural validation lives in web/progress-validation.mjs; there is no sync step.
+
 # Security fixes, server progression and temporary admin test
 
 2026-11-08. Implements Wondrej's security-fix request and explicit choice of a

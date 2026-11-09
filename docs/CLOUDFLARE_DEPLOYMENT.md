@@ -9,9 +9,9 @@ and remains in Git history. Keep the separate local website checkout intact.
 ## Product and build
 
 The browser client is real executable ES modules + Canvas, in `web/`.
-It shares balance.json, the Czech catalog and native pixel art with Qt.
-`npm run build` generates `dist/`; no Qt runtime is required in a browser.
-The native app remains in src/ and is built with ./bin/build.
+It uses src/balance.json, the Czech catalog and the Canvas modules in web/.
+`npm run build` copies the single application into dist/; desktop/mobile installs
+use the same PWA. There is no separate Qt build or QML extraction.
 
 Prerequisite: Node.js >=24 (CI uses 24), npm. Dependencies are pinned in
 package-lock.json, including Wrangler and Playwright.

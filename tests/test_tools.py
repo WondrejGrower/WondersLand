@@ -21,9 +21,7 @@ class AnalysisTests(unittest.TestCase):
   source=path.parents[1]/'src'
   catalog=json.loads((source/'i18n/cs.json').read_text())
   keys=set()
-  for qml in source.glob('*.qml'):
-   for literal in re.findall(r'qsTr\("((?:[^"\\]|\\.)*)"\)',qml.read_text()):
-    keys.add(json.loads('"'+literal+'"'))
+  keys.update(['Frame rate','144 FPS requires a display with a refresh rate of at least 144 Hz.'])
   config=json.loads((source/'balance.json').read_text())
   for group in ['classes','regions','skills','items','research','workshop','progression']:
    keys.update(row['name'] for row in config[group])

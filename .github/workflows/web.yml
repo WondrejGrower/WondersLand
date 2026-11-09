@@ -19,6 +19,9 @@ jobs:
       - run: npm test
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
+      - run: npm run test:timing
+      - run: npm run test:jump-feel
+      - run: npm run test:analysis
       - run: npm run test:jump-input
       - run: npm run test:mobile
       - run: npm run test:pwa

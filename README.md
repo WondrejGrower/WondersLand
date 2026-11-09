@@ -6,14 +6,16 @@
 [Ověřené serverové běhy, bezpečnostní opravy a dočasný admin test](docs/SECURITY_HARDENING.md).
 Mempool má přednost: i první transakce může vytvořit nepřekonatelnou sekvoji.
 
-Nativní Qt/QML hra: dojdi k portálu, stiskni E, vyber schopnost a potvrď E.
+Ve hře: dojdi k portálu, stiskni E, vyber schopnost a potvrď E.
 Každý běh začíná od 0 m. Oblasti jednoho lesa se mění při 500, 1 500, 3 000
 a 6 000 m; rozměry skutečných transakcí určuje jediná velikostní křivka.
 
-Primární verzí je nyní **hra pro prohlížeč na wondersland.online**. Podle
+Jedinou verzí je **webová hra a instalovatelná PWA na wondersland.online**. Podle
 nového výslovného zadání nahrazuje původní web; ten zůstává v archivní větvi.
-Webový klient je v `web/`, původní nativní Qt/QML aplikace v `src/` funguje dál.
-Sdílejí konfiguraci, překlady a pixelovou grafiku.
+Kód je v `web/`; desktopová i mobilní instalace používají tutéž hru.
+Samostatná Qt aplikace byla z repozitáře odstraněna; starší exporty postupu
+lze stále importovat. Nastavení nabízí limit **60 / 144 FPS**, výchozí 144.
+144 FPS potřebuje odpovídající displej; fyzika běží stejně při obou volbách.
 
 ```sh
 npm ci
@@ -23,7 +25,7 @@ npm run deploy:check
 npm run dev
 ```
 
-**Mobilní aplikace (PWA):** [instalace na Android/iPhone](docs/PWA.md).
+**Aplikace pro počítač i mobil (PWA):** [instalace](docs/PWA.md).
 V Nastavení hry vyber Nainstalovat aplikaci; na iPhonu použij Safari → Sdílet → Přidat na plochu.
 
 Cloudflare: [nasazení přes GitHub](docs/CLOUDFLARE_DEPLOYMENT.md).
@@ -54,27 +56,26 @@ Jazyk přežije restart i reset postavy; nová instalace má angličtinu.
 
 ## Sestavení a kontroly
 
-Arch/Omarchy: GCC s C++17, make, qmake6, qt6-base, qt6-declarative,
-qt6-wayland; Python 3 pro analytické nástroje. Spouštěj z kořene projektu:
+Node.js 24+ a npm; Python 3 pouze pro analytické nástroje. Z kořene projektu:
 
 ```sh
-./bin/build
-./bin/test
-./build/wondersland-game open
-./build/wondersland-game check --json
-./build/wondersland-game check --live --json
-./build/wondersland-game language cs
-./bin/install
+npm ci
+npm run build
+npm run preview # http://127.0.0.1:4173
+npm test
+npm run test:timing
+npm run test:pwa
+npm run test:analysis
+npm run deploy:check
 ```
 
-Aplikace se objeví pod WondersLand [WL] v launcheru Super+Space.
-Data: `~/.local/share/wondersland-game/` (`progress.json`, `settings.json`,
-`last-trace.json`). Migrace starého postupu vytvoří zálohu `.pre-v5` (u verze 3 také `.pre-v4`).
+Desktop: otevři hru v Chrome/Chromiu → Nastavení hry → Nainstalovat aplikaci,
+případně nabídka prohlížeče → Nainstalovat aplikaci. Otevře se samostatné okno
+se stejným webovým kódem. [FPS, architektura a ověření](docs/WEB_PWA_TIMING.md).
+Uživatelská data původní Qt aplikace zůstávají v `~/.local/share/wondersland-game/`;
+starší `progress.json` lze přenést přes Nastavení → Importovat postup.
 
 ```sh
-./build/wondersland-game preview /tmp/camp.png --camp --cs --size 1366x768
-./build/wondersland-game preview /tmp/training.png --training --progress --cs
-./build/wondersland-game preview /tmp/settings.png --settings --cs
 python3 tools/record_mempool.py --help
 python3 tools/analyze.py docs/live-recent-sample.json --seeds 50
 ```
@@ -141,3 +142,15 @@ serverové simulace vstupů, nikoli z odeslaného skóre. Staré komunitní výs
 jsou dál dostupné jako neověřená historie. Nejde o placený ranked.
 Admin `/test` má neomezené mince, oddělené testovací uložení a vyžaduje
 soukromý časově omezený přístup. Přihlašovací odkaz není veřejnou součástí repozitáře.
+
+## Vyšší základní skok · journey-7
+
+Nová postava má přibližně o 50 % vyšší skok se svižnějším odrazem a pevným
+klesáním. Nohy se před dopadem postupně natahují a postava měkce propruží.
+Síla dál otevírá vyšší stromy, koupené úrovně a ceny zůstávají zachované.
+[Podrobnosti a ověření](docs/JUMP_FEEL.md).
+
+```sh
+npm run test:jump-feel
+npm run test:jump-input
+```

@@ -1,3 +1,8 @@
+import * as renderer from './pixels.mjs';
+import * as Visual from './plant-visual.mjs';
+import * as Data from './environment-regions.mjs';
+import * as botanical from './environment.mjs';
+import {drawRun} from './art.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
 import {Game,fresh,plant,height} from './core.mjs';
 const config=JSON.parse(readFileSync(new URL('../src/balance.json',import.meta.url)));
@@ -16,9 +21,6 @@ test('420 decimal satoshi prefix uses cannabis art without changing size, amount
  for(const value of ['420','4200','42000000','4200000000']){const p=plant(value,config);assert.equal(p.type,'cannabis');assert.equal(p.h,height(value,config));assert.equal(p.sats,value);}
  assert.notEqual(plant('1420000',config).type,'cannabis');const g=expedition(0);g.q.pending=[];g.q.receive([{txid:'f'.repeat(64),value:'42000000'}]);g.spawnPlant();assert.equal(g.obstacles[0].type,'cannabis');assert.equal(g.obstacles[0].txid,'f'.repeat(64));assert.equal(g.obstacles[0].sats,'42000000');
 });
-const read=p=>readFileSync(new URL('../src/'+p,import.meta.url),'utf8').replace(/^\.pragma.*$/gm,'').replace(/^\.import.*$/gm,'');
-const spriteData=Function(read('CharacterSprites.js')+'\nreturn {palette,sprites};')();
-const renderer=Function('Sprites','Environment',read('PixelArt.js')+'\nreturn {wearablePixels,character};')(spriteData,{});
 test('torso, gloves, boots and pouch deform with the six run poses instead of staying stationary',()=>{
  for(const id of ['torso_green_tunic','torso_slate_cape','torso_work_apron','hands_leather_work_gloves','feet_brown_leather_boots','belt_leather_pouch']){
   const layers=Array.from({length:6},(_,pose)=>renderer.wearablePixels(id,pose));assert.ok(new Set(layers.map(p=>JSON.stringify(p))).size>=4,id);
@@ -29,13 +31,10 @@ test('torso, gloves, boots and pouch deform with the six run poses instead of st
  assert.deepEqual(renderer.wearablePixels(null,0),[]);
 });
 test('all environment motifs have unique regions; giant plants use bounded visible modules',()=>{
- const Data=Function(read('EnvironmentRegions.js')+'\nreturn {regions};')();assert.equal(Object.keys(Data.regions).length,24);assert.ok(Data.regions.flora_cannabis);assert.equal(new Set(Object.values(Data.regions).map(r=>r.atlas+':'+r.rect)).size,24);
- const Visual=Function(read('PlantVisual.js')+'\nreturn {descriptor};')();const environment=Function('Data','Visual',read('EnvironmentArt.js')+'\nreturn {plant};')(Data,Visual);const calls=[],ctx={save(){},restore(){},translate(){},scale(){},fillRect(){},drawImage:(...args)=>calls.push(args)};environment.plant(ctx,{type:'sequoia',x:500,w:96,h:1e12},284);assert.ok(calls.length>0&&calls.length<100);for(const call of calls){assert.ok(call.slice(1).every(Number.isFinite));assert.ok(call.at(-1)<=360);assert.ok(call.at(-3)>=0);}
+assert.equal(Object.keys(Data.regions).length,24);assert.ok(Data.regions.flora_cannabis);assert.equal(new Set(Object.values(Data.regions).map(r=>r.atlas+':'+r.rect)).size,24);
+ const environment=botanical;const calls=[],ctx={save(){},restore(){},translate(){},scale(){},fillRect(){},drawImage:(...args)=>calls.push(args)};environment.plant(ctx,{type:'sequoia',x:500,w:96,h:1e12},284);assert.ok(calls.length>0&&calls.length<100);for(const call of calls){assert.ok(call.slice(1).every(Number.isFinite));assert.ok(call.at(-1)<=360);assert.ok(call.at(-3)>=0);}
 });
 
-const Visual=Function(read('PlantVisual.js')+'\nreturn {descriptor};')();
-const Data=Function(read('EnvironmentRegions.js')+'\nreturn {regions};')();
-const botanical=Function('Data','Visual',read('EnvironmentArt.js')+'\nreturn {plant};')(Data,Visual);
 function drawing(p){const calls=[];const c={save(){},restore(){},translate(...a){calls.push(['translate',...a]);},scale(...a){calls.push(['scale',...a]);},drawImage(...a){calls.push(['image',...a]);},fillRect(...a){calls.push(['fill',this.fillStyle,...a]);}};botanical.plant(c,p,284);return calls;}
 test('species boundaries, zero, anchors and unbounded height retain the current monotone curve',()=>{
  const bounds=[0,100000,350000,800000,1000000,100000000,1000000000,100000000000];
@@ -50,9 +49,8 @@ test('species boundaries, zero, anchors and unbounded height retain the current 
  assert.ok(height('10000000000000',config)>365);
  assert.equal(plant('42000000',config).type,'cannabis');assert.equal(plant('1000000',config).type,'birch');
 });
-test('shared Qt/web fixtures, generated adapter and deterministic drawing agree',()=>{
+test('botanical fixtures and deterministic drawing agree',()=>{
  const fixtures=JSON.parse(readFileSync(new URL('../tests/plant-visual.json',import.meta.url)));
- assert.equal(readFileSync(new URL('./plant-visual.mjs',import.meta.url),'utf8'),readFileSync(new URL('../src/PlantVisual.js',import.meta.url),'utf8').replace('.pragma library','// Generated from src/PlantVisual.js by tools/sync-plant-visual.mjs.')+'\nexport {descriptor};\n');
  for(const f of fixtures){const p=plant(f.sats,config);assert.equal(p.h,f.h);assert.equal(p.w,f.w);assert.deepEqual(Visual.descriptor(p.type,p.sats,p.h,f.txid,f.fixture),f.visual);p.visual=f.visual;p.x=200;assert.deepEqual(drawing(p),drawing(structuredClone(p)));}
  for(const sats of ['70000','200000','600000','900000','90000000','900000000','90000000000','300000000000','42000000']){
   const p={...plant(sats,config),x:200};const pictures=new Set();for(let i=0;i<4;i++){p.visual=Visual.descriptor(p.type,p.sats,p.h,String(i).padStart(64,'0'),'');pictures.add(JSON.stringify(drawing(p)));}assert.equal(pictures.size,4,p.type);
@@ -73,15 +71,38 @@ test('viewport clipping bounds work and coordinates independently of total heigh
 });
 
 test('shared high-jump camera keeps the character visible without scaling transaction geometry',()=>{
- const source=readFileSync(new URL('../src/Main.qml',import.meta.url),'utf8'),start=source.indexOf(' onPaint:{')+11,end=source.indexOf('\n }\n }',start),body=source.slice(start,end);
- const paint=Function('PixelArt','s','win','width','height','getContext','artReady','Qt','qsTr',body);
- const g=expedition(0);g.spawnPlant();const state=g.state(),plantCalls=[],characterCalls=[];
- const c={reset(){},scale(){},translate(){},fillRect(){},strokeRect(){},fillText(){}};
- const art={viewport(){},plant:(c,p,ground)=>plantCalls.push({h:p.h,w:p.w,ground}),character:(c,x,y)=>characterCalls.push({x,y})};
+ const g=expedition(0);g.spawnPlant();const state=g.state(),characterCalls=[];state.profile={...state.profile,character:{...state.profile.character,skin:'#ff00ff',hair:'#ff00ff'}};
+ const c={reset(){},save(){},restore(){},scale(){},translate(){},fillRect(){},strokeRect(){},fillText(){}};
+ c.fillStyle='';c.drawImage=()=>{};c.imageSmoothingEnabled=false;
+ // Inspect actual rendered character pixels and immutable obstacle descriptors.
+ c.fillRect=(x,y,w,h)=>{if(w===1&&h===1&&/^#[0-9a-f]{2}00[0-9a-f]{2}$/i.test(c.fillStyle)&&c.fillStyle!=='#000000')characterCalls.push({x,y});};
  for(const y of [0,100,180,243,320,450]){
-  state.y=y;plantCalls.length=characterCalls.length=0;
-  paint(art,state,{sky:'#10202b',soil:'#513c30',foliage:'#779e53',trText:v=>v},640,360,()=>c,true,{darker:v=>v,lighter:v=>v},v=>v);
-  assert.ok(characterCalls[0].y>=0&&characterCalls[0].y+40<=360);
-  assert.equal(plantCalls.at(-1).h,state.obstacles.at(-1).h);assert.equal(plantCalls.at(-1).w,state.obstacles.at(-1).w);
+  state.y=y;characterCalls.length=0;
+  const before=structuredClone(state.obstacles);
+  drawRun(c,state,v=>v,640,360);
+  assert.ok(characterCalls.length>0);assert.ok(characterCalls.every(p=>p.y>=0&&p.y<360));
+  assert.deepEqual(state.obstacles,before);
+ }
+});
+
+
+test('flight poses stay continuous through the apex and landing keeps feet anchored without a head snap',()=>{
+ function picture(mode,velocity,landing,equipment){
+  const pixels=[];const c={fillRect(x,y,w,h){pixels.push([x,y,w,h,this.fillStyle]);}};
+  renderer.character(c,0,0,{hair:'#5e3936',skin:'#dfaf87',hairStyle:0},0,false,false,mode,equipment,false,{velocity,landing});
+  return {pixels,top:Math.min(...pixels.map(p=>p[1])),bottom:Math.max(...pixels.map(p=>p[1]+p[3]))};
+ }
+ for(const torso of ['torso_green_tunic','torso_rust_coat']){
+  const equipment={...config.starterEquipment,torso};
+  assert.deepEqual(picture('jump',0,0,equipment),picture('fall',0,0,equipment),'apex cannot switch the whole dressed silhouette');
+  const rise=picture('jump',140,0,equipment),fall=picture('fall',-140,0,equipment);
+  assert.ok(fall.bottom>rise.bottom,'legs extend before contact');
+  const run=picture('run',0,0,equipment);
+  for(const landing of [.16,.12,.08,.04,0]){
+   const frame=picture('land',0,landing,equipment);
+   assert.ok(Math.abs(frame.top-run.top)<=4,'head moves through a shallow compression');
+   assert.equal(frame.bottom,run.bottom,'feet remain at ground contact');
+   assert.ok(frame.pixels.every(p=>p.slice(0,4).every(Number.isFinite)&&p[2]>0&&p[3]>0));
+  }
  }
 });

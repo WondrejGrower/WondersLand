@@ -1,81 +1,69 @@
 # WondersLand [WL]
 
-Primárně prohlížečová hra pro wondersland.online; současně zachovaná nativní
-C++17 / Qt Quick/QML aplikace. Není součástí kiosku.
+Jedna JavaScript/Canvas hra pro prohlížeč a instalovanou PWA na počítači i
+mobilu. Výslovný pokyn Wondreje z 9. listopadu 2026 ruší samostatný C++/Qt
+runtime. Nevracet druhou implementaci fyziky, UI ani nativní balíček.
+Projekt není součástí kiosku. Hra na wondersland.online nahrazuje starý web;
+archiv původního webu musí zůstat zachovaný.
 
-Přečti docs/JOURNEY_UPDATE.md pro herní pravidla a docs/BROWSER_TARGET.md
-pro aktuální cílovou platformu. Výslovný pokyn Wondreje z 8. listopadu 2026:
-hra má na wondersland.online nahradit původní web. Starší pravidlo ponechat
-web na main je tím nahrazené. Archiv původního webu musí zůstat zachovaný.
+Nejprve čti docs/BALANCE.md, docs/BROWSER_TARGET.md a docs/SECURITY_HARDENING.md.
+Historická zadání v docs/JOURNEY_UPDATE.md a starších dokumentech popisují i
+již odstraněnou Qt aplikaci; aktuální pravidla a výslovné pokyny mají přednost.
 
-Sdílené: src/balance.json, src/i18n/cs.json, src/PixelArt.js. Webový runtime
-je web/core.mjs + app.mjs; build generuje dist bez uživatelských dat.
-Cloudflare konfigurace a ověření: docs/CLOUDFLARE_DEPLOYMENT.md.
+## Zdroj a ověření
 
-Zachovej skutečné TXID v živém režimu a označení tréninku/záznamu. Satoshi
-přenášej přesné jako desetinné řetězce, mince nejsou bitcoin. Nezaváděj
-platby. Zachovej existující postup, interní ID a migraci schématu.
+- web/core.mjs: jediná herní simulace pro klienta i ověřující server.
+- web/app.mjs: UI, vstupy a start; web/art.mjs, pixels.mjs, environment.mjs:
+  vykreslování. sprites.mjs a environment-regions.mjs jsou předpočítaná data.
+- src/balance.json a src/i18n/cs.json: konfigurace a český katalog.
+- web/progress-validation.mjs: jediný validátor místních/serverových profilů.
+- web/timing.mjs: 120 pevných kroků/s, interpolace a volitelný limit 60/144 FPS.
+  FPS nesmí měnit fyziku, kolize, odměny, mempool ani rychlost cooldownů.
+- assets/runtime/README.md: grafické zdroje a regenerace. Běžný build nepotřebuje Qt,
+  ImageMagick ani obrazovou AI. Oblečení je kosmetické, základní boty/rukavice
+  nesmějí aktivovat původní Diamond booleany hands/boots.
 
-Web: npm ci; npm test; npm run test:browser; npm run deploy:check.
-Native: ./bin/build; ./bin/test; ./bin/install.
-Zdroj nativní hry v src/, testy v tests/, web v web/. Build, node_modules,
-.wrangler, privátní postup a přihlašovací údaje nepatří do Gitu.
+Node.js 24+: npm ci; npm test; npm run test:browser; npm run deploy:check.
+Podle změny spusť test:timing, test:jump-feel, test:jump-input, test:mobile,
+test:pwa, test:inventory, test:environment, test:monthly, test:verified a test:analysis.
+Build: npm run build. Lokální náhled: npm run preview. Produkční konfigurace a
+ověření: docs/CLOUDFLARE_DEPLOYMENT.md. build:checked (testy + audit + build) je
+povinná deploy brána, neobcházej ji. dist, node_modules, .wrangler, privátní
+postup a přihlašovací údaje nepatří do Gitu.
 
-Aktuální pravidlo rolí: všechny tři se vybírají při tvorbě postavy. Role
-je pak neměnná; změna vyžaduje výslovný reset postavy/postupu. Nevracet
-odemykání rolí podle metrů ani přepínání rolí v táboře. Stávající roli
-a ostatní postup při aktualizaci zachovat.
+## Závazná herní pravidla
 
-Další zadání postavy a inventáře: [docs/CHARACTER_INVENTORY_BRIEF.md](docs/CHARACTER_INVENTORY_BRIEF.md).
-Pixelartové podklady jsou v assets/art-source/2026-11-08/. Jde o zdroje pro
-vrstvené sprity; obyčejné startovní boty/rukavice nesmějí aktivovat staré
-Diamond booleany hands/boots. Diamantový vzhled je vyhrazen budoucímu skinu.
+Živý běh může začít libovolnou skutečnou transakcí včetně nepřekonatelné sekvoje.
+Nikdy nefiltruj, nenahrazuj ani neodkládej velké TX kvůli bezpečnému začátku
+nebo síle postavy. Zachovej deduplikaci, doplňování a poctivé čekání bez replay.
+Satoshi přenášej přesně jako desetinné řetězce; částka je součet výstupů.
+Konopí určuje prefix 420 částky, nikoli TXID. Velikostní křivka, TXID a již
+vytvořené rozměry překážek jsou nezávislé na kameře, FPS, postavě a regionu.
+Trénink/záznam musí být označené a bez trvalých odměn. Mince nejsou bitcoin.
 
-Inventář je implementován ve schématu 5 (`inventory` a `equipment`).
-Mince a staré `owned`/`hands`/`boots` nadále reprezentují původní herní postup.
-Katalog oblečení a výchozí set jsou v balance.json; CharacterSprites.js obsahuje
-sdílená předpočítaná pixelová data pro Qt i web. Regenerace PNG vrstev a prompty:
-assets/runtime/README.md. Ověření: npm run test:inventory. Cvičiště používá
-přeložené `workshop[].description` pro vysvětlení každého statu.
+Všechny tři role se volí při tvorbě postavy. Role je pak neměnná až do
+výslovného resetu. Zachovej postup, interní ID, schéma 5, inventory/equipment,
+původní owned/hands/boots a migrace. Starší exporty Qt zůstávají importovatelné.
+Neměň ani nemaž skutečné uživatelské soubory původní desktopové aplikace.
+Obratnost zpomaluje celou výpravu o 0,04 % za úroveň, max. 2 %; buffer je
+pevný 0,1 s. Tábor, odpočítávání, výzkum a síť běží v reálném čase.
 
-Verze 0.3.3: nové táborové a botanické PNG v assets/runtime/camp.png a flora.png;
-EnvironmentArt.js je sdílený vykreslovač s předpočítanými regiony. PNG se načítají
-jednou, nikoli za každý snímek; obří překážky se před škálováním oříznou na viewport.
-Oblečení sleduje pózové klouby, včetně deformace trupu a ohybu rukávů.
-Obratnost už NEZVYŠUJE input buffer: zpomaluje celou simulaci výpravy o 0,04 %
-za úroveň, max. 2 %. Tábor, odpočítávání, výzkum a síť běží v reálném čase.
-Dosavadní konopné pravidlo používá prefix 420 kanonické částky v satoshi,
-nikoli TXID; zachovej částku, TXID a velikostní křivku. Ověření: npm run test:environment.
+Balance journey-7: základní/tap impuls 140, gravitace 210/280, kvadratická
+Síla 5.7. Výška začátečníka ~46.67 px, maximum Síly ~312.67 px. Animace letu
+a mělké propružení nemění hitbox. Při změně mechanik aktualizuj balanceVersion,
+relevantní testy a docs/BALANCE.md. Kosmetika/FPS/PWA nevyžadují nový balance.
 
-Nejdůležitější pravidlo mempoolu (výslovně potvrzeno Wondrejem): živý běh může
-začít libovolnou skutečnou transakcí včetně nepřekonatelné sekvoje. Nikdy
-nefiltruj, nenahrazuj ani neodkládej velké TX kvůli bezpečnému začátku nebo
-síle postavy. Ladění obtížnosti mění schopnosti/ovládání, nikoli částku či
-rozměr transakce. Zachovej deduplikaci, doplňování a poctivé čekání bez replay.
-Budoucí ranked běhy za 1000 sats vyžadují samostatné serverové ověřování a
-platební návrh. Komunitní žebříček s klientským výsledkem není placený ranked.
+## Server a PWA
 
-Webové testy nyní vyžadují Node.js 24+ (vestavěné SQLite). Po změně kamery nebo
-měsíčního žebříčku spusť také npm run test:monthly. Společná cloudová data jsou
-v SQLite Durable Objectu MonthlyLeaderboard, binding LEADERBOARD, jméno
-monthly-v1. Při aktualizaci tato persistentní ID nemaž/nepřejmenovávej bez migrace.
-Podrobnosti a limity komunitních výsledků: docs/FULLSCREEN_MONTHLY.md.
+Ověřené běhy mají vlastní serverový profil a serverovou simulaci vstupů,
+nikoli klientské skóre/import buildu. Zachovej historické komunitní výsledky
+jako read-only. SQLite Durable Object: MonthlyLeaderboard, binding LEADERBOARD,
+jméno monthly-v1. Persistentní ID nemaž/nepřejmenovávej bez migrace.
+Server-verified není důkaz lidské identity ani placený ranked. Platby, vstupné
+1000 sats, custody a výplaty nejsou implementované a nepatří do běžného balancu.
+Admin /test musí ověřovat server; privátní capability/klíč/QR nepatří do Gitu/logů.
 
-Aktuální závazný přehled balancu pro hráče a LLM: [docs/BALANCE.md](docs/BALANCE.md).
-Před mechanickou změnou ho přečti; starší návrh hranice malého konopí byl
-později nahrazen výslovným schválením základního skoku přes keře a kapradiny.
-Nezaměňuj komunitní klientské výsledky za serverově ověřené placené ranked běhy.
-
-PWA: [docs/PWA.md](docs/PWA.md), ověření `npm run test:pwa`. Service worker
-smí ukládat jen offline oznámení; nikdy ne API, privátní klíče ani starý herní
-shell s balancem. Nezaváděj offline replay vydávaný za živý mempool.
-
-Security update: přečti [docs/SECURITY_HARDENING.md](docs/SECURITY_HARDENING.md).
-Nový žebříček používá oddělený serverový profil a serverovou simulaci vstupů,
-nikoli klientské skóre nebo import místního buildu. Staré výsledky ponech
-jako read-only historii. Neměň stávající persistentní ID ani historii při migraci.
-Ověření `npm run test:verified`; shared validator `src/ProgressValidation.js`
-synchronizuj přes `node tools/sync-progress-validation.mjs`. Admin `/test` musí
-být ověřen serverem; privátní capability/klíč/QR nikdy nepatří do Gitu ani logu.
-`build:checked` je povinná deploy brána (Node testy + audit + build); neobcházej ji.
-Server-verified není důkaz lidské identity ani připravený placený ranked.
+PWA: docs/PWA.md. Service worker ukládá pouze offline oznámení, nikdy API,
+privátní klíče, replay nebo starý herní shell s balancem. Instalace používá
+stejný webový kód; nevyžaduje samostatnou fyziku nebo C++ wrapper.
+Změna skoku, architektura a výsledky: docs/JUMP_FEEL.md a docs/WEB_PWA_TIMING.md.

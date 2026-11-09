@@ -1,3 +1,7 @@
+> Current architecture (2026-11-09): one web/Canvas implementation and desktop/mobile
+> PWA. The Qt descriptions below are project history. Read BROWSER_TARGET.md,
+> BALANCE.md and WEB_PWA_TIMING.md for the current state.
+
 # WondersLand [WL] · zadání a další rozvoj
 
 Samostatná desktopová pixelová hra inspirovaná jednoduchostí offline dinosaura,

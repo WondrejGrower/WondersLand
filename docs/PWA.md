@@ -1,10 +1,14 @@
-# Install WondersLand on a phone
+# Install WondersLand on desktop or phone
 
 WondersLand is an installable Progressive Web App at **https://wondersland.online**.
 It opens in a standalone app window and supports portrait/landscape. Installation
 does not change physics, balance, mempool order or profile schema.
 
 ## Pro hráče / installation
+
+**Desktop (Linux / Windows / macOS):** otevři hru v Chrome nebo Chromiu →
+Nastavení hry → Nainstalovat aplikaci, případně nabídka prohlížeče →
+Nainstalovat aplikaci. Hra se otevře v samostatném okně se stejným kódem.
 
 **Android:** otevři web v Chromiu/Chrome, potom Nastavení hry → Nainstalovat
 aplikaci. Pokud prohlížeč nabídne instalační tlačítko, použij ho. Jinak otevři
@@ -54,7 +58,8 @@ An internet connection is required to open the game and receive live data.
   removes only old caches in that prefix and leaves localStorage untouched.
 - English/Czech install instructions are in Settings. No push notifications,
   new permissions, payment integration, analytics or external install service
-  are introduced. Native Qt packaging is unchanged.
+  are introduced. The duplicate Qt application and native packaging were retired on 2026-11-09.
+  Desktop uses this same PWA; old Qt progress exports remain importable.
 
 ## Verification
 
@@ -82,3 +87,11 @@ No mechanical balance or profile schema version was changed.
 Security update: the offline cache was bumped to `wl-offline-v3-security` to
 refresh cached response headers after CSP/HSTS hardening. It still stores only
 the offline notice and never API, admin pages or player credentials.
+
+## Frame rate and one runtime · 2026-11-09
+
+Settings → Frame rate offers 60 and 144 FPS, default 144. The same setting and
+code apply in browser tabs and standalone PWA windows. A sufficiently fast
+screen/browser/device is required to display 144 FPS. Simulation stays at
+120 fixed steps/second with visual interpolation. See WEB_PWA_TIMING.md for
+local verification and limits; historical test counts above describe older builds.

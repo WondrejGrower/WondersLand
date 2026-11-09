@@ -20,7 +20,7 @@ test('schema four migration preserves character, role, diamonds, records, coins 
  next.equipment.feet='hands_leather_work_gloves';next.equipment.hands='head_straw_hat';const checked=migrate(next,c);assert.equal(checked.equipment.feet,null);assert.equal(checked.equipment.hands,null);
 });
 test('sprite source contains all sixteen distinct hairstyles and twelve distinct animation poses',async()=>{
- const source=readFileSync(new URL('../src/CharacterSprites.js',import.meta.url),'utf8').replace('.pragma library','');const {sprites}=await import('data:text/javascript,'+encodeURIComponent(source+'\nexport {sprites};'));
+ const {sprites}=await import('./sprites.mjs');
  assert.equal(new Set(c.hairStyles.map(h=>JSON.stringify(sprites[h.id].pixels))).size,16);assert.equal(new Set(Array.from({length:12},(_,i)=>JSON.stringify(sprites['body_'+i].pixels))).size,12);
  for(const item of c.clothing)assert.ok(sprites[item.id].pixels.some(Boolean),item.id);
 });

@@ -4,16 +4,18 @@ try{
  const g=new Game(JSON.parse(readFileSync('src/balance.json')));g.create('LOCAL MOBILE TEST',{class:'gardener'});g.p.unlocked.push('training');
  const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(p=>localStorage.setItem('wl-progress',JSON.stringify(p)),g.p);
  await page.route('**/api/mempool',r=>r.fulfill({json:[]}));await page.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:readFileSync('web/app.mjs','utf8')+'\nwindow.fixture={get game(){return game;},action,renderMenu};'}));
+ // Keep viewport checks independent of host load and time to the first collision.
+ await page.clock.install();await page.clock.pauseAt(Date.now()+100);
  await page.goto('http://127.0.0.1:'+host.address().port+'/?recorded=1');await page.waitForFunction(()=>document.body.dataset.ready==='true');
  await page.evaluate(()=>{fixture.game.station='training';fixture.renderMenu();});await page.waitForSelector('[data-training-model]');
  const previews=await page.locator('[data-training-model]').evaluateAll(cs=>cs.map(c=>({id:c.dataset.trainingModel,visible:c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>0)})));assert.equal(previews.length,9);assert.ok(previews.every(p=>p.visible),JSON.stringify(previews));
- await page.locator('[data-action=practice][data-arg=fern]').tap();await page.waitForSelector('#touch-controls:not([hidden])');
+ await page.locator('[data-action=practice][data-arg=fern]').tap();await page.clock.runFor(32);await page.waitForSelector('#touch-controls:not([hidden])');
  for(const size of [{width:390,height:844},{width:844,height:390},{width:320,height:568},{width:430,height:932}]){
-  await page.setViewportSize(size);await page.waitForTimeout(100);const bounds=await page.locator('#scene').boundingBox();assert.ok(Math.abs(bounds.width-size.width)<2&&Math.abs(bounds.height-size.height)<2,JSON.stringify({size,bounds}));
+  await page.setViewportSize(size);await page.clock.runFor(100);const bounds=await page.locator('#scene').boundingBox();assert.ok(Math.abs(bounds.width-size.width)<2&&Math.abs(bounds.height-size.height)<2,JSON.stringify({size,bounds}));
   for(const id of ['touch-jump','touch-pause']){const b=await page.locator('#'+id).boundingBox();assert.ok(b.width>=44&&b.height>=44&&b.x>=0&&b.y+b.height<=size.height);}
   assert.equal(await page.locator('body').evaluate(b=>b.scrollWidth>innerWidth),false);
  }
- await page.clock.install();await page.evaluate(()=>{fixture.game.y=0;fixture.game.velocity=0;fixture.game.obstacles=[];fixture.game.spawn=1000;});await page.locator('#touch-jump').tap();await page.clock.runFor(150);assert.ok(await page.evaluate(()=>fixture.game.y)>0,'A real touchscreen tap jumps');
+ await page.evaluate(()=>{fixture.game.y=0;fixture.game.velocity=0;fixture.game.obstacles=[];fixture.game.spawn=1000;});await page.locator('#touch-jump').tap();await page.clock.runFor(150);assert.ok(await page.evaluate(()=>fixture.game.y)>0,'A real touchscreen tap jumps');
  await page.locator('#touch-pause').tap();await page.clock.runFor(32);assert.equal(await page.evaluate(()=>fixture.game.phase),'paused');assert.equal(await page.locator('#touch-controls').isVisible(),false);const time=await page.evaluate(()=>fixture.game.time);await page.clock.runFor(500);assert.equal(await page.evaluate(()=>fixture.game.time),time);
  await page.locator('[data-action=pause]').tap();await page.clock.runFor(32);assert.equal(await page.locator('#touch-controls').isVisible(),true);
  await page.evaluate(()=>{fixture.game.y=0;fixture.game.velocity=0;fixture.game.skills.double=1;fixture.game.airUsed=false;fixture.game.doubleCooldown=0;});await page.locator('#touch-jump').tap();await page.clock.runFor(100);await page.locator('#touch-jump').tap();assert.ok(await page.evaluate(()=>fixture.game.doubleCooldown)>9);

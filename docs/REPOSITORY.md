@@ -1,16 +1,14 @@
 # Repository and delivery target
 
-Current game source: https://github.com/WondrejGrower/WondersLand/tree/game/roguelite-0.3
+Game source: WondrejGrower/WondersLand. Local implementation uses one
+JavaScript/Canvas game in web/ for browser, desktop PWA and mobile PWA;
+see BROWSER_TARGET.md and WEB_PWA_TIMING.md. The old game/roguelite-0.3 branch
+and Qt implementation are historical. Current publication details:
+CLOUDFLARE_DEPLOYMENT.md and BROWSER_VERIFICATION.md.
 
-Use this branch for ChatGPT analysis and project source storage. The current
-implementation is C++17 / Qt Quick. Wondrej specified that the primary future
-product will run in a browser on a domain; see BROWSER_TARGET.md.
-The later explicit user instruction authorizes replacing the original website
-on main and wondersland.online with the browser game. See CLOUDFLARE_DEPLOYMENT.md
-and BROWSER_VERIFICATION.md for the current publication state. The older game branch game/wondersland-0.2 is historical.
+The original website is preserved in archive/website-before-game-2026-11-08
+(5830ff11efe82eb6eb5bdb65927a825a0d16002a) and Git history. The separate local
+website checkout remains untouched. The game is intended to replace it on
+main and wondersland.online, as explicitly requested by Wondrej.
 
-The original website is preserved on main and on
-archive/website-before-game-2026-11-08 (5830ff11efe82eb6eb5bdb65927a825a0d16002a).
-The separate local website checkout remains outside this game project.
-
-Current behavior/migration: JOURNEY_UPDATE.md. Source map: AI_REVIEW.md.
+Current mechanics: BALANCE.md. Source map: AI_REVIEW.md.

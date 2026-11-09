@@ -1,36 +1,29 @@
-# WondersLand [WL] · podklady pro analýzu
+# WondersLand · source map for reviews
 
-Analyzuj větev `game/roguelite-0.3`, nikoliv `main` (tam je jiný webový projekt).
+One JavaScript/Canvas game for browser and installed desktop/mobile PWA.
+Start with AGENTS.md, BALANCE.md, BROWSER_TARGET.md and SECURITY_HARDENING.md.
+Earlier C++/Qt/QML review instructions are historical and superseded.
 
-Jde o funkční ranou kostru samostatné nativní hry pro Omarchy/Linux:
-C++17, Qt Quick/QML, qmake6. Současná implementace je nativní; primární cílový provoz bude v prohlížeči na doméně (BROWSER_TARGET.md). Nejde o plugin kiosku. Záměr a další
-směr jsou v docs/PROJECT.md; aktuální ovládání a příkazy v README.md.
+- web/core.mjs: shared game simulation and progression.
+- web/app.mjs: menus, keyboard/mouse/touch input, persistence and startup.
+- web/timing.mjs: fixed 120 Hz simulation, 60/144 FPS cap and visual interpolation.
+- web/art.mjs, pixels.mjs, environment.mjs: Canvas scenes, characters and plants.
+- web/sprites.mjs, environment-regions.mjs: generated sprite/atlas data.
+- web/plant-visual.mjs: deterministic TXID-based plant morphology.
+- web/progress-validation.mjs: structural validation used by client/server.
+- web/worker.mjs, verified-worker.mjs, verified-simulation.mjs, verified-client.mjs:
+  server-verified runs, profile operations, transport and prediction.
+- web/leaderboard-worker.mjs: persistent monthly history and shared object.
+- web/pwa.mjs, sw.js and manifest.webmanifest: installation and offline notice.
+- src/balance.json and src/i18n/cs.json: game configuration and translations.
+- web/*.test.mjs: Node and browser checks; exact commands in package.json.
+- tests/: retained migration, morphology and balance fixtures; Python analysis tests.
 
-## Kde co hledat
+Preserve exact satoshi strings, first-transaction sequoias, no-replay data waits,
+schema 5, legacy imports and persistent server IDs. Training/replay gives no
+permanent rewards. Coins are not bitcoin. No payments exist. Server-simulated
+inputs do not prove human identity or paid-ranked readiness.
 
-- src/backend.cpp a .h: herní stav, fyzika běhu, kolize, mince, postup,
-  pohyb v táboře, živé transakce přes Qt Network.
-- src/Main.qml: okno, vstupy, běžecká scéna a výsledky po nárazu.
-- src/CampView.qml: průchozí Base Camp, kreslení a interakce stanovišť.
-- src/theme.* a translator.*: Omarchy téma a samostatná volba jazyka; cs/en v src/i18n/.
-- tests/game_tests.cpp: trénink bez odměn, živé mince právě jednou,
-  pohyb, skok, kolize, persistence, snapshot a skutečné ovládání QML.
-- pkgbuild/: lokální Arch balíček, desktopový spouštěč a ikona.
-
-## Důležité záměry
-
-Rostlina v živém běhu odpovídá skutečné transakci. Velikost určuje součet
-výstupů v satoshi, nikoliv čistá převáděná částka. Po kolizi se ukáže TXID
-a odkaz. Zdroj obsahuje jen nedávné transakce, ne celý mempool. Běh má doplňovanou deduplikovanou frontu; nové transakce vstupují
-do budoucí části aktuálního běhu a už viditelné překážky se nemění.
-
-Trénink má ukázkové rostliny bez TXID a nepřidává persistentní mince ani
-živé rekordy. Herní mince nejsou bitcoin. Dílna, vybavení, skilly a výzkum jsou funkční. Ruční tiery nahradil souvislý les podle metrů; aktuální změny a migrace popisuje JOURNEY_UPDATE.md. Nákupy
-používají pouze herní body, žádné platby neprobíhají.
-
-Budoucí směr: magický roguelike inspirovaný hlavně Magicraftem a Terrarií.
-Síla má vycházet ze skillů, synergií a hraní; základní upgrady mají být
-běžně dostupné, kosmetické skiny dražší bez bojové výhody. Ne pay-to-win.
-
-Pro aktuální revizi nejprve čti docs/BRIEF_0_3.md a docs/IMPLEMENTATION_0_3.md.
-Balanc: src/balance.json. Postup: progress.*. Fronta: transactionfeed.*.
+The duplicate Qt application/build chain is retired. Existing user files and
+previous monthly results must not be deleted. Source preparation is local;
+consult the verification documents before claiming anything was deployed.

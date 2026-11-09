@@ -35,3 +35,5 @@ body.immersive #interact,body.immersive #camp-gate{bottom:calc(8px + env(safe-ar
 @media(pointer:coarse),(max-width:700px){header button,#menu button{min-height:44px}#menu{scroll-margin:12px}#sheet{padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right));padding-top:max(10px,env(safe-area-inset-top));padding-bottom:max(10px,env(safe-area-inset-bottom))}}
 
 .player-id{unicode-bidi:isolate;direction:ltr;display:block;font:10px monospace;color:#b3c5ac;overflow-wrap:anywhere}
+
+#menu .frame-rates{display:flex;gap:8px}#menu .frame-rates button{flex:1;width:auto;margin:0}

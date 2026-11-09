@@ -1,4 +1,3 @@
-// Generated from src/PlantVisual.js by tools/sync-plant-visual.mjs.
 // Graphics version is independent of balance/save versions. ASCII keys (TXID/fixture IDs).
 function descriptor(type,sats,h,txid,fixture){
  var key=txid||('fixture:'+type+':'+sats+':'+(fixture||'legacy'));

@@ -1,6 +1,6 @@
 import {validateProgress} from './progress-validation.mjs';
 import {descriptor} from './plant-visual.mjs';
-// Browser simulation and save adapter. Balance, identifiers and art are shared with Qt.
+// Browser simulation and save adapter. One runtime for browser, installed PWA and verified server simulation.
 export const fresh = () => ({schemaVersion:5,character:{},inventory:[],equipment:{},coins:0,seeds:0,workshop:{},completed:[],research:[],milestones:[],owned:[],hands:false,boots:false,paidRuns:[],records:{},runs:0,lastClock:0,excluded:'',unlocked:[],announcements:[],bestDistance:0,totalDistance:0,recipes:[]});
 export function outfit(config,selected={}){
  const equipment={};for(const [slot,id]of Object.entries(config.starterEquipment)){
@@ -94,7 +94,7 @@ export class Game {
  if(!this.demo&&this.spawn<=0&&(!this.q.pending.length||this.q.used.size>=10000)&&!this.obstacles.length){this.phase='waiting';this.held=this.jet=false;return;}
  const f=this.c.physics,s=this.stats();dt*=s.timeScale;this.doubleCooldown=Math.max(0,(this.doubleCooldown||0)-dt);this.landing=Math.max(0,(this.landing||0)-dt);this.time+=dt;this.animation+=dt;this.invulnerable=Math.max(0,this.invulnerable-dt);this.buffer=Math.max(0,this.buffer-dt);const speed=f.speed*Math.min(f.maxSpeedFactor,1+this.time/1200);this.distance+=speed*dt/10;this.spawn-=dt;if(this.spawn<=0)this.spawnPlant();if(this.y<=.01&&this.buffer>0){this.buffer=0;const held=this.held;this.jump();this.held=held;}
  let gravity=this.velocity>0?f.heldGravity:f.gravity;if(this.held&&this.velocity<0&&this.glide>0){gravity=f.gliderGravity;this.glide=Math.max(0,this.glide-dt);}if(this.jet&&this.skills.jetpack&&this.fuel>0){this.fuel=Math.max(0,this.fuel-dt);this.velocity=Math.min(this.velocity+f.jetAcceleration*dt,Math.sqrt(2*f.heldGravity*Math.max(0,this.stats().airCap-this.y)));gravity=f.heldGravity;}
- const wasAirborne=this.y>0;this.velocity-=gravity*dt;this.y=Math.max(0,this.y+this.velocity*dt);if(!this.y){if(wasAirborne)this.landing=.12;this.velocity=0;this.airUsed=false;this.glide=this.effect('glider');}
+ const wasAirborne=this.y>0;this.velocity-=gravity*dt;this.y=Math.max(0,this.y+this.velocity*dt);if(!this.y){if(wasAirborne)this.landing=.16;this.velocity=0;this.airUsed=false;this.glide=this.effect('glider');}
  for(const p of this.obstacles)p.x-=speed*dt;for(const coin of this.coins){coin.x-=speed*dt;if(!coin.taken&&Math.hypot(coin.x-108,coin.y-(this.y+18))<s.magnet){coin.taken=true;this.collected++;this.earnedMilli+=Math.round(1000*(1+Math.min(this.c.run.maxEconomyBonus,s.economy+(this.y>3?this.effect('aircoins'):0))));}}
  if(!this.practiceModel&&this.has('flying')&&this.time>=this.nextUpgrade&&!this.flying.id){this.flying={...this.offers(1,(this.pickups+1)%3===0)[0],age:-2,x:600,y:35};this.nextUpgrade+=this.c.run.upgradeEvery;}
  if(this.flying.id){const fl=this.flying,window=this.c.run.upgradeWindow+(s.class==='collector'?1:0);fl.age+=dt;fl.x=fl.age<0?132-fl.age*234:132-48*fl.age/window;fl.blocked=this.obstacles.some(p=>p.x<155&&p.x+p.w>80&&p.h>35);if(fl.blocked&&fl.age>=0)fl.age=-.05;else if(fl.age>=0&&Math.hypot(fl.x-108,35-(this.y+18))<25){this.apply(fl);this.pickups++;this.flying={};}else if(fl.age>window)this.flying={};}

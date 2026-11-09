@@ -379,5 +379,8 @@
   "Verified run stopped": "Ověřený běh se zastavil",
   "Return to personal camp": "Zpět do osobního tábora",
   "Unsent inputs were not saved. Settle the interrupted run when connected.": "Neodeslané vstupy se neuložily. Po připojení uzavři přerušený běh.",
-  "Invalid character appearance": "Neplatné jméno nebo vzhled postavy"
+  "Invalid character appearance": "Neplatné jméno nebo vzhled postavy",
+  "Frame rate": "Snímková frekvence",
+  "144 FPS requires a display with a refresh rate of at least 144 Hz.": "Pro 144 FPS potřebuješ displej s obnovovací frekvencí alespoň 144 Hz.",
+  "Desktop: open this site in Chrome or Chromium and choose Install app in the browser menu.": "Počítač: otevři hru v Chrome nebo Chromiu a v nabídce prohlížeče vyber Nainstalovat aplikaci."
 }

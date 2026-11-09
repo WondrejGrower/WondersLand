@@ -1,8 +1,7 @@
-.pragma library
-.import "EnvironmentRegions.js" as Data
-.import "PlantVisual.js" as Visual
-var campAtlas="qrc:/art/camp.png";
-var floraAtlas="qrc:/art/flora.png";
+import * as Data from './environment-regions.mjs';
+import * as Visual from './plant-visual.mjs';
+var campAtlas=null;
+var floraAtlas=null;
 var viewLeft=0,viewTop=0,viewRight=640,viewBottom=360;
 function viewport(left,top,width,height){viewLeft=Math.floor(left);viewTop=Math.floor(top);viewRight=Math.ceil(left+width);viewBottom=Math.ceil(top+height);}
 function setAtlases(camp,flora){campAtlas=camp;floraAtlas=flora;}
@@ -11,7 +10,7 @@ function draw(c,id,x,y,w,h){
  var r=region.rect,atlas=region.atlas==="camp"?campAtlas:floraAtlas;
  c.imageSmoothingEnabled=false;
  // One cached atlas image, one clipped blit. Work never grows with giant TX height.
- // Crop before scaling to avoid browser/Qt limits when a tree extends far above view.
+ // Crop before scaling to avoid canvas limits when a tree extends far above view.
  var top=Math.max(0,viewTop-y),bottom=Math.min(h,viewBottom-y),left=Math.max(0,viewLeft-x),right=Math.min(w,viewRight-x);
  if(bottom<=top||right<=left)return;
  c.drawImage(atlas,r[0]+left/w*r[2],r[1]+top/h*r[3],(right-left)/w*r[2],(bottom-top)/h*r[3],x+left,y+top,right-left,bottom-top);
@@ -87,3 +86,5 @@ function plant(c,p,ground){
   }
  }
 }
+
+export {setAtlases,draw,prop,plant,viewport};

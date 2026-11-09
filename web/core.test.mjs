@@ -60,13 +60,13 @@ test('permanent strength spans meadow plants to late sequoias while keeping exac
   base.p.workshop.strength=level;const stats=base.stats(),apex=stats.jumpVelocity**2/(2*c.physics.heldGravity);
   assert.ok(Math.abs(base.jumpHeight()-apex)<1e-9);assert.ok(stats.airCap>=apex);assert.ok(stats.airCap<=c.physics.airCap);
  }
- base.p.workshop.strength=0;base.skills={double:3,jetpack:3,leap:3};assert.ok(base.stats().airCap<60,'early aerial abilities cannot skip tree progression');
+ base.p.workshop.strength=0;base.skills={double:3,jetpack:3,leap:3};assert.equal(base.stats().airCap,1.5*base.jumpHeight(),'run skills cannot inflate the permanent aerial cap');assert.ok(base.stats().airCap<plant('100000000',c).h,'starting aerial ceiling stays below the practice pine');
  const existing={...profile(),coins:777,workshop:{strength:37},runs:9,bestDistance:1000};const restored=new Game(c,existing);assert.equal(restored.p.workshop.strength,37);assert.equal(restored.p.coins,777);
 });
 
 test('releasing jump still allows low controlled hops after long-term Strength upgrades',()=>{
  function peak(level,release,basic=false){const g=new Game(c,{...profile(),workshop:{strength:level}});g.startPractice('flower');g.spawn=1e9;if(basic)g.skills={leap:1};g.jump();if(release)g.release();let peak=0;for(let i=0;i<960;i++){g.tick(1/240);peak=Math.max(peak,g.y);}return peak;}
- assert.ok(peak(0,false)>28&&peak(0,false)<34);assert.ok(peak(50,false)>280);assert.ok(peak(50,true)<34);assert.ok(peak(0,true)<34);assert.ok(peak(0,true,true)>peak(0,true)*1.14);assert.ok(Math.abs(peak(0,true,true)-peak(0,false,true))<.05);
+ assert.ok(peak(0,false)>45&&peak(0,false)<47);assert.ok(peak(50,false)>280);assert.ok(peak(50,true)>45&&peak(50,true)<47);assert.ok(peak(0,true)>45&&peak(0,true)<47);assert.ok(peak(0,true,true)>peak(0,true)*1.14);assert.ok(Math.abs(peak(0,true,true)-peak(0,false,true))<.05);
 });
 
 test('starting choices are complementary movement skills with fixed first ranks',()=>{
@@ -99,4 +99,20 @@ test('mempool rule: a fresh live run may start with an impossible sequoia, witho
  assert.equal(g.obstacles[0].txid,txid);assert.equal(g.obstacles[0].sats,'100000000000');assert.equal(g.obstacles[0].type,'sequoia');assert.equal(g.obstacles[0].h,243);
  g.jump();for(let i=0;i<1500&&g.phase==='running';i++)g.tick(1/120);assert.equal(g.phase,'over');assert.equal(g.hit.txid,txid);assert.equal(g.p.runs,1);
  const firstIds=new Set();for(let i=1;i<=24;i++){const run=new Game(c,profile());run.receive([{txid,value:'100000000000'},{txid:'a'.repeat(64),value:'50000'}]);run.start(false,(i*2654435761)>>>0);run.choose(0);run.tick(1/120);firstIds.add(run.obstacles[0].txid);}assert.ok(firstIds.has(txid),'even with small transactions available a sequoia may start the run');assert.ok(firstIds.has('a'.repeat(64)));
+});
+
+
+test('fresh characters have a higher responsive hop with a faster descent and room to time ferns',async()=>{
+ const {windows}=await import('../tools/jump-progression.mjs');
+ for(const role of ['gardener','explorer','collector']){
+  const g=new Game(c,{...profile(),character:{name:'Jump feel',class:role}});
+  g.startPractice('flower');g.spawn=1e9;g.jump();g.release();
+  let peak=0,apexAt=0;while(g.time<2){g.tick(1/120);if(g.y>peak){peak=g.y;apexAt=g.time;}if(g.time>.05&&!g.y)break;}
+  assert.ok(peak>43&&peak<47,role+' baseline height');
+  assert.ok(apexAt>.6&&apexAt<.7,role+' responsive ascent');
+  assert.ok(g.time-apexAt<apexAt,role+' firmer descent');
+  assert.ok(g.time>1.15&&g.time<1.3,role+' complete hop');
+  assert.ok(windows('900000',0,role,false).length>=60,role+' forgiving fern timing');
+  assert.equal(windows('10000000',0,role,false).length,0,role+' practice birch still needs Strength');
+ }
 });

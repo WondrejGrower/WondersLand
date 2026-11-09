@@ -2,169 +2,169 @@
   {
     "role": "gardener",
     "level": 0,
-    "jumpVelocity": 90,
-    "airCap": 46.730769230769226,
-    "jumpHeight": 31.153846153846153
+    "jumpVelocity": 140,
+    "airCap": 70,
+    "jumpHeight": 46.666666666666664
   },
   {
     "role": "gardener",
     "level": 1,
-    "jumpVelocity": 90.161854461851,
-    "airCap": 46.899,
-    "jumpHeight": 31.266000000000002
+    "jumpVelocity": 140.15950913156055,
+    "airCap": 70.1596,
+    "jumpHeight": 46.773066666666665
   },
   {
     "role": "gardener",
     "level": 5,
-    "jumpVelocity": 93.96275858019496,
-    "airCap": 50.93653846153847,
-    "jumpHeight": 33.95769230769231
+    "jumpVelocity": 143.93470741971862,
+    "airCap": 73.99,
+    "jumpHeight": 49.32666666666666
   },
   {
     "role": "gardener",
     "level": 10,
-    "jumpVelocity": 104.95713410721542,
-    "airCap": 63.553846153846166,
-    "jumpHeight": 42.369230769230775
+    "jumpVelocity": 155.14122598458476,
+    "airCap": 85.96,
+    "jumpHeight": 57.306666666666665
   },
   {
     "role": "gardener",
     "level": 20,
-    "jumpVelocity": 140.5844941663198,
-    "airCap": 114.02307692307696,
-    "jumpHeight": 76.01538461538463
+    "jumpVelocity": 193.58512339536838,
+    "airCap": 133.84,
+    "jumpHeight": 89.22666666666667
   },
   {
     "role": "gardener",
     "level": 30,
-    "jumpVelocity": 185.321342537766,
-    "airCap": 198.1384615384615,
-    "jumpHeight": 132.09230769230768
+    "jumpVelocity": 244.5796393815315,
+    "airCap": 213.64,
+    "jumpHeight": 142.42666666666665
   },
   {
     "role": "gardener",
     "level": 40,
-    "jumpVelocity": 234,
-    "airCap": 315.9000000000001,
-    "jumpHeight": 210.60000000000002
+    "jumpVelocity": 301.8290907119458,
+    "airCap": 325.36000000000007,
+    "jumpHeight": 216.9066666666667
   },
   {
     "role": "gardener",
     "level": 50,
-    "jumpVelocity": 284.60498941515414,
+    "jumpVelocity": 362.381014955254,
     "airCap": 450,
-    "jumpHeight": 311.53846153846155
+    "jumpHeight": 312.6666666666667
   },
   {
     "role": "explorer",
     "level": 0,
-    "jumpVelocity": 87.72114910328067,
-    "airCap": 44.39423076923077,
-    "jumpHeight": 29.596153846153843
+    "jumpVelocity": 136.4551208273255,
+    "airCap": 66.5,
+    "jumpHeight": 44.33333333333333
   },
   {
     "role": "explorer",
     "level": 1,
-    "jumpVelocity": 87.88720043328266,
-    "airCap": 44.562461538461534,
-    "jumpHeight": 29.70830769230769
+    "jumpVelocity": 136.61876884235195,
+    "airCap": 66.6596,
+    "jumpHeight": 44.43973333333333
   },
   {
     "role": "explorer",
     "level": 5,
-    "jumpVelocity": 91.78235124467014,
-    "airCap": 48.599999999999994,
-    "jumpHeight": 32.4
+    "jumpVelocity": 140.48914548818354,
+    "airCap": 70.49000000000001,
+    "jumpHeight": 46.993333333333325
   },
   {
     "role": "explorer",
     "level": 10,
-    "jumpVelocity": 103.00970828033637,
-    "airCap": 61.21730769230769,
-    "jumpHeight": 40.81153846153846
+    "jumpVelocity": 151.94999177360953,
+    "airCap": 82.46,
+    "jumpHeight": 54.97333333333333
   },
   {
     "role": "explorer",
     "level": 20,
-    "jumpVelocity": 139.13662350366278,
-    "airCap": 111.68653846153849,
-    "jumpHeight": 74.45769230769231
+    "jumpVelocity": 191.0371691582557,
+    "airCap": 130.34,
+    "jumpHeight": 86.89333333333333
   },
   {
     "role": "explorer",
     "level": 30,
-    "jumpVelocity": 184.2254054141285,
-    "airCap": 195.80192307692306,
-    "jumpHeight": 130.53461538461536
+    "jumpVelocity": 242.5679286303117,
+    "airCap": 210.14,
+    "jumpHeight": 140.0933333333333
   },
   {
     "role": "explorer",
     "level": 40,
-    "jumpVelocity": 233.13300924579517,
-    "airCap": 313.5634615384616,
-    "jumpHeight": 209.0423076923077
+    "jumpVelocity": 300.2012658201161,
+    "airCap": 321.86,
+    "jumpHeight": 214.57333333333335
   },
   {
     "role": "explorer",
     "level": 50,
-    "jumpVelocity": 283.89258532057505,
+    "jumpVelocity": 361.02631483037356,
     "airCap": 450,
-    "jumpHeight": 309.9807692307692
+    "jumpHeight": 310.3333333333333
   },
   {
     "role": "collector",
     "level": 0,
-    "jumpVelocity": 87.72114910328067,
-    "airCap": 44.39423076923077,
-    "jumpHeight": 29.596153846153843
+    "jumpVelocity": 136.4551208273255,
+    "airCap": 66.5,
+    "jumpHeight": 44.33333333333333
   },
   {
     "role": "collector",
     "level": 1,
-    "jumpVelocity": 87.88720043328266,
-    "airCap": 44.562461538461534,
-    "jumpHeight": 29.70830769230769
+    "jumpVelocity": 136.61876884235195,
+    "airCap": 66.6596,
+    "jumpHeight": 44.43973333333333
   },
   {
     "role": "collector",
     "level": 5,
-    "jumpVelocity": 91.78235124467014,
-    "airCap": 48.599999999999994,
-    "jumpHeight": 32.4
+    "jumpVelocity": 140.48914548818354,
+    "airCap": 70.49000000000001,
+    "jumpHeight": 46.993333333333325
   },
   {
     "role": "collector",
     "level": 10,
-    "jumpVelocity": 103.00970828033637,
-    "airCap": 61.21730769230769,
-    "jumpHeight": 40.81153846153846
+    "jumpVelocity": 151.94999177360953,
+    "airCap": 82.46,
+    "jumpHeight": 54.97333333333333
   },
   {
     "role": "collector",
     "level": 20,
-    "jumpVelocity": 139.13662350366278,
-    "airCap": 111.68653846153849,
-    "jumpHeight": 74.45769230769231
+    "jumpVelocity": 191.0371691582557,
+    "airCap": 130.34,
+    "jumpHeight": 86.89333333333333
   },
   {
     "role": "collector",
     "level": 30,
-    "jumpVelocity": 184.2254054141285,
-    "airCap": 195.80192307692306,
-    "jumpHeight": 130.53461538461536
+    "jumpVelocity": 242.5679286303117,
+    "airCap": 210.14,
+    "jumpHeight": 140.0933333333333
   },
   {
     "role": "collector",
     "level": 40,
-    "jumpVelocity": 233.13300924579517,
-    "airCap": 313.5634615384616,
-    "jumpHeight": 209.0423076923077
+    "jumpVelocity": 300.2012658201161,
+    "airCap": 321.86,
+    "jumpHeight": 214.57333333333335
   },
   {
     "role": "collector",
     "level": 50,
-    "jumpVelocity": 283.89258532057505,
+    "jumpVelocity": 361.02631483037356,
     "airCap": 450,
-    "jumpHeight": 309.9807692307692
+    "jumpHeight": 310.3333333333333
   }
 ]

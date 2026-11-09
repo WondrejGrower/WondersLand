@@ -1,5 +1,5 @@
 {
-  "balanceVersion": "wl-0.3-journey-6",
+  "balanceVersion": "wl-0.3-journey-7",
   "anchors": [
     [
       100000,
@@ -35,9 +35,9 @@
     ]
   ],
   "physics": {
-    "jumpVelocity": 90,
-    "heldGravity": 130,
-    "gravity": 170,
+    "jumpVelocity": 140,
+    "heldGravity": 210,
+    "gravity": 280,
     "jumpCap": 320,
     "airCap": 450,
     "speed": 105,
@@ -54,10 +54,10 @@
     "fuel": 3,
     "rescueCap": 2,
     "invulnerability": 2,
-    "gliderGravity": 130,
+    "gliderGravity": 210,
     "jetAcceleration": 1500,
     "airHeightFactor": 1.5,
-    "tapVelocity": 90
+    "tapVelocity": 140
   },
   "rarityWeights": [
     75,
@@ -97,7 +97,7 @@
       "id": "strength",
       "name": "Strength",
       "max": 50,
-      "effect": 9,
+      "effect": 5.7,
       "curve": "quadratic",
       "baseCost": 50,
       "growth": 1.12,
