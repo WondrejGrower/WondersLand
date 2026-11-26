@@ -174,7 +174,35 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   scroll-padding: 16px;
 }
 
-#menu h1 { margin: 0 0 14px; color: #fff0d2; font: 700 29px/1.13 var(--heading); }
+#menu h1 { margin: 0 0 14px; padding-inline-end: 52px; color: #fff0d2; font: 700 29px/1.13 var(--heading); }
+.dialog-tools {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  height: 0;
+  pointer-events: none;
+}
+#menu .window-close, #error .window-close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  margin: 0;
+  flex: none;
+  background: #182923;
+  color: #f4ead2;
+  font: 24px/1 system-ui, sans-serif;
+  pointer-events: auto;
+}
+@media (hover: hover) {
+  #menu .window-close:hover, #error .window-close:hover {
+    background: #2c463a;
+    border-color: #708778;
+  }
+}
 #menu h2 { margin: 18px 0 8px; color: var(--gold); font-size: 17px; }
 #menu p { color: var(--muted); line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
 #menu button { display: block; width: 100%; min-height: 42px; margin: 8px 0; }
@@ -244,7 +272,8 @@ footer {
 #connection[data-status=offline]::before { background: #eea188; }
 #connection[data-status=replay]::before { background: #aac1de; }
 #error { position: fixed; bottom: 35px; left: 10px; right: 10px; padding: 14px; background: #4a2e29; border: 1px solid #bc795d; border-radius: 8px; z-index: 10; }
-#error button { float: right; }
+#error:not([hidden]) { display: flex; align-items: flex-start; gap: 12px; }
+#error span { flex: 1; overflow-wrap: anywhere; }
 [hidden] { display: none !important; }
 
 body.immersive > header, body.immersive > footer,
@@ -357,6 +386,7 @@ body.immersive #interact, body.immersive #camp-gate { bottom: calc(12px + env(sa
   #hud { font-size: 13px; }
   #menu { padding: 16px; }
   #menu h1 { font-size: 25px; }
+  #menu .opening-brand img { width: 44px; height: 44px; }
   #menu .row { gap: 8px; }
   #menu .row button { width: 125px; }
   .appearance, .inventory-summary { gap: 12px; }

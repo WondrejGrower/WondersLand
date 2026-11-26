@@ -135,7 +135,8 @@ function openingHtml(){
  return '<section class="login-panel"><div class="opening-brand"><img src="/icons/icon-192.png" alt="" width="56" height="56">'+title('WondersLand')+'</div>'+
   p(t('A forest shaped by live Bitcoin transactions.'))+
   (authBusy?p(t('Connecting to your Nostr account…')):
-   button(t('Sign in or register with Nostr'),'account-login')+button(t('Advanced · NSEC'),'nsec-open')+button(t('Play as guest'),'opening-guest'))+'</section>';
+   accountAvailable&&!cloud.account?button(t('Sign in or register with Nostr'),'account-login')+button(t('Advanced · NSEC'),'nsec-open')+button(t('Play as guest'),'opening-guest'):
+   button(t('Continue'),'opening-guest'))+'</section>';
 }
 function accountHtml(){
  let html=title(t('Nostr account'));
@@ -163,7 +164,7 @@ function boardHtml(){
 }
 const palettes={hair:['#5e3936','#d6b96d','#bcc4c5','#302f43','#a65c50'],skin:['#dfaf87','#b97e5f','#82533f','#f0cbb2'],shirt:['#679e86','#9278aa','#c18b65','#638ba9']};
 const stationNames={mine:'Block Mine',home:'Hearth & home',portal:'Mempool Gate',training:'Training Grounds',forge:'Runic Workshop',wardrobe:'Wardrobe',library:'Spell Garden'};
-function showError(message){$('error').hidden=false;$('error').replaceChildren();const text=document.createElement('span');text.textContent=t(message);$('error').append(text);const b=document.createElement('button');b.textContent=t('Back');b.onclick=()=>$('error').hidden=true;$('error').append(b);}
+function showError(message){$('error').hidden=false;$('error').replaceChildren();const text=document.createElement('span');text.textContent=t(message);$('error').append(text);const b=document.createElement('button');b.type='button';b.className='window-close';b.textContent='×';b.setAttribute('aria-label',t('Close window'));b.onclick=()=>$('error').hidden=true;$('error').append(b);}
 function setText(id,text){const node=$(id);if(node.textContent!==text)node.textContent=text;}
 function touch(){revision++;}
 function button(text,action,arg='',disabled=false,selected=false){return `<button data-action="${action}" data-arg="${escape(arg)}" ${disabled?'disabled':''} class="${selected?'selected':''}">${escape(text).replaceAll('\n','<br>')}</button>`;}
@@ -341,8 +342,17 @@ function menuHtml(){const g=game,d=g.p;
  if(d.completed.includes('stable')){html+=p(t('Exclude one skill (at least three must remain)'));const available=config.skills.filter(s=>(s.unlock==='base'||d.completed.includes(s.unlock))&&(s.id!=='jetpack'||g.has('diamond')));for(const s of available)html+=button(t(s.name),'exclude',s.id,available.length<=3&&d.excluded!==s.id,d.excluded===s.id);}}
  return html+button(t('Back')+' · Esc','close');
 }
-function focusFirst(){const el=$('menu').querySelector('button:not([disabled])');el?.focus({preventScroll:true});}
-function renderMenu(){const key=JSON.stringify([game.phase,game.station,game.p.announcements[0],overlay,language,revision,Math.ceil(game.countdown||0),game.phase==='upgrade'?game.nextChoice:0,game.station==='mine'?game.mineBalance().coins:0]);if(key===lastView)return;lastView=key;const helpLabel=t('A small field guide');$('help').setAttribute('aria-label',helpLabel);$('help').querySelector('.help-label').textContent=helpLabel;const html=menuHtml();$('sheet').hidden=!html;if(!html){if($('sheet').contains(document.activeElement))document.activeElement.blur();return;}game.moves.clear();game.target=null;const focused=document.activeElement?.dataset?.action,arg=document.activeElement?.dataset?.arg;$('menu').innerHTML=html;
+function focusFirst(){const el=$('menu').querySelector('button:not(.window-close):not([disabled])');el?.focus({preventScroll:true});}
+function closeDialog(){
+ if(overlay==='verified-failed'){action('camp');return;}
+ if(['install','import-confirm'].includes(overlay)){overlay='settings';return;}
+ if(!overlay&&game.phase==='creation'){overlay='opening';return;}
+ if(!overlay&&['upgrade','countdown'].includes(game.phase)){action('camp');return;}
+ if(document.activeElement?.matches('input,textarea,select'))document.activeElement.blur();
+ back();
+}
+function renderMenu(){const key=JSON.stringify([game.phase,game.station,game.p.announcements[0],overlay,language,revision,Math.ceil(game.countdown||0),game.phase==='upgrade'?game.nextChoice:0,game.station==='mine'?game.mineBalance().coins:0]);if(key===lastView)return;lastView=key;const helpLabel=t('A small field guide');$('help').setAttribute('aria-label',helpLabel);$('help').querySelector('.help-label').textContent=helpLabel;const html=menuHtml();$('sheet').hidden=!html;if(!html){if($('sheet').contains(document.activeElement))document.activeElement.blur();return;}game.moves.clear();game.target=null;const focused=document.activeElement?.dataset?.action,arg=document.activeElement?.dataset?.arg;const closeDisabled=authBusy||(overlay==='verified'&&verified.busy);
+ $('menu').innerHTML='<div class="dialog-tools"><button type="button" class="window-close" data-action="dialog-close" aria-label="'+escape(t('Close window'))+'"'+(closeDisabled?' disabled':'')+'>×</button></div>'+html;
  for(const canvas of $('menu').querySelectorAll('[data-skill-icon]'))drawSkillIcon(canvas.getContext('2d'),canvas.dataset.skillIcon);
  const nsec=$('nsec-key');if(nsec)nsec.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();submitNsec();}};
  const name=$('name');if(name){name.oninput=()=>{nameDraft=name.value;const create=$('menu').querySelector('[data-action=create]');create.disabled=!nameDraft.trim()||blocked;};name.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('menu').querySelector('[data-action=appearance]')?.focus();}};}
@@ -352,7 +362,7 @@ function renderMenu(){const key=JSON.stringify([game.phase,game.station,game.p.a
  const camp=$('visited-camp');if(camp)drawCamp(camp.getContext('2d'),{campX:320,campY:235,animation:0,profile:visitor},t);
  if(focused){const el=[...$('menu').querySelectorAll('button')].find(b=>b.dataset.action===focused&&b.dataset.arg===arg&&!b.disabled);if(el){el.focus();return;}}
  focusFirst();}
-function back(){if(authBusy)return;if(overlay==='nsec'){overlay=nsecReturn;touch();return;}if(verified.active&&!overlay&&['over','camp'].includes(game.phase)){verifiedTask(leaveVerified);return;}if(document.activeElement?.tagName==='INPUT'){document.activeElement.blur();$('menu').querySelector('button:not(:disabled)')?.focus();return;}if(overlay==='public-camp'||overlay==='public-character'){overlay='directory';directoryRequest++;}
+function back(){if(authBusy)return;if(overlay==='nsec'){overlay=nsecReturn;touch();return;}if(verified.active&&!overlay&&['over','camp'].includes(game.phase)){verifiedTask(leaveVerified);return;}if(document.activeElement?.tagName==='INPUT'){document.activeElement.blur();focusFirst();return;}if(overlay==='public-camp'||overlay==='public-character'){overlay='directory';directoryRequest++;}
  else if(overlay==='directory'){overlay='verified';directoryRequest++;}
  else if(overlay==='reset')overlay='settings';else if(overlay)overlay='';else if(game.station)game.station='';else if(game.phase==='camp'&&game.p.announcements.length)game.dismiss();else if(['select','connecting','waiting','over'].includes(game.phase))game.camp();else game.pause();touch();}
 function download(name,obj){const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
@@ -387,6 +397,7 @@ function action(act,arg){try{
  else if(act==='board-metric'){boardMetric=arg;loadBoard();}
  else if(act==='board-refresh'){board.flush().then(()=>loadBoard());}
  else if(act==='language'){language=arg;localStorage.setItem('wl-language',arg);document.documentElement.lang=arg;}
+ else if(act==='dialog-close')closeDialog();
  else if(act==='back')back();else if(act==='reset-confirm')overlay='reset';else if(act==='reset'){game.settle();blocked=false;game=new Game(config,fresh(),persist);game.replay=recorded;bindScores();game.persist();nameDraft='';creationRole='gardener';selectedItem='';overlay='';}
  else if(act==='create'){game.create(nameDraft,{...appearance,class:creationRole});}
  else if(act==='creation-role'&&game.phase==='creation'&&config.classes.some(c=>c.id===arg))creationRole=arg;
@@ -402,7 +413,7 @@ function action(act,arg){try{
  else if(act==='import')$('import').click();touch();renderMenu();if(act==='inspect-clothing')$('menu').querySelector('.item-detail button')?.focus();}catch(e){showError(e.message);}}
 $('menu').addEventListener('click',e=>{const b=e.target.closest('button[data-action]');if(b&&!b.disabled){if($('name'))b.focus({preventScroll:true});action(b.dataset.action,b.dataset.arg);}});$('camp-gate').onclick=()=>{if(game.phase==='camp'&&!overlay&&!game.station){game.moves.clear();game.target={x:540,y:215};}};$('verified').onclick=()=>action('verified');$('leaderboard').onclick=()=>action('leaderboard');$('menu').addEventListener('change',e=>{if(e.target.id==='board-month'){boardMonth=e.target.value;boardMonthExplicit=true;loadBoard();}});$('settings').onclick=()=>action('settings');$('account').onclick=()=>action('account');$('inventory').onclick=()=>action('inventory');$('help').onclick=()=>action('help');$('interact').onclick=()=>{game.interact();touch();};
 $('import').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>2e6)throw Error('Invalid progress file');const input=JSON.parse(await file.text());if(!adminTest&&input.adminTest)throw Error('Admin test progress cannot be imported into regular play');const next=migrate(input,config);pendingImport=next;overlay='import-confirm';touch();renderMenu();}catch(error){showError(error.message);}finally{e.target.value='';}};
-function moveFocus(dx,dy){const list=[...$('menu').querySelectorAll('button:not(:disabled),input:not(:disabled)')].filter(e=>e.offsetParent!==null);if(!list.length)return;const current=document.activeElement,index=list.indexOf(current);if(index<0){list[0].focus();return;}const p=current.getBoundingClientRect();let best=null,cost=Infinity;for(const item of list){if(item===current)continue;const q=item.getBoundingClientRect(),x=q.x+q.width/2-p.x-p.width/2,y=q.y+q.height/2-p.y-p.height/2,along=x*dx+y*dy,across=Math.abs(x*dy-y*dx);if(along>2&&along+across*3<cost){best=item;cost=along+across*3;}}(best||list[(index+(dx+dy>0?1:list.length-1))%list.length]).focus();document.activeElement.scrollIntoView({block:'nearest'});}
+function moveFocus(dx,dy){const list=[...$('menu').querySelectorAll('button:not(.window-close):not(:disabled),input:not(:disabled)')].filter(e=>e.offsetParent!==null);if(!list.length)return;const current=document.activeElement,index=list.indexOf(current);if(index<0){list[0].focus();return;}const p=current.getBoundingClientRect();let best=null,cost=Infinity;for(const item of list){if(item===current)continue;const q=item.getBoundingClientRect(),x=q.x+q.width/2-p.x-p.width/2,y=q.y+q.height/2-p.y-p.height/2,along=x*dx+y*dy,across=Math.abs(x*dy-y*dx);if(along>2&&along+across*3<cost){best=item;cost=along+across*3;}}(best||list[(index+(dx+dy>0?1:list.length-1))%list.length]).focus();document.activeElement.scrollIntoView({block:'nearest'});}
 const directions={w:'up',ArrowUp:'up',s:'down',ArrowDown:'down',a:'left',ArrowLeft:'left',d:'right',ArrowRight:'right'};
 const headerToggle=$('header-toggle'),headerActions=$('header-actions');
 const compactHeader=matchMedia('(max-width: 760px)');
@@ -427,7 +438,7 @@ document.addEventListener('keydown',e=>{
  if(key==='F11'){e.preventDefault();if(!e.repeat){setHeaderOpen(false);toggleFullscreen();}return;}
  if(key==='Escape'&&headerOpen()){e.preventDefault();setHeaderOpen(false);headerToggle.focus();return;}
  const headerButton=e.target.closest?.('header button');
- if(headerButton&&[' ','Enter'].includes(key))return;
+ if((headerButton||e.target.matches?.('.window-close'))&&[' ','Enter'].includes(key))return;
  if(headerOpen()&&key.toLowerCase()==='e'&&headerButton){e.preventDefault();if(!e.repeat)headerButton.click();return;}
  if(headerOpen()&&directions[key]){e.preventDefault();return;}
  if(e.target.closest?.('#touch-controls')&&[' ','Enter'].includes(key)&&$('sheet').hidden)return;if(typing&&key!=='Escape')return;if(key==='F10'){e.preventDefault();if(!e.repeat)action('settings');return;}if(key==='Escape'&&immersiveFallback){e.preventDefault();immersiveFallback=false;syncFullscreen();return;}if(key==='Escape'){e.preventDefault();if(!e.repeat){back();renderMenu();}return;}if(key==='?'&&!e.repeat){e.preventDefault();action('help');return;}
@@ -436,7 +447,7 @@ document.addEventListener('keydown',e=>{
  if(directions[key]&&game.phase==='camp'){e.preventDefault();openOnArrival=null;game.target=null;game.moves.add(directions[key]);}
  else if([' ','w','ArrowUp'].includes(key)&&game.phase==='running'){e.preventDefault();if(!e.repeat)game.jump();}
  else if(key.toLowerCase()==='f')game.jet=true;else if(key.toLowerCase()==='p'&&!e.repeat){game.pause();renderMenu();}else if(key.toLowerCase()==='b'&&!e.repeat){if(verified.active){verifiedTask(leaveVerified);return;}game.camp();renderMenu();}},true);
-document.addEventListener('keyup',e=>{const key=inputKey(e);if(e.target.closest?.('header button, #touch-controls')&&[' ','Enter'].includes(key))return;if(!$('sheet').hidden&&!e.target.matches?.('input,textarea,select')&&[' ','Enter'].includes(key))e.preventDefault();if(directions[key])game.moves.delete(directions[key]);if([' ','w','ArrowUp'].includes(key))game.release();if(key.toLowerCase()==='f')game.jet=false;},true);
+document.addEventListener('keyup',e=>{const key=inputKey(e);if(e.target.closest?.('header button, #touch-controls, .window-close')&&[' ','Enter'].includes(key))return;if(!$('sheet').hidden&&!e.target.matches?.('input,textarea,select')&&[' ','Enter'].includes(key))e.preventDefault();if(directions[key])game.moves.delete(directions[key]);if([' ','w','ArrowUp'].includes(key))game.release();if(key.toLowerCase()==='f')game.jet=false;},true);
 let lastCampTap=null,openOnArrival=null;
 $('scene').onpointerdown=e=>{
  if(!$('sheet').hidden)return;
