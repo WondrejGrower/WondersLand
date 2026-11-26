@@ -59,8 +59,11 @@ relevantní testy a docs/BALANCE.md. Kosmetika/FPS/PWA nevyžadují nový balanc
 
 Ověřené běhy mají vlastní serverový profil a serverovou simulaci vstupů,
 nikoli klientské skóre/import buildu. Zachovej historické komunitní výsledky
-jako read-only. SQLite Durable Object: MonthlyLeaderboard, binding LEADERBOARD,
-jméno monthly-v1. Persistentní ID nemaž/nepřejmenovávej bez migrace.
+jako read-only. Aktuální server se migruje na Supabase Edge Function `wondersland` a neveřejné
+schéma `wonderland_private`; postup je v docs/SUPABASE_SERVER.md. Původní
+SQLite Durable Object MonthlyLeaderboard / LEADERBOARD / monthly-v1 zachovej
+jako zmrazený archiv a úložiště podpisového tajemství proxy. Po aktivaci nikdy
+nezapínej fallback zápisů do staré DB. Persistentní ID nemaž/nepřejmenovávej.
 Server-verified není důkaz lidské identity ani placený ranked. Platby, vstupné
 1000 sats, custody a výplaty nejsou implementované a nepatří do běžného balancu.
 Admin /test musí ověřovat server; privátní capability/klíč/QR nepatří do Gitu/logů.
@@ -69,3 +72,16 @@ PWA: docs/PWA.md. Service worker ukládá pouze offline oznámení, nikdy API,
 privátní klíče, replay nebo starý herní shell s balancem. Instalace používá
 stejný webový kód; nevyžaduje samostatnou fyziku nebo C++ wrapper.
 Změna skoku, architektura a výsledky: docs/JUMP_FEEL.md a docs/WEB_PWA_TIMING.md.
+
+## Nostr: závazné pravidlo uživatele (26. 11. 2026)
+
+**NIKDY SE NESMÍ UKLÁDAT PRIVÁTNÍ KLÍČ UŽIVATELE (NSEC) NIKAM DO DAT.
+Jediné, co se může uložit, je NPUB a ostatní data nespojená s NSEC.**
+
+Nevyžaduj, nepřijímej ani nevytvářej NSEC uživatele ve WondersLandu. Zákaz
+platí i pro jiné zápisy klíče, seed a šifrované kopie; zahrnuje databázi,
+Auth metadata, Storage/Vault/secrets, prohlížečová úložiště, cookies, cache,
+URL, logy, analytiku, exporty, Git i zálohy. Přihlášení použije externí signer
+(NIP-07/NIP-46); aplikace obdrží veřejný klíč a podpis. Dočasné aplikační
+klíče spojení NIP-46 smějí být pouze v RAM, nikdy v persistentních datech.
+Plán: docs/NOSTR_AUTH_PLAN.md. Implementace přihlášení vyžaduje samostatný krok.

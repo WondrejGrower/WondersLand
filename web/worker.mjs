@@ -1,16 +1,21 @@
+import {supabaseProxy} from './supabase-proxy.mjs';
+import {migrationAuthorized} from './server-migration.mjs';
 import {adminRoute} from './admin-test.mjs';
 import balance from '../src/balance.json' with {type:'json'};
 import {readJson} from './limits.mjs';
 import {secure,allowed} from './security.mjs';
 export {MonthlyLeaderboard} from './leaderboard-worker.mjs';
+const bridgeKeys=new WeakMap();
+async function proxy(request,env,upstream){let key=bridgeKeys.get(env);if(!key){const reply=await env.LEADERBOARD.getByName('monthly-v1').fetch(new Request('https://internal.invalid/internal/bridge-key'));key=(await reply.json()).key;if(!key)return null;bridgeKeys.set(env,key);}return supabaseProxy(request,env.SUPABASE_API_URL,upstream,key);}
 const idPattern=/^\/api\/tx\/([a-f0-9]{64})\/status$/;
 const failure=(message,status=502,ttl=0)=>Response.json({error:message},{status,headers:{'Cache-Control':ttl?'public, max-age=0, s-maxage='+ttl:'no-store',...(status===429?{'Retry-After':'60'}:{})}});
 async function route(request,env,upstream,edgeCache){
  const url=new URL(request.url);
  if((url.protocol==='http:'&&['wondersland.online','www.wondersland.online'].includes(url.hostname))||url.hostname==='www.wondersland.online'){url.protocol='https:';url.hostname='wondersland.online';return Response.redirect(url.toString(),301);}
- if(url.pathname==='/health')return Response.json({application:'WondersLand [WL]',version:'0.3.3',balance:balance.balanceVersion});
+ if(url.pathname==='/health')return Response.json({application:'WondersLand [WL]',version:'0.3.3',balance:balance.balanceVersion,...(env.SUPABASE_API_URL?{backend:'supabase'}:{})});
  if(['/test','/test/','/api/admin-test/session','/api/admin-test/status'].includes(url.pathname)){if(!await allowed(request,env))return failure('Please try again shortly',429);return adminRoute(request,env);}
  if(!url.pathname.startsWith('/api/'))return env.ASSETS.fetch(request);
+ if(url.pathname==='/api/supabase-migration'){if(!env.LEADERBOARD||request.method!=='POST'||!await migrationAuthorized(request))return failure('Forbidden',403);return env.LEADERBOARD.getByName('monthly-v1').fetch(request);}
  if(!await allowed(request,env))return new Response('Please try again shortly',{status:429,headers:{'Retry-After':'60','Cache-Control':'no-store'}});
  if(/^\/api\/leaderboard(?:\/(?:start|finish))?$/.test(url.pathname)||/^\/api\/verified\/(?:profile|register|action|start|step|leaderboard)$/.test(url.pathname)){
   if(request.method==='POST'&&['/api/leaderboard/start','/api/leaderboard/finish'].includes(url.pathname))return Response.json({error:'Client-reported submissions are closed',acceptingSubmissions:false},{status:410,headers:{'Cache-Control':'no-store'}});
@@ -20,15 +25,16 @@ async function route(request,env,upstream,edgeCache){
    let body;try{body=await readJson(request,16384,{timeoutMs:5000});}catch(error){return failure('Invalid request body',error.message==='Response too large'?413:400);}
    const headers=new Headers(request.headers);headers.delete('content-length');request=new Request(request.url,{method:'POST',headers,body:JSON.stringify(body)});
   }
-  if(!env.LEADERBOARD)return failure('Leaderboard unavailable',503);
+  if(!env.LEADERBOARD&&!env.SUPABASE_API_URL)return failure('Leaderboard unavailable',503);
   const reading=request.method==='GET'&&['/api/leaderboard','/api/verified/leaderboard'].includes(url.pathname),month=url.searchParams.get('month')||new Date().toISOString().slice(0,7),metric=url.searchParams.get('metric')||'best';
   if(reading&&(!/^20\d\d-(0[1-9]|1[0-2])$/.test(month)||month>new Date().toISOString().slice(0,7)||!['best','total','attempts'].includes(metric)))return failure('Invalid month or ranking',400);
   const cacheKey=reading?new Request(url.origin+url.pathname+'?month='+month+'&metric='+metric+'&rules='+balance.balanceVersion):null;
   if(cacheKey&&edgeCache){const cached=await edgeCache.match(cacheKey);if(cached)return cached;}
-  try{const response=await env.LEADERBOARD.getByName('monthly-v1').fetch(request);if(reading&&response.ok){const headers=new Headers(response.headers);headers.set('Cache-Control','public, max-age=0, s-maxage=10');const out=new Response(response.body,{status:response.status,headers});if(edgeCache)await edgeCache.put(cacheKey,out.clone());return out;}return response;}catch{return failure('Leaderboard unavailable',503);}
+  try{const response=await(env.SUPABASE_API_URL?((await proxy(request,env,upstream))||env.LEADERBOARD.getByName('monthly-v1').fetch(request)):env.LEADERBOARD.getByName('monthly-v1').fetch(request));if(reading&&response.ok){const headers=new Headers(response.headers);headers.set('Cache-Control','public, max-age=0, s-maxage=10');const out=new Response(response.body,{status:response.status,headers});if(edgeCache)await edgeCache.put(cacheKey,out.clone());return out;}return response;}catch{return failure('Leaderboard unavailable',503);}
  }
  if(request.method!=='GET')return new Response('Method not allowed',{status:405,headers:{Allow:'GET'}});
  const match=url.pathname.match(idPattern),recent=url.pathname==='/api/mempool';
+ if(env.SUPABASE_API_URL&&(recent||match)){const remote=await proxy(request,env,upstream);if(remote)return remote;}
  if(!recent&&!match)return new Response('Not found',{status:404});
  const cacheKey=new Request(url.origin+url.pathname);if(edgeCache){const cached=await edgeCache.match(cacheKey);if(cached)return cached;}
  let out;

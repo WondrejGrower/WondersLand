@@ -68,5 +68,8 @@
   "dev": {
     "local_protocol": "https",
     "host": "wondersland.online"
+  },
+  "vars": {
+    "SUPABASE_API_URL": "https://semslmbkllxmnzmgeheo.supabase.co/functions/v1/wondersland"
   }
 }

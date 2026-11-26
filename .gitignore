@@ -12,3 +12,6 @@ dist/
 .env
 .env.*
 .dev.vars*
+
+supabase/.build/
+supabase/.temp/
