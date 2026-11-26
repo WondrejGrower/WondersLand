@@ -1,7 +1,7 @@
 import {validateProgress} from './progress-validation.mjs';
 import {descriptor} from './plant-visual.mjs';
 // Browser simulation and save adapter. One runtime for browser, installed PWA and verified server simulation.
-export const fresh = () => ({schemaVersion:5,character:{},inventory:[],equipment:{},coins:0,seeds:0,workshop:{},completed:[],research:[],milestones:[],owned:[],hands:false,boots:false,paidRuns:[],records:{},runs:0,lastClock:0,excluded:'',unlocked:[],announcements:[],bestDistance:0,totalDistance:0,recipes:[]});
+export const fresh = () => ({schemaVersion:5,progressionMode:'staged',discoveries:[],character:{},inventory:[],equipment:{},coins:0,seeds:0,workshop:{},completed:[],research:[],milestones:[],owned:[],hands:false,boots:false,paidRuns:[],records:{},runs:0,lastClock:0,excluded:'',unlocked:[],announcements:[],bestDistance:0,totalDistance:0,recipes:[]});
 export function outfit(config,selected={}){
  const equipment={};for(const [slot,id]of Object.entries(config.starterEquipment)){
   const candidate=Object.hasOwn(selected,slot)?selected[slot]:id;
@@ -15,11 +15,22 @@ function clothingMigration(data,config){
   const id=data.equipment[slot];equipment[slot]=data.inventory.includes(id)&&config.clothing.some(item=>item.id===id&&item.slot===slot)?id:null;
  }data.equipment=equipment;return data;
 }
+function eligible(data,rule){
+ return data.runs>=rule.runs&&data.totalDistance>=rule.total&&
+  (data.bestDistance>=rule.best||Boolean(rule.attributeLevel&&Object.values(data.workshop).some(level=>level>=rule.attributeLevel)));
+}
+function migrateUnlocks(data,input,config){
+ if(!input.progressionMode){
+  data.unlocked=[...new Set([...data.unlocked,...config.progression.filter(rule=>eligible(data,rule)).map(rule=>rule.id)])];
+ }
+ data.announcements=data.announcements.filter(id=>id!=='classes').slice(0,1);
+ return data;
+}
 export function migrate(input,config){
  validateProgress(input,config);
  if(!input||typeof input!=='object'||Array.isArray(input))throw Error('Unsupported save version. File preserved.');
- if(input.schemaVersion===5){const data={...fresh(),...structuredClone(input)};data.announcements=data.announcements.filter(id=>id!=='classes');return clothingMigration(data,config);}
- if(input.schemaVersion===4){const data={...fresh(),...structuredClone(input),schemaVersion:5};data.announcements=data.announcements.filter(id=>id!=='classes');if(data.character.name){data.equipment=outfit(config);data.inventory=Object.values(data.equipment).filter(Boolean);}return data;}
+ if(input.schemaVersion===5){const data={...fresh(),...structuredClone(input)};return clothingMigration(migrateUnlocks(data,input,config),config);}
+ if(input.schemaVersion===4){const data={...fresh(),...structuredClone(input),schemaVersion:5};data.announcements=data.announcements.filter(id=>id!=='classes');if(data.character.name){data.equipment=outfit(config);data.inventory=Object.values(data.equipment).filter(Boolean);}return migrateUnlocks(data,input,config);}
  if(!input.schemaVersion)return {...fresh(),legacyCoins:Math.max(0,Number(input.coins)||0),legacyBest:Number(input.best)||0};
  if(input.schemaVersion!==3)throw Error('Unsupported save version. File preserved.');
  const d={...fresh(),...structuredClone(input),schemaVersion:4};
@@ -55,12 +66,12 @@ export class Game {
  get earned(){return Math.floor((this.earnedMilli||0)/1000);}
  set earned(value){this.earnedMilli=Math.round(value*1000);}
  constructor(config,data=fresh(),save=()=>{}){this.c=config;this.p=migrate(data,config);this.saveAdapter=save;this.q=new Queue();this.phase=this.p.character.name?'camp':'creation';this.station='';this.notice='';this.time=0;this.distance=0;this.animation=0;this.campX=320;this.campY=235;this.moves=new Set();this.target=null;this.demo=false;this.replay=false;this.skills={};this.obstacles=[];this.coins=[];this.hit={};this.flying={};this.y=0;this.earned=0;this.rescues=0;this.fuel=3;this.seed=1;
- const old=this.p.activeRun;if(old?.id){this.runId=old.id;this.demo=false;this.replay=old.mode!=='live';this.time=old.seconds;this.distance=old.score;this.earned=old.coins;this.started=true;this.paid=false;this.settle();this.time=this.distance=this.earned=0;}this.updateResearch();}
+ const old=this.p.activeRun;if(old?.id){this.runId=old.id;this.demo=false;this.replay=old.mode!=='live';this.time=old.seconds;this.distance=old.score;this.earned=old.coins;this.runDrops=old.drops||[];this.runDiscoveries=old.discoveries||[];this.started=true;this.paid=false;this.settle();this.time=this.distance=this.earned=0;}this.updateResearch();}
  find(group,id){return this.c[group].find(x=>x.id===id)||{};}
- has(id){return this.p.unlocked.includes(id)||this.c.progression.some(r=>r.id===id&&this.p.runs>=r.runs&&this.p.totalDistance>=r.total&&(this.p.bestDistance>=r.best||(r.attributeLevel&&this.c.workshop.some(b=>(this.p.workshop[b.id]||0)>=r.attributeLevel))));}
+ has(id){return this.p.unlocked.includes(id);}
  persist(){this.saveAdapter(this.p);}
  transaction(action){const old=structuredClone(this.p);try{if(!action())return false;this.persist();return true;}catch(error){this.p=old;this.notice='Cannot save progress';throw error;}}
- create(name,appearance,selected={}){const role=appearance.class||'gardener';if(!name.trim()||this.p.character.name||!this.find('classes',role).id)return;const next={...appearance,name:name.trim().slice(0,24),class:role};try{validateProgress({schemaVersion:5,character:{...next,hairStyle:Math.max(0,Math.min(15,Math.trunc(Number(appearance.hairStyle)||0)))}},this.c);}catch{throw Error('Invalid character appearance');}this.transaction(()=>{this.p.character={...appearance,hairStyle:Math.max(0,Math.min(15,Math.trunc(Number(appearance.hairStyle)||0))),name:name.trim().slice(0,24),class:role};this.p.equipment=outfit(this.c,selected);this.p.inventory=Object.values(this.p.equipment).filter(Boolean);this.p.coins+=this.p.legacyCoins||0;delete this.p.legacyCoins;return true;});this.phase='camp';}
+ create(name,appearance){const role=appearance.class||'gardener';if(!name.trim()||this.p.character.name||!this.find('classes',role).id)return;const next={...appearance,name:name.trim().slice(0,24),class:role};try{validateProgress({schemaVersion:5,character:{...next,hairStyle:Math.max(0,Math.min(15,Math.trunc(Number(appearance.hairStyle)||0)))}},this.c);}catch{throw Error('Invalid character appearance');}this.transaction(()=>{this.p.character={...appearance,hairStyle:Math.max(0,Math.min(15,Math.trunc(Number(appearance.hairStyle)||0))),name:name.trim().slice(0,24),class:role};this.p.equipment=outfit(this.c,Object.fromEntries(Object.keys(this.c.starterEquipment).map(slot=>[slot,null])));this.p.inventory=[];this.p.coins+=this.p.legacyCoins||0;delete this.p.legacyCoins;return true;});this.phase='camp';}
  canMine(){return this.phase==='camp'&&!!this.p.character.name&&!this.replay&&!this.p.adminTest;}
  mineBalance(now=Date.now()){
   const mine=this.p.mine;
@@ -89,13 +100,15 @@ export class Game {
    return true;
   });
  }
- takeClothing(id){if(this.phase!=='camp')return false;return this.transaction(()=>{if(!this.find('clothing',id).id||this.p.inventory.includes(id))return false;this.p.inventory.push(id);return true;});}
  equipClothing(id){if(this.phase!=='camp')return false;return this.transaction(()=>{const item=this.find('clothing',id);if(!item.id||!this.p.inventory.includes(id))return false;this.p.equipment[item.slot]=this.p.equipment[item.slot]===id?null:id;return true;});}
- unlocks(){for(const r of this.c.progression)if(this.has(r.id)&&!this.p.unlocked.includes(r.id)){this.p.unlocked.push(r.id);this.p.announcements.push(r.id);}}
+ unlocks(){
+  const next=this.c.progression.find(rule=>!this.has(rule.id)&&eligible(this.p,rule));
+  if(next){this.p.unlocked.push(next.id);this.p.announcements=[next.id];}
+ }
  bonus(id){const b=this.find('workshop',id),n=Math.max(0,Math.min(50,this.p.workshop[id]||0))/50;return b.effect*(b.curve==='sqrt'?Math.sqrt(n):b.curve==='quadratic'?n*n:n);}
  jumpHeight(level=this.p.workshop.strength||0){const f=this.c.physics,cls=this.find('classes',this.p.character.class),b=this.find('workshop','strength'),n=Math.max(0,Math.min(50,level))/50;return Math.min(f.jumpCap,f.jumpVelocity**2/(2*f.heldGravity)*(1+(cls.jump||0)+b.effect*n*n+(this.p.boots?this.find('items','boots').jump:0)));}
  price(id){const b=this.find('workshop',id),n=this.p.workshop[id]||0;return n>=50?-1:Math.ceil(b.baseCost*b.growth**n);}
- buy(id){return this.transaction(()=>{const cost=this.price(id);if(!this.has(id)||cost<0||this.p.coins<cost)return false;this.p.coins-=cost;this.p.workshop[id]=(this.p.workshop[id]||0)+1;this.unlocks();return true;});}
+ buy(id){return this.transaction(()=>{const cost=this.price(id);if(!this.has(id)||cost<0||this.p.coins<cost)return false;this.p.coins-=cost;this.p.workshop[id]=(this.p.workshop[id]||0)+1;return true;});}
  craft(id){return this.transaction(()=>{const item=this.find('items',id);if(!this.has(item.feature)||this.p.owned.includes(id)||this.p.coins<item.cost||(item.recipe&&!this.p.recipes.includes(id)&&this.p.bestDistance<Number(item.recipe.split(':')[1])))return false;this.p.coins-=item.cost;this.p.owned.push(id);return true;});}
  equip(id){return this.transaction(()=>{if(!this.find('items',id).id||!this.p.owned.includes(id))return false;this.p[id]=!this.p[id];return true;});}
  // Compatibility entry point: a saved role can only change through reset and creation.
@@ -107,12 +120,29 @@ export class Game {
  stats(){const cls=this.find('classes',this.p.character.class),f=this.c.physics;const bonus=(cls.jump||0)+this.bonus('strength')+this.effect('leap')+(this.p.boots?this.find('items','boots').jump:0);const permanentHeight=Math.min(f.jumpCap,f.jumpVelocity**2/(2*f.heldGravity)*Math.max(0,1+bonus-this.effect('leap')));return {tapVelocity:f.tapVelocity*Math.sqrt(Math.max(0,1+bonus-this.bonus('strength'))),airCap:Math.min(f.airCap,permanentHeight*f.airHeightFactor),jumpVelocity:Math.min(f.jumpVelocity*Math.sqrt(Math.max(0,1+bonus)),Math.sqrt(2*f.heldGravity*f.jumpCap)),magnet:f.magnet*Math.min(f.magnetCap,1+(cls.magnet||0)+this.bonus('magnet')+this.effect('magnet')+(this.p.hands?this.find('items','hands').magnet:0)),economy:Math.min(this.c.run.maxEconomyBonus,(cls.coins||0)+this.bonus('yield')),buffer:f.buffer,timeScale:(1-this.bonus('agility'))*(1-this.effect('timeslow')),class:cls.id};}
  offers(count,synergy=false){let candidates=this.available().filter(s=>(this.skills[s.id]||0)<s.maxRank&&(this.skills[s.id]||Object.keys(this.skills).length<this.c.run.maxSkills)&&(s.id!=='shield'||this.rescuesGranted<this.c.physics.rescueCap));if(synergy){const tags=this.available().filter(s=>this.skills[s.id]).flatMap(s=>s.tags);const match=candidates.filter(s=>s.tags.some(t=>tags.includes(t)));if(match.length)candidates=match;}
  const out=[];while(candidates.length&&out.length<count){const s=candidates.splice(Math.floor(this.q.random()*candidates.length),1)[0],roll=this.q.random()*100,luck=this.bonus('luck')*100,w=this.c.rarityWeights;const rarity=roll<w[0]-luck?'common':roll<w[0]+w[1]-luck*.2?'rare':'epic';const gain=Math.min(this.c.rarityEffects[rarity],s.maxRank-(this.skills[s.id]||0));out.push({...s,rarity,gain,nextRank:(this.skills[s.id]||0)+gain});}return out.length?out:[{id:'coins',name:'Coin cache',gain:5}];}
- apply(offer){if(offer.id==='coins'){this.earnedMilli+=Math.round(1000*this.c.run.fallbackCoins*(1+this.stats().economy));return;}if(offer.id==='shield'&&!this.skills.shield)this.rescue();this.skills[offer.id]=offer.nextRank;this.trace.push({event:'skill',time:this.time,id:offer.id,rank:offer.nextRank});}
+ apply(offer){if(!this.demo&&!this.replay&&offer.id!=='coins'&&!this.runDiscoveries.includes(offer.id))this.runDiscoveries.push(offer.id);if(offer.id==='coins'){this.earnedMilli+=Math.round(1000*this.c.run.fallbackCoins*(1+this.stats().economy));return;}if(offer.id==='shield'&&!this.skills.shield)this.rescue();this.skills[offer.id]=offer.nextRank;this.trace.push({event:'skill',time:this.time,id:offer.id,rank:offer.nextRank});}
  rescue(){if(this.rescuesGranted<this.c.physics.rescueCap){this.rescues++;this.rescuesGranted++;}}
  receive(rows){this.q.receive(rows);if(this.phase==='connecting'&&this.q.cache.length)this.start(false);else if(this.phase==='waiting'&&this.q.pending.length&&this.q.used.size<10000){this.phase='countdown';this.countdown=3;}}
  startPractice(model='all'){if(model!=='all'&&!this.find('trainingModels',model).id)return false;this.start(true);this.practiceModel=model;this.choices=[];this.phase='running';this.started=true;return true;}
- start(demo=false,seed=Math.floor(Math.random()*2**32)){this.settle();this.moves.clear();this.target=null;this.station='';if(!demo&&!this.q.cache.length){this.phase='connecting';return;}this.demo=demo;this.practiceModel=null;this.runId=globalThis.crypto?.randomUUID?.()||'run-'+Date.now()+'-'+Math.random();this.paid=false;this.started=false;this.seed=seed;this.q.begin(seed);this.skills={};this.obstacles=[];this.coins=[];this.hit={};this.flying={};this.trace=[];this.y=this.velocity=this.distance=this.time=this.earned=this.spawn=this.buffer=this.invulnerable=this.checkpoint=0;this.landing=0;this.index=this.collected=this.rescues=this.rescuesGranted=this.pickups=0;this.nextUpgrade=this.c.run.upgradeEvery;this.fuel=this.c.physics.fuel;this.glide=0;this.airUsed=this.emergency=this.held=this.jet=false;for(const set of this.c.sets)if(set.requires.every(id=>this.p[id]))for(let i=0;i<set.rescues;i++)this.rescue();this.doubleCooldown=0;this.choices=this.c.startingSkills.filter(id=>this.available().some(s=>s.id===id)).map(id=>({...this.find('skills',id),rarity:'common',gain:1,nextRank:1}));this.phase='select';}
+ start(demo=false,seed=Math.floor(Math.random()*2**32)){this.settle();this.moves.clear();this.target=null;this.station='';if(!demo&&!this.q.cache.length){this.phase='connecting';return;}this.demo=demo;this.practiceModel=null;this.runId=globalThis.crypto?.randomUUID?.()||'run-'+Date.now()+'-'+Math.random();this.paid=false;this.started=false;this.seed=seed;this.q.begin(seed);this.skills={};this.obstacles=[];this.coins=[];this.hit={};this.flying={};this.trace=[];this.y=this.velocity=this.distance=this.time=this.earned=this.spawn=this.buffer=this.invulnerable=this.checkpoint=0;this.landing=0;this.index=this.collected=this.rescues=this.rescuesGranted=this.pickups=0;this.nextUpgrade=this.c.run.upgradeEvery;this.nextChoice=this.c.run.choiceEveryMetres;this.nextDrop=this.c.loot.firstDistance;this.lootSeed=(seed^0x9e3779b9)>>>0;this.runDrops=[];this.runDiscoveries=[];this.fuel=this.c.physics.fuel;this.glide=0;this.airUsed=this.emergency=this.held=this.jet=false;for(const set of this.c.sets)if(set.requires.every(id=>this.p[id]))for(let i=0;i<set.rescues;i++)this.rescue();this.doubleCooldown=0;this.choices=this.c.startingSkills.filter(id=>this.available().some(s=>s.id===id)).map(id=>({...this.find('skills',id),rarity:'common',gain:1,nextRank:1}));this.phase='select';}
  choose(i){if(this.phase!=='select'||!this.choices[i])return;this.apply(this.choices[i]);this.started=true;this.phase='running';this.saveCheckpoint();}
+ chooseUpgrade(index){
+  if(this.phase!=='upgrade'||!this.choices[index])return;
+  this.apply(this.choices[index]);this.choices=[];this.phase='running';this.saveCheckpoint();
+ }
+ lootRoll(){this.lootSeed=(Math.imul(this.lootSeed,1664525)+1013904223)>>>0;return this.lootSeed/2**32;}
+ checkClothingDrop(){
+  if(this.demo||this.replay||this.runDrops.length||this.distance<this.nextDrop)return;
+  const loot=this.c.loot;
+  this.nextDrop+=loot.interval;
+  const full=Object.keys(this.c.starterEquipment).every(slot=>this.c.clothing.some(item=>item.slot===slot&&this.p.inventory.includes(item.id)));
+  if(this.lootRoll()>=(full?loot.fullChance:loot.earlyChance))return;
+  const rarity=this.lootRoll(),available=this.c.clothing.filter(item=>!this.p.inventory.includes(item.id));
+  const pool=available.filter(item=>rarity<loot.legendaryChance?loot.legendary.includes(item.id):rarity<loot.legendaryChance+loot.rareChance?loot.rare.includes(item.id):!loot.rare.includes(item.id)&&!loot.legendary.includes(item.id));
+  if(!pool.length)return;
+  this.runDrops.push(pool[Math.floor(this.lootRoll()*pool.length)].id);
+  this.saveCheckpoint();
+ }
  jump(){if(this.phase!=='running')return;this.held=true;this.trace.push({event:'jump',time:this.time});const f=this.c.physics;if(this.y<=.01){this.velocity=this.stats().jumpVelocity;this.airUsed=false;this.glide=this.effect('glider');}else if(!this.airUsed&&((this.skills.double&&this.doubleCooldown<=0)||(this.p.character.class==='explorer'&&!this.emergency))){const ready=this.skills.double&&this.doubleCooldown<=0;this.velocity=Math.sqrt(2*f.heldGravity*Math.max(0,this.stats().airCap-this.y))*(ready?this.effect('double'):.65);this.airUsed=true;if(ready)this.doubleCooldown=this.find('skills','double').cooldown;else this.emergency=true;}else this.buffer=this.stats().buffer;}
  release(){this.held=false;if(this.phase==='running'&&this.velocity>this.stats().tapVelocity)this.velocity=this.stats().tapVelocity;}
  pause(){if(this.phase==='paused'){this.phase=this.resume;if(this.phase==='waiting'&&this.q.pending.length){this.phase='countdown';this.countdown=3;}}else if(['running','waiting','countdown'].includes(this.phase)){this.resume=this.phase;this.phase='paused';this.held=this.jet=false;}}
@@ -125,13 +155,25 @@ export class Game {
  const f=this.c.physics,s=this.stats();dt*=s.timeScale;this.doubleCooldown=Math.max(0,(this.doubleCooldown||0)-dt);this.landing=Math.max(0,(this.landing||0)-dt);this.time+=dt;this.animation+=dt;this.invulnerable=Math.max(0,this.invulnerable-dt);this.buffer=Math.max(0,this.buffer-dt);const speed=f.speed*Math.min(f.maxSpeedFactor,1+this.time/1200);this.distance+=speed*dt/10;this.spawn-=dt;if(this.spawn<=0)this.spawnPlant();if(this.y<=.01&&this.buffer>0){this.buffer=0;const held=this.held;this.jump();this.held=held;}
  let gravity=this.velocity>0?f.heldGravity:f.gravity;if(this.held&&this.velocity<0&&this.glide>0){gravity=f.gliderGravity;this.glide=Math.max(0,this.glide-dt);}if(this.jet&&this.skills.jetpack&&this.fuel>0){this.fuel=Math.max(0,this.fuel-dt);this.velocity=Math.min(this.velocity+f.jetAcceleration*dt,Math.sqrt(2*f.heldGravity*Math.max(0,this.stats().airCap-this.y)));gravity=f.heldGravity;}
  const wasAirborne=this.y>0;this.velocity-=gravity*dt;this.y=Math.max(0,this.y+this.velocity*dt);if(!this.y){if(wasAirborne)this.landing=.16;this.velocity=0;this.airUsed=false;this.glide=this.effect('glider');}
- for(const p of this.obstacles)p.x-=speed*dt;for(const coin of this.coins){coin.x-=speed*dt;if(!coin.taken&&Math.hypot(coin.x-108,coin.y-(this.y+18))<s.magnet){coin.taken=true;this.collected++;this.earnedMilli+=Math.round(1000*(1+Math.min(this.c.run.maxEconomyBonus,s.economy+(this.y>3?this.effect('aircoins'):0))));}}
- if(!this.practiceModel&&this.has('flying')&&this.time>=this.nextUpgrade&&!this.flying.id){this.flying={...this.offers(1,(this.pickups+1)%3===0)[0],age:-2,x:600,y:35};this.nextUpgrade+=this.c.run.upgradeEvery;}
- if(this.flying.id){const fl=this.flying,window=this.c.run.upgradeWindow+(s.class==='collector'?1:0);fl.age+=dt;fl.x=fl.age<0?132-fl.age*234:132-48*fl.age/window;fl.blocked=this.obstacles.some(p=>p.x<155&&p.x+p.w>80&&p.h>35);if(fl.blocked&&fl.age>=0)fl.age=-.05;else if(fl.age>=0&&Math.hypot(fl.x-108,35-(this.y+18))<25){this.apply(fl);this.pickups++;this.flying={};}else if(fl.age>window)this.flying={};}
+ for(const p of this.obstacles)p.x-=speed*dt;for(const coin of this.coins){coin.x-=speed*dt;if(!coin.taken&&Math.hypot(coin.x-108,coin.y-(this.y+18))<s.magnet){coin.taken=true;this.collected++;this.earnedMilli+=Math.round(1000*(1+Math.min(this.c.run.maxEconomyBonus,s.economy+this.effect('bitcoin')+(this.y>3?this.effect('aircoins'):0))));}}
+ if(!this.demo&&this.has('flying')&&this.time>=this.nextUpgrade){
+  this.nextUpgrade+=this.c.run.upgradeEvery;
+  if(!this.skills.bitcoin&&!this.flying.id&&this.lootRoll()<this.bonus('luck')){
+   this.flying={...this.find('skills','bitcoin'),nextRank:1,age:-2,x:600,y:35};
+  }
+ }
+ if(this.flying.id){const fl=this.flying,window=this.c.run.upgradeWindow+(s.class==='collector'?1:0);fl.age+=dt;fl.x=fl.age<0?132-fl.age*234:132-48*fl.age/window;fl.blocked=this.obstacles.some(p=>p.x<155&&p.x+p.w>80&&p.h>35);if(fl.blocked&&fl.age>=0)fl.age=-.05;else if(fl.age>=0&&Math.hypot(fl.x-108,35-(this.y+18))<25){this.apply(fl);this.pickups++;this.flying={};this.saveCheckpoint();}else if(fl.age>window)this.flying={};}
  for(const p of this.obstacles)if(!p.resolved&&p.x+p.w-3>100&&p.x+3<115&&this.y+2<p.h-2){if(this.invulnerable>0)continue;if(this.rescues){this.rescues--;p.resolved=true;this.invulnerable=f.invulnerability;}else{this.hit={...p};this.phase='over';this.settle();break;}}
+ if(this.phase==='running'){
+  this.checkClothingDrop();
+  if(!this.demo&&this.distance>=this.nextChoice){
+   this.nextChoice+=this.c.run.choiceEveryMetres;this.choices=this.offers(3);
+   this.phase='upgrade';this.held=this.jet=false;
+  }
+ }
  this.obstacles=this.obstacles.filter(p=>p.x>=-110);this.coins=this.coins.filter(c=>c.x>=-40);if(this.time-this.checkpoint>=this.c.run.checkpointEvery){this.saveCheckpoint();this.checkpoint=this.time;}}
- saveCheckpoint(){if(this.demo||this.paid||!this.started||!this.runId)return;this.p.activeRun={id:this.runId,tier:1,seconds:this.time,coins:Math.floor(this.earned),score:Math.floor(this.distance),class:this.p.character.class,mode:this.replay?'replay:web':'live'};this.persist();}
- settle(){if(!this.runId||this.paid)return;this.paid=true;if(!this.started||this.demo)return;if(this.p.paidRuns.includes(this.runId))return;const saved=this.transaction(()=>{this.p.paidRuns=[...this.p.paidRuns,this.runId].slice(-128);const score=Math.floor(this.distance),key=this.c.balanceVersion+':'+(this.replay?'replay:web':'live')+':T1:'+this.p.character.class;this.p.records[key]=Math.max(this.p.records[key]||0,score);if(!this.replay){this.p.coins+=Math.floor(this.earned);this.p.runs++;this.p.bestDistance=Math.max(this.p.bestDistance,score);this.p.totalDistance+=score;for(const m of this.c.milestones){const id='distance:'+m.meters;if(score>=m.meters&&!this.p.milestones.includes(id)){this.p.milestones.push(id);this.p.coins+=m.coins;this.p.seeds+=m.seeds;}}this.unlocks();}this.p.activeRun={};return true;});if(saved&&!this.replay){try{this.onLiveRunFinished?.({runId:this.runId,name:this.p.character.name,role:this.p.character.class,rules:this.c.balanceVersion,score:Math.floor(this.distance),seconds:this.time,mode:'live'});}catch{}}}
+ saveCheckpoint(){if(this.demo||this.paid||!this.started||!this.runId)return;this.p.activeRun={id:this.runId,tier:1,seconds:this.time,coins:Math.floor(this.earned),score:Math.floor(this.distance),class:this.p.character.class,drops:this.runDrops,discoveries:this.runDiscoveries,mode:this.replay?'replay:web':'live'};this.persist();}
+ settle(){if(!this.runId||this.paid)return;this.paid=true;if(!this.started||this.demo)return;if(this.p.paidRuns.includes(this.runId))return;const saved=this.transaction(()=>{this.p.paidRuns=[...this.p.paidRuns,this.runId].slice(-128);const score=Math.floor(this.distance),key=this.c.balanceVersion+':'+(this.replay?'replay:web':'live')+':T1:'+this.p.character.class;this.p.records[key]=Math.max(this.p.records[key]||0,score);if(!this.replay){this.p.coins+=Math.floor(this.earned);this.p.runs++;this.p.inventory=[...new Set([...this.p.inventory,...(this.runDrops||[])])];this.p.discoveries=[...new Set([...this.p.discoveries,...(this.runDiscoveries||[])])];this.p.bestDistance=Math.max(this.p.bestDistance,score);this.p.totalDistance+=score;for(const m of this.c.milestones){const id='distance:'+m.meters;if(score>=m.meters&&!this.p.milestones.includes(id)){this.p.milestones.push(id);this.p.coins+=m.coins;this.p.seeds+=m.seeds;}}this.unlocks();}this.p.activeRun={};return true;});if(saved&&!this.replay){try{this.onLiveRunFinished?.({runId:this.runId,name:this.p.character.name,role:this.p.character.class,rules:this.c.balanceVersion,score:Math.floor(this.distance),seconds:this.time,mode:'live'});}catch{}}}
  camp(){this.settle();this.phase='camp';this.station='';this.moves.clear();this.target=null;}
  dismiss(){this.p.announcements.shift();this.persist();}
  nearby(){return [{id:'home',x:270,y:190},{id:'mine',x:365,y:307},{id:'portal',x:540,y:215},{id:'training',x:465,y:290},{id:'forge',x:112,y:225},{id:'wardrobe',x:390,y:195},{id:'library',x:175,y:300}].find(p=>(['home','portal'].includes(p.id)||(p.id==='mine'&&this.canMine())||this.has(p.id==='library'?'garden':p.id))&&Math.hypot(this.campX-p.x,this.campY-p.y)<43)?.id||'';}

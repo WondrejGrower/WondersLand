@@ -1,5 +1,15 @@
 {
-  "balanceVersion": "wl-0.3-journey-9",
+  "balanceVersion": "wl-0.3-journey-10",
+  "loot": {
+    "firstDistance": 30,
+    "interval": 150,
+    "earlyChance": 0.45,
+    "fullChance": 0.04,
+    "rareChance": 0.001,
+    "legendaryChance": 0.0001,
+    "rare": ["torso_rust_coat", "head_forest_hood"],
+    "legendary": ["torso_slate_cape"]
+  },
   "mine": {
     "storageHours": 8,
     "tiers": [
@@ -299,7 +309,8 @@
         "movement"
       ],
       "slot": "run-skill"
-    }
+    },
+    { "id": "bitcoin", "name": "Bitcoin Spark", "maxRank": 1, "effects": [0.3], "unlock": "luck-pickup", "tags": ["collection"] }
   ],
   "items": [
     {
@@ -385,6 +396,7 @@
   ],
   "run": {
     "upgradeEvery": 30,
+    "choiceEveryMetres": 1000,
     "upgradeWindow": 3,
     "checkpointEvery": 5,
     "maxSkills": 6,

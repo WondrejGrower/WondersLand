@@ -1,6 +1,6 @@
 # How WondersLand balance works
 
-Current rules: **`wl-0.3-journey-9`**, application 0.3.3. Journey-8 strengthens Double Jump
+Current rules: **`wl-0.3-journey-10`**, application 0.3.3. Journey-8 strengthens Double Jump
 and shortens its cooldown, as introduced in Journey-8. Journey-9 adds the personal Block Mine. Historical briefs and earlier playtest requests may
 describe older rules.
 The executable source of values is [src/balance.json](../src/balance.json).
@@ -173,15 +173,30 @@ real TXIDs, random skill pickups or permanent rewards; current attributes and
 equipment apply. See [timing data](jump-progression.json) and
 [playability verification](FULLSCREEN_MONTHLY.md).
 
-All roles are available at character creation, then remain permanent until reset.
-Training/Strength open after one completed live run, including a zero-metre
-attempt. Other stats and features use the `progression` entries' completed runs,
-total metres and best single run separately. Unlocks already earned remain.
-Flying upgrades become available at 250 cumulative live metres and appear every
-30 active game seconds, with up to six skill types per run. Ordinary clothes
-are cosmetic; Diamond Hands/Boots and their set are separate gameplay equipment.
-Collected coins are game currency, not bitcoin. Training and recorded runs do
-not increase permanent coins, seeds, progression or live records.
+All roles are available at character creation and stay fixed until reset.
+In Journey-10 each completed live run unlocks at most one eligible feature, in
+configuration order. Further eligible unlocks follow on subsequent completed
+live runs. Training is the first unlock and Strength can follow on the next run.
+Previously unlocked features and old clothing remain available.
+
+Every 1,000 metres in a live expedition, game time pauses for a choice of up to
+three skills. After Flying upgrades unlock, Luck gives a chance every 30 active
+seconds to find a spinning Bitcoin Spark. The chance is 0–10% based on Luck.
+Collecting it adds 30 percentage points to the value of picked-up coins for the
+current expedition, within the normal economy cap. The Skill Book at Hearth &
+home lists skills collected in completed live runs and describes each rank.
+
+New characters start in base linen with an empty clothing inventory. A live run
+rolls for one clothing reward at 30 m, then every 150 m until it finds one.
+The chance is 45% before owning something for all six slots and 4% afterward.
+Among successful rolls the rare tier is 0.1% and the legendary tier 0.01%.
+Each roll only draws from unowned items of its rolled tier. Clothing is
+cosmetic. Diamond equipment keeps its separate gameplay effects.
+Training and recorded runs do not grant persistent coins, clothes or discoveries.
+
+Registered ranked characters may opt into the character directory. Visitors
+see the published character's clothing inventory, equipped pieces and unlocked
+camp stations. A visit is a read-only camp preview and never awards progress.
 
 ## Block Mine
 

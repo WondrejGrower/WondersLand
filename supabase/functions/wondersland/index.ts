@@ -30,7 +30,7 @@ Deno.serve(async request=>{
   if(!path.startsWith('/api/')||path==='/api/supabase-migration'||path.startsWith('/api/admin-test/'))return json({error:'Not found'},404);
   const publicFeed=path==='/api/mempool'||/^\/api\/tx\/[a-f0-9]{64}\/status$/.test(path);
   if(publicFeed)return handle(req,{},fetch,null);
-  if(!/^\/api\/(?:leaderboard(?:\/(?:start|finish))?|verified\/(?:profile|register|action|start|step|leaderboard))$/.test(path))return json({error:'Not found'},404);
+  if(!/^\/api\/(?:leaderboard(?:\/(?:start|finish))?|verified\/(?:profile|register|action|start|step|leaderboard|directory))$/.test(path))return json({error:'Not found'},404);
   if(path.startsWith('/api/verified/')&&path!=='/api/verified/leaderboard'&&!/^Bearer [a-f0-9]{64}$/.test(req.headers.get('authorization')||''))return json({error:'Missing player key'},401);
   const result=await withServerTransaction(client,async sql=>{
    const [state]=await sql.unsafe('SELECT complete,bridge_key FROM migration_state WHERE id=1');

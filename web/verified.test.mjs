@@ -11,3 +11,38 @@ test('predicted client reconciles inputs during in-flight acknowledgements and s
 test('concurrent purchases use fresh server state and cannot overwrite each other',async()=>{const f=fixture();await register(f);const row=f.board.rows('SELECT * FROM verified_players')[0],p=JSON.parse(row.profile);p.coins=200;p.runs=1;p.unlocked=['training','strength'];f.board.sql.exec('UPDATE verified_players SET profile=? WHERE owner=?',JSON.stringify(p),row.owner);const results=await Promise.all([post(f,'action',{action:'buy',id:'strength'}),post(f,'action',{action:'buy',id:'strength'})]);assert.ok(results.every(r=>r.status===200));const saved=JSON.parse(f.board.rows('SELECT profile FROM verified_players')[0].profile);assert.equal(saved.workshop.strength,2);assert.equal(saved.coins,93);f.db.close();});
 test('in-flight simulation slots are bounded and expired snapshots settle before new runs grow storage',async()=>{const f=fixture();for(const key of ['a','b','c','d','e'])await register(f,key);let release;const ready=new Promise(resolve=>release=resolve);f.board.upstream=async()=>{await ready;return Response.json([{txid:'f'.repeat(64),value:'0'}]);};const starts=['a','b','c','d','e'].map(key=>post(f,'start',{skill:'leap'},key));await new Promise(r=>setTimeout(r,5));release();const statuses=(await Promise.all(starts)).map(r=>r.status);assert.equal(statuses.filter(s=>s===200).length,2);assert.equal(statuses.filter(s=>s===503).length,3);f.advance(7200001);assert.equal((await post(f,'start',{skill:'leap'},'e')).status,200);assert.equal(f.board.rows('SELECT count(*) AS n FROM verified_runs WHERE used=0')[0].n,1);assert.equal(f.board.rows('SELECT sum(runs) AS n FROM verified_scores')[0].n,2);assert.equal(f.board.verifiedLocks.size,0);f.db.close();});
 test('live-source outages do not block simulation while an approved queue reserve exists',async()=>{const f=fixture();await register(f);const started=await(await post(f,'start',{skill:'leap'})).json();f.advance(6000);let release;const waiting=new Promise(resolve=>release=resolve);f.board.upstream=async()=>{await waiting;throw Error('offline');};const response=await post(f,'step',{runId:started.runId,sequence:1,frames:120,events:[]});assert.equal(response.status,200);assert.ok((await response.json()).check.distance>0);release();await new Promise(r=>setTimeout(r,1));f.db.close();});
+
+test('only published registered characters appear in the read-only directory',async()=>{
+ const f=fixture();
+ try{
+  const profile=await(await register(f)).json();
+  await register(f,'b');
+  const get=(suffix,key='b')=>f.fetcher('/api/verified/directory'+suffix,{headers:auth(key)});
+  assert.deepEqual((await(await get('')).json()).characters,[]);
+  assert.equal((await get('?id='+profile.playerId)).status,404);
+  assert.equal((await post(f,'action',{action:'publish-character',id:'on'})).status,200);
+  const directory=await(await get('')).json();
+  assert.deepEqual(directory.characters,[{playerId:profile.playerId,name:profile.profile.character.name,class:'gardener'}]);
+  const result=await(await get('?id='+profile.playerId)).json();
+  assert.deepEqual(Object.keys(result).sort(),['character','equipment','inventory','playerId','unlocked'].sort());
+  assert.equal((await get('?id='+profile.playerId,'d')).status,409);
+  assert.equal((await post(f,'action',{action:'publish-character',id:'off'})).status,200);
+  assert.equal((await get('?id='+profile.playerId)).status,404);
+ }finally{f.db.close();}
+});
+
+test('a pause on a frame boundary is sent with the next complete simulation step',async()=>{
+ const {VerifiedClient}=await import('./verified-client.mjs');
+ const {STEP}=await import('./verified-simulation.mjs');
+ const f=fixture();await register(f);
+ const client=new VerifiedClient(config,()=> 'a'.repeat(64));
+ client.request=async(path,body)=>{
+  const r=await post(f,path,body),data=await r.json();if(!r.ok)throw Error(data.error);return data;
+ };
+ try{
+  await client.start('leap');f.advance(1000);client.tick(STEP);
+  client.game.pause();await client.flush();
+  assert.equal(client.game.phase,'paused');assert.equal(client.failed,false);
+  client.tick(STEP);await client.flush();assert.equal(client.failed,false);
+ }finally{f.db.close();}
+});

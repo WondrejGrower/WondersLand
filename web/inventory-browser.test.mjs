@@ -12,19 +12,29 @@ try{
  assert.equal(await hair.evaluate(button=>document.activeElement===button),true);
  assert.equal(await page.locator('#name').inputValue(),'Willow');
  const hashes=new Set();for(let i=0;i<16;i++){hashes.add(await page.locator('#portrait').evaluate(c=>c.toDataURL()));await page.locator('[data-action=appearance][data-arg=hairStyle]').click();}assert.equal(hashes.size,16);
- await page.locator('[data-action=starter-outfit][data-arg=torso]').click();
- await page.screenshot({path:'docs/browser/inventory-creation-cs.png'});await page.locator('[data-action=create]').click();await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
+ await page.screenshot({path:'docs/browser/inventory-creation-cs.png'});
+ await page.locator('[data-action=create]').click();await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
  const save=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')));
- assert.equal((await save()).inventory.length,5);assert.equal((await save()).equipment.torso,'torso_work_apron');
- await page.locator('#inventory').click();const portrait=()=>page.locator('#portrait').evaluate(c=>c.toDataURL());const dressed=await portrait();
- await page.locator('[data-action=inspect-clothing][data-arg=feet_brown_leather_boots]').last().click();await page.keyboard.press('e');assert.equal((await save()).equipment.feet,null);assert.notEqual(await portrait(),dressed);
- await page.locator('[data-action=inspect-clothing][data-arg=hands_leather_work_gloves]').last().click();await page.keyboard.press('e');assert.equal((await save()).equipment.hands,null);assert.equal((await save()).hands,false);
- await page.locator('[data-action=inspect-clothing][data-arg=torso_rust_coat]').click();await page.keyboard.press('e');assert.equal((await save()).inventory.filter(id=>id==='torso_rust_coat').length,1);await page.keyboard.press('e');assert.equal((await save()).equipment.torso,'torso_rust_coat');
- assert.ok((await save()).inventory.includes('torso_work_apron'));
+ assert.deepEqual((await save()).inventory,[]);assert.equal((await save()).equipment.torso,null);
+ await page.locator('#inventory').click();
+ assert.equal(await page.locator('.empty-gear').count(),14);
+ await page.evaluate(()=>{
+  const progress=JSON.parse(localStorage.getItem('wl-progress'));
+  progress.inventory=['torso_rust_coat','head_straw_hat'];
+  progress.discoveries=['leap'];
+  localStorage.setItem('wl-progress',JSON.stringify(progress));
+ });
+ await page.reload();await page.waitForFunction(()=>document.body.dataset.ready==='true');
+ await page.locator('#inventory').click();
+ await page.locator('[data-action=inspect-clothing][data-arg=torso_rust_coat]').click();
+ await page.keyboard.press('e');assert.equal((await save()).equipment.torso,'torso_rust_coat');
  await page.screenshot({path:'docs/browser/inventory-cs.png'});
- await page.reload();await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.locator('#inventory').click();assert.equal((await save()).equipment.torso,'torso_rust_coat');assert.equal((await save()).equipment.feet,null);assert.equal((await save()).inventory.length,6);
- await page.keyboard.press('Escape');await page.keyboard.press('F10');await page.locator('[data-action=language][data-arg=en]').click();await page.keyboard.press('Escape');await page.locator('#inventory').click();assert.equal(await page.locator('h1').textContent(),'Inventory');await page.screenshot({path:'docs/browser/inventory-en.png'});
- await page.setViewportSize({width:390,height:700});await page.locator('[data-action=inspect-clothing][data-arg=head_straw_hat]').last().click();await page.locator('[data-action=take-clothing]').tap();await page.locator('[data-action=equip-clothing]').click();assert.equal((await save()).equipment.head,'head_straw_hat');
+ await page.keyboard.press('Escape');await page.keyboard.press('F10');await page.locator('[data-action=language][data-arg=en]').click();await page.keyboard.press('Escape');
+ await page.locator('#inventory').click();assert.equal(await page.locator('h1').textContent(),'Inventory');
+ await page.screenshot({path:'docs/browser/inventory-en.png'});
+ await page.setViewportSize({width:390,height:700});
+ await page.locator('[data-action=inspect-clothing][data-arg=head_straw_hat]').click();await page.locator('[data-action=equip-clothing]').click();
+ assert.equal((await save()).equipment.head,'head_straw_hat');
  assert.equal(await page.evaluate(()=>document.querySelector('#menu').scrollWidth<=document.querySelector('#menu').clientWidth),true);await page.screenshot({path:'docs/browser/inventory-mobile.png'});
  // Explicit export/import uses the same versioned save without duplicating items.
  await page.keyboard.press('Escape');await page.keyboard.press('F10');const before=await save();await page.locator('[data-action=import]').click();await page.setInputFiles('#import',{name:'progress.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(before))});await page.locator('[data-action=import-apply]').click();assert.deepEqual((await save()).inventory,before.inventory);
@@ -40,5 +50,5 @@ try{
  assert.equal(await page.locator('#error').isVisible(),false);assert.deepEqual(errors,[]);
  // Render the shared art directly for the visual verification contact sheet.
  await page.setViewportSize({width:1200,height:900});await page.evaluate(async()=>{const {character}=await import('/pixels.mjs');const cfg=await(await fetch('/balance.json')).json();const canvas=document.createElement('canvas');canvas.id='contact';canvas.width=1200;canvas.height=900;canvas.style='position:fixed;inset:0;z-index:50;width:1200px;height:900px';document.body.append(canvas);const ctx=canvas.getContext('2d');ctx.fillStyle='#20332d';ctx.fillRect(0,0,1200,900);for(let i=0;i<28;i++){ctx.save();ctx.translate((i%8)*150+25,Math.floor(i/8)*220+20);ctx.scale(4,4);character(ctx,0,0,{hair:'#5e3936',skin:'#dfaf87',hairStyle:i<16?i:0},i%6,false,false,i<16?'idle':i<22?'run':['idle','idle','jump','fall','land','hit'][i-22],cfg.starterEquipment);ctx.restore();}});await page.locator('#contact').screenshot({path:'docs/browser/character-poses.png'});
- console.log('Inventory Chromium checks passed: 16 hairstyles, starter choice, equip/unequip, free basics, ownership, reload, native v4 migration, export/import/reset, Czech/English and narrow viewport.');
+ console.log('Inventory Chromium checks passed: 16 hairstyles, empty starter inventory, gear slots, equipping found clothes, ownership, reload, native v4 migration, export/import/reset, Czech/English and narrow viewport.');
 }finally{await browser.close();await new Promise(r=>host.close(r));}

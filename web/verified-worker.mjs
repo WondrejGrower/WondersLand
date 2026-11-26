@@ -32,6 +32,26 @@ async function verifiedInner(b,request){try{
  if(!(await b.rate('verified:'+owner,now,90)))throw new Invalid('Please try again shortly',429);
  let player=(await b.rows('SELECT * FROM verified_players WHERE owner=?',owner))[0];
  if(request.method==='GET'&&url.pathname==='/api/verified/profile'){if(!player)return response({registered:false});const g=new Game(balance,JSON.parse(player.profile));return response({registered:true,playerId:player.public_id,profile:(await saveProfile(b,owner,g.p,now)),interruptedRun:!!(await b.rows('SELECT id FROM verified_runs WHERE owner=? AND used=0',owner)).length});}
+ if(request.method==='GET'&&url.pathname==='/api/verified/directory'){
+  if(!player)throw new Invalid('Create a server profile first',409);
+  const id=url.searchParams.get('id'),after=url.searchParams.get('after')||'';
+  if((id!==null&&!/^[a-f0-9]{32}$/.test(id))||(after&&!/^[a-f0-9]{32}$/.test(after)))throw new Invalid('Invalid player ID');
+  if(id){
+   const row=(await b.rows('SELECT public_id,profile FROM verified_players WHERE public_id=?',id))[0];
+   const profile=row&&JSON.parse(row.profile);
+   if(!profile?.publicCharacter)throw new Invalid('Character is unavailable',404);
+   const g=new Game(balance,{...profile,activeRun:{}}),p=g.p;
+   const {name,hair,hairStyle,skin,shirt}=p.character;
+   return response({playerId:row.public_id,character:{name,class:p.character.class,hair,hairStyle,skin,shirt},inventory:p.inventory,equipment:p.equipment,unlocked:p.unlocked});
+  }
+  const rows=await b.rows('SELECT public_id,profile FROM verified_players WHERE public_id>? ORDER BY public_id LIMIT 51',after);
+  const scanned=rows.slice(0,50),characters=[];
+  for(const row of scanned){
+   const p=JSON.parse(row.profile);
+   if(p.publicCharacter)characters.push({playerId:row.public_id,name:p.character.name,class:p.character.class});
+  }
+  return response({characters,next:rows.length>50?scanned.at(-1).public_id:null});
+ }
  if(request.method!=='POST'||!['/api/verified/register','/api/verified/action','/api/verified/start','/api/verified/step'].includes(url.pathname))throw new Invalid('Method not allowed',405);
  if(request.headers.get('origin')&&request.headers.get('origin')!==url.origin)throw new Invalid('Origin not allowed',403);
  if(!request.headers.get('content-type')?.startsWith('application/json'))throw new Invalid('JSON required',415);
@@ -45,7 +65,10 @@ async function verifiedInner(b,request){try{
  const current=(await b.rows('SELECT * FROM verified_runs WHERE owner=?',owner))[0];
  if(url.pathname.endsWith('/action'))return await b.transaction(async()=>{const player=(await b.rows('SELECT * FROM verified_players WHERE owner=?',owner))[0],current=(await b.rows('SELECT * FROM verified_runs WHERE owner=?',owner))[0];
   if(data.action==='finish'&&current&&!current.used){const stored=JSON.parse(current.snapshot);if(stored.version!=='verified-1:'+balance.balanceVersion){(await b.sql.exec("UPDATE verified_runs SET used=1,snapshot='{}',last_hash=NULL WHERE owner=?",owner));return response({registered:true,playerId:player.public_id,profile:JSON.parse(player.profile),interruptedRun:false});}const g=restore(balance,stored);g.camp();(await finish(b,current,g,player,Math.min(now,current.expires)));(await b.sql.exec("UPDATE verified_runs SET used=1,snapshot='{}',last_hash=NULL WHERE owner=?",owner));return response({registered:true,playerId:player.public_id,profile:JSON.parse((await b.rows('SELECT profile FROM verified_players WHERE owner=?',owner))[0].profile),interruptedRun:false});}
-  if(current&&!current.used)throw new Invalid('Finish the active verified run first',409);const g=new Game(balance,JSON.parse(player.profile));let ok=false;if(['buy','craft','equip','research'].includes(data.action)&&typeof data.id==='string'&&data.id.length<64)ok=g[data.action](data.id);else if(data.action==='exclude'&&typeof data.id==='string'&&g.p.completed.includes('stable')){const previous=g.p.excluded;g.p.excluded='';const choices=g.available();g.p.excluded=previous;if((data.id===''||choices.some(x=>x.id===data.id))&&(choices.length>3||data.id==='')){g.p.excluded=data.id;ok=true;}}if(!ok)throw new Invalid('Action unavailable');return response({profile:(await saveProfile(b,owner,g.p,now)),playerId:player.public_id,registered:true});
+  if(current&&!current.used)throw new Invalid('Finish the active verified run first',409);const g=new Game(balance,JSON.parse(player.profile));let ok=false;
+  if(data.action==='publish-character'&&['on','off'].includes(data.id)){g.p.publicCharacter=data.id==='on';ok=true;}
+  else if(data.action==='equip-clothing'&&typeof data.id==='string')ok=g.equipClothing(data.id);
+  else if(['buy','craft','equip','research'].includes(data.action)&&typeof data.id==='string'&&data.id.length<64)ok=g[data.action](data.id);else if(data.action==='exclude'&&typeof data.id==='string'&&g.p.completed.includes('stable')){const previous=g.p.excluded;g.p.excluded='';const choices=g.available();g.p.excluded=previous;if((data.id===''||choices.some(x=>x.id===data.id))&&(choices.length>3||data.id==='')){g.p.excluded=data.id;ok=true;}}if(!ok)throw new Invalid('Action unavailable');return response({profile:(await saveProfile(b,owner,g.p,now)),playerId:player.public_id,registered:true});
  });
  if(url.pathname.endsWith('/start')){(await cleanupRuns(b,now));
   if(current&&!current.used&&current.expires>now)throw new Invalid('Finish the active verified run first',409);
