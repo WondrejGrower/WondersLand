@@ -289,3 +289,12 @@ cookie, and the Supabase health response succeeded. The live probe created no
 account. The Chromium scenario at 320 px used a disposable key to verify the
 Czech inline error, a fresh challenge on retry, and successful local signing.
 The checked deployment and cookie forwarding regression passed.
+
+## Window close controls · 2026-11-26
+
+Cloudflare release `0bfadbe` served matching application, CSS and
+Czech translations on wondersland.online. The production health check passed.
+Chromium at 320 px verified the close control for the welcome screen, NSEC,
+character creation, settings, reset confirmation and installation guide, plus
+keyboard activation and visibility while scrolling. The full browser journey,
+local NSEC sign-in and checked deployment build also passed.
