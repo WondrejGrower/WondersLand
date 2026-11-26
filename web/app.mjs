@@ -1,3 +1,4 @@
+import {drawSkillIcon} from './skill-icons.mjs';
 import {clearPreviousPlayerData,playerKey} from './player-epoch.mjs';
 import {CloudProgress,localNsecSigner} from './nostr-client.mjs';
 import {FrameClock,FixedSimulation,frameRate} from './timing.mjs';
@@ -109,11 +110,11 @@ async function accountTask(action,localSigner=null){
  }catch(error){showError(error.message);}finally{localSigner?.dispose();authBusy=false;touch();renderMenu();}
 }
 function nsecHtml(){
- return title(t('Advanced · NSEC'))+
+ return '<section class="login-panel">'+title(t('Advanced · NSEC'))+
   p(t('Your browser signs one login request. The private key stays on this device.'))+
   (authBusy?p(t('Connecting to your Nostr account…')):
    '<label for="nsec-key">NSEC</label><input id="nsec-key" type="password" maxlength="63" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">'+
-   button(t('Sign in with NSEC'),'nsec-sign')+button(t('Back'),'back'));
+   button(t('Sign in with NSEC'),'nsec-sign')+button(t('Back'),'back'))+'</section>';
 }
 function submitNsec(){
  const input=$('nsec-key');
@@ -125,10 +126,10 @@ function submitNsec(){
  catch{showError('Local Nostr signing failed. Check your NSEC.');}
 }
 function openingHtml(){
- return '<div class="opening-brand"><img src="/icons/icon-192.png" alt="" width="56" height="56">'+title('WondersLand')+'</div>'+
+ return '<section class="login-panel"><div class="opening-brand"><img src="/icons/icon-192.png" alt="" width="56" height="56">'+title('WondersLand')+'</div>'+
   p(t('A forest shaped by live Bitcoin transactions.'))+
   (authBusy?p(t('Connecting to your Nostr account…')):
-   button(t('Sign in or register with Nostr'),'account-login')+button(t('Advanced · NSEC'),'nsec-open')+button(t('Play as guest'),'opening-guest'));
+   button(t('Sign in or register with Nostr'),'account-login')+button(t('Advanced · NSEC'),'nsec-open')+button(t('Play as guest'),'opening-guest'))+'</section>';
 }
 function accountHtml(){
  let html=title(t('Nostr account'));
@@ -165,6 +166,19 @@ function title(text){return '<h1>'+escape(text)+'</h1>';}
 function toggleAppearance(part){const ch=game.phase==='creation'?appearance:game.p.character;if(part==='hairStyle')ch[part]=(ch[part]+1)%16;else ch[part]=palettes[part][(palettes[part].indexOf(ch[part])+1)%palettes[part].length];if(game.phase!=='creation')game.persist();touch();}
 function skillText(s){const n=s.effects?.[(s.nextRank||1)-1]||0;return s.id==='coins'?t('Earn %1 gold for this run',config.run.fallbackCoins):s.id==='bitcoin'?t('Collected coins are worth 30% more this run.'):s.id==='leap'?t('Basic Jump height +%1%, capped at 320 px',Math.round(n*100)):s.id==='magnet'?t('Collection range +%1%',Math.round(n*100)):s.id==='aircoins'?t('Airborne coin bonus +%1%',Math.round(n*100)):s.id==='timeslow'?t('Slows expedition time by %1%. Jumps and obstacles slow together.',Math.round(n*100)):s.id==='double'?t('One extra jump every %1 s · %2% impulse. Aerial limit grows with Strength (max 450 px)',s.cooldown,Math.round(n*100)):s.id==='glider'?t('Glide up to %1 s per jump',new Intl.NumberFormat(language,{maximumFractionDigits:1}).format(n)):s.id==='shield'?t('One rescue, at most two granted per run'):t('Jetpack: 3 s fuel for the whole run, hold F');}
 function roleDescription(id){return t(id==='gardener'?'Gardener: +10% coins, −10% magnet range.':id==='explorer'?'Explorer: one emergency double jump per run, −5% Basic Jump height.':'Collector: +20% magnet range, +1 s to catch upgrades, −5% Basic Jump height.');}
+function skillIcon(skill){
+ return '<span class="skill-icon" aria-hidden="true"><canvas width="16" height="16" data-skill-icon="'+escape(skill.id)+'"></canvas></span>';
+}
+function skillChoices(skills,action){
+ return '<div class="skill-choices">'+skills.map((skill,index)=>{
+  const arg=action==='verified-start'?skill.id:index;
+  const name=t(skill.name);
+  const rank=skill.nextRank&&skill.maxRank>1?'<small>'+escape(t('Rank %1',skill.nextRank))+'</small>':'';
+  return '<button type="button" class="skill-choice" data-action="'+action+'" data-arg="'+escape(arg)+'"'+
+   (action==='verified-start'&&verified.busy?' disabled':'')+'>'+skillIcon(skill)+
+   '<span class="skill-copy"><strong>'+escape(name)+'</strong>'+rank+'<span>'+escape(skillText(skill))+'</span></span></button>';
+ }).join('')+'</div>';
+}
 function appearanceButtons(){return ['hairStyle','hair','skin'].map((part,i)=>button(t(i===0?'Hair style %1 · %2':i===1?'Hair color':i===2?'Skin tone':'Clothing color',(game.phase==='creation'?appearance:game.p.character).hairStyle+1,t(config.hairStyles[(game.phase==='creation'?appearance:game.p.character).hairStyle||0]?.name||'')),'appearance',part)).join('');}
 const slotLabels={head:'Head',torso:'Torso',legs:'Legs',feet:'Feet',hands:'Hands',belt:'Belt'};
 function clothingRarity(item){
@@ -194,8 +208,9 @@ function inventoryHtml(wardrobe=false){
 function skillBookHtml(){
  const found=config.skills.filter(skill=>game.p.discoveries.includes(skill.id));
  return title(t('Skill book'))+p(t('Skills you collect in live runs appear here.'))+p(t('Luck can attract a Bitcoin Spark during an expedition.'))+
-  found.map(skill=>'<section class="item-detail"><h2>'+escape(t(skill.name))+'</h2>'+
-   [...Array(skill.maxRank)].map((_,index)=>p(t('Rank %1',index+1)+' · '+skillText({...skill,nextRank:index+1}))).join('')+'</section>').join('')+
+  found.map(skill=>'<section class="skill-entry">'+skillIcon(skill)+'<div><h2>'+escape(t(skill.name))+'</h2><dl>'+
+   [...Array(skill.maxRank)].map((_,index)=>'<div><dt>'+escape(t('Rank %1',index+1))+'</dt><dd>'+
+    escape(skillText({...skill,nextRank:index+1}))+'</dd></div>').join('')+'</dl></div></section>').join('')+
   button(t('Back')+' · Esc','back');
 }
 let directory=null,visitor=null,directoryRequest=0;
@@ -248,7 +263,9 @@ function verifiedHtml(){
   html+='<h2>'+t('Inventory')+'</h2><div class="gear-grid">'+config.clothing.filter(item=>d.inventory.includes(item.id)).map(item=>
    button(t(item.name)+' · '+t(d.equipment[item.slot]===item.id?'Unequip':'Equip'),'verified-action','equip-clothing:'+item.id)).join('')+'</div>';
  }
- html+='<h2>'+t('Choose your starting skill')+'</h2>';for(const id of config.startingSkills){const skill=g.available().find(x=>x.id===id);if(skill)html+=button(t('Start verified: %1',t(skill.name))+'\n'+skillText({...skill,nextRank:1}),'verified-start',id);}
+ html+='<h2>'+t('Choose your starting skill')+'</h2>'+
+  skillChoices(config.startingSkills.map(id=>g.available().find(skill=>skill.id===id)).filter(Boolean).map(skill=>({...skill,nextRank:1})),'verified-start');
+ if(verified.busy)html+=p(t('Starting the expedition…'));
  html+='<h2>'+t('Permanent character development')+'</h2>';for(const b of config.workshop.filter(b=>g.has(b.id))){const cost=g.price(b.id);html+=p(t(b.name)+' · '+(d.workshop[b.id]||0)+' / 50')+button(cost<0?t('Max'):t('Buy · %1',coin(cost)),'verified-action','buy:'+b.id,cost<0||d.coins<cost);}
  for(const item of config.items.filter(x=>g.has(x.feature)||d.owned.includes(x.id)))html+='<h2>'+escape(t(item.name))+'</h2>'+(d.owned.includes(item.id)?button(t(d[item.id]?'Unequip':'Equip'),'verified-action','equip:'+item.id):button(t('Craft · %1',coin(item.cost)),'verified-action','craft:'+item.id,d.coins<item.cost||!!(item.recipe&&!d.recipes.includes(item.id)&&d.bestDistance<Number(item.recipe.split(':')[1]))));
  if(g.has('garden')){html+='<h2>'+t('Spell Garden')+'</h2>';for(const r of config.research.filter(r=>r.id!=='stable'||g.has('diamond'))){const job=d.research.find(j=>j.id===r.id),done=d.completed.includes(r.id);html+=p(t(r.name)+' · '+coin(r.cost)+' · '+seedCount(r.seeds))+(job?p(t('Remaining: %1 s',Math.max(0,Math.ceil(job.end-Date.now()/1000)))):'')+button(t(done?'Complete':job?'In progress':'Start research'),'verified-action','research:'+r.id,done||!!job||d.coins<r.cost||d.seeds<r.seeds||d.research.length>=1+Number(g.has('research2'))+Number(g.has('research3')));}}
@@ -300,11 +317,11 @@ function menuHtml(){const g=game,d=g.p;
  if(overlay==='help')return title(t('A small field guide'))+p(t('MENUS: WASD or arrows to select, E to confirm, Esc to go back. Mouse also works.\nCAMP: WASD or arrows to walk, E at the portal to choose a skill and start from 0 m.\nRUN: Space / W / Up or click to jump; hold for height. F operates an acquired jetpack. P / Esc pauses. B returns to camp. F11 changes fullscreen.\n\nExplore one continuous forest. Systems unlock through live expeditions and distance. Training grants no permanent rewards. Coins are game points, not bitcoin.'))+button(t('Back'),'back');
  if(g.phase==='creation')return title(t('Create your wanderer'))+p(t('One character. Endless expeditions.'))+(blocked?p(t('Saved progress is damaged. It was not overwritten. Reset requires confirmation.')):'')+`<input id="name" type="text" maxlength="24" autocomplete="off" placeholder="${escape(t('Name'))}" value="${escape(nameDraft)}"><div class="appearance"><canvas id="portrait" width="24" height="40"></canvas><div>${appearanceButtons()}</div></div>`+'<h2>'+t('Choose your role')+'</h2><div class="roles">'+config.classes.map(c=>button(t(c.name),'creation-role',c.id,false,creationRole===c.id)).join('')+'</div>'+p(roleDescription(creationRole))+p(t('Your role is permanent. Changing it requires resetting your character and progress.'))+button(t('Make camp'),'create','',!nameDraft.trim()||blocked);
  if(g.phase==='upgrade')return title(t('Choose a skill at %1 m',int(g.nextChoice-config.run.choiceEveryMetres)))+
-  g.choices.map((skill,index)=>button(t(skill.name)+'\n'+skillText(skill),'choose-upgrade',index)).join('')+
+  skillChoices(g.choices,'choose-upgrade')+
   button(t('Base Camp'),'camp');
- if(g.phase==='select')return title(t('Choose your starting skill'))+g.choices.map((s,i)=>button(t(s.name)+'\n'+skillText(s),'skill',i)).join('')+(!g.demo&&!g.replay?p(t('Personal runs save local progress only. Use Verified runs for the server leaderboard.')):'')+p(t('WASD / arrows · select   E · confirm   Esc · camp'));
+ if(g.phase==='select')return title(t('Choose your starting skill'))+skillChoices(g.choices,'skill')+(!g.demo&&!g.replay?p(t('Personal runs save local progress only. Use Verified runs for the server leaderboard.')):'')+'<p class="keyboard-hint">'+escape(t('WASD / arrows · select   E · confirm   Esc · camp'))+'</p>';
  if(['connecting','waiting','countdown'].includes(g.phase))return title(t(g.phase==='connecting'?'Connecting to the forest…':g.phase==='waiting'?'Waiting for real transactions…':'Continue in %1',Math.ceil(g.countdown||0)))+p(t('Expedition time is paused.'))+button(t('Base Camp'),'camp');
- if(['over','paused'].includes(g.phase))return title(t(g.phase==='over'?'Your run ends here.':'Take a breath.'))+p(t('%1 m · %2',int(Math.floor(g.distance)),coin(Math.floor(g.earned))))+(g.phase==='over'?p(t('You hit: %1',t(g.hit.type==='rose'?'Blackberry shrub':g.hit.type||''))+' · '+g.hit.h+' px')+p(t('Output total: %1 BTC',btc(g.hit.btc||'0.00000000'))+'\n'+int(g.hit.sats||'0')+' satoshi')+(!g.demo?'<code>'+escape(g.hit.txid)+'</code>':'')+p(t(g.demo?'Training · coins and score are not saved':g.hit.status==='confirmed'?'Confirmed in a block':g.hit.status==='pending'?'Still in the mempool':'Observed in mempool · current status unverified')):'')+button(t(g.phase==='paused'?'Continue':'Try again'),g.phase==='paused'?'pause':'run',String(g.demo))+button(t(g.phase==='over'?'Return to Base Camp':'Base Camp'),'camp')+(g.phase==='over'&&!g.demo?button(t('View transaction'),'transaction'):'')+(g.phase==='over'?(g.runDrops||[]).map(id=>p(t('Clothing found: %1',t(g.find('clothing',id).name)))).join('')+scoreStatusHtml():'')+(g.phase==='over'?p(t('WASD / arrows · select   E · confirm   Esc · camp')):'');
+ if(['over','paused'].includes(g.phase))return title(t(g.phase==='over'?'Your run ends here.':'Take a breath.'))+p(t('%1 m · %2',int(Math.floor(g.distance)),coin(Math.floor(g.earned))))+(g.phase==='over'?p(t('You hit: %1',t(g.hit.type==='rose'?'Blackberry shrub':g.hit.type||''))+' · '+g.hit.h+' px')+p(t('Output total: %1 BTC',btc(g.hit.btc||'0.00000000'))+'\n'+int(g.hit.sats||'0')+' satoshi')+(!g.demo?'<code>'+escape(g.hit.txid)+'</code>':'')+p(t(g.demo?'Training · coins and score are not saved':g.hit.status==='confirmed'?'Confirmed in a block':g.hit.status==='pending'?'Still in the mempool':'Observed in mempool · current status unverified')):'')+button(t(g.phase==='paused'?'Continue':'Try again'),g.phase==='paused'?'pause':'run',String(g.demo))+button(t(g.phase==='over'?'Return to Base Camp':'Base Camp'),'camp')+(g.phase==='over'&&!g.demo?button(t('View transaction'),'transaction'):'')+(g.phase==='over'?(g.runDrops||[]).map(id=>p(t('Clothing found: %1',t(g.find('clothing',id).name)))).join('')+scoreStatusHtml():'')+(g.phase==='over'?'<p class="keyboard-hint">'+escape(t('WASD / arrows · select   E · confirm   Esc · camp'))+'</p>':'');
  if(g.phase!=='camp')return '';
  if(!g.station&&d.announcements.length)return title(t('New discovery: %1',t(g.find('progression',d.announcements[0]).name)))+button(t('Continue'),'dismiss');
  if(!g.station)return '';
@@ -320,6 +337,7 @@ function menuHtml(){const g=game,d=g.p;
 }
 function focusFirst(){const el=$('menu').querySelector('button:not([disabled])');el?.focus({preventScroll:true});}
 function renderMenu(){const key=JSON.stringify([game.phase,game.station,game.p.announcements[0],overlay,language,revision,Math.ceil(game.countdown||0),game.phase==='upgrade'?game.nextChoice:0,game.station==='mine'?game.mineBalance().coins:0]);if(key===lastView)return;lastView=key;const helpLabel=t('A small field guide');$('help').setAttribute('aria-label',helpLabel);$('help').querySelector('.help-label').textContent=helpLabel;const html=menuHtml();$('sheet').hidden=!html;if(!html){if($('sheet').contains(document.activeElement))document.activeElement.blur();return;}game.moves.clear();game.target=null;const focused=document.activeElement?.dataset?.action,arg=document.activeElement?.dataset?.arg;$('menu').innerHTML=html;
+ for(const canvas of $('menu').querySelectorAll('[data-skill-icon]'))drawSkillIcon(canvas.getContext('2d'),canvas.dataset.skillIcon);
  const nsec=$('nsec-key');if(nsec)nsec.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();submitNsec();}};
  const name=$('name');if(name){name.oninput=()=>{nameDraft=name.value;const create=$('menu').querySelector('[data-action=create]');create.disabled=!nameDraft.trim()||blocked;};name.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('menu').querySelector('[data-action=appearance]')?.focus();}};}
  for(const canvas of $('menu').querySelectorAll('[data-training-model]')){const model=config.trainingModels.find(m=>m.id===canvas.dataset.trainingModel),p=plant(model.sats,config),ctx=canvas.getContext('2d'),scale=Math.min(1,84/p.h,112/p.w);ctx.imageSmoothingEnabled=false;PixelArt.viewport(0,0,canvas.width,canvas.height);p.visual=descriptor(p.type,p.sats,p.h,'',model.id);PixelArt.plant(ctx,{...p,x:64-p.w*scale/2,w:p.w*scale,h:p.h*scale},92);}
@@ -350,7 +368,11 @@ function action(act,arg){try{
  else if(act==='view-inventory'&&visitor)overlay='public-character';
  else if(act==='verified-register'&&!adminTest)verifiedTask(()=>verified.register(game.p.character));
  else if(act==='verified-action'&&!adminTest)verifiedTask(()=>verified.action(arg.split(':')[0],arg.split(':')[1]||''));
- else if(act==='verified-start'&&!adminTest)verifiedTask(async()=>{const previous=game;const next=await verified.start(arg);localGame=previous;game=next;overlay='';});
+ else if(act==='verified-start'&&!adminTest&&!verified.busy)verifiedTask(async()=>{
+  verified.busy=true;touch();renderMenu();
+  try{const previous=game;const next=await verified.start(arg);localGame=previous;game=next;overlay='';}
+  finally{verified.busy=false;touch();renderMenu();}
+ });
  else if(act==='leaderboard'||act==='settings'||act==='help'||(act==='inventory'&&game.phase==='camp')){game.moves.clear();game.target=null;if(['running','waiting','countdown'].includes(game.phase))game.pause();overlay=act;if(act==='leaderboard'){if(!boardMonthExplicit)boardMonth='';if(board.acceptingSubmissions&&board.queue.length)board.flush().then(()=>loadBoard());else loadBoard();}}
  else if(act==='frame-rate'&&['60','144'].includes(arg)){frameClock.setRate(Number(arg));localStorage.setItem('wl-frame-rate',arg);}
  else if(act==='install')overlay='install';
