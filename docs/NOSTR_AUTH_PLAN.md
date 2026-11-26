@@ -1,6 +1,26 @@
 # Registrace a přihlášení WondersLand přes Nostr
 
-Stav: plán, 26. listopadu 2026. Přihlášení není součástí nynější migrace serveru.
+Stav: první implementace používá NIP-07. Prohlížeč nebo mobilní aplikace musí
+poskytovat externí signer přes `window.nostr`. NIP-46, připojení existujícího
+hodnoceného profilu a odhlášení všech zařízení zůstávají ve fázi návrhu.
+
+## Co obsahuje první verze
+
+- V menu v táboře a při tvorbě postavy je **Účet Nostr**. První schválený
+  podpis založí účet. Další podpis stejného klíče obnoví stejný účet.
+- Při prvním přihlášení lze uložit osobní postavu z aktuálního zařízení nebo
+  začít novou. Osobní postup na účtu se automaticky synchronizuje po dokončení
+  výpravy a po uložených akcích v táboře. Stav synchronizace je v menu účtu.
+- Hodnocený profil vytvořený v přihlášeném režimu se načte i na jiném zařízení.
+  Starší hodnocený profil svázaný s prohlížečem lze dál používat jako host.
+- Uložení je podmíněné revizí. Při souběžné změně si hráč vybere cloudovou
+  či místní kopii. Odhlášení ruší aktuální relaci a vrací osobní profil hosta.
+- Backend běží v existující Supabase Edge Function `wondersland`. Pro
+  nasazení aplikuj novou migraci `wonderland_nostr_accounts`, nasaď Edge
+  Function přes `npm run supabase:prepare` a potom stejnou revizi webu.
+  Databázové tabulky jsou soukromé a přihlášení nepoužívá Supabase JWT.
+
+Níže je širší plán včetně dalších etap.
 
 ## Závazné pravidlo Wondreje
 

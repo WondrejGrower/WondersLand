@@ -1,3 +1,4 @@
+import {accountPath,accountBodyLimit,cookieToken,sessionCookie} from './account-paths.mjs';
 import {supabaseProxy} from './supabase-proxy.mjs';
 import {migrationAuthorized} from './server-migration.mjs';
 import {adminRoute} from './admin-test.mjs';
@@ -17,10 +18,19 @@ async function route(request,env,upstream,edgeCache){
  if(!url.pathname.startsWith('/api/'))return env.ASSETS.fetch(request);
  if(url.pathname==='/api/supabase-migration'){if(!env.LEADERBOARD||request.method!=='POST'||!await migrationAuthorized(request))return failure('Forbidden',403);return env.LEADERBOARD.getByName('monthly-v1').fetch(request);}
  if(!await allowed(request,env))return new Response('Please try again shortly',{status:429,headers:{'Retry-After':'60','Cache-Control':'no-store'}});
+ if(accountPath.test(url.pathname)){
+  if(!env.SUPABASE_API_URL)return failure('Nostr accounts are unavailable',503);
+  if(!['GET','POST'].includes(request.method))return failure('Method not allowed',405);
+  if(request.method==='POST'&&request.headers.get('origin')!==url.origin)return failure('Origin not allowed',403);
+  if(Number(request.headers.get('content-length'))>accountBodyLimit)return failure('Progress file is too large',413);
+  return await proxy(request,env,upstream)||failure('Nostr accounts are unavailable',503);
+ }
  if(/^\/api\/leaderboard(?:\/(?:start|finish))?$/.test(url.pathname)||/^\/api\/verified\/(?:profile|register|action|start|step|leaderboard|directory)$/.test(url.pathname)){
   if(request.method==='POST'&&['/api/leaderboard/start','/api/leaderboard/finish'].includes(url.pathname))return Response.json({error:'Client-reported submissions are closed',acceptingSubmissions:false},{status:410,headers:{'Cache-Control':'no-store'}});
   if(request.method==='POST'&&url.pathname.startsWith('/api/verified/')){
-   if(!/^Bearer [a-f0-9]{64}$/.test(request.headers.get('authorization')||''))return failure('Missing player key',401);
+   const accountSession=env.SUPABASE_API_URL&&cookieToken(request,sessionCookie);
+   if(!accountSession&&!/^Bearer [a-f0-9]{64}$/.test(request.headers.get('authorization')||''))return failure('Missing player key',401);
+   if(accountSession&&request.headers.get('origin')!==url.origin)return failure('Origin not allowed',403);
    if(!request.headers.get('content-type')?.startsWith('application/json'))return failure('JSON required',415);
    let body;try{body=await readJson(request,16384,{timeoutMs:5000});}catch(error){return failure('Invalid request body',error.message==='Response too large'?413:400);}
    const headers=new Headers(request.headers);headers.delete('content-length');request=new Request(request.url,{method:'POST',headers,body:JSON.stringify(body)});

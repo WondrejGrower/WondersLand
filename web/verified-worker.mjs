@@ -28,7 +28,7 @@ async function verifiedInner(b,request){try{
   const selected=url.searchParams.get('month')||month,metric=url.searchParams.get('metric')||'best';if(!/^20\d\d-(0[1-9]|1[0-2])$/.test(selected)||selected>month||!['best','total','attempts'].includes(metric))throw new Invalid('Invalid month or ranking');
   const sort=metric==='best'?'best DESC,best_at ASC,public_id ASC':metric==='total'?'total DESC,updated ASC,public_id ASC':'runs DESC,updated ASC,public_id ASC';const rows=(await b.rows('SELECT public_id AS "playerId",name,best,total,runs FROM verified_scores WHERE month=? AND rules=? ORDER BY '+sort+' LIMIT 50',selected,balance.balanceVersion)).map((r,i)=>({...r,rank:i+1}));const months=(await b.rows('SELECT month FROM verified_months WHERE rules=? ORDER BY month DESC LIMIT 24',balance.balanceVersion)).map(r=>r.month);if(!months.includes(month))months.unshift(month);return response({month:selected,metric,months,rows,verified:true,rules:balance.balanceVersion,identity:'server-profile-not-verified-person',source:'server-simulated-inputs'});
  }
- const key=request.headers.get('authorization')?.match(/^Bearer ([a-f0-9]{64})$/)?.[1];if(!key)throw new Invalid('Missing player key',401);const owner=await hash(key),source=await hash(request.headers.get('CF-Connecting-IP')||'local');
+ const key=request.headers.get('authorization')?.match(/^Bearer ([a-f0-9]{64})$/)?.[1];if(!b.accountOwner&&!key)throw new Invalid('Missing player key',401);const owner=b.accountOwner||await hash(key),source=await hash(request.headers.get('CF-Connecting-IP')||'local');
  if(!(await b.rate('verified:'+owner,now,90)))throw new Invalid('Please try again shortly',429);
  let player=(await b.rows('SELECT * FROM verified_players WHERE owner=?',owner))[0];
  if(request.method==='GET'&&url.pathname==='/api/verified/profile'){if(!player)return response({registered:false});const g=new Game(balance,JSON.parse(player.profile));return response({registered:true,playerId:player.public_id,profile:(await saveProfile(b,owner,g.p,now)),interruptedRun:!!(await b.rows('SELECT id FROM verified_runs WHERE owner=? AND used=0',owner)).length});}
@@ -91,7 +91,7 @@ async function verifiedInner(b,request){try{
 
 export async function verifiedRequest(b,request){
  if(request.method!=='POST')return verifiedInner(b,request);
- const auth=request.headers.get('authorization')||'';if(!/^Bearer [a-f0-9]{64}$/.test(auth))return response({error:'Missing player key'},401);
+ const auth=b.accountOwner||request.headers.get('authorization')||'';if(!b.accountOwner&&!/^Bearer [a-f0-9]{64}$/.test(auth))return response({error:'Missing player key'},401);
  if(!b.verifiedLocks)b.verifiedLocks=new Set();const path=new URL(request.url).pathname,exclusive=path.endsWith('/step')||path.endsWith('/start');
  const pool=path.endsWith('/step')?'simulationInFlight':path.endsWith('/start')?'startsInFlight':'controlsInFlight',limit=pool==='startsInFlight'?2:4;
  if((b[pool]||0)>=limit||(exclusive&&b.verifiedLocks.has(auth))){const r=response({error:'Verified runs are busy'},503);r.headers.set('Retry-After','1');return r;}

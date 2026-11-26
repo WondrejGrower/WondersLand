@@ -66,3 +66,65 @@ test('proxy uses Workers-supported manual redirects and never forwards an owner 
  const result=await supabaseProxy(request,'https://example.supabase.co/functions/v1/wondersland',async(url,options)=>{calls++;assert.equal(typeof url,'string');assert.equal(options.redirect,'manual');assert.equal(options.headers.get('cookie'),null);return Response.redirect('https://untrusted.invalid/collect',302);},'c'.repeat(64));
  assert.equal(calls,1);assert.equal(result.status,503);assert.equal((await result.json()).code,'PROXY_REDIRECT');
 });
+
+test('Nostr login restores the same personal and ranked progress across sessions',async()=>{
+ const {accountRequest,sessionAccount,verifyNostrEvent}=await import('./nostr-account.mjs');
+ const {schnorr}=await import('@noble/curves/secp256k1.js');
+ const {Game}=await import('./core.mjs');
+ const config=JSON.parse(await readFile('src/balance.json','utf8'));
+ const f=await database(),origin='https://wondersland.online',now=Date.UTC(2026,10,26,12);
+ const {secretKey,publicKey}=schnorr.keygen();
+ const sha=async value=>new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)));
+ const hex=bytes=>Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+ function call(path,body,headers={}){
+  const raw=body===undefined?'':JSON.stringify(body);
+  const request=new Request(origin+'/api/account/'+path,{method:body===undefined?'GET':'POST',
+   headers:{origin,'Content-Type':'application/json',...headers},...(body===undefined?{}:{body:raw})});
+  return f.run(sql=>{const board=new PostgresBoard(sql);board.now=()=>now;return accountRequest(board,request,raw);});
+ }
+ const cookie=result=>result.headers.get('set-cookie').split(';')[0].split('=')[1];
+ async function sign(challenge){
+  const body=JSON.stringify({challenge}),url=origin+'/api/account/verify';
+  const event={pubkey:hex(publicKey),created_at:now/1000,kind:27235,content:'',
+   tags:[['u',url],['method','POST'],['payload',hex(await sha(body))]]};
+  const id=await sha(JSON.stringify([0,event.pubkey,event.created_at,event.kind,event.tags,event.content]));
+  event.id=hex(id);event.sig=hex(schnorr.sign(id,secretKey));return 'Nostr '+btoa(JSON.stringify(event));
+ }
+ async function authenticate(){
+  const challengeResponse=await call('challenge',{}),browser=cookie(challengeResponse);
+  const {challenge}=await challengeResponse.json(),authorization=await sign(challenge);
+  const headers={authorization,'x-wl-browser':browser},verifyUrl=origin+'/api/account/verify';
+  assert.equal(await verifyNostrEvent(authorization,verifyUrl+'?x=1',JSON.stringify({challenge}),now),null);
+  assert.equal(await verifyNostrEvent(authorization,verifyUrl,JSON.stringify({challenge})+' ',now),null);
+  assert.equal(await verifyNostrEvent(authorization,verifyUrl,JSON.stringify({challenge}),now+61000),null);
+  assert.equal((await call('verify',{challenge},{...headers,'x-wl-browser':'b'.repeat(64)})).status,401);
+  const result=await call('verify',{challenge},headers);assert.equal(result.status,200,await result.clone().text());
+  assert.match(result.headers.get('set-cookie'),/Secure; HttpOnly; SameSite=Strict/);
+  assert.equal((await call('verify',{challenge},headers)).status,401);
+  return {cookie:{'x-wl-session':cookie(result)},data:await result.json()};
+ }
+ try{
+  const migration=(await readdir('supabase/migrations')).find(x=>x.endsWith('_wonderland_nostr_accounts.sql'));
+  await f.db.exec(await readFile('supabase/migrations/'+migration,'utf8'));
+  await f.db.exec('SET ROLE anon');await assert.rejects(f.sql.unsafe('SELECT * FROM wonderland_private.nostr_accounts'),/permission denied/);await f.db.exec('SET ROLE wonderland_server');
+  const first=await authenticate();assert.match(first.data.npub,/^npub1/);assert.equal(first.data.progress,null);
+  const g=new Game(config);g.create('Cross-device fixture',{class:'gardener'});g.p.coins=120;
+  assert.equal(g.mineAction('buy',1,now),true);
+  const progress={...g.p,activeRun:{},foreignField:'discarded'};
+  assert.equal((await call('save',{revision:0,progress},first.cookie)).status,200);
+  assert.equal((await call('save',{revision:0,progress},first.cookie)).status,409);
+  assert.equal((await call('save',{revision:1,progress:{...progress,adminTest:true}},first.cookie)).status,400);
+  const ranked=(headers,path,data)=>f.run(async sql=>{
+   const board=new PostgresBoard(sql);board.now=()=>now;
+   const request=new Request(origin+'/api/verified/'+path,data?{method:'POST',body:JSON.stringify(data),headers:{...headers,origin,'Content-Type':'application/json'}}:{headers});
+   board.accountOwner=(await sessionAccount(board,request))?.ranked_owner;return board.fetch(request);
+  });
+  const registered=await (await ranked(first.cookie,'register',{character:{name:'Ranked fixture',class:'gardener'}})).json();
+  const second=await authenticate();assert.equal(second.data.npub,first.data.npub);assert.equal(second.data.progress.coins,20);assert.equal(second.data.progress.mine.active,1);
+  assert.equal(second.data.progress.foreignField,undefined);
+  assert.equal((await (await ranked(second.cookie,'profile')).json()).playerId,registered.playerId);
+  assert.equal((await call('logout',{},first.cookie)).status,200);
+  assert.equal((await (await call('session',undefined,first.cookie)).json()).npub,null);
+  assert.equal((await (await call('session',undefined,second.cookie)).json()).revision,1);
+ }finally{await f.db.close();}
+});
