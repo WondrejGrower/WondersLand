@@ -315,3 +315,16 @@ checked deployment, mobile/desktop camp checks, Ranked browser test and local
 NSEC browser test passed. GitHub Actions could not start its verification job
 because of the existing account billing lock. Cloudflare Workers Builds
 reported success.
+
+## Sharp camp sprites and frame pacing · 2026-11-26
+
+Cloudflare release `9ba3288` served byte-identical application, renderer,
+sprite, camera, timing, style, translation and balance files. Production
+health reported Supabase and Journey-10.
+
+Local Chromium verified a native-resolution camp canvas at 1684 × 1320
+viewport size and binary sprite alpha under fractional scaling. At a
+synthetic 144 Hz callback rate, the app painted 120 and 288 frames over two
+seconds at the 60 and 144 FPS caps, with identical simulation results.
+The browser journey, mobile controls, Ranked flow and checked dry-run passed.
+The GitHub Actions verification job could not start because of account billing.
