@@ -3,19 +3,27 @@ import * as Visual from './plant-visual.mjs';
 var campAtlas=null;
 var floraAtlas=null;
 var campDetailsAtlas=null;
+var campClearing=null;
 const campDetails={
  camp_portal:[0,0,240,278],
  camp_mine_platform:[0,280,240,56],
 };
 var viewLeft=0,viewTop=0,viewRight=640,viewBottom=360;
 function viewport(left,top,width,height){viewLeft=Math.floor(left);viewTop=Math.floor(top);viewRight=Math.ceil(left+width);viewBottom=Math.ceil(top+height);}
-function setAtlases(camp,flora,details){campAtlas=camp;floraAtlas=flora;campDetailsAtlas=details;}
+function setAtlases(camp,flora,details,clearing){
+ campAtlas=camp;floraAtlas=flora;campDetailsAtlas=details;campClearing=clearing;
+}
+export function drawClearing(c){
+ if(!campClearing)return;
+ c.imageSmoothingEnabled=true;
+ c.drawImage(campClearing,0,0,640,360);
+}
 function draw(c,id,x,y,w,h){
  const detail=campDetailsAtlas&&campDetails[id],region=Data.regions[id];
  const r=detail||region?.rect;
  if(!r||w<=0||h<=0)return;
  const atlas=detail?campDetailsAtlas:region.atlas==="camp"?campAtlas:floraAtlas;
- c.imageSmoothingEnabled=false;
+ c.imageSmoothingEnabled=Boolean(detail)||region?.atlas==='camp';
  // One cached atlas image, one clipped blit. Work never grows with giant TX height.
  // Crop before scaling to avoid canvas limits when a tree extends far above view.
  var top=Math.max(0,viewTop-y),bottom=Math.min(h,viewBottom-y),left=Math.max(0,viewLeft-x),right=Math.min(w,viewRight-x);

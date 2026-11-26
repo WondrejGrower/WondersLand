@@ -1,69 +1,86 @@
 import {drawSkillIcon} from './skill-icons.mjs';
 // Canvas renderer used by the browser and installed PWA.
 import * as PixelArt from './pixels.mjs';
-export function drawCamp(c,s,wlTranslate,width=640,height=360){ 
- c.reset();var view=s.viewport||{left:0,top:0,width:640,height:360};var pixelScale=Math.min(width/view.width,height/view.height);c.scale(pixelScale,pixelScale);c.translate(-view.left,-view.top);c.imageSmoothingEnabled=false;PixelArt.viewport(view.left,view.top,view.width,view.height);
- var t=s.animation,px=s.campX,py=s.campY;
- function r(x,y,w,h,col){c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),w,h)}
- function ellipse(x,y,rx,ry,col){for(var iy=-Math.ceil(ry);iy<=ry;iy++){var span=Math.round(rx*Math.sqrt(Math.max(0,1-iy*iy/(ry*ry))));r(x-span,y+iy,span*2+1,1,col)}}
- r(view.left,view.top,view.width,view.height,'#10272c');
- for(var i=0;i<Math.ceil(view.width*view.height/256);i++)r(view.left+(i*53.31)%view.width,view.top+(i*79.17)%view.height,2+i%3,1,i%5?'#193832':'#2b4836');
- ellipse(320,245,268,99,'#29473b');ellipse(320,250,252,88,'#344c3c');
- r(257,172,29,154,'#73624b');r(93,220,458,23,'#73624b');r(160,234,24,67,'#6a5d47');r(452,237,25,57,'#6a5d47');
- for(i=0;i<140;i++)r(90+(i*31)%470,224+(i%5)*3,4,2,i%3?'#8b7858':'#5f5845');
- // Props share the original interaction points. Depth order follows their feet.
- var props=[
-  ['camp_cottage',231,184,180,148],['camp_portal',540,222,88,102],
-  ['camp_forge',112,219,88,78],['camp_wardrobe',390,193,57,60],
-  ['camp_chest',427,212,36,30],['camp_training_dummy',450,290,35,50],
-  ['camp_archery_target',487,289,33,40],['camp_herbal_workbench',175,300,63,57],
-  ['camp_garden_bed',136,324,54,40],['camp_gardening_bench',211,326,48,33],
-  ['camp_fire',331,278,49,42],['camp_lantern_post',588,231,26,57],['camp_lantern_post',320,182,22,48]
- ];
- for(i=0;i<10;i++)props.push(['flora_pine',i*74-10,105+i%2*24,50+i%3*10,78+i%3*13]);
- props.push(['flora_birch',21,319,54,143],['flora_sequoia',620,321,61,155]);
- var plants=['flora_meadow_grass','flora_daisies','flora_tulips','flora_fern','flora_mushrooms','flora_blackberry','flora_sapling'];
- for(i=0;i<21;i++){var edge=i%2?36:601;props.push([plants[i%plants.length],edge+(i%3-1)*15,156+(i*37)%183,20+i%3*6,14+i%4*6]);}
- props.push(['flora_cannabis',240,320,22,38]);
- if(s.mineVisible)props.push(['mine',365,307]);
- function mine(){
+import {campStations} from './camp-layout.mjs';
+import {drawClearing} from './environment.mjs';
+
+const station=Object.fromEntries(campStations.map(({id,x,y})=>[id,{x,y}]));
+const props=[
+ ['camp_cottage',station.home.x-24,station.home.y,177,145],
+ ['camp_forge',station.forge.x,station.forge.y,82,75],
+ ['camp_portal',station.portal.x,station.portal.y,83,96],
+ ['camp_wardrobe',station.wardrobe.x-11,station.wardrobe.y-8,54,58],
+ ['camp_chest',station.wardrobe.x+29,station.wardrobe.y,32,27],
+ ['camp_herbal_workbench',station.library.x+8,station.library.y-11,65,59],
+ ['camp_garden_bed',station.library.x-23,station.library.y+14,48,34],
+ ['camp_gardening_bench',station.library.x+39,station.library.y+15,45,31],
+ ['camp_fire',385,259,45,40],
+ ['camp_training_dummy',station.training.x-17,station.training.y,33,47],
+ ['camp_archery_target',station.training.x+23,station.training.y+1,35,37],
+ ['camp_lantern_post',454,170,20,41],
+ ['camp_lantern_post',584,200,23,44],
+].sort((a,b)=>a[2]-b[2]);
+const propsWithMine=[...props,['mine',station.mine.x,station.mine.y]].sort((a,b)=>a[2]-b[2]);
+const minerColors=['#b28c59','#8b9c75','#738b98','#a4816c','#b28b55'];
+
+export function drawCamp(c,s,wlTranslate,width=640,height=360){
+ const view=s.viewport||{left:0,top:0,width:640,height:360};
+ const scale=Math.min(width/view.width,height/view.height);
+ c.reset();c.scale(scale,scale);c.translate(-view.left,-view.top);
+ PixelArt.viewport(view.left,view.top,view.width,view.height);
+ c.fillStyle='#142921';c.fillRect(view.left,view.top,view.width,view.height);
+ drawClearing(c);
+
+ const t=s.animation,px=s.campX,py=s.campY;
+ function pixel(x,y,w,h,color){
+  c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),w,h);
+ }
+ function shadow(x,y,w,h){
+  c.fillStyle='#13241775';c.beginPath();c.ellipse(x,y,w,h,0,0,2*Math.PI);c.fill();
+ }
+ function player(){
+  shadow(px,py+2,10,4);
+  PixelArt.character(c,px-12,py-40,s.profile.character,Math.floor(t*(s.moving?9:.8)),
+   s.profile.hands,s.profile.boots,s.moving?'run':'idle',s.profile.equipment,s.facingLeft);
+ }
+ function mine(x,y){
   const active=s.profile.mine?.active||0;
   const swing=Math.floor(t*6)%6;
   const broken=active&&Math.floor(t*6)%36>=32;
-  ellipse(365,307,36,6,'#253b30');
-  PixelArt.prop(c,'camp_mine_platform',365,309,72,17);
-  const size=broken?12:20,top=298-size,left=374-size/2;
-  r(left,top,size,size,'#af561c');r(left,top,size,3,'#ffc169');
-  r(left,top+3,size-4,size-6,'#ec902f');r(left+size-4,top+3,4,size-3,'#884420');
-  r(left+4,top+6,5,2,'#ffd17b');r(left+size-7,top+size-5,3,2,'#d47427');
+  shadow(x,y+2,34,5);
+  PixelArt.prop(c,'camp_mine_platform',x,y+2,72,17);
+  const size=broken?12:20,top=y-9-size,left=x+9-size/2;
+  pixel(left,top,size,size,'#af561c');pixel(left,top,size,3,'#ffc169');
+  pixel(left,top+3,size-4,size-6,'#ec902f');pixel(left+size-4,top+3,4,size-3,'#884420');
+  pixel(left+4,top+6,5,2,'#ffd17b');pixel(left+size-7,top+size-5,3,2,'#d47427');
   if(!active)return;
-  const colors=['#b28c59','#8b9c75','#738b98','#a4816c','#b28b55'];
-  PixelArt.character(c,337,262,{hair:'#624630',skin:'#d4a676',shirt:colors[(active-1)%colors.length],hairStyle:(active-1)%5},swing,false,false,'idle',{},false);
-  const headY=swing<3?274:287;
+  PixelArt.character(c,x-28,y-45,{hair:'#624630',skin:'#d4a676',
+   shirt:minerColors[(active-1)%minerColors.length],hairStyle:(active-1)%5},swing,false,false,'idle',{},false);
+  const headY=y-(swing<3?33:20);
   c.strokeStyle=active>=6?'#b3a186':'#806143';c.lineWidth=2;
-  c.beginPath();c.moveTo(351,287);c.lineTo(369,headY);c.stroke();
-  r(366,headY-2,7,3,active>=6?'#d2d5ce':'#8f9a91');
-  if(swing===3||broken){r(368,281,2,2,'#ffe0a2');r(375,278,2,2,'#ffb857');r(380,286,2,2,'#f08b42');}
+  c.beginPath();c.moveTo(x-14,y-20);c.lineTo(x+4,headY);c.stroke();
+  pixel(x+1,headY-2,7,3,active>=6?'#d2d5ce':'#8f9a91');
+  if(swing===3||broken){
+   pixel(x+3,y-26,2,2,'#ffe0a2');pixel(x+10,y-29,2,2,'#ffb857');pixel(x+15,y-21,2,2,'#f08b42');
+  }
  }
- props.sort(function(a,b){return a[2]-b[2]});
- var drawn=false;
- function player(){ellipse(px,py+2,10,4,'#152a28');PixelArt.character(c,px-12,py-40,s.profile.character,Math.floor(t*(s.moving?9:.8)),s.profile.hands,s.profile.boots,s.moving?'run':'idle',s.profile.equipment,s.facingLeft)}
- for(i=0;i<props.length;i++){
-  var p=props[i];if(!drawn&&p[2]>py){player();drawn=true;}
-  if(p[0]==='mine')mine();
-  else if(p[0]==='camp_portal'){
-   ellipse(p[1],p[2]-1,40,5,'#293d35');
-   PixelArt.prop(c,p[0],p[1],p[2],p[3],p[4]);
-   for(let j=0;j<5;j++){
-    const angle=t*.65+j*2*Math.PI/5;
-    r(p[1]+Math.cos(angle)*11,p[2]-43+Math.sin(angle)*15,1,1,'#83d6c9');
+ let drawn=false;
+ for(const [id,x,y,w,h] of s.mineVisible?propsWithMine:props){
+  if(!drawn&&y>py){player();drawn=true;}
+  if(id==='mine'){mine(x,y);continue;}
+  shadow(x,y-2,w*.38,Math.min(6,h*.09));
+  PixelArt.prop(c,id,x,y,w,h);
+  if(id==='camp_portal'){
+   for(let i=0;i<5;i++){
+    const angle=t*.65+i*2*Math.PI/5;
+    pixel(x+Math.cos(angle)*11,y-43+Math.sin(angle)*15,1,1,'#83d6c9');
    }
-  }else PixelArt.prop(c,p[0],p[1],p[2],p[3],p[4]);
+  }else if(id==='camp_fire'){
+   for(let i=0;i<8;i++)pixel(x+Math.sin(i*3+t)*8,y-15-((t*14+i*7)%24),1,1,'#edbe7e');
+  }
  }
  if(!drawn)player();
- // Lightweight light motion overlays; no per-frame atlas processing.
- for(i=0;i<8;i++)r(331+Math.sin(i*3+t)*9,262-((t*14+i*7)%26),1,1,'#e6ba71');
- for(i=0;i<16;i++)r((i*137+t*3)%640,190+Math.sin(i*3+t*.5)*75,1,1,'#c4d1a0');}
+}
 export function drawRun(c,s,wlTranslate,width=640,height=360){ 
  c.reset();var view=s.viewport||{left:0,top:0,width:640,height:360};var pixelScale=Math.min(width/view.width,height/view.height);c.scale(pixelScale,pixelScale);c.translate(-view.left,-view.top);c.imageSmoothingEnabled=false;PixelArt.viewport(view.left,view.top,view.width,view.height);
  // Follow only high late-game jumps; world sizes and physics stay unchanged.

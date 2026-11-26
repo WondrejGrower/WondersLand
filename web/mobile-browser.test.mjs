@@ -5,7 +5,7 @@ try{
  const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(p=>localStorage.setItem('wl-v2:wl-progress',JSON.stringify(p)),g.p);
  await page.route('**/api/mempool',r=>r.fulfill({json:[]}));await page.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:readFileSync('web/app.mjs','utf8')+'\nwindow.fixture={get game(){return game;},action,renderMenu};'}));
  // Keep viewport checks independent of host load and time to the first collision.
- await page.clock.install();await page.clock.pauseAt(Date.now()+100);
+ const testTime=Date.now();await page.clock.install({time:testTime});await page.clock.pauseAt(testTime+2000);
  await page.goto('http://127.0.0.1:'+host.address().port+'/?recorded=1');await page.waitForFunction(()=>document.body.dataset.ready==='true');
  const toggle=page.locator('#header-toggle'),actions=page.locator('#header-actions');
  const bar=await page.locator('header').boundingBox(),camp=await page.locator('#world').boundingBox();
@@ -25,7 +25,9 @@ try{
  await page.evaluate(()=>{fixture.game.y=0;fixture.game.velocity=0;fixture.game.obstacles=[];fixture.game.spawn=1000;});await page.locator('#touch-jump').tap();await page.clock.runFor(150);assert.ok(await page.evaluate(()=>fixture.game.y)>0,'A real touchscreen tap jumps');
  await page.locator('#touch-pause').tap();await page.clock.runFor(32);assert.equal(await page.evaluate(()=>fixture.game.phase),'paused');assert.equal(await page.locator('#touch-controls').isVisible(),false);const time=await page.evaluate(()=>fixture.game.time);await page.clock.runFor(500);assert.equal(await page.evaluate(()=>fixture.game.time),time);
  await page.locator('[data-action=pause]').tap();await page.clock.runFor(32);assert.equal(await page.locator('#touch-controls').isVisible(),true);
- await page.evaluate(()=>{fixture.game.y=0;fixture.game.velocity=0;fixture.game.skills.double=1;fixture.game.airUsed=false;fixture.game.doubleCooldown=0;});await page.locator('#touch-jump').tap();await page.clock.runFor(100);await page.locator('#touch-jump').tap();assert.ok(await page.evaluate(()=>fixture.game.doubleCooldown)>9);
+ await page.evaluate(()=>{fixture.game.y=0;fixture.game.velocity=0;fixture.game.skills.double=1;fixture.game.airUsed=false;fixture.game.doubleCooldown=0;});await page.locator('#touch-jump').tap();await page.clock.runFor(100);await page.locator('#touch-jump').tap();const cooldown=await page.evaluate(()=>fixture.game.doubleCooldown);
+ const expectedCooldown=g.find('skills','double').cooldown;
+ assert.ok(cooldown>expectedCooldown-.25&&cooldown<=expectedCooldown);
  await page.evaluate(()=>{fixture.game.skills.jetpack=1;fixture.game.fuel=1;});await page.clock.runFor(32);const fly=await page.locator('#touch-fly').boundingBox();await page.mouse.move(fly.x+10,fly.y+10);await page.mouse.down();assert.equal(await page.evaluate(()=>fixture.game.jet),true);await page.dispatchEvent('#touch-fly','pointercancel',{pointerId:1,pointerType:'touch'});await page.mouse.up();assert.equal(await page.evaluate(()=>fixture.game.jet),false);
  await page.evaluate(()=>{fixture.game.spawnPlant();fixture.game.obstacles.at(-1).x=230;fixture.game.y=0;fixture.game.velocity=0;const label=document.createElement('div');label.textContent='TRAINING · MOBILE TEST';label.style='position:fixed;top:45%;left:10px;color:#ffe6a0;background:#10222a;padding:8px';document.body.append(label);});await page.clock.runFor(32);await page.screenshot({path:'docs/browser/mobile-touch-training.png'});assert.deepEqual(errors,[]);console.log('Mobile: four viewport sizes, rotation, full play area, nine visible previews, touch jump/double/pause/fly cancellation passed.');
 }finally{await browser.close();await new Promise(r=>host.close(r));}

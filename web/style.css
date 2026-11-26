@@ -111,41 +111,47 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   position: absolute;
   transform: translateX(-50%);
   width: max-content;
-  max-width: min(20%, 160px);
-  padding: 3px 6px;
-  border: 1px solid #6b7e63;
-  border-radius: 5px;
-  background: #122622f5;
+  max-width: min(26%, 156px);
+  padding: 4px 8px;
+  border: 1px solid #9c986a;
+  border-radius: 6px;
+  background: #0d1c15ed;
+  box-shadow: 0 2px 8px #0a150f80;
   text-align: center;
   color: #f4ecd8;
-  font-size: clamp(10px, 1.2vw, 15px);
-  line-height: 1.2;
+  font-size: clamp(11px, 1vw, 14px);
+  line-height: 1.25;
   overflow-wrap: anywhere;
 }
 
-#interact, #camp-gate { position: absolute; bottom: 12px; }
-#interact {
+#interact, #camp-gate {
+  position: absolute;
   left: 50%;
+  bottom: calc(14px + env(safe-area-inset-bottom));
   transform: translateX(-50%);
-  max-width: 95%;
-  background: #21382f;
-  border-color: #849777;
+  max-width: min(88%, 360px);
+}
+#interact {
+  background: #1a2d24;
+  border-color: #8b9a74;
+}
+#camp-gate:not([hidden]) + #interact {
+  bottom: calc(66px + env(safe-area-inset-bottom));
 }
 
 #camp-gate {
-  right: max(12px, env(safe-area-inset-right));
-  max-width: 48%;
   min-height: 44px;
-  background: #e8cc89;
-  border-color: #f7dfa5;
-  color: #212619;
-  font-size: 13px;
+  padding-inline: 20px;
+  background: #a9ae81;
+  border-color: #d8d4a8;
+  color: #17201a;
+  font-size: 14px;
   font-weight: 750;
-  box-shadow: 0 3px 12px #08100d70;
+  box-shadow: 0 4px 18px #0710088c;
 }
 
 @media (hover: hover) {
-  #camp-gate:hover { background: #f5dda7; border-color: #fff0cb; }
+  #camp-gate:hover { background: #bdc097; border-color: #ece3bc; }
 }
 
 #camp-gate:focus-visible { outline-color: #263424; }
@@ -319,17 +325,67 @@ body.immersive #hud { max-width: calc(100% - 140px); }
 
 #touch-controls #touch-jump { width: 96px; font-weight: 750; border-color: #dec78a; }
 #touch-controls button.pressed { background: #45624b; border-color: #ffe6a0; }
-body.immersive #touch-controls, body.mobile-playing #touch-controls,
-body.immersive #interact, body.immersive #camp-gate { bottom: calc(12px + env(safe-area-inset-bottom)); }
+body.immersive #touch-controls, body.mobile-playing #touch-controls { bottom: calc(12px + env(safe-area-inset-bottom)); }
+
+.compact-navigation header {
+  position: relative;
+  z-index: 6;
+  gap: 8px;
+  padding-block: calc(4px + env(safe-area-inset-top)) 4px;
+  background: #14221e;
+}
+.compact-navigation #header-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 6px 10px;
+  background: #1d3027;
+  font-size: 12px;
+}
+.compact-navigation #header-toggle::before {
+  content: '';
+  width: 12px;
+  height: 7px;
+  border-block: 1px solid currentColor;
+}
+.compact-navigation #header-toggle[aria-expanded=true] { border-color: #a18e61; color: var(--gold); }
+.compact-navigation #header-actions {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: max(8px, env(safe-area-inset-right));
+  width: min(232px, calc(100% - 24px - env(safe-area-inset-right)));
+  max-height: calc(var(--app-height, 100dvh) - 60px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 8px;
+  border: 1px solid #687c6a;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 9px 24px #080e0bb3;
+}
+.compact-navigation #header-toggle[aria-expanded=true] + #header-actions { display: block; }
+.compact-navigation #header-actions .game-actions, .compact-navigation #header-actions .utilities { display: grid; }
+.compact-navigation #header-actions .utilities {
+  margin: 8px 0 0;
+  padding: 8px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+.compact-navigation #header-actions button { min-height: 44px; text-align: left; }
+.compact-navigation #help [aria-hidden] { display: none; }
+.compact-navigation .help-label { display: inline; }
+
+.camp-view #scene { image-rendering: auto; }
+.camp-view #hud {
+  color: #fff0d1;
+  background: #0b1b14e8;
+  border-color: #9c986a;
+}
+.camp-view .brand strong span { display: none; }
 
 @media (max-width: 760px) {
-  header {
-    position: relative;
-    z-index: 6;
-    gap: 8px;
-    padding-block: calc(4px + env(safe-area-inset-top)) 4px;
-    background: #14221e;
-  }
   .brand { gap: 6px; }
   .brand img { width: 25px; height: 25px; }
   .brand strong {
@@ -340,48 +396,6 @@ body.immersive #interact, body.immersive #camp-gate { bottom: calc(12px + env(sa
   }
   .brand strong span { display: none; }
   #wallet { font-size: 12px; padding-inline: 7px; }
-  #header-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    min-height: 44px;
-    padding: 6px 10px;
-    background: #1d3027;
-    font-size: 12px;
-  }
-  #header-toggle::before {
-    content: '';
-    width: 12px;
-    height: 7px;
-    border-block: 1px solid currentColor;
-  }
-  #header-toggle[aria-expanded=true] { border-color: #a18e61; color: var(--gold); }
-  #header-actions {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: max(8px, env(safe-area-inset-right));
-    width: min(232px, calc(100% - 24px - env(safe-area-inset-right)));
-    max-height: calc(var(--app-height, 100dvh) - 60px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-    overflow: auto;
-    overscroll-behavior: contain;
-    padding: 8px;
-    border: 1px solid #687c6a;
-    border-radius: 10px;
-    background: var(--surface);
-    box-shadow: 0 9px 24px #080e0bb3;
-  }
-  #header-toggle[aria-expanded=true] + #header-actions { display: block; }
-  #header-actions .game-actions, #header-actions .utilities { display: grid; }
-  #header-actions .utilities {
-    margin: 8px 0 0;
-    padding: 8px 0 0;
-    border: 0;
-    border-top: 1px solid var(--border);
-  }
-  #header-actions button { min-height: 44px; text-align: left; }
-  #help [aria-hidden] { display: none; }
-  .help-label { display: inline; }
   #keys { display: none; }
   #hud { font-size: 13px; }
   #menu { padding: 16px; }

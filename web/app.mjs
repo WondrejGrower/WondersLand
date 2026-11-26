@@ -1,4 +1,5 @@
 import {drawSkillIcon} from './skill-icons.mjs';
+import {campPortal} from './camp-layout.mjs';
 import {clearPreviousPlayerData,playerKey} from './player-epoch.mjs';
 import {CloudProgress,localNsecSigner} from './nostr-client.mjs';
 import {FrameClock,FixedSimulation,frameRate} from './timing.mjs';
@@ -15,7 +16,7 @@ import {TransactionFeed} from './feed.mjs';
 import {setAtlases} from './environment.mjs';
 import * as PixelArt from './pixels.mjs';
 const [config,cs]=await Promise.all(['balance.json','cs.json'].map(p=>fetch('./'+p).then(r=>{if(!r.ok)throw Error('Cannot load game assets');return r.json();})));
-const environmentImages=await Promise.all(['camp.png','flora.png','camp-details.webp'].map(async name=>{const image=new Image();image.src='./art/'+name;await image.decode();return image;}));setAtlases(...environmentImages);
+const environmentImages=await Promise.all(['camp.png','flora.png','camp-details.webp','camp-clearing.webp'].map(async name=>{const image=new Image();image.src='./art/'+name;await image.decode();return image;}));setAtlases(...environmentImages);
 const $=id=>document.getElementById(id),escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let language=localStorage.getItem('wl-language')||'en';const languageParam=new URL(location.href).searchParams.get('lang');if(['cs','en'].includes(languageParam)){language=languageParam;localStorage.setItem('wl-language',language);const clean=new URL(location.href);clean.searchParams.delete('lang');history.replaceState(null,'',clean);}
 const t=(key,...args)=>{let text=language==='cs'?(cs[key]||key):key;args.forEach((value,i)=>text=text.replaceAll('%'+(i+1),String(value)));return text;};
@@ -411,7 +412,7 @@ function action(act,arg){try{
  else if(act==='export'){game.saveCheckpoint();download(adminTest?'wondersland-admin-test-progress.json':'wondersland-progress.json',game.p);}
  else if(act==='import-apply'&&pendingImport){localStorage.setItem(progressKey+'-before-import',JSON.stringify(game.p));const replacement=new Game(config,pendingImport,()=>{});replacement.replay=recorded;localStorage.setItem(progressKey,JSON.stringify(replacement.p));mineVersion=JSON.stringify(replacement.p.mine??null);replacement.saveAdapter=persist;blocked=false;game=replacement;if(accountAttached)game.persist();bindScores();pendingImport=null;overlay='settings';}
  else if(act==='import')$('import').click();touch();renderMenu();if(act==='inspect-clothing')$('menu').querySelector('.item-detail button')?.focus();}catch(e){showError(e.message);}}
-$('menu').addEventListener('click',e=>{const b=e.target.closest('button[data-action]');if(b&&!b.disabled){if($('name'))b.focus({preventScroll:true});action(b.dataset.action,b.dataset.arg);}});$('camp-gate').onclick=()=>{if(game.phase==='camp'&&!overlay&&!game.station){game.moves.clear();game.target={x:540,y:215};}};$('verified').onclick=()=>action('verified');$('leaderboard').onclick=()=>action('leaderboard');$('menu').addEventListener('change',e=>{if(e.target.id==='board-month'){boardMonth=e.target.value;boardMonthExplicit=true;loadBoard();}});$('settings').onclick=()=>action('settings');$('account').onclick=()=>action('account');$('inventory').onclick=()=>action('inventory');$('help').onclick=()=>action('help');$('interact').onclick=()=>{game.interact();touch();};
+$('menu').addEventListener('click',e=>{const b=e.target.closest('button[data-action]');if(b&&!b.disabled){if($('name'))b.focus({preventScroll:true});action(b.dataset.action,b.dataset.arg);}});$('camp-gate').onclick=()=>{if(game.phase==='camp'&&!overlay&&!game.station){game.moves.clear();game.target={x:campPortal.x,y:campPortal.y};}};$('verified').onclick=()=>action('verified');$('leaderboard').onclick=()=>action('leaderboard');$('menu').addEventListener('change',e=>{if(e.target.id==='board-month'){boardMonth=e.target.value;boardMonthExplicit=true;loadBoard();}});$('settings').onclick=()=>action('settings');$('account').onclick=()=>action('account');$('inventory').onclick=()=>action('inventory');$('help').onclick=()=>action('help');$('interact').onclick=()=>{game.interact();touch();};
 $('import').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>2e6)throw Error('Invalid progress file');const input=JSON.parse(await file.text());if(!adminTest&&input.adminTest)throw Error('Admin test progress cannot be imported into regular play');const next=migrate(input,config);pendingImport=next;overlay='import-confirm';touch();renderMenu();}catch(error){showError(error.message);}finally{e.target.value='';}};
 function moveFocus(dx,dy){const list=[...$('menu').querySelectorAll('button:not(.window-close):not(:disabled),input:not(:disabled)')].filter(e=>e.offsetParent!==null);if(!list.length)return;const current=document.activeElement,index=list.indexOf(current);if(index<0){list[0].focus();return;}const p=current.getBoundingClientRect();let best=null,cost=Infinity;for(const item of list){if(item===current)continue;const q=item.getBoundingClientRect(),x=q.x+q.width/2-p.x-p.width/2,y=q.y+q.height/2-p.y-p.height/2,along=x*dx+y*dy,across=Math.abs(x*dy-y*dx);if(along>2&&along+across*3<cost){best=item;cost=along+across*3;}}(best||list[(index+(dx+dy>0?1:list.length-1))%list.length]).focus();document.activeElement.scrollIntoView({block:'nearest'});}
 const directions={w:'up',ArrowUp:'up',s:'down',ArrowDown:'down',a:'left',ArrowLeft:'left',d:'right',ArrowRight:'right'};
@@ -422,8 +423,17 @@ function setHeaderOpen(open){
  headerToggle.setAttribute('aria-expanded',String(open));
  if(open){game.moves.clear();game.target=null;}
 }
+function syncHeaderLayout(){
+ const campView=game.phase==='camp';
+ const compact=campView||compactHeader.matches;
+ document.body.classList.toggle('camp-view',campView);
+ document.body.classList.toggle('compact-navigation',compact);
+ if(!compact&&headerOpen())setHeaderOpen(false);
+ return campView;
+}
+syncHeaderLayout();
 headerToggle.onclick=()=>setHeaderOpen(!headerOpen());
-compactHeader.addEventListener('change',()=>setHeaderOpen(false));
+compactHeader.addEventListener('change',()=>{setHeaderOpen(false);syncHeaderLayout();});
 headerActions.addEventListener('click',e=>{
  if(headerOpen()&&e.target.closest('button'))setHeaderOpen(false);
 },true);
@@ -454,13 +464,13 @@ $('scene').onpointerdown=e=>{
  if(game.phase==='running'){game.jump();return;}
  if(game.phase!=='camp'||!e.isPrimary)return;
  const r=e.target.getBoundingClientRect(),point=screenToWorld(e.clientX,e.clientY,r,camera);
- const station=e.pointerType==='touch'?game.stationAt(point.x,point.y):null;
+ const station=e.pointerType==='touch'?game.tapStationAt(point.x,point.y):null;
  if(station&&lastCampTap?.game===game&&lastCampTap.id===station.id&&e.timeStamp-lastCampTap.time<=450){
   openOnArrival={game,id:station.id};lastCampTap=null;
   game.target={x:station.x,y:station.y};
  }else{
   openOnArrival=null;lastCampTap=station?{game,id:station.id,time:e.timeStamp}:null;
-  game.target={x:Math.max(35,Math.min(605,point.x)),y:Math.max(175,Math.min(320,point.y))};
+  game.target=station?{x:station.x,y:station.y}:{x:Math.max(35,Math.min(605,point.x)),y:Math.max(158,Math.min(315,point.y))};
  }
  game.moves.clear();
 };
@@ -493,9 +503,16 @@ function frame(now){try{const dt=Math.min(.1,(now-last)/1000);last=now;if(adminT
  pendingPaintTime+=dt;
  if(!frameClock.paint(now)){requestAnimationFrame(frame);return;}
  const paintDt=pendingPaintTime;pendingPaintTime=0;
- const touchMode=touchMedia.matches||sceneWidth<700;document.body.classList.toggle('mobile-playing',touchMode&&game.phase==='running'&&!overlay);$('touch-controls').hidden=!touchMode||game.phase!=='running'||!!overlay;setText('touch-pause',t('Pause'));setText('touch-jump',t(game.y>0&&game.skills.double&&game.doubleCooldown<=0&&!game.airUsed?'Double Jump':'Jump'));setText('touch-fly',t('Fly'));$('touch-fly').hidden=!game.skills.jetpack;$('touch-fly').disabled=game.fuel<=0;const state=verified.active?verified.view():simulation.view(game);camera=viewport(sceneWidth,sceneHeight,game.phase,state.campX,state.campY);camera.controls=touchMode;state.viewport=camera;state.mineVisible=game.canMine()&&!verified.active;const logicalWidth=Math.ceil(camera.width),logicalHeight=Math.ceil(camera.height);if($('scene').width!==logicalWidth)$('scene').width=logicalWidth;if($('scene').height!==logicalHeight)$('scene').height=logicalHeight;for(const [key,value]of Object.entries(camera))$('scene').dataset['view'+key[0].toUpperCase()+key.slice(1)]=value;if(state.region.id!==paletteId){paletteFrom={...palette};paletteId=state.region.id;paletteTime=0;}paletteTime=Math.min(2.2,paletteTime+paintDt);for(const key of ['sky','soil','foliage'])palette[key]=mixColor(paletteFrom[key],state.region[key],paletteTime/2.2);state.region={...state.region,...Object.fromEntries(['sky','soil','foliage'].map(key=>[key,palette[key]]))};if(game.phase==='camp')drawCamp(c,state,t,$('scene').width,$('scene').height);else if(game.phase==='creation'){c.reset();c.fillStyle='#101d2b';c.fillRect(0,0,$('scene').width,$('scene').height);}else drawRun(c,state,t,$('scene').width,$('scene').height);
+ const campView=syncHeaderLayout();
+ const touchMode=touchMedia.matches||sceneWidth<700;document.body.classList.toggle('mobile-playing',touchMode&&game.phase==='running'&&!overlay);$('touch-controls').hidden=!touchMode||game.phase!=='running'||!!overlay;setText('touch-pause',t('Pause'));setText('touch-jump',t(game.y>0&&game.skills.double&&game.doubleCooldown<=0&&!game.airUsed?'Double Jump':'Jump'));setText('touch-fly',t('Fly'));$('touch-fly').hidden=!game.skills.jetpack;$('touch-fly').disabled=game.fuel<=0;const state=verified.active?verified.view():simulation.view(game);camera=viewport(sceneWidth,sceneHeight,game.phase,state.campX,state.campY);camera.controls=touchMode;state.viewport=camera;state.mineVisible=game.canMine()&&!verified.active;const campResolution=campView?Math.min(2,Math.max(1,sceneWidth/camera.width)):1;const logicalWidth=Math.ceil(camera.width*campResolution),logicalHeight=Math.ceil(camera.height*campResolution);if($('scene').width!==logicalWidth)$('scene').width=logicalWidth;if($('scene').height!==logicalHeight)$('scene').height=logicalHeight;for(const [key,value]of Object.entries(camera))$('scene').dataset['view'+key[0].toUpperCase()+key.slice(1)]=value;if(state.region.id!==paletteId){paletteFrom={...palette};paletteId=state.region.id;paletteTime=0;}paletteTime=Math.min(2.2,paletteTime+paintDt);for(const key of ['sky','soil','foliage'])palette[key]=mixColor(paletteFrom[key],state.region[key],paletteTime/2.2);state.region={...state.region,...Object.fromEntries(['sky','soil','foliage'].map(key=>[key,palette[key]]))};if(game.phase==='camp')drawCamp(c,state,t,$('scene').width,$('scene').height);else if(game.phase==='creation'){c.reset();c.fillStyle='#101d2b';c.fillRect(0,0,$('scene').width,$('scene').height);}else drawRun(c,state,t,$('scene').width,$('scene').height);
  $('inventory').hidden=game.phase!=='camp';setText('inventory',t('Inventory'));setText('wallet',adminTest?'∞':coin(game.p.coins));$('verified').hidden=adminTest||recorded||game.phase!=='camp'||verified.active||!game.p.character.name;setText('verified',t('Verified runs'));setText('settings',t('Settings'));$('account').hidden=!accountAvailable||verified.active||!['creation','camp'].includes(game.phase);setText('account',t('Nostr account'));$('settings').hidden=verified.active;setText('fullscreen',t('Fullscreen'));setText('leave-fullscreen',t('Exit fullscreen'));setText('leaderboard',t('Leaderboard'));setText('keys',t('WASD / arrows · E · Esc'));setText('hud',game.phase==='camp'?t(adminTest?'ADMIN TEST · Unlimited coins · No leaderboard':'Base Camp'):game.phase==='creation'?'':int(Math.floor(game.distance))+' m · '+t(game.region().name)+'\n'+int(Math.floor(game.time))+' s · '+coin(Math.floor(game.earned))+' · '+t('Rescue')+': '+game.rescues+(game.skills.jetpack?' · '+t(touchMode?'Fuel %1 s · hold Fly':'Fuel %1 s · hold F',new Intl.NumberFormat(language,{minimumFractionDigits:1,maximumFractionDigits:1}).format(game.fuel)):'')+'\n'+(adminTest?t('ADMIN TEST · Unlimited coins · No leaderboard'):verified.active?t(verified.failed?'Verified sync paused. Reconnecting…':'VERIFIED · SERVER PROFILE'):game.demo?t('TRAINING · NO REWARDS'):game.replay?t('RECORDED DATA · NOT LIVE'):t('REAL TRANSACTIONS'))+'\n'+Object.entries(game.skills).map(([id,rank])=>id==='double'?(game.doubleCooldown>0?t('Double Jump · %1 s',Math.ceil(game.doubleCooldown)):t('Double Jump ready')):t(game.find('skills',id).name)+' '+rank).join(' · '));
- const spots=[['home',270,194],['mine',365,310],['forge',112,242],['wardrobe',390,210],['portal',540,242],['library',175,329],['training',465,313]];const labels=game.phase==='camp'?spots.filter(([id])=>['home','portal'].includes(id)||(id==='mine'&&game.canMine()&&!verified.active)||game.has(id==='library'?'garden':id)).map(([id,x,y])=>[id,worldToPercent(x,y,camera)]).filter(([,p])=>p.x>=0&&p.x<=100&&p.y>=0&&p.y<=100).map(([id,p])=>`<span style="left:${Math.max(10,Math.min(90,p.x))}%;top:${p.y}%">${escape(t(stationNames[id]))}</span>`).join(''):'';if($('stations').innerHTML!==labels)$('stations').innerHTML=labels;
+ const labels=game.phase==='camp'?game.campStations()
+  .filter(({id})=>id!=='mine'||!verified.active)
+  .map(({id,x,labelY})=>[id,worldToPercent(x,labelY,camera)])
+  .filter(([,p])=>p.x>=0&&p.x<=100&&p.y>=0&&p.y<=100)
+  .map(([id,p])=>`<span data-station="${id}" style="left:${Math.max(13,Math.min(87,p.x))}%;top:${p.y}%">${escape(t(stationNames[id]))}</span>`).join(''):'';
+ const labelsLayer=$('stations');
+ if(labelsLayer.innerHTML!==labels)labelsLayer.innerHTML=labels;
  $('camp-gate').hidden=game.phase!=='camp'||!!overlay||!!game.station||!!game.p.announcements.length||game.nearby()==='portal';setText('camp-gate',t('Walk to gate →'));$('interact').hidden=game.phase!=='camp'||!!game.station||!!game.p.announcements.length||!game.nearby()||!!overlay;setText('interact',t(touchMode?'Open %1':'E · %1',t(stationNames[game.nearby()]||'')));setText('connection',net==='replay'?t('Recorded data · no permanent rewards'):net==='live'?t('Live: recent transactions · %1 available',game.q.pending.length):net==='offline'?t('Source unavailable · waiting for connection'):t('Connecting to mempool.space…'));
  if(game.phase==='over'&&!game.demo&&!game.replay&&game.hit.txid!==lastHit){lastHit=game.hit.txid;const id=lastHit;fetch('/api/tx/'+id+'/status').then(r=>r.ok?readJson(r,16384):null).then(status=>{if(game.hit.txid===id&&typeof status?.confirmed==='boolean'){game.hit.status=status.confirmed?'confirmed':'pending';touch();}}).catch(()=>{});}renderMenu();}catch(e){showError(e.message);}requestAnimationFrame(frame);}requestAnimationFrame(frame);
 const feed=new TransactionFeed({recorded,queue:()=>game.q,active:()=>!game.demo&&['running','waiting','connecting','countdown','select'].includes(game.phase),visible:()=>!document.hidden&&!verified.active,receive:rows=>{if(!verified.active)game.receive(rows);},status:value=>{net=value;$('connection').dataset.status=value;}});

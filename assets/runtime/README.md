@@ -67,6 +67,15 @@ alongside the original camp and flora atlases. The browser decodes the sprite
 sheet once. Both props use the existing station anchors, and the mining block
 and worker retain their separate runtime animations.
 
+## Painted camp clearing · 2026-11-26
+
+`camp-clearing.webp` is the 1600 × 900 terrain and forest plate generated
+with ImageGen from the player's full camp reference. Props, player, sparks
+and station labels are rendered in separate layers. `web/camp-layout.mjs`
+keeps station anchors, label positions and touch bounds together. The
+browser follows the player when the viewport crops the 640 × 360 camp.
+Runs keep their existing camera and terrain renderer.
+
 ## Transaction morphology · graphics v1
 
 `web/environment.mjs` now assembles crowns/shoots from the existing regions,

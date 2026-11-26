@@ -1,3 +1,4 @@
+import {clickHeaderAction} from './test-camera.mjs';
 // Drive real app animation callbacks at a synthetic 144 Hz. This verifies the
 // caps and simulation, not the physical refresh rate of the test machine.
 import {chromium} from 'playwright';
@@ -23,7 +24,7 @@ try{
  await page.fill('#name','Frame playtest');await page.locator('[data-action=create]').click();
  const results=[];
  for(const fps of [60,144]){
-  await page.locator('#settings').click();
+  await clickHeaderAction(page,'settings');
   await page.locator('[data-action=frame-rate][data-arg="'+fps+'"]').click();
   assert.equal(await page.evaluate(()=>localStorage.getItem('wl-frame-rate')),String(fps));
   assert.equal(await page.evaluate(()=>fixture.rate),fps);

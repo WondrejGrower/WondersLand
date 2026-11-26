@@ -1,5 +1,6 @@
 import {validateProgress} from './progress-validation.mjs';
 import {descriptor} from './plant-visual.mjs';
+import {campStations} from './camp-layout.mjs';
 // Browser simulation and save adapter. One runtime for browser, installed PWA and verified server simulation.
 export const fresh = () => ({schemaVersion:5,progressionMode:'staged',discoveries:[],character:{},inventory:[],equipment:{},coins:0,seeds:0,workshop:{},completed:[],research:[],milestones:[],owned:[],hands:false,boots:false,paidRuns:[],records:{},runs:0,lastClock:0,excluded:'',unlocked:[],announcements:[],bestDistance:0,totalDistance:0,recipes:[]});
 export function outfit(config,selected={}){
@@ -149,7 +150,7 @@ export class Game {
  region(){return this.c.regions.filter(r=>this.distance>=r.meters).at(-1)||this.c.regions[0];}
  spawnPlant(){const samples=this.c.trainingModels;const sample=this.practiceModel&&this.practiceModel!=='all'?this.find('trainingModels',this.practiceModel):samples[this.index%samples.length];const row=this.demo?{txid:'',value:sample.sats}:this.q.take();if(!row)return;const p={...plant(row.value,this.c),x:680,instance:this.index++,txid:row.txid,resolved:false,status:this.demo?'demo':'observed'};p.visual=descriptor(p.type,p.sats,p.h,p.txid,this.demo?sample.id:'');this.obstacles.push(p);this.trace.push({event:'transaction',time:this.time,plant:{...p}});for(let i=0;i<2;i++)this.coins.push({x:720+i*20,y:28+(this.index%3)*12,taken:false});this.spawn=this.c.physics.spacing[(this.index-1)%this.c.physics.spacing.length];}
  tick(dt){if(!Number.isFinite(dt)||dt<=0)return;dt=Math.min(dt,.25);const parts=Math.ceil(dt*120);for(let i=0;i<parts;i++)this.step(dt/parts);if(this.trace?.length>20000)this.trace=this.trace.slice(-20000);}
- step(dt){if(this.phase==='camp'){this.animation+=dt;if(this.station||this.p.announcements.length)return;let dx=Number(this.moves.has('right'))-Number(this.moves.has('left')),dy=Number(this.moves.has('down'))-Number(this.moves.has('up'));if(this.target){dx=this.target.x-this.campX;dy=this.target.y-this.campY;if(Math.hypot(dx,dy)<2){this.target=null;dx=dy=0;}}const len=Math.hypot(dx,dy);if(len){this.campX=Math.max(35,Math.min(605,this.campX+dx/len*Math.min(92*dt,len)));this.campY=Math.max(175,Math.min(320,this.campY+dy/len*Math.min(92*dt,len)));}return;}
+ step(dt){if(this.phase==='camp'){this.animation+=dt;if(this.station||this.p.announcements.length)return;let dx=Number(this.moves.has('right'))-Number(this.moves.has('left')),dy=Number(this.moves.has('down'))-Number(this.moves.has('up'));if(this.target){dx=this.target.x-this.campX;dy=this.target.y-this.campY;if(Math.hypot(dx,dy)<2){this.target=null;dx=dy=0;}}const len=Math.hypot(dx,dy);if(len){this.campX=Math.max(35,Math.min(605,this.campX+dx/len*Math.min(92*dt,len)));this.campY=Math.max(158,Math.min(315,this.campY+dy/len*Math.min(92*dt,len)));}return;}
  if(this.phase==='countdown'){this.countdown-=dt;if(this.countdown<=0)this.phase='running';return;}if(this.phase!=='running')return;
  if(!this.demo&&this.spawn<=0&&(!this.q.pending.length||this.q.used.size>=10000)&&!this.obstacles.length){this.phase='waiting';this.held=this.jet=false;return;}
  const f=this.c.physics,s=this.stats();dt*=s.timeScale;this.doubleCooldown=Math.max(0,(this.doubleCooldown||0)-dt);this.landing=Math.max(0,(this.landing||0)-dt);this.time+=dt;this.animation+=dt;this.invulnerable=Math.max(0,this.invulnerable-dt);this.buffer=Math.max(0,this.buffer-dt);const speed=f.speed*Math.min(f.maxSpeedFactor,1+this.time/1200);this.distance+=speed*dt/10;this.spawn-=dt;if(this.spawn<=0)this.spawnPlant();if(this.y<=.01&&this.buffer>0){this.buffer=0;const held=this.held;this.jump();this.held=held;}
@@ -177,12 +178,18 @@ export class Game {
  camp(){this.settle();this.phase='camp';this.station='';this.moves.clear();this.target=null;}
  dismiss(){this.p.announcements.shift();this.persist();}
  campStations(){
-  return [{id:'home',x:270,y:190},{id:'mine',x:365,y:307},{id:'portal',x:540,y:215},{id:'training',x:465,y:290},{id:'forge',x:112,y:225},{id:'wardrobe',x:390,y:195},{id:'library',x:175,y:300}]
-   .filter(spot=>['home','portal'].includes(spot.id)||(spot.id==='mine'&&this.canMine())||this.has(spot.id==='library'?'garden':spot.id));
+  return campStations.filter(station=>!station.unlock||(station.id==='mine'?this.canMine():this.has(station.unlock)));
  }
  stationAt(x,y){
   return this.campStations().map(spot=>({spot,distance:Math.hypot(x-spot.x,y-spot.y)}))
    .filter(item=>item.distance<43).sort((a,b)=>a.distance-b.distance)[0]?.spot;
+ }
+ tapStationAt(x,y){
+  return this.campStations().find(station=>{
+   const [left,top,width,height]=station.tap;
+   const dx=x-station.x-left,dy=y-station.y-top;
+   return dx>=0&&dx<width&&dy>=0&&dy<height;
+  })||this.stationAt(x,y);
  }
  nearby(){return this.stationAt(this.campX,this.campY)?.id||'';}
  interact(){
