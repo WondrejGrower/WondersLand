@@ -1,3 +1,4 @@
+import {exportServerData} from './server-migration.mjs';
 import {verifiedSchema,verifiedRequest} from './verified-worker.mjs';
 // Legacy community history is read-only. Client-reported score tickets are retired.
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
@@ -6,6 +7,7 @@ const monthAt=now=>new Date(now).toISOString().slice(0,7);
 export class MonthlyLeaderboard{
  constructor(ctx){this.ctx=ctx;this.sql=ctx.storage.sql;this.now=()=>Date.now();this.limits=new Map();
   verifiedSchema(this);
+  this.sql.exec('CREATE TABLE IF NOT EXISTS server_bridge (id INTEGER PRIMARY KEY,key TEXT NOT NULL)');
   // Keep all persistent identities/tables and existing history; migrations are additive.
   this.sql.exec('CREATE TABLE IF NOT EXISTS tickets (id TEXT PRIMARY KEY, owner TEXT NOT NULL, run_id TEXT NOT NULL, name TEXT NOT NULL, role TEXT NOT NULL, rules TEXT NOT NULL, started INTEGER NOT NULL, expires INTEGER NOT NULL, used INTEGER NOT NULL DEFAULT 0, score INTEGER, month TEXT, UNIQUE(owner,run_id))');
   this.sql.exec('CREATE TABLE IF NOT EXISTS scores (month TEXT NOT NULL, owner TEXT NOT NULL, name TEXT NOT NULL, best INTEGER NOT NULL, total INTEGER NOT NULL, runs INTEGER NOT NULL, best_at INTEGER NOT NULL, updated INTEGER NOT NULL, rules TEXT NOT NULL, PRIMARY KEY(month,owner))');
@@ -15,12 +17,18 @@ export class MonthlyLeaderboard{
   this.sql.exec('CREATE INDEX IF NOT EXISTS tickets_expiry ON tickets(expires)');
   this.sql.exec('CREATE TABLE IF NOT EXISTS score_months (month TEXT PRIMARY KEY)');
   this.sql.exec('CREATE TABLE IF NOT EXISTS security_migrations (id TEXT PRIMARY KEY)');
+  this.sql.exec('CREATE TABLE IF NOT EXISTS server_bridge (id INTEGER PRIMARY KEY CHECK(id=1),key TEXT NOT NULL)');
   this.ctx.storage.transactionSync(()=>{if(!this.rows("SELECT id FROM security_migrations WHERE id='month-index-v1'").length){this.sql.exec('INSERT OR IGNORE INTO score_months SELECT DISTINCT month FROM scores');this.sql.exec("INSERT INTO security_migrations VALUES ('month-index-v1')");}});
  }
  rows(sql,...args){return Array.from(this.sql.exec(sql,...args));}
+ transaction(fn){return this.ctx.storage.transaction(fn);}
  rate(key,now,max){const bucket=Math.floor(now/60000);if(key==='all'){if(!this.globalLimit||this.globalLimit.bucket!==bucket)this.globalLimit={bucket,hits:0};return ++this.globalLimit.hits<=max;}let entry=this.limits.get(key);if(!entry||entry.bucket!==bucket){if(this.limits.size>=4096)this.limits.delete(this.limits.keys().next().value);entry={bucket,hits:0};this.limits.set(key,entry);}return ++entry.hits<=max;}
  async fetch(request){
   const url=new URL(request.url),now=this.now();
+  if(url.pathname==='/internal/bridge-key')return json({key:this.rows('SELECT key FROM server_bridge WHERE id=1')[0]?.key||null});
+  if(url.pathname==='/internal/bridge-key')return json({key:this.rows('SELECT key FROM server_bridge WHERE id=1')[0]?.key||null});
+  if(url.pathname==='/api/supabase-migration')return exportServerData(this,request);
+  if(url.pathname.startsWith('/api/verified/')&&this.rows("SELECT id FROM security_migrations WHERE id='supabase-frozen-v1'").length)return json({error:'Server migration in progress'},503);
   if(!this.rate('all',now,1800)||!this.rate('ip:'+await digest(request.headers.get('CF-Connecting-IP')||'local'),now,120))return new Response('Please try again shortly',{status:429,headers:{'Retry-After':'60','Cache-Control':'no-store'}});
   if(url.pathname.startsWith('/api/verified/'))return verifiedRequest(this,request);
   if(request.method==='POST'&&['/api/leaderboard/start','/api/leaderboard/finish'].includes(url.pathname))return json({error:'Client-reported submissions are closed',acceptingSubmissions:false},410);

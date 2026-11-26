@@ -1,0 +1,12 @@
+{
+  "$schema": "https://supabase.com/schemas/config/v1.json",
+  "project_id": "WondersLand",
+  "api": {"schemas": ["public", "graphql_public"]},
+  "functions": {
+    "wondersland": {
+      "verify_jwt": false,
+      "entrypoint": "./functions/wondersland/index.ts",
+      "import_map": "./functions/wondersland/deno.json"
+    }
+  }
+}

@@ -1,4 +1,13 @@
+> Serverová migrace na Supabase (26. 11. 2026): aktuální architekturu, podpisy proxy,
+> zachování dat a pravidla rollbacku popisuje [SUPABASE_SERVER.md](SUPABASE_SERVER.md).
+> Níže uvedené ukládání ověřených profilů do SQLite popisuje původní backend.
+
 # GitHub → Cloudflare → wondersland.online
+
+Aktualizace serveru 26. 11. 2026: databáze a ověřování běhů přechází do Supabase.
+Aktuální architektura, přenos a rollback: [SUPABASE_SERVER.md](SUPABASE_SERVER.md).
+Cloudflare dál hostuje klienta a podepisuje API proxy; níže je i původní
+popis Durable Object backendu, který se uchovává jako zmrazený archiv.
 
 Wondrej explicitly requested on 2026-11-08 that the game replace the original
 website at **wondersland.online**. This supersedes the earlier instruction to
