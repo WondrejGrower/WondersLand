@@ -78,10 +78,13 @@ Změna skoku, architektura a výsledky: docs/JUMP_FEEL.md a docs/WEB_PWA_TIMING.
 **NIKDY SE NESMÍ UKLÁDAT PRIVÁTNÍ KLÍČ UŽIVATELE (NSEC) NIKAM DO DAT.
 Jediné, co se může uložit, je NPUB a ostatní data nespojená s NSEC.**
 
-Nevyžaduj, nepřijímej ani nevytvářej NSEC uživatele ve WondersLandu. Zákaz
-platí i pro jiné zápisy klíče, seed a šifrované kopie; zahrnuje databázi,
+Rozšířená volba podle novějšího pokynu smí přijmout NSEC jen v prohlížeči
+pro jeden místní přihlašovací podpis. Server klíč nikdy nepřijímá. Zákaz
+ukládání platí i pro jiné zápisy klíče, seed a šifrované kopie. Zahrnuje databázi,
 Auth metadata, Storage/Vault/secrets, prohlížečová úložiště, cookies, cache,
-URL, logy, analytiku, exporty, Git i zálohy. Přihlášení použije externí signer
-(NIP-07/NIP-46); aplikace obdrží veřejný klíč a podpis. Dočasné aplikační
+URL, logy, analytiku, exporty, Git i zálohy. Přihlášení primárně používá externí signer (NIP-07, NIP-46 v plánu).
+Při přímém vstupu se klíč drží přechodně v paměti prohlížeče a izolovaného
+workeru. Formulář se při odeslání vyprázdní a worker po jediném použití skončí.
+Síť obdrží pouze veřejnou událost s podpisem. Dočasné aplikační
 klíče spojení NIP-46 smějí být pouze v RAM, nikdy v persistentních datech.
 Plán: docs/NOSTR_AUTH_PLAN.md. Implementace přihlášení vyžaduje samostatný krok.

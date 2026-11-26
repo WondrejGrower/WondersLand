@@ -1,6 +1,26 @@
 import {epochHeader,playerEpoch,playerKey} from './player-epoch.mjs';
 import {readJson} from './limits.mjs';
 
+export function localNsecSigner(nsec){
+ const worker=new Worker(new URL('./nostr-local-worker.mjs',import.meta.url),{type:'module'});
+ worker.postMessage(nsec);
+ return {
+  signEvent(template){
+   return new Promise((resolve,reject)=>{
+    const fail=()=>{clearTimeout(timeout);reject(Error('Local Nostr signing failed. Check your NSEC.'));};
+    const timeout=setTimeout(fail,5000);
+    worker.onerror=fail;
+    worker.onmessage=({data})=>{
+     if(!data){fail();return;}
+     clearTimeout(timeout);resolve(data);
+    };
+    worker.postMessage(template);
+   });
+  },
+  dispose(){worker.terminate();}
+ };
+}
+
 export class CloudProgress {
  constructor(onChange){
   this.onChange=onChange;

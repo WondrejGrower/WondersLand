@@ -1,3 +1,4 @@
+import {drawSkillIcon} from './skill-icons.mjs';
 // Canvas renderer used by the browser and installed PWA.
 import * as PixelArt from './pixels.mjs';
 export function drawCamp(c,s,wlTranslate,width=640,height=360){ 
@@ -87,11 +88,8 @@ export function drawRun(c,s,wlTranslate,width=640,height=360){
  if(s.invulnerable>0){c.strokeStyle="#bfe9d4";c.strokeRect(93,ground-s.y-43,30,46)}
  if(s.flying.id&&!s.flying.blocked){
   const fl=s.flying,x=Math.round(fl.x),y=ground-fl.y+Math.round(Math.sin(t*7)*3);
-  const w=Math.max(3,Math.round(8*Math.abs(Math.cos(t*4))));
-  c.fillStyle='#9d4d16';c.fillRect(x-w,y-5,w*2,12);
-  c.fillStyle='#f39729';c.fillRect(x-w,y-7,w*2,12);
-  c.fillStyle='#ffda89';c.fillRect(x-w,y-7,w*2,2);
-  if(w>=5){c.fillStyle='#fff4d7';c.font='bold 11px monospace';c.fillText('₿',x-3,y+2);}
+  c.save();c.translate(x,y);c.scale(Math.max(.22,Math.abs(Math.cos(t*4))),1);
+  drawSkillIcon(c,fl.id,-8,-8);c.restore();
   c.fillStyle='#e4d28b';c.font='9px monospace';c.fillText(wlTranslate(fl.name),Math.max(180,x),ground-100);
  }
  if(s.obstacles.some(p=>p.h>ground)){c.fillStyle="#e7ba85";c.font="10px monospace";c.fillText(wlTranslate("Tall canopy continues above the view"),210,75)}

@@ -178,7 +178,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
 #menu h2 { margin: 18px 0 8px; color: var(--gold); font-size: 17px; }
 #menu p { color: var(--muted); line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
 #menu button { display: block; width: 100%; min-height: 42px; margin: 8px 0; }
-#menu input[type=text], #menu select {
+#menu input[type=text], #menu input[type=password], #menu select {
   max-width: 100%;
   padding: 9px 11px;
   border: 1px solid #6e8271;
@@ -186,7 +186,7 @@ canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; 
   background: #101e1b;
   color: inherit;
 }
-#menu input[type=text] { display: block; width: min(350px, 100%); margin: 12px auto; }
+#menu input[type=text], #menu input[type=password] { display: block; width: min(350px, 100%); margin: 12px auto; }
 #menu .row { display: flex; align-items: center; gap: 16px; margin: 12px 0; }
 #menu .row > div { flex: 1; min-width: 0; }
 #menu .row button { width: 155px; flex-shrink: 0; margin: 0; }
@@ -399,3 +399,48 @@ body.immersive #interact, body.immersive #camp-gate { bottom: calc(12px + env(sa
 .opening-brand { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
 .opening-brand h1 { margin:0; }
 .opening-brand img { border-radius:12px; }
+
+.skill-choices { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:0 0 14px; }
+#menu .skill-choice {
+  display:flex; flex-direction:column; align-items:flex-start; gap:10px;
+  min-width:0; min-height:128px; margin:0; padding:12px; text-align:left;
+  border-color:#50675a; background:#1d3029;
+}
+.skill-icon {
+  display:grid; place-items:center; width:46px; height:46px; flex:0 0 46px;
+  border:1px solid #4e6258; border-radius:8px; background:#111f1b;
+}
+.skill-icon canvas { display:block; width:32px; height:32px; image-rendering:pixelated; }
+.skill-copy { display:grid; gap:4px; min-width:0; overflow-wrap:anywhere; }
+.skill-copy strong { color:#f4ead2; font-size:15px; line-height:1.25; }
+.skill-copy small { color:#dec18a; font-size:11px; }
+.skill-copy > span { color:var(--muted); font-size:13px; line-height:1.42; }
+.skill-entry { display:grid; grid-template-columns:auto minmax(0,1fr); gap:12px; padding:14px 0; border-top:1px solid #40564b; }
+#menu .skill-entry h2 { margin:0 0 8px; }
+.skill-entry dl { display:grid; gap:6px; margin:0; font-size:13px; }
+.skill-entry dl div { display:grid; grid-template-columns:minmax(52px,auto) 1fr; gap:10px; }
+.skill-entry dt { color:#dec18a; }
+.skill-entry dd { margin:0; color:var(--muted); }
+@media (max-width:560px) {
+  .skill-choices { grid-template-columns:1fr; }
+  #menu .skill-choice { flex-direction:row; align-items:center; min-height:76px; }
+}
+
+#menu .login-panel { max-width:420px; margin:0 auto; padding:8px 0; }
+#menu .login-panel p { margin:8px 0 18px; }
+#menu .login-panel label { display:block; color:#d9c5a1; font-size:13px; }
+#menu .login-panel #nsec-key { width:100%; min-height:44px; margin:6px 0 16px; font-family:monospace; font-size:16px; }
+#menu [data-action=account-login], #menu [data-action=nsec-sign] {
+  background:#e4c789; color:#21271d; border-color:#e9d29b; font-weight:700;
+}
+#menu [data-action=nsec-open] { background:transparent; color:#c4cdbd; border-color:transparent; }
+#menu [data-action=opening-guest] { background:#20332b; }
+@media (hover:hover) {
+  #menu .skill-choice:not(:disabled):hover { background:#273d32; border-color:#819280; }
+  #menu [data-action=account-login]:hover, #menu [data-action=nsec-sign]:hover { background:#f1dba8; }
+  #menu [data-action=nsec-open]:hover { background:#20332b; border-color:#50675a; }
+}
+
+@media (pointer:coarse) {
+  #menu .keyboard-hint { display:none; }
+}
