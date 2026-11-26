@@ -298,3 +298,20 @@ Chromium at 320 px verified the close control for the welcome screen, NSEC,
 character creation, settings, reset confirmation and installation guide, plus
 keyboard activation and visibility while scrolling. The full browser journey,
 local NSEC sign-in and checked deployment build also passed.
+
+## Painted camp and shared Ranked registration · 2026-11-26
+
+Cloudflare release `61784b9` served byte-identical copies of the tested
+application, layout, simulation, styles, Czech translations and camp art.
+Supabase Edge Function `wondersland` v9 used the same source revision. Public
+health, the Nostr session endpoint and the Ranked leaderboard returned
+successful responses with player epoch 2.
+
+Two production sessions using the same disposable Nostr identity restored the
+same saved character and Ranked player ID. The server rejected creation of a
+Ranked profile with no saved character and reused the existing ID on retry.
+The test account and Ranked fixture were removed after verification. The
+checked deployment, mobile/desktop camp checks, Ranked browser test and local
+NSEC browser test passed. GitHub Actions could not start its verification job
+because of the existing account billing lock. Cloudflare Workers Builds
+reported success.
