@@ -136,8 +136,18 @@ IndexedDB a Cache Storage.
    šifrovaná kopie. API přijímá jen výslovně povolená pole a nikdy neodráží
    neznámý vstup do chyb či logů. Kontrola samotného prefixu `nsec1` nestačí.
 
-Nostr přihlášení samo o sobě neznamená ověřeného člověka, peněženku ani
-placený ranked. Stávající plán vstupného a výplat je samostatná budoucí práce.
+## Jedna registrace postavy a Ranked
+
+Přihlášení otevírá herní účet se synchronizovanou postavou. Při prvním vstupu
+do Ranked klient dokončí uložení a server odvodí identitu postavy z uložených
+dat účtu. Stávající Ranked profil si ponechá své ID, výsledky a vylepšení.
+Serverový účet pro vstup používá relační cookie, kterou lze používat i po
+doplnění dalších způsobů přihlášení.
+
+Plánované vstupné je 1 000 sats. Před výběrem se musí určit doba platnosti
+vstupu a poskytovatel plateb. Server má povolit placený vstup až po
+potvrzení platby svázané s účtem a konkrétním vstupem. Opakování potvrzení
+nesmí připsat další vstup. Tato revize vstupné nevybírá.
 
 Primární specifikace: [NIP-07](https://github.com/nostr-protocol/nips/blob/master/07.md),
 [NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md),

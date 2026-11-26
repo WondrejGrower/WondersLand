@@ -54,9 +54,20 @@ const board=new LeaderboardClient({storage:{
  setItem:(key,value)=>localStorage.setItem(playerKey(key),value)
 },onChange:()=>touch()});
 const cloud=new CloudProgress(()=>touch());
-let authBusy=false,accountAvailable=false,nsecReturn='account',nsecError='';
-let localGame=null;const verified=new VerifiedClient(config,()=>cloud.account?null:board.key(),()=>{if(verified.active){game=verified.game;if(verified.fatal)overlay='verified-failed';}touch();});
+let authBusy=false,accountAvailable=false,accountChecking=!adminTest&&!recorded,nsecReturn='account',nsecError='';
+let localGame=null,rankedLoading=false,rankedLoadError='';const verified=new VerifiedClient(config,()=>cloud.account?null:board.key(),()=>{if(verified.active){game=verified.game;if(verified.fatal)overlay='verified-failed';}touch();});
 async function verifiedTask(task){try{await task();touch();renderMenu();}catch(error){showError(error.message);}}
+async function loadRanked(){
+ if(rankedLoading||!cloud.account||!accountAttached)return;
+ rankedLoading=true;rankedLoadError='';touch();renderMenu();
+ try{
+  await cloud.flush();
+  if(cloud.conflict||cloud.pending!==undefined)throw Error('Sync your character before entering Ranked.');
+  await verified.load();
+  if(!verified.profile)await verified.register();
+ }catch(error){rankedLoadError=error.message;}
+ finally{rankedLoading=false;touch();renderMenu();}
+}
 async function leaveVerified(){const confirmed=await verified.leave();game=localGame;localGame=null;overlay='';touch();feed.wake();renderMenu();if(!confirmed)showError('Unsent inputs were not saved. Settle the interrupted run when connected.');}
 function bindScores(){game.onLiveRunFinished=result=>board.finish(result);}
 bindScores();board.recover(data?.activeRun);board.flush();addEventListener('online',()=>board.flush());
@@ -135,7 +146,7 @@ function submitNsec(){
 function openingHtml(){
  return '<section class="login-panel"><div class="opening-brand"><img src="/icons/icon-192.png" alt="" width="56" height="56">'+title('WondersLand')+'</div>'+
   p(t('A forest shaped by live Bitcoin transactions.'))+
-  (authBusy?p(t('Connecting to your Nostr account…')):
+  (authBusy||accountChecking?p(t('Connecting to your Nostr account…')):
    accountAvailable&&!cloud.account?button(t('Sign in or register with Nostr'),'account-login')+button(t('Advanced · NSEC'),'nsec-open')+button(t('Play as guest'),'opening-guest'):
    button(t('Continue'),'opening-guest'))+'</section>';
 }
@@ -260,9 +271,13 @@ function publicCharacterHtml(){
   button(t('Visit camp'),'visit-camp')+button(t('Back'),'characters-back');
 }
 function verifiedHtml(){
- let html=title(t('Verified runs'))+p(t('Separate server progress starts from zero. Your local character, coins and upgrades stay unchanged.'))+p(t('Inputs are simulated on the server using real transactions. This is not paid ranked or proof of a human player.'));
- if(!verified.info)return html+p(t('Loading server profile…'))+button(t('Back'),'back');
- if(!verified.profile)return html+button(t('Create server profile'),'verified-register')+button(t('Back'),'back');
+ let html=title('Ranked');
+ if(!cloud.account||!accountAttached)return html+p(t('Ranked uses the character saved to your game account.'))+
+  button(t('Nostr account'),'account','',!accountAvailable)+button(t('Back'),'back');
+ if(rankedLoading)return html+p(t('Loading server profile…'))+button(t('Back'),'back');
+ if(rankedLoadError||!verified.profile)return html+p(t(rankedLoadError||'Verified service unavailable'))+
+  button(t('Try again'),'verified')+button(t('Nostr account'),'account')+button(t('Back'),'back');
+ html+=p(t('Ranked tracks its own scores and upgrades for your character.'));
  const g=new Game(config,verified.profile),d=g.p;
  html+=button(t('Registered characters'),'directory')+button(t(d.publicCharacter?'Hide my character':'Publish my character'),'verified-action','publish-character:'+(d.publicCharacter?'off':'on'));
  html+='<h2>'+escape(d.character.name)+' · '+escape(t(g.find('classes',d.character.class).name))+'</h2>'+p(t('Server coins: %1 · best: %2 m · attempts: %3',coin(d.coins),int(d.bestDistance),int(d.runs)))+'<code>'+escape(verified.info.playerId)+'</code>';
@@ -352,7 +367,7 @@ function closeDialog(){
  if(document.activeElement?.matches('input,textarea,select'))document.activeElement.blur();
  back();
 }
-function renderMenu(){const key=JSON.stringify([game.phase,game.station,game.p.announcements[0],overlay,language,revision,Math.ceil(game.countdown||0),game.phase==='upgrade'?game.nextChoice:0,game.station==='mine'?game.mineBalance().coins:0]);if(key===lastView)return;lastView=key;const helpLabel=t('A small field guide');$('help').setAttribute('aria-label',helpLabel);$('help').querySelector('.help-label').textContent=helpLabel;const html=menuHtml();$('sheet').hidden=!html;if(!html){if($('sheet').contains(document.activeElement))document.activeElement.blur();return;}game.moves.clear();game.target=null;const focused=document.activeElement?.dataset?.action,arg=document.activeElement?.dataset?.arg;const closeDisabled=authBusy||(overlay==='verified'&&verified.busy);
+function renderMenu(){const key=JSON.stringify([game.phase,game.station,game.p.announcements[0],overlay,language,revision,Math.ceil(game.countdown||0),game.phase==='upgrade'?game.nextChoice:0,game.station==='mine'?game.mineBalance().coins:0]);if(key===lastView)return;lastView=key;const helpLabel=t('A small field guide');$('help').setAttribute('aria-label',helpLabel);$('help').querySelector('.help-label').textContent=helpLabel;const html=menuHtml();$('sheet').hidden=!html;if(!html){if($('sheet').contains(document.activeElement))document.activeElement.blur();return;}game.moves.clear();game.target=null;const focused=document.activeElement?.dataset?.action,arg=document.activeElement?.dataset?.arg;const closeDisabled=authBusy||(overlay==='opening'&&accountChecking)||(overlay==='verified'&&verified.busy);
  $('menu').innerHTML='<div class="dialog-tools"><button type="button" class="window-close" data-action="dialog-close" aria-label="'+escape(t('Close window'))+'"'+(closeDisabled?' disabled':'')+'>×</button></div>'+html;
  for(const canvas of $('menu').querySelectorAll('[data-skill-icon]'))drawSkillIcon(canvas.getContext('2d'),canvas.dataset.skillIcon);
  const nsec=$('nsec-key');if(nsec)nsec.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();submitNsec();}};
@@ -363,7 +378,7 @@ function renderMenu(){const key=JSON.stringify([game.phase,game.station,game.p.a
  const camp=$('visited-camp');if(camp)drawCamp(camp.getContext('2d'),{campX:320,campY:235,animation:0,profile:visitor},t);
  if(focused){const el=[...$('menu').querySelectorAll('button')].find(b=>b.dataset.action===focused&&b.dataset.arg===arg&&!b.disabled);if(el){el.focus();return;}}
  focusFirst();}
-function back(){if(authBusy)return;if(overlay==='nsec'){overlay=nsecReturn;touch();return;}if(verified.active&&!overlay&&['over','camp'].includes(game.phase)){verifiedTask(leaveVerified);return;}if(document.activeElement?.tagName==='INPUT'){document.activeElement.blur();focusFirst();return;}if(overlay==='public-camp'||overlay==='public-character'){overlay='directory';directoryRequest++;}
+function back(){if(authBusy||(overlay==='opening'&&accountChecking))return;if(overlay==='nsec'){overlay=nsecReturn;touch();return;}if(verified.active&&!overlay&&['over','camp'].includes(game.phase)){verifiedTask(leaveVerified);return;}if(document.activeElement?.tagName==='INPUT'){document.activeElement.blur();focusFirst();return;}if(overlay==='public-camp'||overlay==='public-character'){overlay='directory';directoryRequest++;}
  else if(overlay==='directory'){overlay='verified';directoryRequest++;}
  else if(overlay==='reset')overlay='settings';else if(overlay)overlay='';else if(game.station)game.station='';else if(game.phase==='camp'&&game.p.announcements.length)game.dismiss();else if(['select','connecting','waiting','over'].includes(game.phase))game.camp();else game.pause();touch();}
 function download(name,obj){const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
@@ -371,7 +386,7 @@ function action(act,arg){try{
  if(authBusy)return;
  if(verified.active&&['settings','install','reset-confirm','reset','import','import-apply','export','inventory','buy','craft','equip','research','exclude','practice','appearance','equip-clothing','take-clothing','inspect-clothing'].includes(act))return;
  if(['mine-buy','mine-activate','mine-collect'].includes(act)){void playMineAction(act.slice(5),arg);return;}
- if(act==='verified'&&!adminTest){if(verified.active)return;overlay='verified';verifiedTask(()=>verified.load());}
+ if(act==='verified'&&!adminTest){if(verified.active)return;overlay='verified';void loadRanked();}
  else if(act==='account'&&accountAvailable&&!verified.active&&['creation','camp'].includes(game.phase))overlay='account';
  else if(act==='nsec-open'&&['opening','account'].includes(overlay)&&!cloud.account){nsecReturn=overlay;nsecError='';overlay='nsec';}
  else if(act==='nsec-sign'&&overlay==='nsec'){submitNsec();return;}
@@ -383,9 +398,8 @@ function action(act,arg){try{
  else if(act==='characters-back'){directoryRequest++;overlay='directory';}
  else if(act==='visit-camp'&&visitor)overlay='public-camp';
  else if(act==='view-inventory'&&visitor)overlay='public-character';
- else if(act==='verified-register'&&!adminTest)verifiedTask(()=>verified.register(game.p.character));
  else if(act==='verified-action'&&!adminTest)verifiedTask(()=>verified.action(arg.split(':')[0],arg.split(':')[1]||''));
- else if(act==='verified-start'&&!adminTest&&!verified.busy)verifiedTask(async()=>{
+ else if(act==='verified-start'&&!adminTest&&cloud.account&&accountAttached&&!verified.busy)verifiedTask(async()=>{
   verified.busy=true;touch();renderMenu();
   try{const previous=game;const next=await verified.start(arg);localGame=previous;game=next;overlay='';}
   finally{verified.busy=false;touch();renderMenu();}
@@ -406,7 +420,7 @@ function action(act,arg){try{
  else if(act==='choose-upgrade')game.chooseUpgrade(Number(arg));
  else if(act==='inspect-clothing')selectedItem=arg;
  else if(act==='equip-clothing')game.equipClothing(arg);
- else if(act==='practice')game.startPractice(arg);else if(act==='appearance')toggleAppearance(arg);else if(act==='skill'){game.choose(Number(arg));if(game.phase==='running'&&!game.demo&&!game.replay)board.begin({runId:game.runId,name:game.p.character.name,role:game.p.character.class,rules:config.balanceVersion,mode:'live'});}else if(act==='run'){if(verified.active){verifiedTask(async()=>{await leaveVerified();overlay='verified';await verified.load();});return;}if(arg==='true'&&game.practiceModel)game.startPractice(game.practiceModel);else game.start(arg==='true');}else if(act==='camp'){if(verified.active){verifiedTask(leaveVerified);return;}game.camp();}else if(act==='pause')game.pause();else if(act==='close'){game.station='';game.moves.clear();}else if(act==='dismiss')game.dismiss();
+ else if(act==='practice')game.startPractice(arg);else if(act==='appearance')toggleAppearance(arg);else if(act==='skill'){game.choose(Number(arg));if(game.phase==='running'&&!game.demo&&!game.replay)board.begin({runId:game.runId,name:game.p.character.name,role:game.p.character.class,rules:config.balanceVersion,mode:'live'});}else if(act==='run'){if(verified.active){verifiedTask(async()=>{await leaveVerified();overlay='verified';await loadRanked();});return;}if(arg==='true'&&game.practiceModel)game.startPractice(game.practiceModel);else game.start(arg==='true');}else if(act==='camp'){if(verified.active){verifiedTask(leaveVerified);return;}game.camp();}else if(act==='pause')game.pause();else if(act==='close'){game.station='';game.moves.clear();}else if(act==='dismiss')game.dismiss();
  else if(act==='buy')game.buy(arg);else if(act==='craft')game.craft(arg);else if(act==='equip')game.equip(arg);else if(act==='research')game.research(arg);else if(act==='exclude'){game.p.excluded=game.p.excluded===arg?'':arg;game.persist();}
  else if(act==='transaction'&&/^[a-f0-9]{64}$/.test(game.hit.txid))window.open('https://mempool.space/tx/'+game.hit.txid,'_blank','noopener,noreferrer');
  else if(act==='export'){game.saveCheckpoint();download(adminTest?'wondersland-admin-test-progress.json':'wondersland-progress.json',game.p);}
@@ -505,7 +519,7 @@ function frame(now){try{const dt=Math.min(.1,(now-last)/1000);last=now;if(adminT
  const paintDt=pendingPaintTime;pendingPaintTime=0;
  const campView=syncHeaderLayout();
  const touchMode=touchMedia.matches||sceneWidth<700;document.body.classList.toggle('mobile-playing',touchMode&&game.phase==='running'&&!overlay);$('touch-controls').hidden=!touchMode||game.phase!=='running'||!!overlay;setText('touch-pause',t('Pause'));setText('touch-jump',t(game.y>0&&game.skills.double&&game.doubleCooldown<=0&&!game.airUsed?'Double Jump':'Jump'));setText('touch-fly',t('Fly'));$('touch-fly').hidden=!game.skills.jetpack;$('touch-fly').disabled=game.fuel<=0;const state=verified.active?verified.view():simulation.view(game);camera=viewport(sceneWidth,sceneHeight,game.phase,state.campX,state.campY);camera.controls=touchMode;state.viewport=camera;state.mineVisible=game.canMine()&&!verified.active;const campResolution=campView?Math.min(2,Math.max(1,sceneWidth/camera.width)):1;const logicalWidth=Math.ceil(camera.width*campResolution),logicalHeight=Math.ceil(camera.height*campResolution);if($('scene').width!==logicalWidth)$('scene').width=logicalWidth;if($('scene').height!==logicalHeight)$('scene').height=logicalHeight;for(const [key,value]of Object.entries(camera))$('scene').dataset['view'+key[0].toUpperCase()+key.slice(1)]=value;if(state.region.id!==paletteId){paletteFrom={...palette};paletteId=state.region.id;paletteTime=0;}paletteTime=Math.min(2.2,paletteTime+paintDt);for(const key of ['sky','soil','foliage'])palette[key]=mixColor(paletteFrom[key],state.region[key],paletteTime/2.2);state.region={...state.region,...Object.fromEntries(['sky','soil','foliage'].map(key=>[key,palette[key]]))};if(game.phase==='camp')drawCamp(c,state,t,$('scene').width,$('scene').height);else if(game.phase==='creation'){c.reset();c.fillStyle='#101d2b';c.fillRect(0,0,$('scene').width,$('scene').height);}else drawRun(c,state,t,$('scene').width,$('scene').height);
- $('inventory').hidden=game.phase!=='camp';setText('inventory',t('Inventory'));setText('wallet',adminTest?'∞':coin(game.p.coins));$('verified').hidden=adminTest||recorded||game.phase!=='camp'||verified.active||!game.p.character.name;setText('verified',t('Verified runs'));setText('settings',t('Settings'));$('account').hidden=!accountAvailable||verified.active||!['creation','camp'].includes(game.phase);setText('account',t('Nostr account'));$('settings').hidden=verified.active;setText('fullscreen',t('Fullscreen'));setText('leave-fullscreen',t('Exit fullscreen'));setText('leaderboard',t('Leaderboard'));setText('keys',t('WASD / arrows · E · Esc'));setText('hud',game.phase==='camp'?t(adminTest?'ADMIN TEST · Unlimited coins · No leaderboard':'Base Camp'):game.phase==='creation'?'':int(Math.floor(game.distance))+' m · '+t(game.region().name)+'\n'+int(Math.floor(game.time))+' s · '+coin(Math.floor(game.earned))+' · '+t('Rescue')+': '+game.rescues+(game.skills.jetpack?' · '+t(touchMode?'Fuel %1 s · hold Fly':'Fuel %1 s · hold F',new Intl.NumberFormat(language,{minimumFractionDigits:1,maximumFractionDigits:1}).format(game.fuel)):'')+'\n'+(adminTest?t('ADMIN TEST · Unlimited coins · No leaderboard'):verified.active?t(verified.failed?'Verified sync paused. Reconnecting…':'VERIFIED · SERVER PROFILE'):game.demo?t('TRAINING · NO REWARDS'):game.replay?t('RECORDED DATA · NOT LIVE'):t('REAL TRANSACTIONS'))+'\n'+Object.entries(game.skills).map(([id,rank])=>id==='double'?(game.doubleCooldown>0?t('Double Jump · %1 s',Math.ceil(game.doubleCooldown)):t('Double Jump ready')):t(game.find('skills',id).name)+' '+rank).join(' · '));
+ $('inventory').hidden=game.phase!=='camp';setText('inventory',t('Inventory'));setText('wallet',adminTest?'∞':coin(game.p.coins));$('verified').hidden=adminTest||recorded||game.phase!=='camp'||verified.active||!game.p.character.name;setText('verified','Ranked');setText('settings',t('Settings'));$('account').hidden=!accountAvailable||verified.active||!['creation','camp'].includes(game.phase);setText('account',t('Nostr account'));$('settings').hidden=verified.active;setText('fullscreen',t('Fullscreen'));setText('leave-fullscreen',t('Exit fullscreen'));setText('leaderboard',t('Leaderboard'));setText('keys',t('WASD / arrows · E · Esc'));setText('hud',game.phase==='camp'?t(adminTest?'ADMIN TEST · Unlimited coins · No leaderboard':'Base Camp'):game.phase==='creation'?'':int(Math.floor(game.distance))+' m · '+t(game.region().name)+'\n'+int(Math.floor(game.time))+' s · '+coin(Math.floor(game.earned))+' · '+t('Rescue')+': '+game.rescues+(game.skills.jetpack?' · '+t(touchMode?'Fuel %1 s · hold Fly':'Fuel %1 s · hold F',new Intl.NumberFormat(language,{minimumFractionDigits:1,maximumFractionDigits:1}).format(game.fuel)):'')+'\n'+(adminTest?t('ADMIN TEST · Unlimited coins · No leaderboard'):verified.active?t(verified.failed?'Verified sync paused. Reconnecting…':'VERIFIED · SERVER PROFILE'):game.demo?t('TRAINING · NO REWARDS'):game.replay?t('RECORDED DATA · NOT LIVE'):t('REAL TRANSACTIONS'))+'\n'+Object.entries(game.skills).map(([id,rank])=>id==='double'?(game.doubleCooldown>0?t('Double Jump · %1 s',Math.ceil(game.doubleCooldown)):t('Double Jump ready')):t(game.find('skills',id).name)+' '+rank).join(' · '));
  const labels=game.phase==='camp'?game.campStations()
   .filter(({id})=>id!=='mine'||!verified.active)
   .map(({id,x,labelY})=>[id,worldToPercent(x,labelY,camera)])
@@ -516,14 +530,20 @@ function frame(now){try{const dt=Math.min(.1,(now-last)/1000);last=now;if(adminT
  $('camp-gate').hidden=game.phase!=='camp'||!!overlay||!!game.station||!!game.p.announcements.length||game.nearby()==='portal';setText('camp-gate',t('Walk to gate →'));$('interact').hidden=game.phase!=='camp'||!!game.station||!!game.p.announcements.length||!game.nearby()||!!overlay;setText('interact',t(touchMode?'Open %1':'E · %1',t(stationNames[game.nearby()]||'')));setText('connection',net==='replay'?t('Recorded data · no permanent rewards'):net==='live'?t('Live: recent transactions · %1 available',game.q.pending.length):net==='offline'?t('Source unavailable · waiting for connection'):t('Connecting to mempool.space…'));
  if(game.phase==='over'&&!game.demo&&!game.replay&&game.hit.txid!==lastHit){lastHit=game.hit.txid;const id=lastHit;fetch('/api/tx/'+id+'/status').then(r=>r.ok?readJson(r,16384):null).then(status=>{if(game.hit.txid===id&&typeof status?.confirmed==='boolean'){game.hit.status=status.confirmed?'confirmed':'pending';touch();}}).catch(()=>{});}renderMenu();}catch(e){showError(e.message);}requestAnimationFrame(frame);}requestAnimationFrame(frame);
 const feed=new TransactionFeed({recorded,queue:()=>game.q,active:()=>!game.demo&&['running','waiting','connecting','countdown','select'].includes(game.phase),visible:()=>!document.hidden&&!verified.active,receive:rows=>{if(!verified.active)game.receive(rows);},status:value=>{net=value;$('connection').dataset.status=value;}});
-feed.start();document.addEventListener('visibilitychange',()=>feed.wake());document.documentElement.lang=language;renderMenu();
+feed.start();document.addEventListener('visibilitychange',()=>feed.wake());document.documentElement.lang=language;
+if(accountChecking&&game.phase==='creation')overlay='opening';
+renderMenu();
 if(!adminTest&&!recorded){
  try{
   const account=await cloud.request('session');
   accountAvailable=true;
-  if(account.npub)attachAccount(account);
-  else if(game.phase==='creation')overlay='opening';
- }catch{}
+  if(account.npub){
+   attachAccount(account);
+   if(overlay==='opening'&&accountAttached)overlay='';
+  }
+ }catch{
+  if(overlay==='opening')overlay='';
+ }finally{accountChecking=false;}
  addEventListener('online',()=>cloud.flush());
  document.addEventListener('visibilitychange',()=>{if(document.hidden)void cloud.flush();});
 }

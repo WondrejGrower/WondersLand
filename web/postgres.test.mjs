@@ -140,9 +140,18 @@ test('Nostr login restores the same personal and ranked progress across sessions
   const ranked=(headers,path,data)=>f.run(async sql=>{
    const board=new PostgresBoard(sql);board.now=()=>now;
    const request=new Request(origin+'/api/verified/'+path,data?{method:'POST',body:JSON.stringify(data),headers:{...headers,origin,'Content-Type':'application/json'}}:{headers});
-   board.accountOwner=(await sessionAccount(board,request))?.ranked_owner;return board.fetch(request);
+   const account=await sessionAccount(board,request,path==='register');
+   board.accountOwner=account?.ranked_owner;
+   if(path==='register'&&account?.progress)board.accountCharacter=JSON.parse(account.progress).character;
+   return board.fetch(request);
   });
-  const registered=await (await ranked(first.cookie,'register',{character:{name:'Ranked fixture',class:'gardener'}})).json();
+  const registered=await (await ranked(first.cookie,'register',{})).json();
+  assert.ok(registered.playerId);
+  assert.equal(registered.profile.character.name,'Cross-device fixture');
+  assert.equal(registered.profile.coins,0);
+  const repeated=await (await ranked(first.cookie,'register',{character:{name:'Different character',class:'explorer'}})).json();
+  assert.equal(repeated.playerId,registered.playerId);
+  assert.equal(repeated.profile.character.name,'Cross-device fixture');
   const second=await authenticate();assert.equal(second.data.npub,first.data.npub);assert.equal(second.data.progress.coins,20);assert.equal(second.data.progress.mine.active,1);
   assert.equal(second.data.progress.foreignField,undefined);
   assert.equal((await (await ranked(second.cookie,'profile')).json()).playerId,registered.playerId);

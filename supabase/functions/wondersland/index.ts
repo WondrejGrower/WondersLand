@@ -58,10 +58,11 @@ Deno.serve(async request=>{
    if(!await board.rate('ip:'+req.headers.get('x-wl-source'),now,120))return json({error:'Please try again shortly'},429);
    if(account)return await accountRequest(board,req,body);
    if(path.startsWith('/api/verified/')&&path!=='/api/verified/leaderboard'&&req.headers.has('x-wl-session')){
-    const session=await sessionAccount(board,req);
+    const session=await sessionAccount(board,req,path==='/api/verified/register');
     if(!session)return json({error:'Sign in with Nostr first'},401);
     if(req.method==='POST'&&req.headers.get('origin')!==normalized.origin)return json({error:'Origin not allowed'},403);
     board.accountOwner=session.ranked_owner;
+    if(path==='/api/verified/register'&&session.progress)board.accountCharacter=JSON.parse(session.progress).character;
    }
    // The edge proxy already canonicalizes ranked requests. Dispatch directly to the database board.
    if(path.startsWith('/api/verified/')&&board.accountOwner)return await board.fetch(new Request(req.url,{method:req.method,headers,body:req.body,duplex:'half'} as RequestInit));
