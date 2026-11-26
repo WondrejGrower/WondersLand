@@ -18,17 +18,37 @@ test('coin bonuses accumulate in exact milli-coins instead of dropping fractions
 
 test('all three roles are available at creation and require reset to change',()=>{for(const role of ['gardener','explorer','collector']){const g=new Game(c);g.create('Willow',{class:role,hair:'#5e3936',skin:'#dfaf87',shirt:'#679e86',hairStyle:0});assert.equal(g.p.character.class,role);g.p.coins=777;g.p.workshop.strength=7;const before=JSON.stringify(g.p);g.changeClass('collector');g.create('Replacement',{class:'collector'});assert.equal(JSON.stringify(g.p),before);const loaded=new Game(c,{...g.p,announcements:['classes','diamond']});assert.equal(loaded.p.character.class,role);assert.deepEqual(loaded.p.announcements,['diamond']);assert.equal(loaded.p.coins,777);const reset=new Game(c);reset.create('New',{class:'collector'});assert.equal(reset.p.character.class,'collector');}});
 
-test('each completed live run unlocks at most one eligible feature',()=>{
+test('training opens all five attributes with one notice and other unlocks stay staged',()=>{
  const g=new Game(c,profile());g.receive([tx(1)]);
- for(const [score,feature] of [[1000,'training'],[0,'strength'],[0,'agility']]){
-  g.start(false,42);g.choose(0);g.distance=score;g.camp();
+ const attributes=c.workshop.map(({id})=>id);
+ assert.ok(attributes.every(id=>!g.has(id)));
+ g.start(false,42);g.choose(0);g.distance=1000;g.camp();
+ assert.deepEqual(g.p.announcements,['training']);
+ assert.deepEqual(g.p.unlocked,['training',...attributes]);
+ assert.deepEqual(g.p.workshop,{});
+ g.p.coins=250;
+ for(const id of attributes)assert.equal(g.buy(id),true);
+ for(const feature of ['flying','forge','wardrobe']){
+  g.dismiss();
+  g.start(false,42);g.choose(0);g.camp();
   assert.deepEqual(g.p.announcements,[feature]);
-  assert.ok(g.has(feature));
-  assert.equal(g.has('forge'),false);
+  assert.equal(g.p.unlocked.at(-1),feature);
  }
- const legacy={...g.p};delete legacy.progressionMode;
+ assert.equal(g.has('garden'),false);
+ const legacy={...g.p,unlocked:['training']};delete legacy.progressionMode;
  const restored=new Game(c,legacy);
  assert.ok(restored.has('forge'));assert.ok(restored.has('wardrobe'));
+});
+test('training granted in old staged saves opens all attributes and retires old notices',()=>{
+ const original={...profile(),coins:123,unlocked:['training','strength','forge'],workshop:{strength:7},announcements:['agility','forge']};
+ const restored=migrate(original,c);
+ assert.ok(c.workshop.every(({id})=>restored.unlocked.includes(id)));
+ assert.ok(restored.unlocked.includes('forge'));
+ assert.equal(restored.coins,123);
+ assert.deepEqual(restored.workshop,{strength:7});
+ assert.deepEqual(restored.announcements,['forge']);
+ assert.deepEqual(migrate(restored,c),restored);
+ assert.deepEqual(original.unlocked,['training','strength','forge']);
 });
 test('every 1000 metres offers a skill and freezes expedition time until a choice',()=>{
  const g=new Game(c,profile());g.receive([tx(1)]);g.start(false,42);g.choose(0);

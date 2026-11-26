@@ -20,11 +20,15 @@ function eligible(data,rule){
  return data.runs>=rule.runs&&data.totalDistance>=rule.total&&
   (data.bestDistance>=rule.best||Boolean(rule.attributeLevel&&Object.values(data.workshop).some(level=>level>=rule.attributeLevel)));
 }
+function unlockTrainingAttributes(data,config){
+ for(const {id} of config.workshop)if(!data.unlocked.includes(id))data.unlocked.push(id);
+}
 function migrateUnlocks(data,input,config){
  if(!input.progressionMode){
   data.unlocked=[...new Set([...data.unlocked,...config.progression.filter(rule=>eligible(data,rule)).map(rule=>rule.id)])];
  }
- data.announcements=data.announcements.filter(id=>id!=='classes').slice(0,1);
+ if(data.unlocked.includes('training'))unlockTrainingAttributes(data,config);
+ data.announcements=data.announcements.filter(id=>id!=='classes'&&!config.workshop.some(attribute=>attribute.id===id)).slice(0,1);
  return data;
 }
 export function migrate(input,config){
@@ -104,7 +108,11 @@ export class Game {
  equipClothing(id){if(this.phase!=='camp')return false;return this.transaction(()=>{const item=this.find('clothing',id);if(!item.id||!this.p.inventory.includes(id))return false;this.p.equipment[item.slot]=this.p.equipment[item.slot]===id?null:id;return true;});}
  unlocks(){
   const next=this.c.progression.find(rule=>!this.has(rule.id)&&eligible(this.p,rule));
-  if(next){this.p.unlocked.push(next.id);this.p.announcements=[next.id];}
+  if(next){
+   this.p.unlocked.push(next.id);
+   if(next.id==='training')unlockTrainingAttributes(this.p,this.c);
+   this.p.announcements=[next.id];
+  }
  }
  bonus(id){const b=this.find('workshop',id),n=Math.max(0,Math.min(50,this.p.workshop[id]||0))/50;return b.effect*(b.curve==='sqrt'?Math.sqrt(n):b.curve==='quadratic'?n*n:n);}
  jumpHeight(level=this.p.workshop.strength||0){const f=this.c.physics,cls=this.find('classes',this.p.character.class),b=this.find('workshop','strength'),n=Math.max(0,Math.min(50,level))/50;return Math.min(f.jumpCap,f.jumpVelocity**2/(2*f.heldGravity)*(1+(cls.jump||0)+b.effect*n*n+(this.p.boots?this.find('items','boots').jump:0)));}

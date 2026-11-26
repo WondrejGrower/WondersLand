@@ -1,6 +1,6 @@
 # How WondersLand balance works
 
-Current rules: **`wl-0.3-journey-10`**, application 0.3.3. Journey-8 strengthens Double Jump
+Current rules: **`wl-0.3-journey-11`**, application 0.3.3. Journey-8 strengthens Double Jump
 and shortens its cooldown, as introduced in Journey-8. Journey-9 adds the personal Block Mine. Historical briefs and earlier playtest requests may
 describe older rules.
 The executable source of values is [src/balance.json](../src/balance.json).
@@ -174,10 +174,13 @@ equipment apply. See [timing data](jump-progression.json) and
 [playability verification](FULLSCREEN_MONTHLY.md).
 
 All roles are available at character creation and stay fixed until reset.
-In Journey-10 each completed live run unlocks at most one eligible feature, in
-configuration order. Further eligible unlocks follow on subsequent completed
-live runs. Training is the first unlock and Strength can follow on the next run.
-Previously unlocked features and old clothing remain available.
+Each completed live run unlocks at most one eligible feature in configuration
+order. The first live run opens the Training Grounds and makes Strength,
+Agility, Magnetism, Luck and Yield available to buy at once. The camp shows one
+discovery notice. Further eligible features follow on subsequent live runs.
+Existing characters with Training Grounds gain access to all five attributes
+when loaded. Purchased levels, previously unlocked features and clothing remain
+available.
 
 Every 1,000 metres in a live expedition, game time pauses for a choice of up to
 three skills. After Flying upgrades unlock, Luck gives a chance every 30 active

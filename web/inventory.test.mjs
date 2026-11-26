@@ -28,9 +28,9 @@ test('once each clothing slot has an item, the drop chance falls',()=>{
  g.receive([{txid:'a'.repeat(64),value:'0'}]);g.start(false,1);g.choose(0);
  g.distance=30;g.time=3;g.lootRoll=()=>.05;g.checkClothingDrop();assert.deepEqual(g.runDrops,[]);
 });
-test('schema four migration preserves character, role, diamonds, records, coins and unlocks exactly',()=>{
+test('schema four migration preserves the character, gear, records and coins and completes training unlocks',()=>{
  const old={...fresh(),schemaVersion:4,character:{...appearance,name:'Existing',class:'collector'},coins:777,owned:['boots','hands'],boots:true,hands:true,records:{best:1234},unlocked:['training','diamond'],workshop:{strength:7},runs:8};delete old.inventory;delete old.equipment;
- const next=migrate(old,c);for(const key of ['character','coins','owned','hands','boots','records','unlocked','workshop','runs'])assert.deepEqual(next[key],old[key]);assert.equal(next.inventory.length,5);assert.deepEqual(migrate(next,c),next);assert.equal(old.schemaVersion,4);
+ const next=migrate(old,c);for(const key of ['character','coins','owned','hands','boots','records','workshop','runs'])assert.deepEqual(next[key],old[key]);assert.deepEqual(next.unlocked,[...old.unlocked,...c.workshop.map(({id})=>id)]);assert.equal(next.inventory.length,5);assert.deepEqual(migrate(next,c),next);assert.equal(old.schemaVersion,4);
  next.equipment.feet='hands_leather_work_gloves';next.equipment.hands='head_straw_hat';const checked=migrate(next,c);assert.equal(checked.equipment.feet,null);assert.equal(checked.equipment.hands,null);
 });
 test('sprite source contains all sixteen distinct hairstyles and twelve distinct animation poses',async()=>{

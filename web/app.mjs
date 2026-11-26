@@ -351,7 +351,12 @@ function menuHtml(){const g=game,d=g.p;
  if(['connecting','waiting','countdown'].includes(g.phase))return title(t(g.phase==='connecting'?'Connecting to the forest…':g.phase==='waiting'?'Waiting for real transactions…':'Continue in %1',Math.ceil(g.countdown||0)))+p(t('Expedition time is paused.'))+button(t('Base Camp'),'camp');
  if(['over','paused'].includes(g.phase))return title(t(g.phase==='over'?'Your run ends here.':'Take a breath.'))+p(t('%1 m · %2',int(Math.floor(g.distance)),coin(Math.floor(g.earned))))+(g.phase==='over'?p(t('You hit: %1',t(g.hit.type==='rose'?'Blackberry shrub':g.hit.type||''))+' · '+g.hit.h+' px')+p(t('Output total: %1 BTC',btc(g.hit.btc||'0.00000000'))+'\n'+int(g.hit.sats||'0')+' satoshi')+(!g.demo?'<code>'+escape(g.hit.txid)+'</code>':'')+p(t(g.demo?'Training · coins and score are not saved':g.hit.status==='confirmed'?'Confirmed in a block':g.hit.status==='pending'?'Still in the mempool':'Observed in mempool · current status unverified')):'')+button(t(g.phase==='paused'?'Continue':'Try again'),g.phase==='paused'?'pause':'run',String(g.demo))+button(t(g.phase==='over'?'Return to Base Camp':'Base Camp'),'camp')+(g.phase==='over'&&!g.demo?button(t('View transaction'),'transaction'):'')+(g.phase==='over'?(g.runDrops||[]).map(id=>p(t('Clothing found: %1',t(g.find('clothing',id).name)))).join('')+scoreStatusHtml():'')+(g.phase==='over'?'<p class="keyboard-hint">'+escape(t('WASD / arrows · select   E · confirm   Esc · camp'))+'</p>':'');
  if(g.phase!=='camp')return '';
- if(!g.station&&d.announcements.length)return title(t('New discovery: %1',t(g.find('progression',d.announcements[0]).name)))+button(t('Continue'),'dismiss');
+ if(!g.station&&d.announcements.length){
+  const id=d.announcements[0];
+  return title(t('New discovery: %1',t(g.find('progression',id).name)))+
+   (id==='training'?p(t('All five attributes are now available to upgrade at the Training Grounds.')):'')+
+   button(t('Continue'),'dismiss');
+ }
  if(!g.station)return '';
  if(g.station==='mine'&&g.canMine()&&!verified.active)return mineHtml();
  if(g.station==='wardrobe')return inventoryHtml(true);

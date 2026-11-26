@@ -1,5 +1,5 @@
 {
-  "balanceVersion": "wl-0.3-journey-10",
+  "balanceVersion": "wl-0.3-journey-11",
   "loot": {
     "firstDistance": 30,
     "interval": 150,
@@ -467,41 +467,6 @@
       "name": "Training Grounds",
       "runs": 1,
       "total": 0,
-      "best": 0
-    },
-    {
-      "id": "strength",
-      "name": "Strength",
-      "runs": 1,
-      "total": 0,
-      "best": 0
-    },
-    {
-      "id": "agility",
-      "name": "Agility",
-      "runs": 1,
-      "total": 150,
-      "best": 0
-    },
-    {
-      "id": "magnet",
-      "name": "Magnetism",
-      "runs": 1,
-      "total": 150,
-      "best": 0
-    },
-    {
-      "id": "luck",
-      "name": "Luck",
-      "runs": 1,
-      "total": 250,
-      "best": 0
-    },
-    {
-      "id": "yield",
-      "name": "Yield",
-      "runs": 1,
-      "total": 250,
       "best": 0
     },
     {

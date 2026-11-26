@@ -19,7 +19,13 @@ function validateProgress(input,config){
  if(input.tier!==undefined&&(!number(input.tier,6,true)||input.tier<1))bad();
  if(input.character!==undefined){var ch=input.character;if(!object(ch))bad();if(Object.keys(ch).length){if(!text(ch.name,24)||!ch.name.trim()||!known(ch['class'],ids('classes')))bad();for(var color of ['hair','skin','shirt'])if(ch[color]!==undefined&&(typeof ch[color]!=='string'||!/^#[0-9a-fA-F]{6}$/.test(ch[color])))bad();if(ch.hairStyle!==undefined&&!number(ch.hairStyle,15,true))bad();}}
  if(input.workshop!==undefined){if(!object(input.workshop))bad();for(var key of Object.keys(input.workshop))if(!known(key,ids('workshop'))||!number(input.workshop[key],50,true))bad();}
- for(var spec of [['owned','items'],['completed','research'],['unlocked','progression'],['announcements','progression'],['recipes','items']])if(input[spec[0]]!==undefined)list(input[spec[0]],128,function(x){return known(x,ids(spec[1]).concat(spec[1]==='progression'?['classes']:[]));});
+ // Older saves recorded workshop attributes as individual progression unlocks.
+ const progressionIds=ids('progression').concat(ids('workshop'),'classes');
+ for(var spec of [['owned','items'],['completed','research'],['unlocked','progression'],['announcements','progression'],['recipes','items']]){
+  if(input[spec[0]]===undefined)continue;
+  const allowedIds=spec[1]==='progression'?progressionIds:ids(spec[1]);
+  list(input[spec[0]],128,x=>known(x,allowedIds));
+ }
  if(input.excluded!==undefined&&input.excluded!==''&&!known(input.excluded,ids('skills')))bad();
  if(input.milestones!==undefined)list(input.milestones,128,function(x){return text(x,64)&&/^(T[1-6]:[0-9]{1,8}|distance:[0-9]{1,10})$/.test(x);});
  if(input.paidRuns!==undefined)list(input.paidRuns,128,function(x){return text(x,128)&&x.length>0;});
