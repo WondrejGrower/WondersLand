@@ -128,3 +128,35 @@ test('Nostr login restores the same personal and ranked progress across sessions
   assert.equal((await (await call('session',undefined,second.cookie)).json()).revision,1);
  }finally{await f.db.close();}
 });
+
+test('the confirmed reset clears player and leaderboard data exactly once and preserves the bridge',async()=>{
+ const f=await database();
+ try{
+  const paths=(await readdir('supabase/migrations')).sort();
+  for(const path of paths.filter(x=>x.endsWith('_wonderland_nostr_accounts.sql')))await f.db.exec(await readFile('supabase/migrations/'+path,'utf8'));
+  const reset=await readFile('supabase/migrations/'+paths.find(x=>x.endsWith('_wonderland_player_reset_v2.sql')),'utf8');
+  await f.db.exec("UPDATE migration_state SET complete=true,bridge_key=repeat('a',64); INSERT INTO score_months VALUES ('2026-11');");
+  await f.fetcher('register',{character:{name:'Reset fixture',class:'gardener'}});
+  await f.db.exec(reset);
+  assert.equal((await f.sql.unsafe('SELECT count(*) AS n FROM verified_players'))[0].n,0);
+  assert.equal((await f.sql.unsafe('SELECT count(*) AS n FROM score_months'))[0].n,0);
+  assert.deepEqual(await f.sql.unsafe('SELECT complete, length(bridge_key) AS key_length FROM migration_state'),[{complete:true,key_length:64}]);
+  await f.fetcher('register',{character:{name:'New fixture',class:'gardener'}});
+  await f.db.exec(reset);
+  assert.equal((await f.sql.unsafe('SELECT count(*) AS n FROM verified_players'))[0].n,1);
+ }finally{await f.db.close();}
+});
+
+test('the frozen Cloudflare archive clears player rows without removing the bridge',async()=>{
+ const {MonthlyLeaderboard}=await import('./leaderboard-worker.mjs');
+ const f=fixture();
+ try{
+  f.board.sql.exec("INSERT INTO security_migrations VALUES ('supabase-frozen-v1')");
+  f.board.sql.exec("INSERT INTO score_months VALUES ('2026-11')");
+  f.board.sql.exec("INSERT INTO server_bridge VALUES (1,?)",'a'.repeat(64));
+  const board=new MonthlyLeaderboard({storage:f.storage},{SUPABASE_API_URL:'https://example.supabase.co'});
+  assert.equal(board.rows('SELECT count(*) AS n FROM score_months')[0].n,0);
+  const bridge=await(await board.fetch(new Request('https://test.invalid/internal/bridge-key'))).json();
+  assert.deepEqual(bridge,{key:'a'.repeat(64),archiveReset:true});
+ }finally{f.db.close();}
+});

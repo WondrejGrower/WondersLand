@@ -4,7 +4,7 @@ const host=server();await new Promise(r=>host.listen(0,'127.0.0.1',r));const bro
 try{
  const config=JSON.parse(readFileSync('src/balance.json')),g=new Game(config);g.create('Willow',{class:'gardener',hair:'#5e3936',skin:'#dfaf87',hairStyle:0,shirt:'#679e86'});g.p.unlocked=['training','strength','agility','magnet','luck','yield','wardrobe','forge','garden'];g.p.workshop.agility=50;g.p.coins=1000;
  const page=await browser.newPage({viewport:{width:1280,height:800}}),errors=[],images=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.url().includes('/art/'))images.push(r.url());});
- await page.addInitScript(p=>localStorage.setItem('wl-progress',JSON.stringify(p)),g.p);
+ await page.addInitScript(p=>localStorage.setItem('wl-v2:wl-progress',JSON.stringify(p)),g.p);
  await page.route('**/api/mempool',r=>r.fulfill({json:[{txid:'a'.repeat(64),value:'42000000'}]}));
  await page.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:readFileSync('web/app.mjs','utf8')+'\nwindow.fixture={get game(){return game;},freeze(){overlay="fixture";}};'}));
  await page.goto('http://127.0.0.1:'+host.address().port+'/?lang=cs');await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForFunction(()=>window.fixture?.game.q.pending.length===1);await page.waitForTimeout(100);await mkdir('docs/browser',{recursive:true});

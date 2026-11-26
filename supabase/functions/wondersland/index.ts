@@ -1,3 +1,4 @@
+import {epochHeader,playerEpoch,playerResetMarker} from '../../../web/player-epoch.mjs';
 import {accountPath,accountBodyLimit} from '../../../web/account-paths.mjs';
 import {accountRequest,sessionAccount} from '../../../web/nostr-account.mjs';
 import postgres from 'postgres';
@@ -19,7 +20,8 @@ Deno.serve(async request=>{
  try{
   if(path==='/health')return await withServerTransaction(client,async sql=>{
    const [state]=await sql.unsafe('SELECT complete,counts FROM migration_state WHERE id=1');
-   return json({...serverVersion,ready:state.complete,migration:state.complete?'complete':'pending'});
+   const [reset]=await sql.unsafe('SELECT id FROM security_migrations WHERE id=$1',[playerResetMarker]);
+   return json({...serverVersion,ready:state.complete,migration:state.complete?'complete':'pending',playerEpoch,playerResetComplete:!!reset});
   });
   if(path==='/internal/probe'){
    if(req.method!=='POST'||!await migrationAuthorized(req))return json({error:'Forbidden'},403);
@@ -43,6 +45,11 @@ Deno.serve(async request=>{
     if(req.method==='POST')body=account?await readText(req.clone(),accountBodyLimit,{timeoutMs:5000}):JSON.stringify(await readJson(req.clone(),16384,{timeoutMs:5000}));
    }catch(error){return json({error:'Invalid request body'},error?.message==='Response too large'?413:400);}
    if(!await bridgeAuthorized(state.bridge_key,req,body))return json({error:'Invalid web server signature'},403);
+   if(account||path.startsWith('/api/verified/')&&path!=='/api/verified/leaderboard'){
+    if(req.headers.get(epochHeader)!==playerEpoch)return json({error:'Player data was reset. Reload the game.'},410);
+    const [reset]=await sql.unsafe('SELECT id FROM security_migrations WHERE id=$1',[playerResetMarker]);
+    if(!reset)return json({error:'Player reset is in progress'},503);
+   }
    const board=new PostgresBoard(sql,feed),now=board.now();
    // A persistent ceiling across all isolates; per-owner limits are in the shared protocol.
    if(!await board.rate('all',now,1800))return json({error:'Please try again shortly'},429);

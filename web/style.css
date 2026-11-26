@@ -395,3 +395,7 @@ body.immersive #interact, body.immersive #camp-gate { bottom: calc(12px + env(sa
   .gear-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
   #menu .gear-grid button, #menu .gear-slots button { font-size: 12px; }
 }
+
+.opening-brand { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.opening-brand h1 { margin:0; }
+.opening-brand img { border-radius:12px; }

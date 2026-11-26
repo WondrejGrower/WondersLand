@@ -134,3 +134,15 @@ Primární specifikace: [NIP-07](https://github.com/nostr-protocol/nips/blob/mas
 [NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md),
 [NIP-46](https://github.com/nostr-protocol/nips/blob/master/46.md),
 [NIP-98](https://github.com/nostr-protocol/nips/blob/master/98.md).
+
+## Vydání s resetem hráčů
+
+Vydání s epochou 2 zakládá nové účty i místní postavy od nuly. Nejdřív aplikuj
+migraci tabulek Nostr, potom nasaď Edge Function s kontrolou epochy. Ověř nový
+backend a teprve pak aplikuj uživatelem potvrzenou migraci
+`wonderland_player_reset_v2`. V jedné transakci smaže postavy, osobní postup
+a oba žebříčky včetně historických řádků. Nemění připojení webu k Supabase.
+Následně nasaď web ze stejné revize. Nový web zahazuje stará lokální uložení
+při načtení a používá nový jmenný prostor, takže stará karta nový save nepřepíše.
+Archivní Cloudflare Durable Object smaže původní herní údaje při inicializaci
+nového kódu, ověřovací binding a podpisové tajemství zachová.

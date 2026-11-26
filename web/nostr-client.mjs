@@ -1,3 +1,4 @@
+import {epochHeader,playerEpoch,playerKey} from './player-epoch.mjs';
 import {readJson} from './limits.mjs';
 
 export class CloudProgress {
@@ -13,7 +14,7 @@ export class CloudProgress {
  async request(path,body,authorization){
   const response=await fetch('/api/account/'+path,{
    method:body===undefined?'GET':'POST',
-   headers:{...(body===undefined?{}:{'Content-Type':'application/json'}),...(authorization?{Authorization:authorization}:{})},
+   headers:{[epochHeader]:playerEpoch,...(body===undefined?{}:{'Content-Type':'application/json'}),...(authorization?{Authorization:authorization}:{})},
    ...(body===undefined?{}:{body}),
    signal:AbortSignal.timeout(path==='session'?4500:25000),
    keepalive:path==='save'&&body?.length<15000,
@@ -40,7 +41,7 @@ export class CloudProgress {
   const {id,pubkey,sig,created_at,kind,tags,content}=event;
   return this.request('verify',body,'Nostr '+btoa(JSON.stringify({id,pubkey,sig,created_at,kind,tags,content})));
  }
- get cacheKey(){return this.account?'wl-cloud-sync:'+this.account:null;}
+ get cacheKey(){return this.account?playerKey('wl-cloud-sync:'+this.account):null;}
  connect(account){
   this.account=account.npub;
   this.revision=account.revision;

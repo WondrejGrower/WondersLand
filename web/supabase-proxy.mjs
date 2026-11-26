@@ -1,3 +1,4 @@
+import {epochHeader} from './player-epoch.mjs';
 import {accountPath,accountBodyLimit,browserCookie,cookieToken,sessionCookie} from './account-paths.mjs';
 import {bridgeIdentity,bridgeSignature} from './server-bridge.mjs';
 import {readJson,readText} from './limits.mjs';
@@ -6,7 +7,7 @@ export async function supabaseProxy(request,endpoint,upstream=fetch,bridgeKey){
  const target=new URL(endpoint),original=new URL(request.url);
  if(target.protocol!=='https:'||!target.hostname.endsWith('.supabase.co')||target.search||target.hash||target.username||target.password)throw Error('Invalid Supabase endpoint');
  target.pathname=target.pathname.replace(/\/$/,'')+original.pathname;target.search=original.search;
- const headers=new Headers();for(const name of ['authorization','content-type','origin'])if(request.headers.has(name))headers.set(name,request.headers.get(name));
+ const headers=new Headers();for(const name of ['authorization','content-type','origin',epochHeader])if(request.headers.has(name))headers.set(name,request.headers.get(name));
  const account=accountPath.test(original.pathname);
  if(account||original.pathname.startsWith('/api/verified/')){
   const session=cookieToken(request,sessionCookie);

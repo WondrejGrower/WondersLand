@@ -176,7 +176,19 @@ export class Game {
  settle(){if(!this.runId||this.paid)return;this.paid=true;if(!this.started||this.demo)return;if(this.p.paidRuns.includes(this.runId))return;const saved=this.transaction(()=>{this.p.paidRuns=[...this.p.paidRuns,this.runId].slice(-128);const score=Math.floor(this.distance),key=this.c.balanceVersion+':'+(this.replay?'replay:web':'live')+':T1:'+this.p.character.class;this.p.records[key]=Math.max(this.p.records[key]||0,score);if(!this.replay){this.p.coins+=Math.floor(this.earned);this.p.runs++;this.p.inventory=[...new Set([...this.p.inventory,...(this.runDrops||[])])];this.p.discoveries=[...new Set([...this.p.discoveries,...(this.runDiscoveries||[])])];this.p.bestDistance=Math.max(this.p.bestDistance,score);this.p.totalDistance+=score;for(const m of this.c.milestones){const id='distance:'+m.meters;if(score>=m.meters&&!this.p.milestones.includes(id)){this.p.milestones.push(id);this.p.coins+=m.coins;this.p.seeds+=m.seeds;}}this.unlocks();}this.p.activeRun={};return true;});if(saved&&!this.replay){try{this.onLiveRunFinished?.({runId:this.runId,name:this.p.character.name,role:this.p.character.class,rules:this.c.balanceVersion,score:Math.floor(this.distance),seconds:this.time,mode:'live'});}catch{}}}
  camp(){this.settle();this.phase='camp';this.station='';this.moves.clear();this.target=null;}
  dismiss(){this.p.announcements.shift();this.persist();}
- nearby(){return [{id:'home',x:270,y:190},{id:'mine',x:365,y:307},{id:'portal',x:540,y:215},{id:'training',x:465,y:290},{id:'forge',x:112,y:225},{id:'wardrobe',x:390,y:195},{id:'library',x:175,y:300}].find(p=>(['home','portal'].includes(p.id)||(p.id==='mine'&&this.canMine())||this.has(p.id==='library'?'garden':p.id))&&Math.hypot(this.campX-p.x,this.campY-p.y)<43)?.id||'';}
- interact(){if(this.phase!=='camp'||this.station||this.p.announcements.length)return;this.moves.clear();this.target=null;const id=this.nearby();if(id==='portal')this.start(false);else this.station=id;}
+ campStations(){
+  return [{id:'home',x:270,y:190},{id:'mine',x:365,y:307},{id:'portal',x:540,y:215},{id:'training',x:465,y:290},{id:'forge',x:112,y:225},{id:'wardrobe',x:390,y:195},{id:'library',x:175,y:300}]
+   .filter(spot=>['home','portal'].includes(spot.id)||(spot.id==='mine'&&this.canMine())||this.has(spot.id==='library'?'garden':spot.id));
+ }
+ stationAt(x,y){
+  return this.campStations().map(spot=>({spot,distance:Math.hypot(x-spot.x,y-spot.y)}))
+   .filter(item=>item.distance<43).sort((a,b)=>a.distance-b.distance)[0]?.spot;
+ }
+ nearby(){return this.stationAt(this.campX,this.campY)?.id||'';}
+ interact(){
+  if(this.phase!=='camp'||this.station||this.p.announcements.length)return;
+  this.moves.clear();this.target=null;const id=this.nearby();
+  if(id==='portal')this.start(false);else this.station=id;
+ }
  state(){return {doubleCooldown:this.doubleCooldown||0,phase:this.phase,distance:this.distance,animation:this.animation,y:this.y,velocity:this.velocity,landing:this.landing||0,invulnerable:this.invulnerable,profile:this.p,region:this.region(),regionIndex:this.c.regions.indexOf(this.region()),obstacles:this.obstacles,coins:this.coins,hit:this.hit,flying:this.flying,campX:this.campX,campY:this.campY,facingLeft:this.moves.has('left')||!!(this.target&&this.target.x<this.campX),moving:this.moves.size>0||!!this.target};}
 }

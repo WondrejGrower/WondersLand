@@ -1,4 +1,10 @@
 {
+  "A forest shaped by live Bitcoin transactions.": "Les, který utvářejí živé bitcoinové transakce.",
+  "Sign in or register with Nostr": "Přihlásit se nebo registrovat přes Nostr",
+  "Open %1": "Otevřít · %1",
+  "Play as guest": "Hrát jako host",
+  "Player data was reset. Reload the game.": "Postup byl resetován. Načti hru znovu.",
+  "Player reset is in progress": "Probíhá reset postupu hráčů.",
   "Nostr account": "Účet Nostr",
   "Connecting to your Nostr account…": "Připojuji účet Nostr…",
   "Sign in with Nostr": "Přihlásit přes Nostr",

@@ -1,3 +1,4 @@
+import {epochHeader} from './player-epoch.mjs';
 const encoder=new TextEncoder();
 const hex=bytes=>Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('');
 export async function bridgeSignature(secret,request,body,timestamp,source,identity=[]){
@@ -10,4 +11,4 @@ export async function bridgeAuthorized(secret,request,body,now=Date.now()){
  const expected=await bridgeSignature(secret,request,body,timestamp,source,bridgeIdentity(request.headers));let diff=0;for(let i=0;i<64;i++)diff|=signature.charCodeAt(i)^expected.charCodeAt(i);return diff===0;
 }
 
-export function bridgeIdentity(headers){const session=headers.get('x-wl-session')||'',browser=headers.get('x-wl-browser')||'';return session||browser?[session,browser]:[];}
+export function bridgeIdentity(headers){const session=headers.get('x-wl-session')||'',browser=headers.get('x-wl-browser')||'';const epoch=headers.get(epochHeader)||'';return session||browser||epoch?[session,browser,epoch]:[];}

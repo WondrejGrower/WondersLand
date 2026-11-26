@@ -9,7 +9,7 @@ const browser=await chromium.launch({executablePath:process.env.WL_CHROMIUM||(ex
 const page=await browser.newPage({viewport:{width:1280,height:720}}),errors=[];
 page.on('pageerror',e=>errors.push(e.message));
 const profile={...fresh(),character:{name:'Willow',class:'gardener',hair:'#5e3936',skin:'#dfaf87',shirt:'#679e86',hairStyle:0}};
-await page.addInitScript(p=>localStorage.setItem('wl-progress',JSON.stringify(p)),profile);
+await page.addInitScript(p=>localStorage.setItem('wl-v2:wl-progress',JSON.stringify(p)),profile);
 
 // Deliberately synthetic giant fixture forces a collision even while jump is held.
 await page.route('**/api/mempool',r=>r.fulfill({json:[{txid:'a'.repeat(64),value:'2000000000000000'}]}));

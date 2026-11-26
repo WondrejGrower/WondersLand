@@ -1,3 +1,4 @@
+import {clearPreviousPlayerData,playerKey} from './player-epoch.mjs';
 import {CloudProgress} from './nostr-client.mjs';
 import {FrameClock,FixedSimulation,frameRate} from './timing.mjs';
 import {VerifiedClient} from './verified-client.mjs';
@@ -19,13 +20,14 @@ let language=localStorage.getItem('wl-language')||'en';const languageParam=new U
 const t=(key,...args)=>{let text=language==='cs'?(cs[key]||key):key;args.forEach((value,i)=>text=text.replaceAll('%'+(i+1),String(value)));return text;};
 const seedCount=n=>int(n)+' '+(language==='cs'?(n===1?'semeno':n>=2&&n<=4?'semena':'semen'):(n===1?'seed':'seeds'));
 const int=n=>new Intl.NumberFormat(language==='cs'?'cs-CZ':'en-US',{maximumFractionDigits:0}).format(typeof n==='string'?BigInt(n):n),coin=n=>int(n)+' '+(language==='cs'?(n===1?'mince':n>=2&&n<=4?'mince':'mincí'):(n===1?'coin':'coins')),btc=amount=>{const [a,b]=amount.split('.');return int(a)+(language==='cs'?',':'.')+b;};
-const adminTest=['/test','/test/'].includes(location.pathname),guestProgressKey=adminTest?'wl-admin-test-progress':'wl-progress';
+const adminTest=['/test','/test/'].includes(location.pathname),guestProgressKey=playerKey(adminTest?'wl-admin-test-progress':'wl-progress');
 if(adminTest)document.querySelector('header strong').textContent='WondersLand · ADMIN TEST';
 if(adminTest&&location.hash)history.replaceState(null,'',location.pathname+location.search);
 const recorded=new URL(location.href).searchParams.has('recorded');
 let progressKey=guestProgressKey,accountAttached=false;
+clearPreviousPlayerData(localStorage);
 let blocked=false,data;
-try{const raw=(localStorage.getItem(progressKey)||(adminTest?localStorage.getItem('wl-progress'):null));data=raw?JSON.parse(raw):fresh();if(data.schemaVersion===3)localStorage.setItem(progressKey+'-pre-v4',raw);if([3,4].includes(data.schemaVersion)&&!localStorage.getItem(progressKey+'-pre-v5'))localStorage.setItem(progressKey+'-pre-v5',raw);}catch{blocked=true;data=fresh();}
+try{const raw=(localStorage.getItem(progressKey)||(adminTest?localStorage.getItem(playerKey('wl-progress')):null));data=raw?JSON.parse(raw):fresh();if(data.schemaVersion===3)localStorage.setItem(progressKey+'-pre-v4',raw);if([3,4].includes(data.schemaVersion)&&!localStorage.getItem(progressKey+'-pre-v5'))localStorage.setItem(progressKey+'-pre-v5',raw);}catch{blocked=true;data=fresh();}
 function savedMine(raw){try{return JSON.stringify(JSON.parse(raw)?.mine??null);}catch{return 'null';}}
 let mineVersion=JSON.stringify(data.mine??null);
 const persist=p=>{if(blocked)throw Error('Saved progress is damaged. It was not overwritten. Reset requires confirmation.');if(!adminTest&&savedMine(localStorage.getItem(progressKey))!==mineVersion)throw Error(t('The mine changed in another tab. Reload to continue.'));localStorage.setItem(progressKey,JSON.stringify(p));mineVersion=JSON.stringify(p.mine??null);if(accountAttached&&!p.activeRun?.id)cloud.put(p.character.name?{...structuredClone(p),activeRun:{}}:null);};
@@ -45,7 +47,10 @@ let overlay='',lastView='',revision=0,net='connecting',appearance={hair:'#5e3936
 let boardKind='verified';
 let boardMonth='',boardMonthExplicit=false,boardMetric='best',boardData=null,boardLoading=false,boardFailed=false,boardRequest=0;
 const pwa=setupPwa(()=>touch());
-const board=new LeaderboardClient({onChange:()=>touch()});
+const board=new LeaderboardClient({storage:{
+ getItem:key=>localStorage.getItem(playerKey(key)),
+ setItem:(key,value)=>localStorage.setItem(playerKey(key),value)
+},onChange:()=>touch()});
 const cloud=new CloudProgress(()=>touch());
 let authBusy=false,accountAvailable=false;
 let localGame=null;const verified=new VerifiedClient(config,()=>cloud.account?null:board.key(),()=>{if(verified.active){game=verified.game;if(verified.fatal)overlay='verified-failed';}touch();});
@@ -57,7 +62,7 @@ async function loadBoard(){const request=++boardRequest;boardLoading=true;boardF
 function installAccountProgress(progress){
  const data=progress?migrate(progress,config):fresh();
  if(!progress){nameDraft='';creationRole='gardener';}
- progressKey='wl-personal:'+cloud.account;
+ progressKey=playerKey('wl-personal:'+cloud.account);
  accountAttached=true;blocked=false;
  localStorage.setItem(progressKey,JSON.stringify(data));
  mineVersion=JSON.stringify(data.mine??null);
@@ -76,7 +81,11 @@ async function accountTask(action){
  if(authBusy||verified.active||!['creation','camp'].includes(game.phase))return;
  authBusy=true;touch();renderMenu();
  try{
-  if(action==='account-login')attachAccount(await cloud.login(window.nostr));
+  if(action==='account-login'){
+   const opening=overlay==='opening';
+   attachAccount(await cloud.login(window.nostr));
+   if(opening&&accountAttached)overlay='';
+  }
   else if(action==='account-adopt'){
    const guest={...structuredClone(game.p),activeRun:{}};
    installAccountProgress(guest);cloud.put(guest);await cloud.flush();
@@ -98,6 +107,12 @@ async function accountTask(action){
    bindScores();verified.profile=verified.info=null;overlay='';
   }
  }catch(error){showError(error.message);}finally{authBusy=false;touch();renderMenu();}
+}
+function openingHtml(){
+ return '<div class="opening-brand"><img src="/icons/icon-192.png" alt="" width="56" height="56">'+title('WondersLand')+'</div>'+
+  p(t('A forest shaped by live Bitcoin transactions.'))+
+  (authBusy?p(t('Connecting to your Nostr account…')):
+   button(t('Sign in or register with Nostr'),'account-login')+button(t('Play as guest'),'opening-guest'));
 }
 function accountHtml(){
  let html=title(t('Nostr account'));
@@ -253,6 +268,7 @@ async function playMineAction(action,tier){
 }
 function menuHtml(){const g=game,d=g.p;
  if(overlay==='leaderboard')return boardHtml();
+ if(overlay==='opening')return openingHtml();
  if(overlay==='account')return accountHtml();
  if(overlay==='inventory')return inventoryHtml();
  if(overlay==='skill-book')return skillBookHtml();
@@ -304,7 +320,8 @@ function action(act,arg){try{
  if(['mine-buy','mine-activate','mine-collect'].includes(act)){void playMineAction(act.slice(5),arg);return;}
  if(act==='verified'&&!adminTest){if(verified.active)return;overlay='verified';verifiedTask(()=>verified.load());}
  else if(act==='account'&&accountAvailable&&!verified.active&&['creation','camp'].includes(game.phase))overlay='account';
- else if(act.startsWith('account-')&&overlay==='account'){void accountTask(act);return;}
+ else if(act==='opening-guest'&&overlay==='opening')overlay='';
+ else if(act.startsWith('account-')&&['account','opening'].includes(overlay)){void accountTask(act);return;}
  else if(act==='directory'&&!verified.active){void openDirectory(arg);return;}
  else if(act==='view-character'){void openCharacter(arg);return;}
  else if(act==='directory-back'){directoryRequest++;overlay='verified';}
@@ -368,11 +385,29 @@ document.addEventListener('keydown',e=>{
  if(e.target.closest?.('#touch-controls')&&[' ','Enter'].includes(key)&&$('sheet').hidden)return;if(typing&&key!=='Escape')return;if(key==='F10'){e.preventDefault();if(!e.repeat)action('settings');return;}if(key==='Escape'&&immersiveFallback){e.preventDefault();immersiveFallback=false;syncFullscreen();return;}if(key==='Escape'){e.preventDefault();if(!e.repeat){back();renderMenu();}return;}if(key==='?'&&!e.repeat){e.preventDefault();action('help');return;}
  if(!$('sheet').hidden){if(key===' '){e.preventDefault();return;}if(key==='Enter'){e.preventDefault();if(!e.repeat&&document.activeElement?.matches('#menu button:not(:disabled)'))document.activeElement.click();return;}const dir=directions[key];if(dir){e.preventDefault();moveFocus(dir==='left'?-1:dir==='right'?1:0,dir==='up'?-1:dir==='down'?1:0);}else if(key.toLowerCase()==='e'){e.preventDefault();if(!e.repeat&&document.activeElement?.matches('#menu button:not(:disabled)'))document.activeElement.click();}return;}
  if(key.toLowerCase()==='e'){e.preventDefault();if(!e.repeat){if(document.activeElement?.matches('header button'))document.activeElement.click();else game.interact();renderMenu();}return;}
- if(directions[key]&&game.phase==='camp'){e.preventDefault();game.target=null;game.moves.add(directions[key]);}
+ if(directions[key]&&game.phase==='camp'){e.preventDefault();openOnArrival=null;game.target=null;game.moves.add(directions[key]);}
  else if([' ','w','ArrowUp'].includes(key)&&game.phase==='running'){e.preventDefault();if(!e.repeat)game.jump();}
  else if(key.toLowerCase()==='f')game.jet=true;else if(key.toLowerCase()==='p'&&!e.repeat){game.pause();renderMenu();}else if(key.toLowerCase()==='b'&&!e.repeat){if(verified.active){verifiedTask(leaveVerified);return;}game.camp();renderMenu();}},true);
 document.addEventListener('keyup',e=>{const key=inputKey(e);if(e.target.closest?.('header button, #touch-controls')&&[' ','Enter'].includes(key))return;if(!$('sheet').hidden&&!e.target.matches?.('input,textarea,select')&&[' ','Enter'].includes(key))e.preventDefault();if(directions[key])game.moves.delete(directions[key]);if([' ','w','ArrowUp'].includes(key))game.release();if(key.toLowerCase()==='f')game.jet=false;},true);
-$('scene').onpointerdown=e=>{if(!$('sheet').hidden)return;if(game.phase==='running')game.jump();else if(game.phase==='camp'){const r=e.target.getBoundingClientRect(),point=screenToWorld(e.clientX,e.clientY,r,camera);game.moves.clear();game.target={x:Math.max(35,Math.min(605,point.x)),y:Math.max(175,Math.min(320,point.y))};}};$('scene').onpointerup=()=>game.release();$('scene').onpointercancel=()=>game.release();
+let lastCampTap=null,openOnArrival=null;
+$('scene').onpointerdown=e=>{
+ if(!$('sheet').hidden)return;
+ if(game.phase==='running'){game.jump();return;}
+ if(game.phase!=='camp'||!e.isPrimary)return;
+ const r=e.target.getBoundingClientRect(),point=screenToWorld(e.clientX,e.clientY,r,camera);
+ const station=e.pointerType==='touch'?game.stationAt(point.x,point.y):null;
+ if(station&&lastCampTap?.game===game&&lastCampTap.id===station.id&&e.timeStamp-lastCampTap.time<=450){
+  openOnArrival={game,id:station.id};lastCampTap=null;
+  game.target={x:station.x,y:station.y};
+ }else{
+  openOnArrival=null;lastCampTap=station?{game,id:station.id,time:e.timeStamp}:null;
+  game.target={x:Math.max(35,Math.min(605,point.x)),y:Math.max(175,Math.min(320,point.y))};
+ }
+ game.moves.clear();
+};
+$('scene').onpointerup=()=>game.release();
+$('scene').onpointercancel=()=>{lastCampTap=null;game.release();};
+
 function holdControl(button,down,up){
  let pressed=false;
  const press=()=>{if(game.phase!=='running')return;pressed=true;button.classList.add('pressed');down();};
@@ -390,14 +425,19 @@ function resize(){const r=$('world').getBoundingClientRect();sceneWidth=Math.max
 let pendingPaintTime=0;
 let last=performance.now(),lastHit='',palette={...config.regions[0]},paletteFrom=palette,paletteId='edge',paletteTime=2.2;
 function mixColor(a,b,x){const parse=c=>[1,3,5].map(i=>parseInt(c.slice(i,i+2),16));return '#'+parse(a).map((v,i)=>Math.round(v+(parse(b)[i]-v)*x).toString(16).padStart(2,'0')).join('');}const c=$('scene').getContext('2d');
-function frame(now){try{const dt=Math.min(.1,(now-last)/1000);last=now;if(adminTest){game.p.coins=1000000000;game.p.adminTest=true;}if(verified.active)game=verified.game;if(!overlay&&!document.hidden){if(verified.active)verified.tick(dt);else simulation.advance(game,dt);}else simulation.reset(game);if(Math.floor(now/1000)!==lastClock){lastClock=Math.floor(now/1000);const count=game.p.completed.length;if(!verified.active)game.updateResearch();if(count!==game.p.completed.length)touch();}
+function frame(now){try{const dt=Math.min(.1,(now-last)/1000);last=now;if(adminTest){game.p.coins=1000000000;game.p.adminTest=true;}if(verified.active)game=verified.game;if(!overlay&&!document.hidden){if(verified.active)verified.tick(dt);else simulation.advance(game,dt);}else simulation.reset(game);
+ if(openOnArrival){
+  if(openOnArrival.game!==game||game.phase!=='camp'||overlay||game.station)openOnArrival=null;
+  else if(game.nearby()===openOnArrival.id){openOnArrival=null;game.interact();touch();}
+ }
+ if(Math.floor(now/1000)!==lastClock){lastClock=Math.floor(now/1000);const count=game.p.completed.length;if(!verified.active)game.updateResearch();if(count!==game.p.completed.length)touch();}
  pendingPaintTime+=dt;
  if(!frameClock.paint(now)){requestAnimationFrame(frame);return;}
  const paintDt=pendingPaintTime;pendingPaintTime=0;
  const touchMode=touchMedia.matches||sceneWidth<700;document.body.classList.toggle('mobile-playing',touchMode&&game.phase==='running'&&!overlay);$('touch-controls').hidden=!touchMode||game.phase!=='running'||!!overlay;setText('touch-pause',t('Pause'));setText('touch-jump',t(game.y>0&&game.skills.double&&game.doubleCooldown<=0&&!game.airUsed?'Double Jump':'Jump'));setText('touch-fly',t('Fly'));$('touch-fly').hidden=!game.skills.jetpack;$('touch-fly').disabled=game.fuel<=0;const state=verified.active?verified.view():simulation.view(game);camera=viewport(sceneWidth,sceneHeight,game.phase,state.campX,state.campY);camera.controls=touchMode;state.viewport=camera;state.mineVisible=game.canMine()&&!verified.active;const logicalWidth=Math.ceil(camera.width),logicalHeight=Math.ceil(camera.height);if($('scene').width!==logicalWidth)$('scene').width=logicalWidth;if($('scene').height!==logicalHeight)$('scene').height=logicalHeight;for(const [key,value]of Object.entries(camera))$('scene').dataset['view'+key[0].toUpperCase()+key.slice(1)]=value;if(state.region.id!==paletteId){paletteFrom={...palette};paletteId=state.region.id;paletteTime=0;}paletteTime=Math.min(2.2,paletteTime+paintDt);for(const key of ['sky','soil','foliage'])palette[key]=mixColor(paletteFrom[key],state.region[key],paletteTime/2.2);state.region={...state.region,...Object.fromEntries(['sky','soil','foliage'].map(key=>[key,palette[key]]))};if(game.phase==='camp')drawCamp(c,state,t,$('scene').width,$('scene').height);else if(game.phase==='creation'){c.reset();c.fillStyle='#101d2b';c.fillRect(0,0,$('scene').width,$('scene').height);}else drawRun(c,state,t,$('scene').width,$('scene').height);
  $('inventory').hidden=game.phase!=='camp';setText('inventory',t('Inventory'));setText('wallet',adminTest?'∞':coin(game.p.coins));$('verified').hidden=adminTest||recorded||game.phase!=='camp'||verified.active||!game.p.character.name;setText('verified',t('Verified runs'));setText('settings',t('Settings'));$('account').hidden=!accountAvailable||verified.active||!['creation','camp'].includes(game.phase);setText('account',t('Nostr account'));$('settings').hidden=verified.active;setText('fullscreen',t('Fullscreen'));setText('leave-fullscreen',t('Exit fullscreen'));setText('leaderboard',t('Leaderboard'));setText('keys',t('WASD / arrows · E · Esc'));setText('hud',game.phase==='camp'?t(adminTest?'ADMIN TEST · Unlimited coins · No leaderboard':'Base Camp'):game.phase==='creation'?'':int(Math.floor(game.distance))+' m · '+t(game.region().name)+'\n'+int(Math.floor(game.time))+' s · '+coin(Math.floor(game.earned))+' · '+t('Rescue')+': '+game.rescues+(game.skills.jetpack?' · '+t(touchMode?'Fuel %1 s · hold Fly':'Fuel %1 s · hold F',new Intl.NumberFormat(language,{minimumFractionDigits:1,maximumFractionDigits:1}).format(game.fuel)):'')+'\n'+(adminTest?t('ADMIN TEST · Unlimited coins · No leaderboard'):verified.active?t(verified.failed?'Verified sync paused. Reconnecting…':'VERIFIED · SERVER PROFILE'):game.demo?t('TRAINING · NO REWARDS'):game.replay?t('RECORDED DATA · NOT LIVE'):t('REAL TRANSACTIONS'))+'\n'+Object.entries(game.skills).map(([id,rank])=>id==='double'?(game.doubleCooldown>0?t('Double Jump · %1 s',Math.ceil(game.doubleCooldown)):t('Double Jump ready')):t(game.find('skills',id).name)+' '+rank).join(' · '));
  const spots=[['home',270,194],['mine',365,310],['forge',112,242],['wardrobe',390,210],['portal',540,242],['library',175,329],['training',465,313]];const labels=game.phase==='camp'?spots.filter(([id])=>['home','portal'].includes(id)||(id==='mine'&&game.canMine()&&!verified.active)||game.has(id==='library'?'garden':id)).map(([id,x,y])=>[id,worldToPercent(x,y,camera)]).filter(([,p])=>p.x>=0&&p.x<=100&&p.y>=0&&p.y<=100).map(([id,p])=>`<span style="left:${Math.max(10,Math.min(90,p.x))}%;top:${p.y}%">${escape(t(stationNames[id]))}</span>`).join(''):'';if($('stations').innerHTML!==labels)$('stations').innerHTML=labels;
- $('camp-gate').hidden=game.phase!=='camp'||!!overlay||!!game.station||!!game.p.announcements.length||game.nearby()==='portal';setText('camp-gate',t('Walk to gate →'));$('interact').hidden=game.phase!=='camp'||!!game.station||!!game.p.announcements.length||!game.nearby()||!!overlay;setText('interact',t('E · %1',t(stationNames[game.nearby()]||'')));setText('connection',net==='replay'?t('Recorded data · no permanent rewards'):net==='live'?t('Live: recent transactions · %1 available',game.q.pending.length):net==='offline'?t('Source unavailable · waiting for connection'):t('Connecting to mempool.space…'));
+ $('camp-gate').hidden=game.phase!=='camp'||!!overlay||!!game.station||!!game.p.announcements.length||game.nearby()==='portal';setText('camp-gate',t('Walk to gate →'));$('interact').hidden=game.phase!=='camp'||!!game.station||!!game.p.announcements.length||!game.nearby()||!!overlay;setText('interact',t(touchMode?'Open %1':'E · %1',t(stationNames[game.nearby()]||'')));setText('connection',net==='replay'?t('Recorded data · no permanent rewards'):net==='live'?t('Live: recent transactions · %1 available',game.q.pending.length):net==='offline'?t('Source unavailable · waiting for connection'):t('Connecting to mempool.space…'));
  if(game.phase==='over'&&!game.demo&&!game.replay&&game.hit.txid!==lastHit){lastHit=game.hit.txid;const id=lastHit;fetch('/api/tx/'+id+'/status').then(r=>r.ok?readJson(r,16384):null).then(status=>{if(game.hit.txid===id&&typeof status?.confirmed==='boolean'){game.hit.status=status.confirmed?'confirmed':'pending';touch();}}).catch(()=>{});}renderMenu();}catch(e){showError(e.message);}requestAnimationFrame(frame);}requestAnimationFrame(frame);
 const feed=new TransactionFeed({recorded,queue:()=>game.q,active:()=>!game.demo&&['running','waiting','connecting','countdown','select'].includes(game.phase),visible:()=>!document.hidden&&!verified.active,receive:rows=>{if(!verified.active)game.receive(rows);},status:value=>{net=value;$('connection').dataset.status=value;}});
 feed.start();document.addEventListener('visibilitychange',()=>feed.wake());document.documentElement.lang=language;renderMenu();
@@ -406,10 +446,11 @@ if(!adminTest&&!recorded){
   const account=await cloud.request('session');
   accountAvailable=true;
   if(account.npub)attachAccount(account);
+  else if(game.phase==='creation')overlay='opening';
  }catch{}
  addEventListener('online',()=>cloud.flush());
  document.addEventListener('visibilitychange',()=>{if(document.hidden)void cloud.flush();});
 }
-document.body.dataset.ready='true';
+touch();renderMenu();document.body.dataset.ready='true';
 
 if(adminTest){let deadline=0;async function lease(){if(deadline&&Date.now()>=deadline){location.replace('/test');return;}try{const r=await fetch('/api/admin-test/status',{cache:'no-store',signal:AbortSignal.timeout(5000)});if(r.status===403){location.replace('/test');return;}if(r.ok)deadline=(await readJson(r,2048)).expires*1000;}catch{}}lease();setInterval(lease,60000);}
