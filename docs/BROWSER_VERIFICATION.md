@@ -328,3 +328,10 @@ synthetic 144 Hz callback rate, the app painted 120 and 288 frames over two
 seconds at the 60 and 144 FPS caps, with identical simulation results.
 The browser journey, mobile controls, Ranked flow and checked dry-run passed.
 The GitHub Actions verification job could not start because of account billing.
+
+## Temporary /test renewal · 2026-11-26
+
+Production release `4e3ae56` served the renewed verification deadline. The
+public gate remained protected. A newly signed capability established a
+session and loaded the authenticated test game. The browser fragment-flow
+regression and checked deployment dry-run passed locally.
