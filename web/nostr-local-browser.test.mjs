@@ -21,8 +21,8 @@ const browser=await chromium.launch({
  headless:true,args:['--no-sandbox']
 });
 try{
- const page=await browser.newPage({hasTouch:true,isMobile:true,viewport:{width:390,height:844}});
- let leaks=0,verified=0;
+ const page=await browser.newPage({hasTouch:true,isMobile:true,viewport:{width:320,height:700}});
+ let leaks=0,verified=0,challenges=0;
  const work=[];
  page.on('request',request=>work.push((async()=>{
   if([request.url(),request.postData(),JSON.stringify(await request.allHeaders())].some(containsSecret))leaks++;
@@ -30,29 +30,44 @@ try{
  page.on('console',message=>{if(containsSecret(message.text()))leaks++;});
  page.on('pageerror',error=>{if(containsSecret(error.message))leaks++;});
  await page.route('**/api/account/session',r=>r.fulfill({json:{npub:null}}));
- await page.route('**/api/account/challenge',r=>r.fulfill({json:{challenge:'a'.repeat(64)}}));
+ await page.route('**/api/account/challenge',r=>{
+  const challenge=String(++challenges).padStart(64,'0');
+  return r.fulfill({json:{challenge}});
+ });
  await page.route('**/api/account/verify',async route=>{
   const request=route.request();
   const identity=await verifyNostrEvent(request.headers().authorization,request.url(),request.postData(),Date.now());
   if(identity===npub)verified++;
+  if(verified===1){
+   await route.fulfill({status:401,json:{error:'Nostr challenge expired'}});
+   return;
+  }
   await route.fulfill({status:identity===npub?200:401,json:identity===npub?
    {npub,revision:0,progress:null}:{error:'Nostr signature rejected'}});
  });
  await page.route('**/api/mempool',r=>r.fulfill({json:[]}));
- await page.goto(origin);
- await page.getByRole('button',{name:'Advanced · NSEC'}).tap();
+ await page.goto(origin+'/?lang=cs');
+ await page.getByRole('button',{name:'Rozšířené · NSEC'}).tap();
  const field=page.locator('#nsec-key');
  await field.fill('not-a-private-key');
- await page.getByRole('button',{name:'Sign in with NSEC'}).tap();
+ await page.getByRole('button',{name:'Přihlásit přes NSEC'}).tap();
  assert.equal(await field.inputValue(),'');
- await page.locator('#error button').tap();
+ const alert=page.getByRole('alert');
+ await alert.getByText('Zadej platný NSEC.').waitFor();
  await field.fill(nsec);
  const workerResponse=page.waitForResponse(r=>r.url()===origin+'/nostr-local-worker.mjs');
- await page.getByRole('button',{name:'Sign in with NSEC'}).tap();
+ await page.getByRole('button',{name:'Přihlásit přes NSEC'}).tap();
  assert.match((await (await workerResponse).allHeaders())['content-security-policy'],/connect-src 'none'/);
+ await alert.getByText('Platnost přihlašovací výzvy vypršela. Zkus to znovu.').waitFor();
+ assert.equal(await field.inputValue(),'');
+ assert.equal(await page.locator('#error').isVisible(),false);
+ assert.equal(await page.locator('#menu').evaluate(menu=>menu.scrollWidth<=menu.clientWidth&&menu.getBoundingClientRect().right<=innerWidth),true);
+ await field.fill(nsec);
+ await page.getByRole('button',{name:'Přihlásit přes NSEC'}).tap();
  await page.locator('#name').waitFor();
  assert.equal(await field.count(),0);
- assert.equal(verified,1);
+ assert.equal(verified,2);
+ assert.equal(challenges,2);
  await Promise.all(work);
  assert.equal(leaks,0);
  const stored=await page.evaluate(async()=>{

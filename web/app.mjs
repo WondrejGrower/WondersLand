@@ -53,7 +53,7 @@ const board=new LeaderboardClient({storage:{
  setItem:(key,value)=>localStorage.setItem(playerKey(key),value)
 },onChange:()=>touch()});
 const cloud=new CloudProgress(()=>touch());
-let authBusy=false,accountAvailable=false,nsecReturn='account';
+let authBusy=false,accountAvailable=false,nsecReturn='account',nsecError='';
 let localGame=null;const verified=new VerifiedClient(config,()=>cloud.account?null:board.key(),()=>{if(verified.active){game=verified.game;if(verified.fatal)overlay='verified-failed';}touch();});
 async function verifiedTask(task){try{await task();touch();renderMenu();}catch(error){showError(error.message);}}
 async function leaveVerified(){const confirmed=await verified.leave();game=localGame;localGame=null;overlay='';touch();feed.wake();renderMenu();if(!confirmed)showError('Unsent inputs were not saved. Settle the interrupted run when connected.');}
@@ -80,7 +80,7 @@ function attachAccount(account){
 }
 async function accountTask(action,localSigner=null){
  if(authBusy||verified.active||!['creation','camp'].includes(game.phase)){localSigner?.dispose();return;}
- authBusy=true;touch();renderMenu();
+ authBusy=true;nsecError='';touch();renderMenu();
  try{
   if(action==='account-login'){
    const opening=overlay==='opening'||(overlay==='nsec'&&nsecReturn==='opening');
@@ -107,13 +107,17 @@ async function accountTask(action,localSigner=null){
    mineVersion=JSON.stringify(guest.mine??null);game=new Game(config,guest,persist);
    bindScores();verified.profile=verified.info=null;overlay='';
   }
- }catch(error){showError(error.message);}finally{localSigner?.dispose();authBusy=false;touch();renderMenu();}
+ }catch(error){
+  if(localSigner)nsecError=error.message;
+  else showError(error.message);
+ }finally{localSigner?.dispose();authBusy=false;touch();renderMenu();}
 }
 function nsecHtml(){
  return '<section class="login-panel">'+title(t('Advanced · NSEC'))+
   p(t('Your browser signs one login request. The private key stays on this device.'))+
   (authBusy?p(t('Connecting to your Nostr account…')):
    '<label for="nsec-key">NSEC</label><input id="nsec-key" type="password" maxlength="63" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">'+
+   (nsecError?'<p class="login-error" role="alert">'+escape(t(nsecError))+'</p>':'')+
    button(t('Sign in with NSEC'),'nsec-sign')+button(t('Back'),'back'))+'</section>';
 }
 function submitNsec(){
@@ -121,9 +125,11 @@ function submitNsec(){
  if(!input||authBusy)return;
  const nsec=input.value.trim();
  input.value='';
- if(!/^nsec1[023456789acdefghjklmnpqrstuvwxyz]{58}$/.test(nsec)){showError('Enter a valid NSEC.');return;}
+ if(!/^nsec1[023456789acdefghjklmnpqrstuvwxyz]{58}$/.test(nsec)){
+  nsecError='Enter a valid NSEC.';touch();renderMenu();return;
+ }
  try{void accountTask('account-login',localNsecSigner(nsec));}
- catch{showError('Local Nostr signing failed. Check your NSEC.');}
+ catch{nsecError='Local Nostr signing failed. Check your NSEC.';touch();renderMenu();}
 }
 function openingHtml(){
  return '<section class="login-panel"><div class="opening-brand"><img src="/icons/icon-192.png" alt="" width="56" height="56">'+title('WondersLand')+'</div>'+
@@ -356,7 +362,7 @@ function action(act,arg){try{
  if(['mine-buy','mine-activate','mine-collect'].includes(act)){void playMineAction(act.slice(5),arg);return;}
  if(act==='verified'&&!adminTest){if(verified.active)return;overlay='verified';verifiedTask(()=>verified.load());}
  else if(act==='account'&&accountAvailable&&!verified.active&&['creation','camp'].includes(game.phase))overlay='account';
- else if(act==='nsec-open'&&['opening','account'].includes(overlay)&&!cloud.account){nsecReturn=overlay;overlay='nsec';}
+ else if(act==='nsec-open'&&['opening','account'].includes(overlay)&&!cloud.account){nsecReturn=overlay;nsecError='';overlay='nsec';}
  else if(act==='nsec-sign'&&overlay==='nsec'){submitNsec();return;}
  else if(act==='opening-guest'&&overlay==='opening')overlay='';
  else if(act.startsWith('account-')&&['account','opening'].includes(overlay)){void accountTask(act);return;}

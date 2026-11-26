@@ -25,8 +25,12 @@ export async function supabaseProxy(request,endpoint,upstream=fetch,bridgeKey){
  stage='REDIRECT';if(response.status>=300&&response.status<400){await response.body?.cancel();throw Error('Unexpected backend redirect');}
  const out=new Headers();for(const name of ['content-type','cache-control','retry-after'])if(response.headers.has(name))out.set(name,response.headers.get(name));
  if(account){
-  const setCookie=response.headers.get('set-cookie');
-  if(setCookie&&[sessionCookie,browserCookie].some(name=>setCookie.startsWith(name+'=')))out.set('Set-Cookie',setCookie);
+  // The gateway may fold its own cookie into the same header. Expires dates
+  // contain commas too, so split only where another cookie name begins.
+  for(const cookie of (response.headers.get('set-cookie')||'').split(/,(?=\s*[^=;,\s]+=)/)){
+   const value=cookie.trim();
+   if([sessionCookie,browserCookie].some(name=>value.startsWith(name+'=')))out.append('Set-Cookie',value);
+  }
  }
  return new Response(response.body,{status:response.status,headers:out});
  }catch{return Response.json({error:'Server temporarily unavailable',code:'PROXY_'+stage},{status:503,headers:{'Cache-Control':'no-store'}});}

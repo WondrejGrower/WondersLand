@@ -429,7 +429,11 @@ body.immersive #interact, body.immersive #camp-gate { bottom: calc(12px + env(sa
 #menu .login-panel { max-width:420px; margin:0 auto; padding:8px 0; }
 #menu .login-panel p { margin:8px 0 18px; }
 #menu .login-panel label { display:block; color:#d9c5a1; font-size:13px; }
-#menu .login-panel #nsec-key { width:100%; min-height:44px; margin:6px 0 16px; font-family:monospace; font-size:16px; }
+#menu .login-panel #nsec-key { width:100%; min-height:44px; margin:6px 0 16px; font-family:monospace; font-size:17px; }
+#menu .login-panel .login-error {
+  margin:0 0 12px; padding:10px 12px; border:1px solid #946453; border-radius:7px;
+  background:#3a2926; color:#f0d4cb; font-size:14px;
+}
 #menu [data-action=account-login], #menu [data-action=nsec-sign] {
   background:#e4c789; color:#21271d; border-color:#e9d29b; font-weight:700;
 }

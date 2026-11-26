@@ -54,6 +54,29 @@ test('same-origin bridge preserves ownership, strips cookies and never falls bac
  let legacy=0;const env={SUPABASE_API_URL:'https://example.supabase.co/functions/v1/wondersland',LEADERBOARD:{getByName(){return {fetch:async request=>{if(new URL(request.url).pathname==='/internal/bridge-key')return Response.json({key:'a'.repeat(64)});legacy++;throw Error('Legacy fallback');}};}}};const failed=await handle(new Request('https://test.invalid/api/verified/profile',{headers:auth('a')}),env,async()=>{throw Error('offline');},null);assert.equal(failed.status,503);assert.equal(legacy,0);
 });
 
+test('account proxy separates gateway cookies from first-party login cookies',async()=>{
+ const upstream='https://example.supabase.co/functions/v1/wondersland';
+ const gateway='__cf_bm=fixture; Domain=supabase.co; Expires=Thu, 26 Nov 2026 14:38:13 GMT';
+ const attributes='; Path=/; Secure; HttpOnly; SameSite=Strict';
+ const browser='__Host-wl-nostr-browser='+'a'.repeat(64)+'; Max-Age=120'+attributes;
+ const session='__Host-wl-nostr='+'b'.repeat(64)+'; Max-Age=2592000'+attributes;
+ const expired='__Host-wl-nostr=; Max-Age=0'+attributes;
+ for(const [path,setCookies,expected] of [
+  ['challenge',[browser+', '+gateway],browser],
+  ['verify',[gateway+', '+session],session],
+  ['logout',[expired,gateway],expired],
+  ['session',[gateway],null]
+ ]){
+  const request=new Request('https://wondersland.online/api/account/'+path);
+  const result=await supabaseProxy(request,upstream,async()=>{
+   const headers=new Headers();
+   for(const cookie of setCookies)headers.append('Set-Cookie',cookie);
+   return Response.json({}, {headers});
+  });
+  assert.equal(result.headers.get('set-cookie'),expected,path);
+ }
+});
+
 test('web bridge signatures bind owner payload, source IP, route and time',async()=>{
  const {bridgeSignature,bridgeAuthorized}=await import('./server-bridge.mjs');const secret='d'.repeat(64),body=JSON.stringify({skill:'leap'}),timestamp=String(Date.now()),source='192.0.2.1',url='https://wondersland.online/api/verified/start';
  const headers=new Headers({'x-wl-source':source,'x-wl-timestamp':timestamp});headers.set('x-wl-signature',await bridgeSignature(secret,new Request(url,{method:'POST'}),body,timestamp,source));
