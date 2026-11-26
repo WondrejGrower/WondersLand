@@ -1,7 +1,7 @@
 # Registrace a přihlášení WondersLand přes Nostr
 
-Stav: první implementace používá NIP-07. Prohlížeč nebo mobilní aplikace musí
-poskytovat externí signer přes `window.nostr`. NIP-46, připojení existujícího
+Stav: přihlášení používá externí NIP-07 signer přes `window.nostr` nebo
+rozšířenou volbu s přímým NSEC a místním podpisem. NIP-46, připojení existujícího
 hodnoceného profilu a odhlášení všech zařízení zůstávají ve fázi návrhu.
 
 ## Co obsahuje první verze
@@ -31,8 +31,10 @@ Platí pro databázi, Supabase Auth metadata, Storage, Vault, Edge secrets, cach
 localStorage, sessionStorage, IndexedDB, cookies, URL, analytiku, logy, chybová
 hlášení, exporty, testovací snímky, repozitář i zálohy. Zákaz platí také pro
 hexadecimální/bajtový zápis, seed a šifrovanou kopii soukromého klíče uživatele.
-WondersLand NSEC ani nevyžaduje, nepřijímá a nevytváří. Soukromý klíč zůstává
-výhradně v externím signeru pod kontrolou uživatele. Žádné políčko „vložit NSEC“.
+Ve výchozím režimu zůstává soukromý klíč v externím signeru. Rozšířená volba
+přijímá NSEC pouze v prohlížeči a po odeslání vyprázdní pole. Jednorázový
+worker bez síťového přístupu podepíše NIP-98 událost pro přihlášení, vynuluje
+bajty klíče a ukončí se. Server přijme veřejnou podepsanou událost.
 
 ## Uživatelský postup
 
@@ -112,6 +114,13 @@ Zůstane pouze v RAM, nebude serializován a zanikne po přihlášení/odhláše
 zavření stránky. Přetrvání přihlášení zajistí relační cookie aplikace; nové
 připojení signeru může vyžadovat nové schválení. Bunker tokeny, jejich tajné
 parametry a připojovací URI se neukládají ani nelogují.
+
+## Kontrola přímého NSEC
+
+`npm run test:nostr-local` vytvoří jednorázový testovací klíč, použije mobilní
+Chromium a ověří serverovým validátorem skutečný podpis. Kontroluje vyprázdnění
+pole, síťové požadavky, konzoli, cookies, localStorage, sessionStorage,
+IndexedDB a Cache Storage.
 
 ## Pořadí implementace a přijímací podmínky
 

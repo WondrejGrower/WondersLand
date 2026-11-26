@@ -1,9 +1,11 @@
+import {build} from 'esbuild';
 import {CSP} from './security.mjs';
 import {mkdir,writeFile,copyFile,rm} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('../',import.meta.url)),out=root+'dist/';
 await rm(out,{recursive:true,force:true});await mkdir(out,{recursive:true});
 for(const name of ['art.mjs','pixels.mjs','sprites.mjs','environment.mjs','environment-regions.mjs','plant-visual.mjs','progress-validation.mjs','timing.mjs','index.html','style.css','app.mjs','core.mjs','input.mjs','feed.mjs','limits.mjs','viewport.mjs','leaderboard-client.mjs','pwa.mjs','sw.js','manifest.webmanifest','offline.html','test-login.html','test-login.mjs','player-epoch.mjs','nostr-client.mjs','verified-client.mjs','verified-simulation.mjs'])await copyFile(root+'web/'+name,out+name);
+await build({entryPoints:[root+'web/nostr-local-worker.mjs'],outfile:out+'nostr-local-worker.mjs',bundle:true,format:'esm',platform:'browser',legalComments:'eof'});
 for(const [a,b]of [['docs/live-recent-sample.json','recorded.json'],['src/balance.json','balance.json'],['src/i18n/cs.json','cs.json'],['web/icons/icon.svg','icon.svg']])await copyFile(root+a,out+b);
 await mkdir(out+'icons',{recursive:true});for(const name of ['icon-180.png','icon-192.png','icon-512.png','maskable-512.png'])await copyFile(root+'web/icons/'+name,out+'icons/'+name);
 await mkdir(out+'art',{recursive:true});for(const name of ['customization.png','body-animation.png','camp.png','flora.png'])await copyFile(root+'assets/runtime/'+name,out+'art/'+name);

@@ -1,5 +1,5 @@
 import {clearPreviousPlayerData,playerKey} from './player-epoch.mjs';
-import {CloudProgress} from './nostr-client.mjs';
+import {CloudProgress,localNsecSigner} from './nostr-client.mjs';
 import {FrameClock,FixedSimulation,frameRate} from './timing.mjs';
 import {VerifiedClient} from './verified-client.mjs';
 import {Game,fresh,migrate,plant} from './core.mjs';
@@ -52,7 +52,7 @@ const board=new LeaderboardClient({storage:{
  setItem:(key,value)=>localStorage.setItem(playerKey(key),value)
 },onChange:()=>touch()});
 const cloud=new CloudProgress(()=>touch());
-let authBusy=false,accountAvailable=false;
+let authBusy=false,accountAvailable=false,nsecReturn='account';
 let localGame=null;const verified=new VerifiedClient(config,()=>cloud.account?null:board.key(),()=>{if(verified.active){game=verified.game;if(verified.fatal)overlay='verified-failed';}touch();});
 async function verifiedTask(task){try{await task();touch();renderMenu();}catch(error){showError(error.message);}}
 async function leaveVerified(){const confirmed=await verified.leave();game=localGame;localGame=null;overlay='';touch();feed.wake();renderMenu();if(!confirmed)showError('Unsent inputs were not saved. Settle the interrupted run when connected.');}
@@ -77,14 +77,14 @@ function attachAccount(account){
  }else if(account.progress)installAccountProgress(account.progress);
  else if(!game.p.character.name)installAccountProgress(null);
 }
-async function accountTask(action){
- if(authBusy||verified.active||!['creation','camp'].includes(game.phase))return;
+async function accountTask(action,localSigner=null){
+ if(authBusy||verified.active||!['creation','camp'].includes(game.phase)){localSigner?.dispose();return;}
  authBusy=true;touch();renderMenu();
  try{
   if(action==='account-login'){
-   const opening=overlay==='opening';
-   attachAccount(await cloud.login(window.nostr));
-   if(opening&&accountAttached)overlay='';
+   const opening=overlay==='opening'||(overlay==='nsec'&&nsecReturn==='opening');
+   attachAccount(await cloud.login(localSigner||window.nostr));
+   overlay=opening&&accountAttached?'':'account';
   }
   else if(action==='account-adopt'){
    const guest={...structuredClone(game.p),activeRun:{}};
@@ -106,19 +106,35 @@ async function accountTask(action){
    mineVersion=JSON.stringify(guest.mine??null);game=new Game(config,guest,persist);
    bindScores();verified.profile=verified.info=null;overlay='';
   }
- }catch(error){showError(error.message);}finally{authBusy=false;touch();renderMenu();}
+ }catch(error){showError(error.message);}finally{localSigner?.dispose();authBusy=false;touch();renderMenu();}
+}
+function nsecHtml(){
+ return title(t('Advanced · NSEC'))+
+  p(t('Your browser signs one login request. The private key stays on this device.'))+
+  (authBusy?p(t('Connecting to your Nostr account…')):
+   '<label for="nsec-key">NSEC</label><input id="nsec-key" type="password" maxlength="63" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">'+
+   button(t('Sign in with NSEC'),'nsec-sign')+button(t('Back'),'back'));
+}
+function submitNsec(){
+ const input=$('nsec-key');
+ if(!input||authBusy)return;
+ const nsec=input.value.trim();
+ input.value='';
+ if(!/^nsec1[023456789acdefghjklmnpqrstuvwxyz]{58}$/.test(nsec)){showError('Enter a valid NSEC.');return;}
+ try{void accountTask('account-login',localNsecSigner(nsec));}
+ catch{showError('Local Nostr signing failed. Check your NSEC.');}
 }
 function openingHtml(){
  return '<div class="opening-brand"><img src="/icons/icon-192.png" alt="" width="56" height="56">'+title('WondersLand')+'</div>'+
   p(t('A forest shaped by live Bitcoin transactions.'))+
   (authBusy?p(t('Connecting to your Nostr account…')):
-   button(t('Sign in or register with Nostr'),'account-login')+button(t('Play as guest'),'opening-guest'));
+   button(t('Sign in or register with Nostr'),'account-login')+button(t('Advanced · NSEC'),'nsec-open')+button(t('Play as guest'),'opening-guest'));
 }
 function accountHtml(){
  let html=title(t('Nostr account'));
  if(authBusy)return html+p(t('Connecting to your Nostr account…'));
  if(!cloud.account)return html+p(t('Sign in with the same Nostr identity on another device to restore your progress.'))+
-  button(t('Sign in with Nostr'),'account-login')+button(t('Back'),'back');
+  button(t('Sign in with Nostr'),'account-login')+button(t('Advanced · NSEC'),'nsec-open')+button(t('Back'),'back');
  html+=p(cloud.account.slice(0,15)+'…'+cloud.account.slice(-6));
  if(!accountAttached)html+=p(t('Choose which character to use with this account.'))+
   button(t('Save this device’s character'),'account-adopt')+button(t('Create a separate character'),'account-new');
@@ -268,6 +284,7 @@ async function playMineAction(action,tier){
 }
 function menuHtml(){const g=game,d=g.p;
  if(overlay==='leaderboard')return boardHtml();
+ if(overlay==='nsec')return nsecHtml();
  if(overlay==='opening')return openingHtml();
  if(overlay==='account')return accountHtml();
  if(overlay==='inventory')return inventoryHtml();
@@ -303,6 +320,7 @@ function menuHtml(){const g=game,d=g.p;
 }
 function focusFirst(){const el=$('menu').querySelector('button:not([disabled])');el?.focus({preventScroll:true});}
 function renderMenu(){const key=JSON.stringify([game.phase,game.station,game.p.announcements[0],overlay,language,revision,Math.ceil(game.countdown||0),game.phase==='upgrade'?game.nextChoice:0,game.station==='mine'?game.mineBalance().coins:0]);if(key===lastView)return;lastView=key;const helpLabel=t('A small field guide');$('help').setAttribute('aria-label',helpLabel);$('help').querySelector('.help-label').textContent=helpLabel;const html=menuHtml();$('sheet').hidden=!html;if(!html){if($('sheet').contains(document.activeElement))document.activeElement.blur();return;}game.moves.clear();game.target=null;const focused=document.activeElement?.dataset?.action,arg=document.activeElement?.dataset?.arg;$('menu').innerHTML=html;
+ const nsec=$('nsec-key');if(nsec)nsec.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();submitNsec();}};
  const name=$('name');if(name){name.oninput=()=>{nameDraft=name.value;const create=$('menu').querySelector('[data-action=create]');create.disabled=!nameDraft.trim()||blocked;};name.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('menu').querySelector('[data-action=appearance]')?.focus();}};}
  for(const canvas of $('menu').querySelectorAll('[data-training-model]')){const model=config.trainingModels.find(m=>m.id===canvas.dataset.trainingModel),p=plant(model.sats,config),ctx=canvas.getContext('2d'),scale=Math.min(1,84/p.h,112/p.w);ctx.imageSmoothingEnabled=false;PixelArt.viewport(0,0,canvas.width,canvas.height);p.visual=descriptor(p.type,p.sats,p.h,'',model.id);PixelArt.plant(ctx,{...p,x:64-p.w*scale/2,w:p.w*scale,h:p.h*scale},92);}
  const portrait=$('portrait');if(portrait)PixelArt.character(portrait.getContext('2d'),0,0,game.phase==='creation'?appearance:game.p.character,0,false,false,'idle',game.phase==='creation'?{}:game.p.equipment);
@@ -310,7 +328,7 @@ function renderMenu(){const key=JSON.stringify([game.phase,game.station,game.p.a
  const camp=$('visited-camp');if(camp)drawCamp(camp.getContext('2d'),{campX:320,campY:235,animation:0,profile:visitor},t);
  if(focused){const el=[...$('menu').querySelectorAll('button')].find(b=>b.dataset.action===focused&&b.dataset.arg===arg&&!b.disabled);if(el){el.focus();return;}}
  focusFirst();}
-function back(){if(authBusy)return;if(verified.active&&!overlay&&['over','camp'].includes(game.phase)){verifiedTask(leaveVerified);return;}if(document.activeElement?.tagName==='INPUT'){document.activeElement.blur();$('menu').querySelector('button:not(:disabled)')?.focus();return;}if(overlay==='public-camp'||overlay==='public-character'){overlay='directory';directoryRequest++;}
+function back(){if(authBusy)return;if(overlay==='nsec'){overlay=nsecReturn;touch();return;}if(verified.active&&!overlay&&['over','camp'].includes(game.phase)){verifiedTask(leaveVerified);return;}if(document.activeElement?.tagName==='INPUT'){document.activeElement.blur();$('menu').querySelector('button:not(:disabled)')?.focus();return;}if(overlay==='public-camp'||overlay==='public-character'){overlay='directory';directoryRequest++;}
  else if(overlay==='directory'){overlay='verified';directoryRequest++;}
  else if(overlay==='reset')overlay='settings';else if(overlay)overlay='';else if(game.station)game.station='';else if(game.phase==='camp'&&game.p.announcements.length)game.dismiss();else if(['select','connecting','waiting','over'].includes(game.phase))game.camp();else game.pause();touch();}
 function download(name,obj){const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
@@ -320,6 +338,8 @@ function action(act,arg){try{
  if(['mine-buy','mine-activate','mine-collect'].includes(act)){void playMineAction(act.slice(5),arg);return;}
  if(act==='verified'&&!adminTest){if(verified.active)return;overlay='verified';verifiedTask(()=>verified.load());}
  else if(act==='account'&&accountAvailable&&!verified.active&&['creation','camp'].includes(game.phase))overlay='account';
+ else if(act==='nsec-open'&&['opening','account'].includes(overlay)&&!cloud.account){nsecReturn=overlay;overlay='nsec';}
+ else if(act==='nsec-sign'&&overlay==='nsec'){submitNsec();return;}
  else if(act==='opening-guest'&&overlay==='opening')overlay='';
  else if(act.startsWith('account-')&&['account','opening'].includes(overlay)){void accountTask(act);return;}
  else if(act==='directory'&&!verified.active){void openDirectory(arg);return;}
