@@ -21,6 +21,6 @@ export async function importServerPage(sql,authorization,upstream=fetch){
  const done=state.row_offset+page.rows.length===page.total,counts={...state.counts};
  if(done){const [n]=await sql.unsafe('SELECT count(*) AS n FROM '+table);if(n.n!==page.total)throw Error('Imported count differs');counts[table]=page.total;}
  const complete=done&&state.table_index+1===tables.length;
- await sql.unsafe('UPDATE migration_state SET table_index=$1,row_offset=$2,counts=$3,complete=$4 WHERE id=1',[state.table_index+(done?1:0),done?0:state.row_offset+page.rows.length,JSON.stringify(counts),complete]);
+ await sql.unsafe('UPDATE migration_state SET table_index=$1,row_offset=$2,counts=$3::text::jsonb,complete=$4 WHERE id=1',[state.table_index+(done?1:0),done?0:state.row_offset+page.rows.length,JSON.stringify(counts),complete]);
  return {complete,table,imported:state.row_offset+page.rows.length,total:page.total,counts};
 }

@@ -154,3 +154,10 @@ Síla dál otevírá vyšší stromy, koupené úrovně a ceny zůstávají zach
 npm run test:jump-feel
 npm run test:jump-input
 ```
+
+## Supabase server and Nostr plan
+
+Server migration and deployment: [docs/SUPABASE_SERVER.md](docs/SUPABASE_SERVER.md).
+Future Nostr registration/login: [docs/NOSTR_AUTH_PLAN.md](docs/NOSTR_AUTH_PLAN.md).
+User NSEC must never enter or be stored by WondersLand; this is a binding
+project rule in [AGENTS.md](AGENTS.md). Nostr login is planned, not implemented.

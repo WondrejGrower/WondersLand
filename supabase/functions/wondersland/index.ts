@@ -40,9 +40,9 @@ Deno.serve(async request=>{
    const board=new PostgresBoard(sql,feed),now=board.now();
    // A persistent ceiling across all isolates; per-owner limits are in the shared protocol.
    if(!await board.rate('all',now,1800))return json({error:'Please try again shortly'},429);
-   const headers=new Headers(req.headers);
+   const headers=new Headers(req.headers);headers.set('CF-Connecting-IP',req.headers.get('x-wl-source')!);
    // Source IP is covered by the web server's HMAC, independently of player ownership.
-   if(!await board.rate('ip:'+req.headers.get('CF-Connecting-IP'),now,120))return json({error:'Please try again shortly'},429);
+   if(!await board.rate('ip:'+req.headers.get('x-wl-source'),now,120))return json({error:'Please try again shortly'},429);
    return await handle(new Request(req.url,{method:req.method,headers,body:req.body,duplex:'half'} as RequestInit),{LEADERBOARD:{getByName:()=>board}},fetch,null);
   });
   return result;

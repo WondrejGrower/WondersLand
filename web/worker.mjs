@@ -6,7 +6,7 @@ import {readJson} from './limits.mjs';
 import {secure,allowed} from './security.mjs';
 export {MonthlyLeaderboard} from './leaderboard-worker.mjs';
 const bridgeKeys=new WeakMap();
-async function proxy(request,env,upstream){let key=bridgeKeys.get(env);if(!key){const reply=await env.LEADERBOARD.getByName('monthly-v1').fetch(new Request('https://internal.invalid/internal/bridge-key'));key=(await reply.json()).key;if(!key)return null;bridgeKeys.set(env,key);}return supabaseProxy(request,env.SUPABASE_API_URL,upstream,key);}
+async function proxy(request,env,upstream){let key;try{key=bridgeKeys.get(env);if(!key){const reply=await env.LEADERBOARD.getByName('monthly-v1').fetch(new Request('https://internal.invalid/internal/bridge-key'));key=(await reply.json()).key;if(!key)return null;bridgeKeys.set(env,key);}}catch{return Response.json({error:'Server temporarily unavailable',code:'PROXY_CREDENTIAL'},{status:503,headers:{'Cache-Control':'no-store'}});}return supabaseProxy(request,env.SUPABASE_API_URL,upstream,key);}
 const idPattern=/^\/api\/tx\/([a-f0-9]{64})\/status$/;
 const failure=(message,status=502,ttl=0)=>Response.json({error:message},{status,headers:{'Cache-Control':ttl?'public, max-age=0, s-maxage='+ttl:'no-store',...(status===429?{'Retry-After':'60'}:{})}});
 async function route(request,env,upstream,edgeCache){
