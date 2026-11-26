@@ -265,3 +265,17 @@ unlimited isolated test coins and preserved personal save, verified/history
 board reads, CSP/HSTS and offline PWA. No public score/profile fixtures were
 created. `npm run test:admin` additionally covers fragment-only arrival on an
 already-open gate, with real signing/cookie checks handled separately.
+
+## Skill interface and local Nostr signing · 2026-11-26
+
+The live Cloudflare release from PR #14 was verified on wondersland.online.
+Production `app.mjs`, `style.css`, `skill-icons.mjs` and the local signing
+worker matched the tested build. The signing worker responded with
+`Cache-Control: no-store` and a CSP that denies network connections. Production
+`/health`, the anonymous account session and the mempool proxy responded
+successfully with the Supabase backend on player epoch 2.
+
+The full Chromium journey, ranked browser test and local signing browser test
+passed. The signing test uses an ephemeral key and inspects requests, browser
+storage and console output. The Czech skill picker was checked at 320, 390 and
+1280 px, and the skill book rendered a distinct icon for all nine skills.
