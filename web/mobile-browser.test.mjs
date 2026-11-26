@@ -7,6 +7,13 @@ try{
  // Keep viewport checks independent of host load and time to the first collision.
  await page.clock.install();await page.clock.pauseAt(Date.now()+100);
  await page.goto('http://127.0.0.1:'+host.address().port+'/?recorded=1');await page.waitForFunction(()=>document.body.dataset.ready==='true');
+ const toggle=page.locator('#header-toggle'),actions=page.locator('#header-actions');
+ const bar=await page.locator('header').boundingBox(),camp=await page.locator('#world').boundingBox();
+ assert.ok(bar.height<=56);assert.equal(await actions.isVisible(),false);
+ await toggle.tap();assert.equal(await toggle.getAttribute('aria-expanded'),'true');assert.equal(await actions.isVisible(),true);
+ assert.deepEqual(await page.locator('#world').boundingBox(),camp);
+ await page.keyboard.press('Escape');assert.equal(await actions.isVisible(),false);assert.equal(await toggle.evaluate(b=>b===document.activeElement),true);
+ await toggle.tap();await page.locator('#scene').tap({position:{x:12,y:70}});assert.equal(await actions.isVisible(),false);
  await page.evaluate(()=>{fixture.game.station='training';fixture.renderMenu();});await page.waitForSelector('[data-training-model]');
  const previews=await page.locator('[data-training-model]').evaluateAll(cs=>cs.map(c=>({id:c.dataset.trainingModel,visible:c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>0)})));assert.equal(previews.length,9);assert.ok(previews.every(p=>p.visible),JSON.stringify(previews));
  await page.locator('[data-action=practice][data-arg=fern]').tap();await page.clock.runFor(32);await page.waitForSelector('#touch-controls:not([hidden])');
