@@ -1,8 +1,8 @@
 # How WondersLand balance works
 
-Current rules: **`wl-0.3-journey-7`**, application 0.3.3, local playtest revision
-prepared on 2026-11-09. This is the current reference for players and coding
-agents; historical briefs and earlier playtest requests may describe older rules.
+Current rules: **`wl-0.3-journey-9`**, application 0.3.3. Journey-8 strengthens Double Jump
+and shortens its cooldown, as introduced in Journey-8. Journey-9 adds the personal Block Mine. Historical briefs and earlier playtest requests may
+describe older rules.
 The executable source of values is [src/balance.json](../src/balance.json).
 This document describes the implementation, not a promise of calibrated playtime.
 Security update: verified server progression and historical community records
@@ -18,7 +18,7 @@ are now separate; see the monthly-record section below.
   postupné vylepšování; druh sám nezaručuje konkrétní velikost. Malé konopí
   lze přeskočit, velké konopí může být nepřekonatelné.
 - Při startu volíš Basic Jump (+15 % základní výšky), Time Slow nebo Double
-  Jump (další skok jednou za 10 sekund aktivní hry). S vyšší Silou skok
+  Jump (další skok jednou za 4 sekundy aktivní hry). S vyšší Silou skok
   **podrž**, abys využil její přínos; krátké klepnutí jej zkracuje.
 - Částka je součet výstupů transakce, ne poplatek ani čistá platba. Prefix
   `420` v částce mění vzhled na konopí, nikdy mechanickou velikost.
@@ -117,7 +117,7 @@ skill:
 | --- | --- |
 | Basic Jump (`leap`) | +15%, +30%, +45% height bonus at ranks 1–3 |
 | Time Slow (`timeslow`) | Whole-expedition slowdown 15%, 20%, 25% at ranks 1–3 |
-| Double Jump (`double`) | One aerial jump per takeoff, recharging every 10 active game seconds; impulse fractions 0.65, 0.8, 1 at ranks 1–3 |
+| Double Jump (`double`) | One aerial jump per takeoff, recharging every 4 active game seconds; impulse fractions 0.90, 0.95, 1 at ranks 1–3 |
 
 Basic Jump bonuses are **additive to the height bonus**, not to velocity and not
 multipliers of an already upgraded Strength height. For example, a fresh
@@ -134,7 +134,7 @@ The ordinary jump limit is 320 px. The aerial limit is
 `min(450, 1.5 × permanent jump height)`, excluding the temporary Basic Jump skill
 but including role, Strength and Diamond Boots. A rank-one Double Jump does not
 instantly grant a 450 px jump. Landing resets the once-per-takeoff flag, **not**
-its ten-second cooldown. Pausing/waiting/countdown consume no cooldown.
+its four-second cooldown. Pausing/waiting/countdown consume no cooldown.
 Explorer also has one emergency aerial jump per run when the skill is unavailable.
 Jetpack, once unlocked and acquired, has only 3 seconds of fuel for the whole
 run and respects the aerial limit. At most two rescues can be granted per run;
@@ -182,6 +182,17 @@ Flying upgrades become available at 250 cumulative live metres and appear every
 are cosmetic; Diamond Hands/Boots and their set are separate gameplay equipment.
 Collected coins are game currency, not bitcoin. Training and recorded runs do
 not increase permanent coins, seeds, progression or live records.
+
+## Block Mine
+
+A personal camp station offers ten sequentially purchased miners. The first
+costs 100 coins and is activated on purchase. Later purchases add an owned
+miner; select which one works. Only one produces coins, at the active tier's
+hourly rate, including while the application is closed. The chest holds eight
+hours of that tier's output. Switching to a lower tier preserves coins already
+earned. Collecting transfers whole coins to the personal wallet and preserves
+fractional progress. The mine is unavailable in recorded and verified play.
+Prices and hourly rates are defined in [balance.json](../src/balance.json).
 
 ## Monthly records and future ranked runs
 

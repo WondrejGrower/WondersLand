@@ -79,19 +79,39 @@ test('starting choices are complementary movement skills with fixed first ranks'
  const g=new Game(c,{...profile(),excluded:'leap'});g.start(true);assert.ok(!g.choices.some(s=>s.id==='leap'));
  g.startPractice('flower');assert.deepEqual(g.skills,{});assert.deepEqual(g.choices,[]);
 });
-test('Time Slow scales the whole expedition once and Double Jump recharges after ten active game seconds',()=>{
+test('Time Slow scales the whole expedition once and Double Jump recharges after four active game seconds',()=>{
  const normal=new Game(c,profile()),slow=new Game(c,profile());normal.start(true,42);normal.choose(0);normal.skills={};slow.start(true,42);slow.choose(1);
  for(const g of [normal,slow]){g.spawn=1e9;g.obstacles=[];g.jump();}
  assert.equal(slow.stats().timeScale,.85);
  for(let i=0;i<120;i++){normal.tick(.85/120);slow.tick(1/120);}
  for(const key of ['time','distance','y','velocity','fuel'])assert.ok(Math.abs(normal[key]-slow[key])<1e-8,key);
  const g=new Game(c,profile());g.start(true,42);g.choose(2);g.spawn=1e9;
- g.jump();g.tick(.1);g.jump();assert.equal(g.doubleCooldown,10);assert.ok(g.airUsed);
+ g.jump();g.tick(.1);g.jump();assert.equal(g.doubleCooldown,4);assert.ok(g.airUsed);
  for(const phase of ['paused','waiting','countdown']){g.phase=phase;g.countdown=3;const cd=g.doubleCooldown;g.tick(.2);assert.equal(g.doubleCooldown,cd);}
  g.phase='running';g.y=0;g.jump();g.tick(.01);g.jump();assert.equal(g.airUsed,false,'landing does not reset cooldown');
- for(let i=0;i<1190;i++)g.tick(1/120);assert.ok(g.doubleCooldown>0);g.tick(.1);assert.equal(g.doubleCooldown,0);
- g.y=0;g.jump();g.tick(.01);g.jump();assert.equal(g.doubleCooldown,10);assert.ok(g.airUsed);
+ for(let i=0;i<470;i++)g.tick(1/120);assert.ok(g.doubleCooldown>0);g.tick(.1);assert.equal(g.doubleCooldown,0);
+ g.y=0;g.jump();g.tick(.01);g.jump();assert.equal(g.doubleCooldown,4);assert.ok(g.airUsed);
  g.camp();g.start(true);g.choose(2);assert.equal(g.doubleCooldown,0);
+});
+
+test('a fresh Gardener can clear a 62 px plant with a well-timed rank-one Double Jump',()=>{
+ const g=new Game(c,profile());g.receive([tx(1,'42805878')]);g.start(false,42);g.choose(2);
+ g.spawnPlant();g.obstacles[0].x=199;g.spawn=1e9;
+ assert.equal(g.obstacles[0].h,62);
+ g.jump();
+ while(g.velocity>0)g.tick(1/120);
+ const firstPeak=g.y;
+ g.jump();
+ const secondImpulse=g.velocity;
+ g.jump();
+ assert.equal(g.velocity,secondImpulse,'the second jump can be used once per takeoff');
+ g.release();
+ while(g.velocity>0&&g.phase==='running')g.tick(1/120);
+ assert.ok(g.y>firstPeak+16,`expected a meaningful height gain, got ${g.y-firstPeak} px`);
+ assert.ok(g.y<=g.stats().airCap);
+ for(let i=0;i<200&&g.phase==='running';i++)g.tick(1/120);
+ assert.equal(g.phase,'running');
+ assert.ok(g.obstacles.every(obstacle=>obstacle.x+obstacle.w<100));
 });
 
 test('mempool rule: a fresh live run may start with an impossible sequoia, without filtering or substitution',()=>{
@@ -115,4 +135,34 @@ test('fresh characters have a higher responsive hop with a faster descent and ro
   assert.ok(windows('900000',0,role,false).length>=60,role+' forgiving fern timing');
   assert.equal(windows('10000000',0,role,false).length,0,role+' practice birch still needs Strength');
  }
+});
+
+test('Block Mine persists offline work, caps the chest, and pays only the selected miner',()=>{
+ const start=1700000000000,hour=3600000;
+ const old={...profile(),coins:1500};
+ const g=new Game(c,old);
+ assert.equal(g.mineBalance(start).coins,0);
+ assert.equal(g.mineAction('buy',2,start),false);
+ assert.equal(g.mineAction('buy',1,start),true);
+ assert.equal(g.p.coins,1400);
+ assert.equal(g.p.mine.active,1);
+ assert.equal(g.mineBalance(start+16*hour).coins,80);
+ assert.equal(g.mineBalance(start-1000).coins,0);
+ const reopened=new Game(c,g.p);
+ assert.equal(reopened.mineAction('buy',2,start+hour),true);
+ assert.equal(reopened.p.mine.active,1);
+ assert.equal(reopened.mineAction('activate',2,start+hour),true);
+ assert.equal(reopened.mineBalance(start+2*hour).coins,28);
+ assert.equal(reopened.mineBalance(start+20*hour).coins,144);
+ assert.equal(reopened.mineAction('activate',1,start+20*hour),true);
+ assert.equal(reopened.mineBalance(start+20*hour).coins,144);
+ assert.equal(reopened.mineAction('collect',0,start+20*hour),true);
+ assert.equal(reopened.p.coins,1304);
+ assert.equal(reopened.mineAction('collect',0,start+20*hour),false);
+ const later=start+20*hour;
+ assert.equal(reopened.mineAction('collect',0,later+9*60000),true);
+ assert.equal(reopened.mineBalance(later+12*60000).coins,1);
+ reopened.replay=true;
+ assert.equal(reopened.mineAction('collect',0,later+12*60000),false);
+ assert.throws(()=>new Game(c,{...old,mine:{...g.p.mine,active:10}}));
 });

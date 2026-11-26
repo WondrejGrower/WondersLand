@@ -49,6 +49,8 @@ export class Queue {
  begin(seed){this.seed=seed>>>0;this.used.clear();this.pending=[...this.cache];}
  take(){while(this.pending.length&&this.used.size<10000){const r=this.pending.splice(Math.floor(this.random()*this.pending.length),1)[0];if(this.used.has(r.txid))continue;this.used.add(r.txid);return r;}return null;}
 }
+const hourMs=3600000;
+const maxMineTime=4102444800000;
 export class Game {
  get earned(){return Math.floor((this.earnedMilli||0)/1000);}
  set earned(value){this.earnedMilli=Math.round(value*1000);}
@@ -59,6 +61,34 @@ export class Game {
  persist(){this.saveAdapter(this.p);}
  transaction(action){const old=structuredClone(this.p);try{if(!action())return false;this.persist();return true;}catch(error){this.p=old;this.notice='Cannot save progress';throw error;}}
  create(name,appearance,selected={}){const role=appearance.class||'gardener';if(!name.trim()||this.p.character.name||!this.find('classes',role).id)return;const next={...appearance,name:name.trim().slice(0,24),class:role};try{validateProgress({schemaVersion:5,character:{...next,hairStyle:Math.max(0,Math.min(15,Math.trunc(Number(appearance.hairStyle)||0)))}},this.c);}catch{throw Error('Invalid character appearance');}this.transaction(()=>{this.p.character={...appearance,hairStyle:Math.max(0,Math.min(15,Math.trunc(Number(appearance.hairStyle)||0))),name:name.trim().slice(0,24),class:role};this.p.equipment=outfit(this.c,selected);this.p.inventory=Object.values(this.p.equipment).filter(Boolean);this.p.coins+=this.p.legacyCoins||0;delete this.p.legacyCoins;return true;});this.phase='camp';}
+ canMine(){return this.phase==='camp'&&!!this.p.character.name&&!this.replay&&!this.p.adminTest;}
+ mineBalance(now=Date.now()){
+  const mine=this.p.mine;
+  if(!mine)return {work:0,coins:0,capacity:0};
+  const rate=this.c.mine.tiers[mine.active-1].perHour,capacity=rate*this.c.mine.storageHours;
+  const elapsed=Math.max(0,Math.min(maxMineTime,Math.floor(now))-mine.since);
+  const work=Math.max(mine.work,Math.min(capacity*hourMs,mine.work+elapsed*rate));
+  return {work,coins:Math.floor(work/hourMs),capacity:Math.max(capacity,Math.floor(mine.work/hourMs))};
+ }
+ mineAction(action,tier,now=Date.now()){
+  if(!this.canMine()||!Number.isSafeInteger(now)||now<1||now>maxMineTime)return false;
+  const mine=this.p.mine,owned=mine?.owned||0,balance=this.mineBalance(now);
+  const offer=this.c.mine.tiers[tier-1];
+  return this.transaction(()=>{
+   const since=Math.max(mine?.since||0,now);
+   if(action==='buy'&&tier===owned+1&&offer&&this.p.coins>=offer.cost){
+    this.p.coins-=offer.cost;
+    this.p.mine={owned:tier,active:mine?.active||tier,since,work:balance.work};
+   }else if(action==='activate'&&mine&&Number.isInteger(tier)&&tier>=1&&tier<=owned&&tier!==mine.active){
+    this.p.mine={...mine,active:tier,since,work:balance.work};
+   }else if(action==='collect'&&mine&&balance.coins>0&&this.p.coins<2000000000){
+    const coins=Math.min(balance.coins,2000000000-this.p.coins);
+    this.p.coins+=coins;
+    this.p.mine={...mine,since,work:balance.work-coins*hourMs};
+   }else return false;
+   return true;
+  });
+ }
  takeClothing(id){if(this.phase!=='camp')return false;return this.transaction(()=>{if(!this.find('clothing',id).id||this.p.inventory.includes(id))return false;this.p.inventory.push(id);return true;});}
  equipClothing(id){if(this.phase!=='camp')return false;return this.transaction(()=>{const item=this.find('clothing',id);if(!item.id||!this.p.inventory.includes(id))return false;this.p.equipment[item.slot]=this.p.equipment[item.slot]===id?null:id;return true;});}
  unlocks(){for(const r of this.c.progression)if(this.has(r.id)&&!this.p.unlocked.includes(r.id)){this.p.unlocked.push(r.id);this.p.announcements.push(r.id);}}
@@ -104,7 +134,7 @@ export class Game {
  settle(){if(!this.runId||this.paid)return;this.paid=true;if(!this.started||this.demo)return;if(this.p.paidRuns.includes(this.runId))return;const saved=this.transaction(()=>{this.p.paidRuns=[...this.p.paidRuns,this.runId].slice(-128);const score=Math.floor(this.distance),key=this.c.balanceVersion+':'+(this.replay?'replay:web':'live')+':T1:'+this.p.character.class;this.p.records[key]=Math.max(this.p.records[key]||0,score);if(!this.replay){this.p.coins+=Math.floor(this.earned);this.p.runs++;this.p.bestDistance=Math.max(this.p.bestDistance,score);this.p.totalDistance+=score;for(const m of this.c.milestones){const id='distance:'+m.meters;if(score>=m.meters&&!this.p.milestones.includes(id)){this.p.milestones.push(id);this.p.coins+=m.coins;this.p.seeds+=m.seeds;}}this.unlocks();}this.p.activeRun={};return true;});if(saved&&!this.replay){try{this.onLiveRunFinished?.({runId:this.runId,name:this.p.character.name,role:this.p.character.class,rules:this.c.balanceVersion,score:Math.floor(this.distance),seconds:this.time,mode:'live'});}catch{}}}
  camp(){this.settle();this.phase='camp';this.station='';this.moves.clear();this.target=null;}
  dismiss(){this.p.announcements.shift();this.persist();}
- nearby(){return [{id:'home',x:270,y:190},{id:'portal',x:540,y:215},{id:'training',x:465,y:290},{id:'forge',x:112,y:225},{id:'wardrobe',x:390,y:195},{id:'library',x:175,y:300}].find(p=>(['home','portal'].includes(p.id)||this.has(p.id==='library'?'garden':p.id))&&Math.hypot(this.campX-p.x,this.campY-p.y)<43)?.id||'';}
+ nearby(){return [{id:'home',x:270,y:190},{id:'mine',x:365,y:307},{id:'portal',x:540,y:215},{id:'training',x:465,y:290},{id:'forge',x:112,y:225},{id:'wardrobe',x:390,y:195},{id:'library',x:175,y:300}].find(p=>(['home','portal'].includes(p.id)||(p.id==='mine'&&this.canMine())||this.has(p.id==='library'?'garden':p.id))&&Math.hypot(this.campX-p.x,this.campY-p.y)<43)?.id||'';}
  interact(){if(this.phase!=='camp'||this.station||this.p.announcements.length)return;this.moves.clear();this.target=null;const id=this.nearby();if(id==='portal')this.start(false);else this.station=id;}
  state(){return {doubleCooldown:this.doubleCooldown||0,phase:this.phase,distance:this.distance,animation:this.animation,y:this.y,velocity:this.velocity,landing:this.landing||0,invulnerable:this.invulnerable,profile:this.p,region:this.region(),regionIndex:this.c.regions.indexOf(this.region()),obstacles:this.obstacles,coins:this.coins,hit:this.hit,flying:this.flying,campX:this.campX,campY:this.campY,facingLeft:this.moves.has('left')||!!(this.target&&this.target.x<this.campX),moving:this.moves.size>0||!!this.target};}
 }

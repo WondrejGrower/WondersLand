@@ -25,12 +25,32 @@ export function drawCamp(c,s,wlTranslate,width=640,height=360){
  var plants=['flora_meadow_grass','flora_daisies','flora_tulips','flora_fern','flora_mushrooms','flora_blackberry','flora_sapling'];
  for(i=0;i<21;i++){var edge=i%2?36:601;props.push([plants[i%plants.length],edge+(i%3-1)*15,156+(i*37)%183,20+i%3*6,14+i%4*6]);}
  props.push(['flora_cannabis',240,320,22,38]);
+ if(s.mineVisible)props.push(['mine',365,307]);
+ function mine(){
+  const active=s.profile.mine?.active||0;
+  const swing=Math.floor(t*6)%6;
+  const broken=active&&Math.floor(t*6)%36>=32;
+  ellipse(365,307,36,6,'#20382e');
+  r(334,301,60,5,'#493f33');r(337,301,54,2,'#80654b');
+  const size=broken?12:20,top=301-size,left=374-size/2;
+  r(left,top,size,size,'#af561c');r(left,top,size,3,'#ffc169');
+  r(left,top+3,size-4,size-6,'#ec902f');r(left+size-4,top+3,4,size-3,'#884420');
+  r(left+4,top+6,5,2,'#ffd17b');r(left+size-7,top+size-5,3,2,'#d47427');
+  if(!active)return;
+  const colors=['#b28c59','#8b9c75','#738b98','#a4816c','#b28b55'];
+  PixelArt.character(c,337,262,{hair:'#624630',skin:'#d4a676',shirt:colors[(active-1)%colors.length],hairStyle:(active-1)%5},swing,false,false,'idle',{},false);
+  const headY=swing<3?274:287;
+  c.strokeStyle=active>=6?'#b3a186':'#806143';c.lineWidth=2;
+  c.beginPath();c.moveTo(351,287);c.lineTo(369,headY);c.stroke();
+  r(366,headY-2,7,3,active>=6?'#d2d5ce':'#8f9a91');
+  if(swing===3||broken){r(368,281,2,2,'#ffe0a2');r(375,278,2,2,'#ffb857');r(380,286,2,2,'#f08b42');}
+ }
  props.sort(function(a,b){return a[2]-b[2]});
  var drawn=false;
  function player(){ellipse(px,py+2,10,4,'#152a28');PixelArt.character(c,px-12,py-40,s.profile.character,Math.floor(t*(s.moving?9:.8)),s.profile.hands,s.profile.boots,s.moving?'run':'idle',s.profile.equipment,s.facingLeft)}
  for(i=0;i<props.length;i++){
   var p=props[i];if(!drawn&&p[2]>py){player();drawn=true;}
-  PixelArt.prop(c,p[0],p[1],p[2],p[3],p[4]);
+  if(p[0]==='mine')mine();else PixelArt.prop(c,p[0],p[1],p[2],p[3],p[4]);
  }
  if(!drawn)player();
  // Lightweight light motion overlays; no per-frame atlas processing.

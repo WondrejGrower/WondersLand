@@ -1,5 +1,20 @@
 {
-  "balanceVersion": "wl-0.3-journey-7",
+  "balanceVersion": "wl-0.3-journey-9",
+  "mine": {
+    "storageHours": 8,
+    "tiers": [
+      { "cost": 100, "perHour": 10 },
+      { "cost": 240, "perHour": 18 },
+      { "cost": 500, "perHour": 29 },
+      { "cost": 900, "perHour": 43 },
+      { "cost": 1500, "perHour": 60 },
+      { "cost": 2400, "perHour": 80 },
+      { "cost": 3600, "perHour": 104 },
+      { "cost": 5200, "perHour": 132 },
+      { "cost": 7400, "perHour": 165 },
+      { "cost": 10000, "perHour": 205 }
+    ]
+  },
   "anchors": [
     [
       100000,
@@ -221,8 +236,8 @@
       "tag": "air",
       "maxRank": 3,
       "effects": [
-        0.65,
-        0.8,
+        0.9,
+        0.95,
         1
       ],
       "rarity": "rare",
@@ -232,7 +247,7 @@
         "movement"
       ],
       "slot": "run-skill",
-      "cooldown": 10
+      "cooldown": 4
     },
     {
       "id": "shield",

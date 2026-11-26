@@ -48,7 +48,9 @@ Neměň ani nemaž skutečné uživatelské soubory původní desktopové aplika
 Obratnost zpomaluje celou výpravu o 0,04 % za úroveň, max. 2 %; buffer je
 pevný 0,1 s. Tábor, odpočítávání, výzkum a síť běží v reálném čase.
 
-Balance journey-7: základní/tap impuls 140, gravitace 210/280, kvadratická
+Balance journey-9 přidává osobní Důl na bloky s jedním aktivním těžařem.
+Změna z journey-8: Dvojskok má impuls 90 / 95 / 100 % a cooldown 4 s.
+Základní fyzika z journey-7: základní/tap impuls 140, gravitace 210/280, kvadratická
 Síla 5.7. Výška začátečníka ~46.67 px, maximum Síly ~312.67 px. Animace letu
 a mělké propružení nemění hitbox. Při změně mechanik aktualizuj balanceVersion,
 relevantní testy a docs/BALANCE.md. Kosmetika/FPS/PWA nevyžadují nový balance.

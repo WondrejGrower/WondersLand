@@ -26,6 +26,10 @@ function validateProgress(input,config){
  if(input.records!==undefined){if(!object(input.records)||Object.keys(input.records).length>2048)bad();for(var key of Object.keys(input.records))if(!text(key,160)||!number(input.records[key],2000000000,true))bad();}
  if(input.research!==undefined)list(input.research,3,function(j){if(!object(j)||!known(j.id,ids('research'))||!number(j.started,4102444800,false)||!number(j.end,4102444800,false))return false;var spec=config.research.filter(function(x){return x.id===j.id;})[0];return Math.abs(j.end-j.started-spec.seconds)<0.001;});
  if(input.schemaVersion===5){if(input.inventory!==undefined)list(input.inventory,128,function(x){return text(x,96);});if(input.equipment!==undefined){if(!object(input.equipment))bad();for(var key of Object.keys(input.equipment))if(Object.keys(config.starterEquipment).indexOf(key)<0||(input.equipment[key]!==null&&!text(input.equipment[key],96)))bad();}}
+ if(input.mine!==undefined){
+  const mine=input.mine,tiers=config.mine.tiers,maxWork=tiers.at(-1).perHour*config.mine.storageHours*3600000;
+  if(!object(mine)||!number(mine.owned,tiers.length,true)||mine.owned<1||!number(mine.active,mine.owned,true)||mine.active<1||!number(mine.since,4102444800000,true)||mine.since<1||!number(mine.work,maxWork,true))bad();
+ }
  if(input.activeRun!==undefined){var r=input.activeRun;if(!object(r))bad();if(Object.keys(r).length){if(!text(r.id,128)||!r.id||!number(r.seconds,86400,false)||!number(r.score,2000000000,true)||!number(r.coins,2000000000,true)||!text(r.mode,96)||!(r.mode==='live'||r.mode.indexOf('replay:')===0)||!known(r['class'],ids('classes'))||!input.character||r['class']!==input.character['class'])bad();if(r.score>Math.floor(config.physics.speed*config.physics.maxSpeedFactor*r.seconds/10)+2||r.coins>Math.ceil(r.seconds*10)+20)bad();}}
  return true;
 }

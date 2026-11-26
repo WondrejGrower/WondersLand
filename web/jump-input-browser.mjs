@@ -28,13 +28,13 @@ try{
   }
   await page.evaluate(()=>{fixture.game.start(true,42);});await page.clock.runFor(40);
   assert.equal(await page.locator('[data-action=skill]').count(),3);
-  const text=await page.locator('#menu').textContent();for(const word of ['Basic Jump','15%','Time Slow','Double Jump','10 s'])assert.ok(text.includes(word),word);
+  const text=await page.locator('#menu').textContent();for(const word of ['Basic Jump','15%','Time Slow','Double Jump','4 s','90%'])assert.ok(text.includes(word),word);
   await page.screenshot({path:'docs/browser/starting-skills-'+(mobile?'mobile':'desktop')+'.png'});
   await page.evaluate(()=>document.querySelector('[data-action=skill][data-arg="2"]').focus());await page.keyboard.press('e');await page.clock.runFor(40);
   await page.evaluate(()=>{fixture.game.spawn=1e9;fixture.game.obstacles=[];});
   assert.match(await page.locator('#hud').textContent(),/Double Jump ready/);
   await page.keyboard.down('Space');await page.clock.runFor(80);await page.keyboard.up('Space');await page.keyboard.press('Space');await page.clock.runFor(40);
-  assert.match(await page.locator('#hud').textContent(),/Double Jump · 10 s/);await page.clock.runFor(10100);assert.match(await page.locator('#hud').textContent(),/Double Jump ready/);
+  assert.match(await page.locator('#hud').textContent(),/Double Jump · 4 s/);await page.clock.runFor(4100);assert.match(await page.locator('#hud').textContent(),/Double Jump ready/);
   assert.deepEqual(errors,[]);await page.close();console.log((mobile?'Mobile touch':'Desktop keyboard/mouse')+': '+cases.length+' real input/timing trials and all three starting choices passed.');
  }
 }finally{await browser.close();await new Promise(r=>host.close(r));}

@@ -4,7 +4,13 @@ const host=server();await new Promise(r=>host.listen(0,'127.0.0.1',r));const bro
 const errors=[];await mkdir('docs/browser',{recursive:true});
 try{
  const page=await browser.newPage({viewport:{width:1280,height:800},hasTouch:true});page.on('pageerror',e=>errors.push(e.message));await page.route('**/api/mempool',r=>r.fulfill({json:[]}));
- await page.goto('http://127.0.0.1:'+host.address().port+'/?lang=cs');await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.fill('#name','Willow');await page.keyboard.press('Enter');
+ await page.goto('http://127.0.0.1:'+host.address().port+'/?lang=cs');await page.waitForFunction(()=>document.body.dataset.ready==='true');assert.equal(await page.locator('#name').evaluate(input=>document.activeElement===input),false);
+ await page.locator('#name').tap();await page.keyboard.type('Willow');
+ // Safari may dispatch a button click without giving that button focus.
+ const hair=page.locator('[data-action=appearance][data-arg=hairStyle]');
+ await hair.evaluate(button=>button.click());
+ assert.equal(await hair.evaluate(button=>document.activeElement===button),true);
+ assert.equal(await page.locator('#name').inputValue(),'Willow');
  const hashes=new Set();for(let i=0;i<16;i++){hashes.add(await page.locator('#portrait').evaluate(c=>c.toDataURL()));await page.locator('[data-action=appearance][data-arg=hairStyle]').click();}assert.equal(hashes.size,16);
  await page.locator('[data-action=starter-outfit][data-arg=torso]').click();
  await page.screenshot({path:'docs/browser/inventory-creation-cs.png'});await page.locator('[data-action=create]').click();await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
