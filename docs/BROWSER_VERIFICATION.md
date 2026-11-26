@@ -335,3 +335,12 @@ Production release `4e3ae56` served the renewed verification deadline. The
 public gate remained protected. A newly signed capability established a
 session and loaded the authenticated test game. The browser fragment-flow
 regression and checked deployment dry-run passed locally.
+
+## Training Grounds unlock all attributes · 2026-11-26
+
+Cloudflare release `2d20848` and Supabase Edge Function v10 both ran
+Journey-11. Production web assets matched the tested build, Ranked reported
+the new rules, and a signed private session still loaded /test. An existing
+training save with Strength level 7 exposed all five attributes and retained
+that level. The 87 unit/integration checks, inventory and Ranked browser
+checks and checked deploy dry-run passed.
