@@ -59,3 +59,10 @@ test('web bridge signatures bind owner payload, source IP, route and time',async
  const headers=new Headers({'x-wl-source':source,'x-wl-timestamp':timestamp});headers.set('x-wl-signature',await bridgeSignature(secret,new Request(url,{method:'POST'}),body,timestamp,source));
  const req=new Request(url,{method:'POST',headers});assert.equal(await bridgeAuthorized(secret,req,body),true);assert.equal(await bridgeAuthorized(secret,req,body+' '),false);assert.equal(await bridgeAuthorized(secret,req,body,Number(timestamp)+60001),false);assert.equal(await bridgeAuthorized(secret,new Request(url+'?forged=1',{method:'POST',headers}),body),false);headers.set('x-wl-source','192.0.2.2');assert.equal(await bridgeAuthorized(secret,new Request(url,{method:'POST',headers}),body),false);
 });
+
+
+test('proxy uses Workers-supported manual redirects and never forwards an owner key to a redirect target',async()=>{
+ let calls=0;const request=new Request('https://wondersland.online/api/verified/profile',{headers:auth('a')});
+ const result=await supabaseProxy(request,'https://example.supabase.co/functions/v1/wondersland',async(url,options)=>{calls++;assert.equal(typeof url,'string');assert.equal(options.redirect,'manual');assert.equal(options.headers.get('cookie'),null);return Response.redirect('https://untrusted.invalid/collect',302);},'c'.repeat(64));
+ assert.equal(calls,1);assert.equal(result.status,503);assert.equal((await result.json()).code,'PROXY_REDIRECT');
+});

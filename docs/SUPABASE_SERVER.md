@@ -68,7 +68,7 @@ Aktivní běhy z jiné verze se nesmějí ověřovat novou fyzikou.
 
 ## Ověření při migraci
 
-- 75 testů, včetně PostgreSQL schématu/RLS, serverové simulace, souběžných
+- 76 testů, včetně PostgreSQL schématu/RLS, serverové simulace, souběžných
   nákupů, idempotence, obnovitelného importu a podpisů proxy.
 - `build:checked`, audit bez zranitelností a Cloudflare deploy dry-run.
 - Prohlížečové sady byly zkuseny; místní Chromium chybí a stahování binárky
@@ -77,3 +77,11 @@ Aktivní běhy z jiné verze se nesmějí ověřovat novou fyzikou.
   jsou očekávaná informační hlášení před přenosem dat/provozem.
 
 Konečný stav živého přenosu a kontrol API doplňuje záznam v GitHub PR.
+
+Přenos devíti původních tabulek byl dokončen 26. 11. 2026. Zachovány jsou
+1 serverový profil, 2 historické měsíční výsledky, 10 starších ticketů a
+související indexy/metadatové záznamy; zdroj neměl aktivní ověřené výpravy ani
+ověřené výsledky. Import porovnal všechna pole záznamů a všechny počty.
+JSON metadat se zapisuje explicitním přetypováním text→jsonb, aby nedošlo k
+dvojí serializaci ovladačem. Proxy používá podporovaný režim `manual` a
+odmítá 3xx, takže nepřepošle oprávnění na další adresu.
