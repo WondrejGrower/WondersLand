@@ -1,6 +1,6 @@
 import * as Sprites from './sprites.mjs';
 import * as Environment from './environment.mjs';
-var cache={}
+const cache=new Map();
 var hairIds=["hair_short_tousled","hair_short_side_part","hair_short_textured","hair_buzz_cut","hair_short_crop","hair_short_curls","hair_quiff","hair_short_spiky","hair_medium_wavy","hair_undercut","hair_compact_afro","hair_swept_back","hair_bob","hair_long_loose","hair_ponytail","hair_braid"];
 // Shoulder/elbow/wrist, hip and foot pivots measured in the registered base poses.
 // All clothing is transformed from these same pivots, including body lean.
@@ -63,8 +63,9 @@ function wearablePixels(id,pose){
 function character(c,x,y,ch,frame,hands,boots,mode,equipment,facingLeft,motion){
  ch=ch||{};equipment=equipment||{};mode=mode||"idle";frame=Math.floor(frame||0)%6;
  var pose=mode==="run"?frame:mode==="jump"?8:mode==="fall"?(motion?8:9):mode==="land"?(motion?frame:10):mode==="hit"?11:6+(frame%2);
- var key=JSON.stringify([ch,pose,equipment]);var pixels=cache[key];
- if(!pixels){
+ var key=JSON.stringify([ch,pose,equipment]);
+ var cached=cache.get(key);
+ if(!cached){
   var grid=new Array(24*40),rig=rigs[pose],head=rig.head||0,shift=rig.shiftX||0;
   function dot(px,py,col){px=Math.round(px);py=Math.round(py);if(px>=0&&px<24&&py>=0&&py<40&&col)grid[py*24+px]=col;}
   function tint(col,target,reference){
@@ -106,8 +107,11 @@ function character(c,x,y,ch,frame,hands,boots,mode,equipment,facingLeft,motion){
   wear(equipment.torso);wear(equipment.feet);wear(equipment.hands);wear(equipment.belt);
   sprite(hair,3+shift,head,{tint:ch.hair});wear(equipment.head);
   // Legacy hands/boots affect abilities only; diamond cosmetics are reserved.
-  pixels=[];for(var i=0;i<grid.length;i++)if(grid[i])pixels.push([i%24,Math.floor(i/24),grid[i]]);
-  if(Object.keys(cache).length>256)cache={};cache[key]=pixels;
+  const pixels=[];
+  for(let i=0;i<grid.length;i++)if(grid[i])pixels.push([i%24,Math.floor(i/24),grid[i]]);
+  cached={pixels,bitmap:null};
+  if(cache.size===256)cache.delete(cache.keys().next().value);
+  cache.set(key,cached);
  }
  // Keep the dressed takeoff silhouette throughout flight. Legs extend gradually
  // through the apex instead of snapping between two unrelated whole-body frames.
@@ -122,6 +126,29 @@ function character(c,x,y,ch,frame,hands,boots,mode,equipment,facingLeft,motion){
   // former nine-pixel head drop. No delayed takeoff or physics displacement.
   var progress=1-Math.max(0,Math.min(1,(motion.landing||0)/.16));
   var spring=Math.sin(Math.PI*progress);scaleX=1+.04*spring;scaleY=1-.1*spring;
+ }
+ const {pixels}=cached;
+ if(!airborne&&scaleY===1&&c.canvas?.ownerDocument){
+  if(!cached.bitmap){
+   const bitmap=c.canvas.ownerDocument.createElement('canvas');
+   bitmap.width=24;bitmap.height=40;
+   const sprite=bitmap.getContext('2d');
+   for(const [px,py,color] of pixels){sprite.fillStyle=color;sprite.fillRect(px,py,1,1);}
+   cached.bitmap=bitmap;
+  }
+  const transform=c.getTransform();
+  // Snap the sprite origin to the backing-store pixel grid rather than the world grid.
+  if(transform.b===0&&transform.c===0&&transform.a>0&&transform.d>0){
+   x=(Math.round(transform.a*x+transform.e)-transform.e)/transform.a;
+   y=(Math.round(transform.d*y+transform.f)-transform.f)/transform.d;
+  }
+  c.save();
+  c.imageSmoothingEnabled=false;
+  if(facingLeft){
+   c.translate(x+24,y);c.scale(-1,1);c.drawImage(cached.bitmap,0,0);
+  }else c.drawImage(cached.bitmap,x,y);
+  c.restore();
+  return;
  }
  function point(px,py){
   if(airborne){

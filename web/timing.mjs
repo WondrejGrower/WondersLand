@@ -5,12 +5,28 @@ export const frameRate=value=>Number(value)===60?60:144;
 
 export class FrameClock{
  constructor(fps=144){this.setRate(fps);}
- setRate(fps){this.fps=frameRate(fps);this.epoch=null;this.slot=-1;}
+ setRate(fps){this.fps=frameRate(fps);this.reset();}
+ reset(){
+  this.epoch=null;this.slot=-1;
+  this.sampleStart=null;this.sampleFrames=0;this.measured=null;
+ }
  paint(now){
   if(this.epoch===null)this.epoch=now;
-  const slot=Math.floor((now-this.epoch)*this.fps/1000+1e-7);
-  if(slot<=this.slot)return false;
-  this.slot=slot;return true;
+  // Refresh timestamps can arrive slightly early. Allow 1 ms of jitter
+  // without moving the long-term cap or adding paints between callbacks.
+  const slot=Math.floor((now-this.epoch+1)*this.fps/1000);
+  const due=slot>this.slot;
+  if(due)this.slot=slot;
+  if(this.sampleStart===null)this.sampleStart=now;
+  else{
+   if(due)this.sampleFrames++;
+   const elapsed=now-this.sampleStart;
+   if(elapsed>=1000){
+    this.measured=Math.round(1000*this.sampleFrames/elapsed);
+    this.sampleStart=now;this.sampleFrames=0;
+   }
+  }
+  return due;
  }
 }
 

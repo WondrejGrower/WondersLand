@@ -25,11 +25,10 @@ const minerColors=['#b28c59','#8b9c75','#738b98','#a4816c','#b28b55'];
 
 export function drawCamp(c,s,wlTranslate,width=640,height=360){
  const view=s.viewport||{left:0,top:0,width:640,height:360};
- const scale=Math.min(width/view.width,height/view.height);
- c.reset();c.scale(scale,scale);c.translate(-view.left,-view.top);
+ const scaleX=width/view.width,scaleY=height/view.height;
+ c.setTransform(scaleX,0,0,scaleY,-view.left*scaleX,-view.top*scaleY);
  PixelArt.viewport(view.left,view.top,view.width,view.height);
- c.fillStyle='#142921';c.fillRect(view.left,view.top,view.width,view.height);
- drawClearing(c);
+ drawClearing(c,view);
 
  const t=s.animation,px=s.campX,py=s.campY;
  function pixel(x,y,w,h,color){

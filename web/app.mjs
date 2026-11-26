@@ -40,6 +40,7 @@ let pendingImport=null,creationRole='gardener',selectedItem='';
 let camera={left:0,top:0,width:640,height:360},sceneWidth=640,sceneHeight=360,immersiveFallback=false;
 const touchMedia=matchMedia('(pointer:coarse)');
 const frameClock=new FrameClock(frameRate(localStorage.getItem('wl-frame-rate'))),simulation=new FixedSimulation();
+document.addEventListener('visibilitychange',()=>frameClock.reset());
 function appHeight(){document.documentElement.style.setProperty('--app-height',Math.round(window.visualViewport?.height||innerHeight)+'px');}
 addEventListener('resize',appHeight);window.visualViewport?.addEventListener('resize',appHeight);appHeight();
 function syncFullscreen(){const active=!!document.fullscreenElement||immersiveFallback;document.body.classList.toggle('immersive',active);$('leave-fullscreen').hidden=!active;$('fullscreen').setAttribute('aria-pressed',String(active));resize();if($('sheet').hidden)$('scene').focus({preventScroll:true});else focusFirst();}
@@ -178,6 +179,10 @@ const palettes={hair:['#5e3936','#d6b96d','#bcc4c5','#302f43','#a65c50'],skin:['
 const stationNames={mine:'Block Mine',home:'Hearth & home',portal:'Mempool Gate',training:'Training Grounds',forge:'Runic Workshop',wardrobe:'Wardrobe',library:'Spell Garden'};
 function showError(message){$('error').hidden=false;$('error').replaceChildren();const text=document.createElement('span');text.textContent=t(message);$('error').append(text);const b=document.createElement('button');b.type='button';b.className='window-close';b.textContent='×';b.setAttribute('aria-label',t('Close window'));b.onclick=()=>$('error').hidden=true;$('error').append(b);}
 function setText(id,text){const node=$(id);if(node.textContent!==text)node.textContent=text;}
+function setHidden(id,hidden){const node=$(id);if(node.hidden!==hidden)node.hidden=hidden;}
+function frameRateStatus(){
+ return frameClock.measured===null?t('Measuring frame rate…'):t('Measured rendering: %1 FPS',int(frameClock.measured));
+}
 function touch(){revision++;}
 function button(text,action,arg='',disabled=false,selected=false){return `<button data-action="${action}" data-arg="${escape(arg)}" ${disabled?'disabled':''} class="${selected?'selected':''}">${escape(text).replaceAll('\n','<br>')}</button>`;}
 function p(text){return '<p>'+escape(text)+'</p>';}
@@ -336,7 +341,7 @@ function menuHtml(){const g=game,d=g.p;
  if(overlay==='verified-failed')return title(t('Verified run stopped'))+p(t(verified.error||'Verified service unavailable'))+button(t('Return to personal camp'),'camp');
  if(overlay==='verified')return verifiedHtml();
  if(overlay==='install')return title(t('Install WondersLand'))+p(t('Add WondersLand to your home screen to open it like an app.'))+(pwa.canInstall?button(t('Install app'),'install-native'):'')+p(t('Desktop: open this site in Chrome or Chromium and choose Install app in the browser menu.'))+p(t('Android: open the browser menu and choose Install app or Add to Home screen.'))+p(t('iPhone / iPad: open this site in Safari, tap Share, then Add to Home Screen. Keep Open as Web App enabled if offered.'))+p(t('An internet connection is needed to open the game and receive live transactions. Your progress is saved on this device.'))+p(t('Before installing, export your progress in Settings. If the installed app opens with a new character, import that file; some browsers keep app storage separate.'))+button(t('Back'),'settings');
- if(overlay==='settings')return title(t('Settings'))+'<h2>'+t('Language')+'</h2>'+button('English','language','en',false,language==='en')+button('Čeština','language','cs',false,language==='cs')+'<h2>'+t('Frame rate')+'</h2><div class="frame-rates">'+[60,144].map(fps=>button(fps+' FPS','frame-rate',String(fps),false,frameClock.fps===fps)).join('')+'</div>'+p(t('144 FPS requires a display with a refresh rate of at least 144 Hz.'))+button(t(pwa.installed?'App installed':'Install app'),'install','',pwa.installed)+button(t('Export progress'),'export')+button(t('Import progress'),'import')+p(t('Import can also transfer progress from the native app. The selected file replaces browser progress after confirmation.'))+button(t('Reset character and all progress?'),'reset-confirm')+button(t('Back'),'back');
+ if(overlay==='settings')return title(t('Settings'))+'<h2>'+t('Language')+'</h2>'+button('English','language','en',false,language==='en')+button('Čeština','language','cs',false,language==='cs')+'<h2>'+t('Frame rate')+'</h2><div class="frame-rates">'+[60,144].map(fps=>button(fps+' FPS','frame-rate',String(fps),false,frameClock.fps===fps)).join('')+'</div>'+'<p id="frame-rate-status">'+escape(frameRateStatus())+'</p>'+p(t('144 FPS requires a display with a refresh rate of at least 144 Hz.'))+button(t(pwa.installed?'App installed':'Install app'),'install','',pwa.installed)+button(t('Export progress'),'export')+button(t('Import progress'),'import')+p(t('Import can also transfer progress from the native app. The selected file replaces browser progress after confirmation.'))+button(t('Reset character and all progress?'),'reset-confirm')+button(t('Back'),'back');
  if(overlay==='help')return title(t('A small field guide'))+p(t('MENUS: WASD or arrows to select, E to confirm, Esc to go back. Mouse also works.\nCAMP: WASD or arrows to walk, E at the portal to choose a skill and start from 0 m.\nRUN: Space / W / Up or click to jump; hold for height. F operates an acquired jetpack. P / Esc pauses. B returns to camp. F11 changes fullscreen.\n\nExplore one continuous forest. Systems unlock through live expeditions and distance. Training grants no permanent rewards. Coins are game points, not bitcoin.'))+button(t('Back'),'back');
  if(g.phase==='creation')return title(t('Create your wanderer'))+p(t('One character. Endless expeditions.'))+(blocked?p(t('Saved progress is damaged. It was not overwritten. Reset requires confirmation.')):'')+`<input id="name" type="text" maxlength="24" autocomplete="off" placeholder="${escape(t('Name'))}" value="${escape(nameDraft)}"><div class="appearance"><canvas id="portrait" width="24" height="40"></canvas><div>${appearanceButtons()}</div></div>`+'<h2>'+t('Choose your role')+'</h2><div class="roles">'+config.classes.map(c=>button(t(c.name),'creation-role',c.id,false,creationRole===c.id)).join('')+'</div>'+p(roleDescription(creationRole))+p(t('Your role is permanent. Changing it requires resetting your character and progress.'))+button(t('Make camp'),'create','',!nameDraft.trim()||blocked);
  if(g.phase==='upgrade')return title(t('Choose a skill at %1 m',int(g.nextChoice-config.run.choiceEveryMetres)))+
@@ -508,6 +513,59 @@ function resize(){const r=$('world').getBoundingClientRect();sceneWidth=Math.max
 let pendingPaintTime=0;
 let last=performance.now(),lastHit='',palette={...config.regions[0]},paletteFrom=palette,paletteId='edge',paletteTime=2.2;
 function mixColor(a,b,x){const parse=c=>[1,3,5].map(i=>parseInt(c.slice(i,i+2),16));return '#'+parse(a).map((v,i)=>Math.round(v+(parse(b)[i]-v)*x).toString(16).padStart(2,'0')).join('');}const c=$('scene').getContext('2d');
+const scene=$('scene'),stationsLayer=$('stations');
+const stationLabels=new Map();
+const maxCampPixels=4_000_000;
+
+function paintScene(campView,touchMode,paintDt){
+ const state=verified.active?verified.view():simulation.view(game);
+ camera=viewport(sceneWidth,sceneHeight,game.phase,state.campX,state.campY);
+ camera.controls=touchMode;
+ state.viewport=camera;
+ state.mineVisible=game.canMine()&&!verified.active;
+ const displayRatio=window.devicePixelRatio||1;
+ const campRatio=Math.min(displayRatio,2,Math.sqrt(maxCampPixels/(sceneWidth*sceneHeight)));
+ const width=campView?Math.round(sceneWidth*campRatio):Math.ceil(camera.width);
+ const height=campView?Math.round(sceneHeight*campRatio):Math.ceil(camera.height);
+ scene.classList.toggle('scaled-pixels',campView&&campRatio<displayRatio);
+ if(scene.width!==width)scene.width=width;
+ if(scene.height!==height)scene.height=height;
+ for(const [key,value] of Object.entries(camera)){
+  const attr='view'+key[0].toUpperCase()+key.slice(1),text=String(value);
+  if(scene.dataset[attr]!==text)scene.dataset[attr]=text;
+ }
+ if(campView){drawCamp(c,state,t,width,height);return;}
+ if(game.phase==='creation'){
+  c.reset();c.fillStyle='#101d2b';c.fillRect(0,0,width,height);return;
+ }
+ if(state.region.id!==paletteId){paletteFrom={...palette};paletteId=state.region.id;paletteTime=0;}
+ paletteTime=Math.min(2.2,paletteTime+paintDt);
+ for(const key of ['sky','soil','foliage'])palette[key]=mixColor(paletteFrom[key],state.region[key],paletteTime/2.2);
+ state.region={...state.region,...palette};
+ drawRun(c,state,t,width,height);
+}
+function paintStationLabels(campView){
+ const visible=new Set();
+ if(campView)for(const {id,x,labelY} of game.campStations()){
+  if(id==='mine'&&verified.active)continue;
+  const point=worldToPercent(x,labelY,camera);
+  if(point.x<0||point.x>100||point.y<0||point.y>100)continue;
+  visible.add(id);
+  let label=stationLabels.get(id);
+  if(!label){
+   label=document.createElement('span');
+   label.dataset.station=id;
+   stationLabels.set(id,label);
+  }
+  const left=Math.max(13,Math.min(87,point.x)).toFixed(2)+'%',top=point.y.toFixed(2)+'%';
+  if(label.style.left!==left)label.style.left=left;
+  if(label.style.top!==top)label.style.top=top;
+  const text=t(stationNames[id]);
+  if(label.textContent!==text)label.textContent=text;
+  if(label.parentNode!==stationsLayer)stationsLayer.append(label);
+ }
+ for(const [id,label] of stationLabels)if(!visible.has(id)&&label.parentNode===stationsLayer)label.remove();
+}
 function frame(now){try{const dt=Math.min(.1,(now-last)/1000);last=now;if(adminTest){game.p.coins=1000000000;game.p.adminTest=true;}if(verified.active)game=verified.game;if(!overlay&&!document.hidden){if(verified.active)verified.tick(dt);else simulation.advance(game,dt);}else simulation.reset(game);
  if(openOnArrival){
   if(openOnArrival.game!==game||game.phase!=='camp'||overlay||game.station)openOnArrival=null;
@@ -518,16 +576,14 @@ function frame(now){try{const dt=Math.min(.1,(now-last)/1000);last=now;if(adminT
  if(!frameClock.paint(now)){requestAnimationFrame(frame);return;}
  const paintDt=pendingPaintTime;pendingPaintTime=0;
  const campView=syncHeaderLayout();
- const touchMode=touchMedia.matches||sceneWidth<700;document.body.classList.toggle('mobile-playing',touchMode&&game.phase==='running'&&!overlay);$('touch-controls').hidden=!touchMode||game.phase!=='running'||!!overlay;setText('touch-pause',t('Pause'));setText('touch-jump',t(game.y>0&&game.skills.double&&game.doubleCooldown<=0&&!game.airUsed?'Double Jump':'Jump'));setText('touch-fly',t('Fly'));$('touch-fly').hidden=!game.skills.jetpack;$('touch-fly').disabled=game.fuel<=0;const state=verified.active?verified.view():simulation.view(game);camera=viewport(sceneWidth,sceneHeight,game.phase,state.campX,state.campY);camera.controls=touchMode;state.viewport=camera;state.mineVisible=game.canMine()&&!verified.active;const campResolution=campView?Math.min(2,Math.max(1,sceneWidth/camera.width)):1;const logicalWidth=Math.ceil(camera.width*campResolution),logicalHeight=Math.ceil(camera.height*campResolution);if($('scene').width!==logicalWidth)$('scene').width=logicalWidth;if($('scene').height!==logicalHeight)$('scene').height=logicalHeight;for(const [key,value]of Object.entries(camera))$('scene').dataset['view'+key[0].toUpperCase()+key.slice(1)]=value;if(state.region.id!==paletteId){paletteFrom={...palette};paletteId=state.region.id;paletteTime=0;}paletteTime=Math.min(2.2,paletteTime+paintDt);for(const key of ['sky','soil','foliage'])palette[key]=mixColor(paletteFrom[key],state.region[key],paletteTime/2.2);state.region={...state.region,...Object.fromEntries(['sky','soil','foliage'].map(key=>[key,palette[key]]))};if(game.phase==='camp')drawCamp(c,state,t,$('scene').width,$('scene').height);else if(game.phase==='creation'){c.reset();c.fillStyle='#101d2b';c.fillRect(0,0,$('scene').width,$('scene').height);}else drawRun(c,state,t,$('scene').width,$('scene').height);
- $('inventory').hidden=game.phase!=='camp';setText('inventory',t('Inventory'));setText('wallet',adminTest?'∞':coin(game.p.coins));$('verified').hidden=adminTest||recorded||game.phase!=='camp'||verified.active||!game.p.character.name;setText('verified','Ranked');setText('settings',t('Settings'));$('account').hidden=!accountAvailable||verified.active||!['creation','camp'].includes(game.phase);setText('account',t('Nostr account'));$('settings').hidden=verified.active;setText('fullscreen',t('Fullscreen'));setText('leave-fullscreen',t('Exit fullscreen'));setText('leaderboard',t('Leaderboard'));setText('keys',t('WASD / arrows · E · Esc'));setText('hud',game.phase==='camp'?t(adminTest?'ADMIN TEST · Unlimited coins · No leaderboard':'Base Camp'):game.phase==='creation'?'':int(Math.floor(game.distance))+' m · '+t(game.region().name)+'\n'+int(Math.floor(game.time))+' s · '+coin(Math.floor(game.earned))+' · '+t('Rescue')+': '+game.rescues+(game.skills.jetpack?' · '+t(touchMode?'Fuel %1 s · hold Fly':'Fuel %1 s · hold F',new Intl.NumberFormat(language,{minimumFractionDigits:1,maximumFractionDigits:1}).format(game.fuel)):'')+'\n'+(adminTest?t('ADMIN TEST · Unlimited coins · No leaderboard'):verified.active?t(verified.failed?'Verified sync paused. Reconnecting…':'VERIFIED · SERVER PROFILE'):game.demo?t('TRAINING · NO REWARDS'):game.replay?t('RECORDED DATA · NOT LIVE'):t('REAL TRANSACTIONS'))+'\n'+Object.entries(game.skills).map(([id,rank])=>id==='double'?(game.doubleCooldown>0?t('Double Jump · %1 s',Math.ceil(game.doubleCooldown)):t('Double Jump ready')):t(game.find('skills',id).name)+' '+rank).join(' · '));
- const labels=game.phase==='camp'?game.campStations()
-  .filter(({id})=>id!=='mine'||!verified.active)
-  .map(({id,x,labelY})=>[id,worldToPercent(x,labelY,camera)])
-  .filter(([,p])=>p.x>=0&&p.x<=100&&p.y>=0&&p.y<=100)
-  .map(([id,p])=>`<span data-station="${id}" style="left:${Math.max(13,Math.min(87,p.x))}%;top:${p.y}%">${escape(t(stationNames[id]))}</span>`).join(''):'';
- const labelsLayer=$('stations');
- if(labelsLayer.innerHTML!==labels)labelsLayer.innerHTML=labels;
- $('camp-gate').hidden=game.phase!=='camp'||!!overlay||!!game.station||!!game.p.announcements.length||game.nearby()==='portal';setText('camp-gate',t('Walk to gate →'));$('interact').hidden=game.phase!=='camp'||!!game.station||!!game.p.announcements.length||!game.nearby()||!!overlay;setText('interact',t(touchMode?'Open %1':'E · %1',t(stationNames[game.nearby()]||'')));setText('connection',net==='replay'?t('Recorded data · no permanent rewards'):net==='live'?t('Live: recent transactions · %1 available',game.q.pending.length):net==='offline'?t('Source unavailable · waiting for connection'):t('Connecting to mempool.space…'));
+ const touchMode=touchMedia.matches||sceneWidth<700;document.body.classList.toggle('mobile-playing',touchMode&&game.phase==='running'&&!overlay);setHidden('touch-controls',!touchMode||game.phase!=='running'||!!overlay);setText('touch-pause',t('Pause'));setText('touch-jump',t(game.y>0&&game.skills.double&&game.doubleCooldown<=0&&!game.airUsed?'Double Jump':'Jump'));setText('touch-fly',t('Fly'));setHidden('touch-fly',!game.skills.jetpack);const fly=$('touch-fly');if(fly.disabled!==(game.fuel<=0))fly.disabled=game.fuel<=0;paintScene(campView,touchMode,paintDt);
+ if(overlay==='settings'&&$('frame-rate-status'))setText('frame-rate-status',frameRateStatus());
+ setHidden('inventory',game.phase!=='camp');setText('inventory',t('Inventory'));setText('wallet',adminTest?'∞':coin(game.p.coins));setHidden('verified',adminTest||recorded||game.phase!=='camp'||verified.active||!game.p.character.name);setText('verified','Ranked');setText('settings',t('Settings'));setHidden('account',!accountAvailable||verified.active||!['creation','camp'].includes(game.phase));setText('account',t('Nostr account'));setHidden('settings',verified.active);setText('fullscreen',t('Fullscreen'));setText('leave-fullscreen',t('Exit fullscreen'));setText('leaderboard',t('Leaderboard'));setText('keys',t('WASD / arrows · E · Esc'));setText('hud',game.phase==='camp'?t(adminTest?'ADMIN TEST · Unlimited coins · No leaderboard':'Base Camp'):game.phase==='creation'?'':int(Math.floor(game.distance))+' m · '+t(game.region().name)+'\n'+int(Math.floor(game.time))+' s · '+coin(Math.floor(game.earned))+' · '+t('Rescue')+': '+game.rescues+(game.skills.jetpack?' · '+t(touchMode?'Fuel %1 s · hold Fly':'Fuel %1 s · hold F',new Intl.NumberFormat(language,{minimumFractionDigits:1,maximumFractionDigits:1}).format(game.fuel)):'')+'\n'+(adminTest?t('ADMIN TEST · Unlimited coins · No leaderboard'):verified.active?t(verified.failed?'Verified sync paused. Reconnecting…':'VERIFIED · SERVER PROFILE'):game.demo?t('TRAINING · NO REWARDS'):game.replay?t('RECORDED DATA · NOT LIVE'):t('REAL TRANSACTIONS'))+'\n'+Object.entries(game.skills).map(([id,rank])=>id==='double'?(game.doubleCooldown>0?t('Double Jump · %1 s',Math.ceil(game.doubleCooldown)):t('Double Jump ready')):t(game.find('skills',id).name)+' '+rank).join(' · '));
+ paintStationLabels(campView);
+ const nearby=campView?game.nearby():'';
+ const campMenuOpen=!campView||!!overlay||!!game.station||!!game.p.announcements.length;
+ setHidden('camp-gate',campMenuOpen||nearby==='portal');setText('camp-gate',t('Walk to gate →'));
+ setHidden('interact',campMenuOpen||!nearby);setText('interact',t(touchMode?'Open %1':'E · %1',t(stationNames[nearby]||'')));setText('connection',net==='replay'?t('Recorded data · no permanent rewards'):net==='live'?t('Live: recent transactions · %1 available',game.q.pending.length):net==='offline'?t('Source unavailable · waiting for connection'):t('Connecting to mempool.space…'));
  if(game.phase==='over'&&!game.demo&&!game.replay&&game.hit.txid!==lastHit){lastHit=game.hit.txid;const id=lastHit;fetch('/api/tx/'+id+'/status').then(r=>r.ok?readJson(r,16384):null).then(status=>{if(game.hit.txid===id&&typeof status?.confirmed==='boolean'){game.hit.status=status.confirmed?'confirmed':'pending';touch();}}).catch(()=>{});}renderMenu();}catch(e){showError(e.message);}requestAnimationFrame(frame);}requestAnimationFrame(frame);
 const feed=new TransactionFeed({recorded,queue:()=>game.q,active:()=>!game.demo&&['running','waiting','connecting','countdown','select'].includes(game.phase),visible:()=>!document.hidden&&!verified.active,receive:rows=>{if(!verified.active)game.receive(rows);},status:value=>{net=value;$('connection').dataset.status=value;}});
 feed.start();document.addEventListener('visibilitychange',()=>feed.wake());document.documentElement.lang=language;

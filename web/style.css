@@ -378,6 +378,7 @@ body.immersive #touch-controls, body.mobile-playing #touch-controls { bottom: ca
 .compact-navigation .help-label { display: inline; }
 
 .camp-view #scene { image-rendering: auto; }
+.camp-view #scene.scaled-pixels { image-rendering: pixelated; }
 .camp-view #hud {
   color: #fff0d1;
   background: #0b1b14e8;

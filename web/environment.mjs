@@ -13,10 +13,11 @@ function viewport(left,top,width,height){viewLeft=Math.floor(left);viewTop=Math.
 function setAtlases(camp,flora,details,clearing){
  campAtlas=camp;floraAtlas=flora;campDetailsAtlas=details;campClearing=clearing;
 }
-export function drawClearing(c){
- if(!campClearing)return;
+export function drawClearing(c,{left,top,width,height}){
+ if(!campClearing){c.fillStyle='#142921';c.fillRect(left,top,width,height);return;}
+ const xScale=campClearing.width/640,yScale=campClearing.height/360;
  c.imageSmoothingEnabled=true;
- c.drawImage(campClearing,0,0,640,360);
+ c.drawImage(campClearing,left*xScale,top*yScale,width*xScale,height*yScale,left,top,width,height);
 }
 function draw(c,id,x,y,w,h){
  const detail=campDetailsAtlas&&campDetails[id],region=Data.regions[id];

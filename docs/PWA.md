@@ -90,7 +90,9 @@ the offline notice and never API, admin pages or player credentials.
 
 ## Frame rate and one runtime · 2026-11-09
 
-Settings → Frame rate offers 60 and 144 FPS, default 144. The same setting and
+Settings → Frame rate offers 60 and 144 FPS, default 144, and displays the
+measured rendering FPS below the caps. The measurement counts scheduled
+canvas paints driven by the browser refresh callbacks. The same setting and
 code apply in browser tabs and standalone PWA windows. A sufficiently fast
 screen/browser/device is required to display 144 FPS. Simulation stays at
 120 fixed steps/second with visual interpolation. See WEB_PWA_TIMING.md for

@@ -17,6 +17,19 @@ test('60/144 FPS caps follow display callbacks without extra frames or changing 
  const clock=new FrameClock(60);assert.ok(clock.paint(0));assert.equal(clock.paint(7),false);clock.setRate(144);assert.ok(clock.paint(7));
 });
 
+test('small 144 Hz callback jitter keeps the paint cadence while measured FPS reports slower displays',()=>{
+ const clock=new FrameClock(144);
+ for(const refresh of [144,60]){
+  clock.reset();
+  let paints=0;
+  for(let i=0;i<=refresh*2;i++){
+   const jitter=i%2===0?0:-.65;
+   if(clock.paint(i*1000/refresh+jitter))paints++;
+  }
+  assert.equal(paints,refresh*2+1);
+  assert.equal(clock.measured,refresh);
+ }
+});
 test('60 and 144 render callbacks produce identical fixed-step jumps, collisions and rewards',()=>{
  const results=[];
  for(const fps of [60,144]){
