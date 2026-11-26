@@ -2,12 +2,19 @@ import * as Data from './environment-regions.mjs';
 import * as Visual from './plant-visual.mjs';
 var campAtlas=null;
 var floraAtlas=null;
+var campDetailsAtlas=null;
+const campDetails={
+ camp_portal:[0,0,240,278],
+ camp_mine_platform:[0,280,240,56],
+};
 var viewLeft=0,viewTop=0,viewRight=640,viewBottom=360;
 function viewport(left,top,width,height){viewLeft=Math.floor(left);viewTop=Math.floor(top);viewRight=Math.ceil(left+width);viewBottom=Math.ceil(top+height);}
-function setAtlases(camp,flora){campAtlas=camp;floraAtlas=flora;}
+function setAtlases(camp,flora,details){campAtlas=camp;floraAtlas=flora;campDetailsAtlas=details;}
 function draw(c,id,x,y,w,h){
- var region=Data.regions[id];if(!region||w<=0||h<=0)return;
- var r=region.rect,atlas=region.atlas==="camp"?campAtlas:floraAtlas;
+ const detail=campDetailsAtlas&&campDetails[id],region=Data.regions[id];
+ const r=detail||region?.rect;
+ if(!r||w<=0||h<=0)return;
+ const atlas=detail?campDetailsAtlas:region.atlas==="camp"?campAtlas:floraAtlas;
  c.imageSmoothingEnabled=false;
  // One cached atlas image, one clipped blit. Work never grows with giant TX height.
  // Crop before scaling to avoid canvas limits when a tree extends far above view.

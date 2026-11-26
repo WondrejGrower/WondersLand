@@ -15,7 +15,7 @@ import {TransactionFeed} from './feed.mjs';
 import {setAtlases} from './environment.mjs';
 import * as PixelArt from './pixels.mjs';
 const [config,cs]=await Promise.all(['balance.json','cs.json'].map(p=>fetch('./'+p).then(r=>{if(!r.ok)throw Error('Cannot load game assets');return r.json();})));
-const environmentImages=await Promise.all(['camp','flora'].map(async name=>{const image=new Image();image.src='./art/'+name+'.png';await image.decode();return image;}));setAtlases(...environmentImages);
+const environmentImages=await Promise.all(['camp.png','flora.png','camp-details.webp'].map(async name=>{const image=new Image();image.src='./art/'+name;await image.decode();return image;}));setAtlases(...environmentImages);
 const $=id=>document.getElementById(id),escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let language=localStorage.getItem('wl-language')||'en';const languageParam=new URL(location.href).searchParams.get('lang');if(['cs','en'].includes(languageParam)){language=languageParam;localStorage.setItem('wl-language',language);const clean=new URL(location.href);clean.searchParams.delete('lang');history.replaceState(null,'',clean);}
 const t=(key,...args)=>{let text=language==='cs'?(cs[key]||key):key;args.forEach((value,i)=>text=text.replaceAll('%'+(i+1),String(value)));return text;};

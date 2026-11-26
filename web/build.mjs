@@ -8,6 +8,6 @@ for(const name of ['art.mjs','skill-icons.mjs','pixels.mjs','sprites.mjs','envir
 await build({entryPoints:[root+'web/nostr-local-worker.mjs'],outfile:out+'nostr-local-worker.mjs',bundle:true,format:'esm',platform:'browser',legalComments:'eof'});
 for(const [a,b]of [['docs/live-recent-sample.json','recorded.json'],['src/balance.json','balance.json'],['src/i18n/cs.json','cs.json'],['web/icons/icon.svg','icon.svg']])await copyFile(root+a,out+b);
 await mkdir(out+'icons',{recursive:true});for(const name of ['icon-180.png','icon-192.png','icon-512.png','maskable-512.png'])await copyFile(root+'web/icons/'+name,out+'icons/'+name);
-await mkdir(out+'art',{recursive:true});for(const name of ['customization.png','body-animation.png','camp.png','flora.png'])await copyFile(root+'assets/runtime/'+name,out+'art/'+name);
+await mkdir(out+'art',{recursive:true});for(const name of ['customization.png','body-animation.png','camp.png','flora.png','camp-details.webp'])await copyFile(root+'assets/runtime/'+name,out+'art/'+name);
 await writeFile(out+'_headers','/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  X-Frame-Options: DENY\n  Permissions-Policy: camera=(), microphone=(), geolocation=()\n  Content-Security-Policy: '+CSP+'\n  Strict-Transport-Security: max-age=2592000\n/sw.js\n  Cache-Control: no-cache\n/manifest.webmanifest\n  Content-Type: application/manifest+json\n  Cache-Control: no-cache\n');
 console.log('Browser build ready: dist/ (balance, translations and PWA pixel art)');

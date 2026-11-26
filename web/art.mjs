@@ -13,13 +13,12 @@ export function drawCamp(c,s,wlTranslate,width=640,height=360){
  for(i=0;i<140;i++)r(90+(i*31)%470,224+(i%5)*3,4,2,i%3?'#8b7858':'#5f5845');
  // Props share the original interaction points. Depth order follows their feet.
  var props=[
-  ['camp_cottage',231,184,180,148],['camp_portal',540,222,98,100],
+  ['camp_cottage',231,184,180,148],['camp_portal',540,222,88,102],
   ['camp_forge',112,219,88,78],['camp_wardrobe',390,193,57,60],
   ['camp_chest',427,212,36,30],['camp_training_dummy',450,290,35,50],
   ['camp_archery_target',487,289,33,40],['camp_herbal_workbench',175,300,63,57],
   ['camp_garden_bed',136,324,54,40],['camp_gardening_bench',211,326,48,33],
-  ['camp_fire',331,278,49,42],['camp_lantern_post',489,230,26,57],
-  ['camp_lantern_post',588,231,26,57],['camp_lantern_post',320,182,22,48]
+  ['camp_fire',331,278,49,42],['camp_lantern_post',588,231,26,57],['camp_lantern_post',320,182,22,48]
  ];
  for(i=0;i<10;i++)props.push(['flora_pine',i*74-10,105+i%2*24,50+i%3*10,78+i%3*13]);
  props.push(['flora_birch',21,319,54,143],['flora_sequoia',620,321,61,155]);
@@ -31,9 +30,9 @@ export function drawCamp(c,s,wlTranslate,width=640,height=360){
   const active=s.profile.mine?.active||0;
   const swing=Math.floor(t*6)%6;
   const broken=active&&Math.floor(t*6)%36>=32;
-  ellipse(365,307,36,6,'#20382e');
-  r(334,301,60,5,'#493f33');r(337,301,54,2,'#80654b');
-  const size=broken?12:20,top=301-size,left=374-size/2;
+  ellipse(365,307,36,6,'#253b30');
+  PixelArt.prop(c,'camp_mine_platform',365,309,72,17);
+  const size=broken?12:20,top=298-size,left=374-size/2;
   r(left,top,size,size,'#af561c');r(left,top,size,3,'#ffc169');
   r(left,top+3,size-4,size-6,'#ec902f');r(left+size-4,top+3,4,size-3,'#884420');
   r(left+4,top+6,5,2,'#ffd17b');r(left+size-7,top+size-5,3,2,'#d47427');
@@ -51,11 +50,18 @@ export function drawCamp(c,s,wlTranslate,width=640,height=360){
  function player(){ellipse(px,py+2,10,4,'#152a28');PixelArt.character(c,px-12,py-40,s.profile.character,Math.floor(t*(s.moving?9:.8)),s.profile.hands,s.profile.boots,s.moving?'run':'idle',s.profile.equipment,s.facingLeft)}
  for(i=0;i<props.length;i++){
   var p=props[i];if(!drawn&&p[2]>py){player();drawn=true;}
-  if(p[0]==='mine')mine();else PixelArt.prop(c,p[0],p[1],p[2],p[3],p[4]);
+  if(p[0]==='mine')mine();
+  else if(p[0]==='camp_portal'){
+   ellipse(p[1],p[2]-1,40,5,'#293d35');
+   PixelArt.prop(c,p[0],p[1],p[2],p[3],p[4]);
+   for(let j=0;j<5;j++){
+    const angle=t*.65+j*2*Math.PI/5;
+    r(p[1]+Math.cos(angle)*11,p[2]-43+Math.sin(angle)*15,1,1,'#83d6c9');
+   }
+  }else PixelArt.prop(c,p[0],p[1],p[2],p[3],p[4]);
  }
  if(!drawn)player();
  // Lightweight light motion overlays; no per-frame atlas processing.
- for(i=0;i<7;i++){var a=t*.65+i*6.28/7;r(540+Math.cos(a)*17,180+Math.sin(a)*26,1,2,'#b4f2dd');}
  for(i=0;i<8;i++)r(331+Math.sin(i*3+t)*9,262-((t*14+i*7)%26),1,1,'#e6ba71');
  for(i=0;i<16;i++)r((i*137+t*3)%640,190+Math.sin(i*3+t*.5)*75,1,1,'#c4d1a0');}
 export function drawRun(c,s,wlTranslate,width=640,height=360){ 

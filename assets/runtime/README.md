@@ -43,7 +43,7 @@ bounds for all 24 motifs; they do not assume a uniform atlas grid.
 node tools/build-environment-atlases.mjs # Node >=22 and ImageMagick 7
 ```
 
-Browser/PWA startup decodes each of the two atlas PNGs once.
+Browser/PWA startup decodes each of the two original atlas PNGs once.
 `web/environment.mjs` draws
 cached source regions with nearest-neighbour sampling and clips in world
 coordinates before scaling, so even a huge transaction tree uses a bounded number of visible
@@ -56,6 +56,16 @@ the wrist. The body panel deforms with the shoulder/hip axis, the pouch follows
 the hips, and boots/gloves rotate with their limbs. Completed wearable layers
 are cached per item/pose. Camp idle breathing uses a slower two-frame cycle.
 [Clothed and isolated wearable poses](../../docs/browser/animated-clothing-layers.png).
+
+## Camp details · 2026-11-26
+
+`camp-details.webp` contains the original portal and mining platform generated
+with ImageGen using the player's painterly camp references. The transparent
+240 × 336 WebP is about 33 KB. Its portal occupies rows 0–277 and its platform
+occupies rows 280–335. `web/environment.mjs` registers these two rectangles
+alongside the original camp and flora atlases. The browser decodes the sprite
+sheet once. Both props use the existing station anchors, and the mining block
+and worker retain their separate runtime animations.
 
 ## Transaction morphology · graphics v1
 
