@@ -2,7 +2,7 @@ import {chromium} from 'playwright';import {existsSync,readFileSync} from 'node:
 const host=server();await new Promise(r=>host.listen(0,'127.0.0.1',r));const browser=await chromium.launch({executablePath:existsSync('/usr/bin/chromium')?'/usr/bin/chromium':chromium.executablePath(),headless:true,args:['--no-sandbox']});
 try{
  const g=new Game(JSON.parse(readFileSync('src/balance.json')));g.create('LOCAL MOBILE TEST',{class:'gardener'});g.p.unlocked.push('training');
- const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(p=>localStorage.setItem('wl-progress',JSON.stringify(p)),g.p);
+ const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(p=>localStorage.setItem('wl-v2:wl-progress',JSON.stringify(p)),g.p);
  await page.route('**/api/mempool',r=>r.fulfill({json:[]}));await page.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:readFileSync('web/app.mjs','utf8')+'\nwindow.fixture={get game(){return game;},action,renderMenu};'}));
  // Keep viewport checks independent of host load and time to the first collision.
  await page.clock.install();await page.clock.pauseAt(Date.now()+100);

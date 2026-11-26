@@ -20,7 +20,7 @@ try{
  await key('e');await page.waitForSelector('[data-action=skill]');assert.match(await page.locator('#hud').textContent(),/^0 m/);await key('Escape');
  // A rich, isolated fixture exercises every station without altering user data.
  const p=fresh();Object.assign(p,{character:{name:'Willow',class:'gardener',hair:'#d6b96d',skin:'#dfaf87',shirt:'#679e86',hairStyle:1},coins:10000,runs:5,totalDistance:7000,bestDistance:3500,seeds:5,unlocked:['training','strength','agility','magnet','luck','yield','flying','forge','wardrobe','garden','classes','diamond','research2','research3']});
- await page.evaluate(data=>localStorage.setItem('wl-progress',JSON.stringify(data)),p);
+ await page.evaluate(data=>localStorage.setItem('wl-v2:wl-progress',JSON.stringify(data)),p);
  for(const lang of ['en','cs']){
   await page.goto(origin+'/?recorded=1&lang='+lang);await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);await page.waitForTimeout(150);await page.screenshot({path:`docs/browser/camp-${lang}.png`});
   await key('F10');await page.waitForSelector('[data-action=language]');await page.screenshot({path:`docs/browser/settings-${lang}.png`});
@@ -28,26 +28,26 @@ try{
   await button(lang==='en'?'English':'Čeština').click();await key('Escape');await page.reload();await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForFunction(()=>document.querySelector('#sheet').hidden);assert.equal(await page.locator('#settings').textContent(),lang==='en'?'Settings':'Nastavení');
   const box=await page.locator('#scene').boundingBox();await clickWorld(page,465,290);await page.waitForTimeout(1900);await key('e');await page.waitForSelector('[data-action=buy]');assert.equal(await page.locator('[data-action=class]').count(),0);await page.screenshot({path:`docs/browser/training-${lang}.png`});
   for(const id of ['birch','cannabis','sequoia']){const preview=page.locator(`[data-training-model="${id}"]`);const bounds=await preview.boundingBox();assert.ok(bounds.width<=128&&bounds.height===100);await page.locator(`[data-action=practice][data-arg="${id}"]`).click({trial:true});}
-  const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).workshop.strength||0);await key('e');const after=await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).workshop.strength);assert.equal(after,before+1);
+  const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-v2:wl-progress')).workshop.strength||0);await key('e');const after=await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-v2:wl-progress')).workshop.strength);assert.equal(after,before+1);
   assert.equal(await page.locator('[data-training-model]').count(),9);
   for(const canvas of await page.locator('[data-training-model]').all())assert.ok(await canvas.evaluate(c=>c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>0)));
-  const practiceSave=await page.evaluate(()=>localStorage.getItem('wl-progress'));
+  const practiceSave=await page.evaluate(()=>localStorage.getItem('wl-v2:wl-progress'));
   await page.locator('[data-action=practice][data-arg=sequoia]').click();await page.waitForFunction(()=>document.querySelector('#sheet').hidden);
   assert.equal(await page.locator('[data-action=skill]').count(),0);
   await page.waitForSelector('[data-action=run]',{timeout:20000});assert.equal(await page.locator('[data-action=transaction]').count(),0);
   await page.locator('[data-action=run]').click();await page.waitForFunction(()=>document.querySelector('#sheet').hidden);await key('p');await page.locator('[data-action=camp]').click();
-  assert.equal(await page.evaluate(()=>localStorage.getItem('wl-progress')),practiceSave);
+  assert.equal(await page.evaluate(()=>localStorage.getItem('wl-v2:wl-progress')),practiceSave);
   {const b=await page.locator('#scene').boundingBox();await clickWorld(page,540,215);await page.waitForTimeout(1500);await key('e');await page.waitForSelector('[data-action=skill]');await page.screenshot({path:`docs/browser/skills-${lang}.png`});await key('e');await page.waitForSelector('[data-action=transaction]',{timeout:15000});await page.screenshot({path:`docs/browser/results-${lang}.png`});await key('Escape');}
  }
  await key('F10');
  const imported={...fresh(),schemaVersion:3,character:{name:'Native transfer',class:'gardener',hair:'#5e3936',skin:'#dfaf87',shirt:'#679e86',hairStyle:0},coins:777,owned:['hands'],workshop:{strength:7},runs:1,milestones:['T1:60','T2:120']};
  await page.locator('#import').setInputFiles({name:'progress.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(imported))});
  await page.waitForSelector('[data-action=import-apply]');await key('s');await key('e');
- assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).coins),777);
- assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-progress')).workshop.strength),7);
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-v2:wl-progress')).coins),777);
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('wl-v2:wl-progress')).workshop.strength),7);
  await button('Resetovat postavu a veškerý postup?').click();await button('Smazat postup').click();await page.waitForSelector('#name');assert.equal(await page.evaluate(()=>localStorage.getItem('wl-language')),'cs');await page.reload();await page.waitForFunction(()=>document.body.dataset.ready==='true');await page.waitForSelector('#name');assert.equal(await page.locator('#settings').textContent(),'Nastavení');
  const dpi=await browser.newContext({viewport:{width:1366,height:768},deviceScaleFactor:2});
- const high=await dpi.newPage();await high.addInitScript(data=>{localStorage.setItem('wl-progress',JSON.stringify(data));localStorage.setItem('wl-language','cs');},p);
+ const high=await dpi.newPage();await high.addInitScript(data=>{localStorage.setItem('wl-v2:wl-progress',JSON.stringify(data));localStorage.setItem('wl-language','cs');},p);
  await high.goto(origin+'/?recorded=1');await high.waitForFunction(()=>document.body.dataset.ready==='true');await high.waitForFunction(()=>document.querySelector('#sheet').hidden);await high.screenshot({path:'docs/browser/camp-dpi2.png'});await dpi.close();
  assert.equal(await page.locator('#error').isVisible(),false);assert.deepEqual(errors,[]);console.log('Browser journey, keyboard, live language, reset, purchase, identity, retry and four sizes passed. Screenshots: docs/browser/');
 }catch(error){console.error('Browser state:',await page.locator('#hud').textContent(),await page.locator('#menu').textContent(),await page.locator('#error').textContent(),errors);await page.screenshot({path:'/tmp/wl-browser-failure.png'});throw error;}finally{await browser.close();await new Promise(resolve=>host.close(resolve));}

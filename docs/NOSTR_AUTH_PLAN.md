@@ -1,6 +1,26 @@
 # Registrace a přihlášení WondersLand přes Nostr
 
-Stav: plán, 26. listopadu 2026. Přihlášení není součástí nynější migrace serveru.
+Stav: první implementace používá NIP-07. Prohlížeč nebo mobilní aplikace musí
+poskytovat externí signer přes `window.nostr`. NIP-46, připojení existujícího
+hodnoceného profilu a odhlášení všech zařízení zůstávají ve fázi návrhu.
+
+## Co obsahuje první verze
+
+- V menu v táboře a při tvorbě postavy je **Účet Nostr**. První schválený
+  podpis založí účet. Další podpis stejného klíče obnoví stejný účet.
+- Při prvním přihlášení lze uložit osobní postavu z aktuálního zařízení nebo
+  začít novou. Osobní postup na účtu se automaticky synchronizuje po dokončení
+  výpravy a po uložených akcích v táboře. Stav synchronizace je v menu účtu.
+- Hodnocený profil vytvořený v přihlášeném režimu se načte i na jiném zařízení.
+  Starší hodnocený profil svázaný s prohlížečem lze dál používat jako host.
+- Uložení je podmíněné revizí. Při souběžné změně si hráč vybere cloudovou
+  či místní kopii. Odhlášení ruší aktuální relaci a vrací osobní profil hosta.
+- Backend běží v existující Supabase Edge Function `wondersland`. Pro
+  nasazení aplikuj novou migraci `wonderland_nostr_accounts`, nasaď Edge
+  Function přes `npm run supabase:prepare` a potom stejnou revizi webu.
+  Databázové tabulky jsou soukromé a přihlášení nepoužívá Supabase JWT.
+
+Níže je širší plán včetně dalších etap.
 
 ## Závazné pravidlo Wondreje
 
@@ -114,3 +134,15 @@ Primární specifikace: [NIP-07](https://github.com/nostr-protocol/nips/blob/mas
 [NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md),
 [NIP-46](https://github.com/nostr-protocol/nips/blob/master/46.md),
 [NIP-98](https://github.com/nostr-protocol/nips/blob/master/98.md).
+
+## Vydání s resetem hráčů
+
+Vydání s epochou 2 zakládá nové účty i místní postavy od nuly. Nejdřív aplikuj
+migraci tabulek Nostr, potom nasaď Edge Function s kontrolou epochy. Ověř nový
+backend a teprve pak aplikuj uživatelem potvrzenou migraci
+`wonderland_player_reset_v2`. V jedné transakci smaže postavy, osobní postup
+a oba žebříčky včetně historických řádků. Nemění připojení webu k Supabase.
+Následně nasaď web ze stejné revize. Nový web zahazuje stará lokální uložení
+při načtení a používá nový jmenný prostor, takže stará karta nový save nepřepíše.
+Archivní Cloudflare Durable Object smaže původní herní údaje při inicializaci
+nového kódu, ověřovací binding a podpisové tajemství zachová.

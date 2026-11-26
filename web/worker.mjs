@@ -1,3 +1,5 @@
+import {playerEpoch} from './player-epoch.mjs';
+import {accountPath,accountBodyLimit,cookieToken,sessionCookie} from './account-paths.mjs';
 import {supabaseProxy} from './supabase-proxy.mjs';
 import {migrationAuthorized} from './server-migration.mjs';
 import {adminRoute} from './admin-test.mjs';
@@ -6,21 +8,32 @@ import {readJson} from './limits.mjs';
 import {secure,allowed} from './security.mjs';
 export {MonthlyLeaderboard} from './leaderboard-worker.mjs';
 const bridgeKeys=new WeakMap();
-async function proxy(request,env,upstream){let key;try{key=bridgeKeys.get(env);if(!key){const reply=await env.LEADERBOARD.getByName('monthly-v1').fetch(new Request('https://internal.invalid/internal/bridge-key'));key=(await reply.json()).key;if(!key)return null;bridgeKeys.set(env,key);}}catch{return Response.json({error:'Server temporarily unavailable',code:'PROXY_CREDENTIAL'},{status:503,headers:{'Cache-Control':'no-store'}});}return supabaseProxy(request,env.SUPABASE_API_URL,upstream,key);}
+async function proxy(request,env,upstream){let bridge;try{bridge=bridgeKeys.get(env);if(!bridge){const reply=await env.LEADERBOARD.getByName('monthly-v1').fetch(new Request('https://internal.invalid/internal/bridge-key'));bridge=await reply.json();if(!bridge.key)return null;bridgeKeys.set(env,bridge);}}catch{return Response.json({error:'Server temporarily unavailable',code:'PROXY_CREDENTIAL'},{status:503,headers:{'Cache-Control':'no-store'}});}const response=await supabaseProxy(request,env.SUPABASE_API_URL,upstream,bridge.key);
+ if(new URL(request.url).pathname==='/api/account/session')response.headers.set('x-wl-archive-reset',String(bridge.archiveReset===true));
+ return response;}
 const idPattern=/^\/api\/tx\/([a-f0-9]{64})\/status$/;
 const failure=(message,status=502,ttl=0)=>Response.json({error:message},{status,headers:{'Cache-Control':ttl?'public, max-age=0, s-maxage='+ttl:'no-store',...(status===429?{'Retry-After':'60'}:{})}});
 async function route(request,env,upstream,edgeCache){
  const url=new URL(request.url);
  if((url.protocol==='http:'&&['wondersland.online','www.wondersland.online'].includes(url.hostname))||url.hostname==='www.wondersland.online'){url.protocol='https:';url.hostname='wondersland.online';return Response.redirect(url.toString(),301);}
- if(url.pathname==='/health')return Response.json({application:'WondersLand [WL]',version:'0.3.3',balance:balance.balanceVersion,...(env.SUPABASE_API_URL?{backend:'supabase'}:{})});
+ if(url.pathname==='/health')return Response.json({application:'WondersLand [WL]',version:'0.3.3',balance:balance.balanceVersion,playerEpoch,...(env.SUPABASE_API_URL?{backend:'supabase'}:{})});
  if(['/test','/test/','/api/admin-test/session','/api/admin-test/status'].includes(url.pathname)){if(!await allowed(request,env))return failure('Please try again shortly',429);return adminRoute(request,env);}
  if(!url.pathname.startsWith('/api/'))return env.ASSETS.fetch(request);
  if(url.pathname==='/api/supabase-migration'){if(!env.LEADERBOARD||request.method!=='POST'||!await migrationAuthorized(request))return failure('Forbidden',403);return env.LEADERBOARD.getByName('monthly-v1').fetch(request);}
  if(!await allowed(request,env))return new Response('Please try again shortly',{status:429,headers:{'Retry-After':'60','Cache-Control':'no-store'}});
+ if(accountPath.test(url.pathname)){
+  if(!env.SUPABASE_API_URL)return failure('Nostr accounts are unavailable',503);
+  if(!['GET','POST'].includes(request.method))return failure('Method not allowed',405);
+  if(request.method==='POST'&&request.headers.get('origin')!==url.origin)return failure('Origin not allowed',403);
+  if(Number(request.headers.get('content-length'))>accountBodyLimit)return failure('Progress file is too large',413);
+  return await proxy(request,env,upstream)||failure('Nostr accounts are unavailable',503);
+ }
  if(/^\/api\/leaderboard(?:\/(?:start|finish))?$/.test(url.pathname)||/^\/api\/verified\/(?:profile|register|action|start|step|leaderboard|directory)$/.test(url.pathname)){
   if(request.method==='POST'&&['/api/leaderboard/start','/api/leaderboard/finish'].includes(url.pathname))return Response.json({error:'Client-reported submissions are closed',acceptingSubmissions:false},{status:410,headers:{'Cache-Control':'no-store'}});
   if(request.method==='POST'&&url.pathname.startsWith('/api/verified/')){
-   if(!/^Bearer [a-f0-9]{64}$/.test(request.headers.get('authorization')||''))return failure('Missing player key',401);
+   const accountSession=env.SUPABASE_API_URL&&cookieToken(request,sessionCookie);
+   if(!accountSession&&!/^Bearer [a-f0-9]{64}$/.test(request.headers.get('authorization')||''))return failure('Missing player key',401);
+   if(accountSession&&request.headers.get('origin')!==url.origin)return failure('Origin not allowed',403);
    if(!request.headers.get('content-type')?.startsWith('application/json'))return failure('JSON required',415);
    let body;try{body=await readJson(request,16384,{timeoutMs:5000});}catch(error){return failure('Invalid request body',error.message==='Response too large'?413:400);}
    const headers=new Headers(request.headers);headers.delete('content-length');request=new Request(request.url,{method:'POST',headers,body:JSON.stringify(body)});
@@ -28,7 +41,7 @@ async function route(request,env,upstream,edgeCache){
   if(!env.LEADERBOARD&&!env.SUPABASE_API_URL)return failure('Leaderboard unavailable',503);
   const reading=request.method==='GET'&&['/api/leaderboard','/api/verified/leaderboard'].includes(url.pathname),month=url.searchParams.get('month')||new Date().toISOString().slice(0,7),metric=url.searchParams.get('metric')||'best';
   if(reading&&(!/^20\d\d-(0[1-9]|1[0-2])$/.test(month)||month>new Date().toISOString().slice(0,7)||!['best','total','attempts'].includes(metric)))return failure('Invalid month or ranking',400);
-  const cacheKey=reading?new Request(url.origin+url.pathname+'?month='+month+'&metric='+metric+'&rules='+balance.balanceVersion):null;
+  const cacheKey=reading?new Request(url.origin+url.pathname+'?month='+month+'&metric='+metric+'&rules='+balance.balanceVersion+'&epoch='+playerEpoch):null;
   if(cacheKey&&edgeCache){const cached=await edgeCache.match(cacheKey);if(cached)return cached;}
   try{const response=await(env.SUPABASE_API_URL?((await proxy(request,env,upstream))||env.LEADERBOARD.getByName('monthly-v1').fetch(request)):env.LEADERBOARD.getByName('monthly-v1').fetch(request));if(reading&&response.ok){const headers=new Headers(response.headers);headers.set('Cache-Control','public, max-age=0, s-maxage=10');const out=new Response(response.body,{status:response.status,headers});if(edgeCache)await edgeCache.put(cacheKey,out.clone());return out;}return response;}catch{return failure('Leaderboard unavailable',503);}
  }

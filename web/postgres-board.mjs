@@ -12,7 +12,7 @@ export function postgresQuery(statement){
   .replace(/\?/g,()=>'$'+(++index));
 }
 export class PostgresBoard{
- constructor(sql,feed={}){this.query=sql;this.sql={exec:(statement,...args)=>this.rows(statement,...args)};this.ctx={waitUntil:p=>globalThis.EdgeRuntime?.waitUntil(p)};this.now=()=>Date.now();this.feedState=feed;for(const key of ['recentFeed','nextFeedAttempt','feedPromise'])Object.defineProperty(this,key,{get:()=>feed[key],set:value=>feed[key]=value});}
+ constructor(sql,feed={}){this.query=sql;this.accountOwner=null;this.sql={exec:(statement,...args)=>this.rows(statement,...args)};this.ctx={waitUntil:p=>globalThis.EdgeRuntime?.waitUntil(p)};this.now=()=>Date.now();this.feedState=feed;for(const key of ['recentFeed','nextFeedAttempt','feedPromise'])Object.defineProperty(this,key,{get:()=>feed[key],set:value=>feed[key]=value});}
  async rows(statement,...args){return Array.from(await this.query.unsafe(postgresQuery(statement),args));}
  async transaction(fn){return this.query.savepoint(async sql=>{const previous=this.query;this.query=sql;try{return await fn();}finally{this.query=previous;}});}
  async rate(key,now,max){const bucket=Math.floor(now/60000);if(key==='all')await this.query.unsafe('DELETE FROM rate_limits WHERE key IN (SELECT key FROM rate_limits WHERE bucket<$1 LIMIT 128)',[bucket-2]);const [row]=await this.query.unsafe('INSERT INTO rate_limits (key,bucket,hits) VALUES ($1,$2,1) ON CONFLICT(key) DO UPDATE SET bucket=excluded.bucket,hits=CASE WHEN rate_limits.bucket=excluded.bucket THEN LEAST(rate_limits.hits+1,2147483646) ELSE 1 END RETURNING hits',[key,bucket]);return row.hits<=max;}

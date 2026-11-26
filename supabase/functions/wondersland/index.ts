@@ -1,7 +1,10 @@
+import {epochHeader,playerEpoch,playerResetMarker} from '../../../web/player-epoch.mjs';
+import {accountPath,accountBodyLimit} from '../../../web/account-paths.mjs';
+import {accountRequest,sessionAccount} from '../../../web/nostr-account.mjs';
 import postgres from 'postgres';
 import {probeServer} from '../../../web/postgres-probe.mjs';
 import {bridgeAuthorized} from '../../../web/server-bridge.mjs';
-import {readJson} from '../../../web/limits.mjs';
+import {readJson,readText} from '../../../web/limits.mjs';
 import {handle} from '../../../web/worker.mjs';
 import {PostgresBoard,postgresOptions,withServerTransaction,serverVersion} from '../../../web/postgres-board.mjs';
 import {importServerPage} from '../../../web/postgres-migration.mjs';
@@ -17,7 +20,8 @@ Deno.serve(async request=>{
  try{
   if(path==='/health')return await withServerTransaction(client,async sql=>{
    const [state]=await sql.unsafe('SELECT complete,counts FROM migration_state WHERE id=1');
-   return json({...serverVersion,ready:state.complete,migration:state.complete?'complete':'pending'});
+   const [reset]=await sql.unsafe('SELECT id FROM security_migrations WHERE id=$1',[playerResetMarker]);
+   return json({...serverVersion,ready:state.complete,migration:state.complete?'complete':'pending',playerEpoch,playerResetComplete:!!reset});
   });
   if(path==='/internal/probe'){
    if(req.method!=='POST'||!await migrationAuthorized(req))return json({error:'Forbidden'},403);
@@ -30,19 +34,37 @@ Deno.serve(async request=>{
   if(!path.startsWith('/api/')||path==='/api/supabase-migration'||path.startsWith('/api/admin-test/'))return json({error:'Not found'},404);
   const publicFeed=path==='/api/mempool'||/^\/api\/tx\/[a-f0-9]{64}\/status$/.test(path);
   if(publicFeed)return handle(req,{},fetch,null);
-  if(!/^\/api\/(?:leaderboard(?:\/(?:start|finish))?|verified\/(?:profile|register|action|start|step|leaderboard|directory))$/.test(path))return json({error:'Not found'},404);
-  if(path.startsWith('/api/verified/')&&path!=='/api/verified/leaderboard'&&!/^Bearer [a-f0-9]{64}$/.test(req.headers.get('authorization')||''))return json({error:'Missing player key'},401);
+  const account=accountPath.test(path);
+  if(!account&&!/^\/api\/(?:leaderboard(?:\/(?:start|finish))?|verified\/(?:profile|register|action|start|step|leaderboard|directory))$/.test(path))return json({error:'Not found'},404);
+  if(path.startsWith('/api/verified/')&&path!=='/api/verified/leaderboard'&&!/^Bearer [a-f0-9]{64}$/.test(req.headers.get('authorization')||'')&&!req.headers.has('x-wl-session'))return json({error:'Missing player key'},401);
   const result=await withServerTransaction(client,async sql=>{
    const [state]=await sql.unsafe('SELECT complete,bridge_key FROM migration_state WHERE id=1');
    if(!state.complete)return json({error:'Server migration in progress'},503);
-   const body=req.method==='POST'?JSON.stringify(await readJson(req.clone(),16384,{timeoutMs:5000})):'';
+   let body='';
+   try{
+    if(req.method==='POST')body=account?await readText(req.clone(),accountBodyLimit,{timeoutMs:5000}):JSON.stringify(await readJson(req.clone(),16384,{timeoutMs:5000}));
+   }catch(error){return json({error:'Invalid request body'},error?.message==='Response too large'?413:400);}
    if(!await bridgeAuthorized(state.bridge_key,req,body))return json({error:'Invalid web server signature'},403);
+   if(account||path.startsWith('/api/verified/')&&path!=='/api/verified/leaderboard'){
+    if(req.headers.get(epochHeader)!==playerEpoch)return json({error:'Player data was reset. Reload the game.'},410);
+    const [reset]=await sql.unsafe('SELECT id FROM security_migrations WHERE id=$1',[playerResetMarker]);
+    if(!reset)return json({error:'Player reset is in progress'},503);
+   }
    const board=new PostgresBoard(sql,feed),now=board.now();
    // A persistent ceiling across all isolates; per-owner limits are in the shared protocol.
    if(!await board.rate('all',now,1800))return json({error:'Please try again shortly'},429);
    const headers=new Headers(req.headers);headers.set('CF-Connecting-IP',req.headers.get('x-wl-source')!);
    // Source IP is covered by the web server's HMAC, independently of player ownership.
    if(!await board.rate('ip:'+req.headers.get('x-wl-source'),now,120))return json({error:'Please try again shortly'},429);
+   if(account)return await accountRequest(board,req,body);
+   if(path.startsWith('/api/verified/')&&path!=='/api/verified/leaderboard'&&req.headers.has('x-wl-session')){
+    const session=await sessionAccount(board,req);
+    if(!session)return json({error:'Sign in with Nostr first'},401);
+    if(req.method==='POST'&&req.headers.get('origin')!==normalized.origin)return json({error:'Origin not allowed'},403);
+    board.accountOwner=session.ranked_owner;
+   }
+   // The edge proxy already canonicalizes ranked requests. Dispatch directly to the database board.
+   if(path.startsWith('/api/verified/')&&board.accountOwner)return await board.fetch(new Request(req.url,{method:req.method,headers,body:req.body,duplex:'half'} as RequestInit));
    return await handle(new Request(req.url,{method:req.method,headers,body:req.body,duplex:'half'} as RequestInit),{LEADERBOARD:{getByName:()=>board}},fetch,null);
   });
   return result;
