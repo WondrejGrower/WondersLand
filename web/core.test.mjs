@@ -10,7 +10,7 @@ test('ordinary jump and repeated air inputs obey caps; jetpack has finite fuel',
 test('giant transaction collides with exact TXID and a rescue resolves a wide instance once',()=>{const d=profile();d.hands=d.boots=true;const g=new Game(c,d);g.receive([tx(1,'2000000000000000'),tx(2,'2000000000000000')]);g.start();g.choose(0);for(let i=0;i<1500&&g.phase==='running';i++)g.tick(.016);assert.equal(g.phase,'over');assert.equal(g.rescuesGranted,1);assert.ok(g.hit.h>c.physics.airCap);assert.ok([tx(1).txid,tx(2).txid].includes(g.hit.txid));const before=g.p.coins;g.settle();assert.equal(g.p.coins,before);});
 test('empty queue freezes and resumes via countdown, no cyclic reuse',()=>{const g=new Game(c,profile());g.receive([tx(1)]);g.start();g.choose(0);for(let i=0;i<1000&&g.phase==='running';i++)g.tick(.016);assert.equal(g.phase,'waiting');const distance=g.distance;g.tick(.25);assert.equal(g.distance,distance);g.receive([tx(2)]);assert.equal(g.phase,'countdown');for(let i=0;i<31;i++)g.tick(.1);assert.equal(g.phase,'running');});
 test('schema migration preserves old gear, statistics, unlocked recipes and classes',()=>{const old={...profile(),schemaVersion:3,coins:777,owned:['hands'],workshop:{strength:7},milestones:['T1:60','T2:120'],runs:1};const d=migrate(old,c);assert.equal(d.coins,777);assert.equal(d.workshop.strength,7);assert.ok(d.recipes.includes('boots'));assert.ok(d.unlocked.includes('classes'));assert.ok(d.unlocked.includes('garden'));assert.throws(()=>migrate({schemaVersion:99},c));});
-test('research uses wall time and the saved role stays immutable',()=>{const d=profile();d.coins=10000;d.seeds=5;d.runs=5;d.totalDistance=7000;d.bestDistance=3500;const g=new Game(c,d);const now=Date.now()/1000;assert.ok(g.research('leaf',now));assert.ok(!g.research('leaf',now));g.updateResearch(now+601);assert.ok(g.p.completed.includes('leaf'));const coins=g.p.coins;assert.equal(g.changeClass('collector'),false);assert.equal(g.p.character.class,'gardener');assert.equal(g.p.coins,coins);assert.equal(g.p.character.name,'Willow');});
+test('research uses wall time and the saved role stays immutable',()=>{const d=profile();d.coins=10000;d.seeds=5;d.runs=5;d.totalDistance=7000;d.bestDistance=3500;d.unlocked=['garden'];const g=new Game(c,d);const now=Date.now()/1000;assert.ok(g.research('leaf',now));assert.ok(!g.research('leaf',now));g.updateResearch(now+601);assert.ok(g.p.completed.includes('leaf'));const coins=g.p.coins;assert.equal(g.changeClass('collector'),false);assert.equal(g.p.character.class,'gardener');assert.equal(g.p.coins,coins);assert.equal(g.p.character.name,'Willow');});
 
 test('cancelled skill selection is never checkpointed or rewarded on page blur',()=>{const g=new Game(c,profile());g.receive([tx(1)]);g.start();g.camp();g.saveCheckpoint();assert.equal(g.p.activeRun,undefined);assert.equal(g.p.runs,0);});
 
@@ -18,16 +18,34 @@ test('coin bonuses accumulate in exact milli-coins instead of dropping fractions
 
 test('all three roles are available at creation and require reset to change',()=>{for(const role of ['gardener','explorer','collector']){const g=new Game(c);g.create('Willow',{class:role,hair:'#5e3936',skin:'#dfaf87',shirt:'#679e86',hairStyle:0});assert.equal(g.p.character.class,role);g.p.coins=777;g.p.workshop.strength=7;const before=JSON.stringify(g.p);g.changeClass('collector');g.create('Replacement',{class:'collector'});assert.equal(JSON.stringify(g.p),before);const loaded=new Game(c,{...g.p,announcements:['classes','diamond']});assert.equal(loaded.p.character.class,role);assert.deepEqual(loaded.p.announcements,['diamond']);assert.equal(loaded.p.coins,777);const reset=new Game(c);reset.create('New',{class:'collector'});assert.equal(reset.p.character.class,'collector');}});
 
-test('buildings require a single live distance or ten levels in one attribute',()=>{
- const g=new Game(c,profile());g.p.runs=1;g.p.totalDistance=10000;
- for(const [distance,wardrobe,forge] of [[499,false,false],[500,true,false],[999,true,false],[1000,true,true]]){
-  g.p.bestDistance=distance;assert.equal(g.has('wardrobe'),wardrobe);assert.equal(g.has('forge'),forge);
+test('each completed live run unlocks at most one eligible feature',()=>{
+ const g=new Game(c,profile());g.receive([tx(1)]);
+ for(const [score,feature] of [[1000,'training'],[0,'strength'],[0,'agility']]){
+  g.start(false,42);g.choose(0);g.distance=score;g.camp();
+  assert.deepEqual(g.p.announcements,[feature]);
+  assert.ok(g.has(feature));
+  assert.equal(g.has('forge'),false);
  }
- g.p.bestDistance=50;g.p.coins=100000;g.p.workshop={strength:9,agility:9};
- assert.equal(g.has('forge'),false);assert.ok(g.buy('strength'));assert.equal(g.has('forge'),true);assert.equal(g.has('wardrobe'),false);
- assert.equal(g.p.announcements.filter(x=>x==='forge').length,1);g.buy('strength');assert.equal(g.p.announcements.filter(x=>x==='forge').length,1);
- const restored=new Game(c,g.p);assert.equal(restored.has('forge'),true);
- const existing=profile();existing.unlocked=['forge','wardrobe'];const old=new Game(c,existing);assert.ok(old.has('forge'));assert.ok(old.has('wardrobe'));
+ const legacy={...g.p};delete legacy.progressionMode;
+ const restored=new Game(c,legacy);
+ assert.ok(restored.has('forge'));assert.ok(restored.has('wardrobe'));
+});
+test('every 1000 metres offers a skill and freezes expedition time until a choice',()=>{
+ const g=new Game(c,profile());g.receive([tx(1)]);g.start(false,42);g.choose(0);
+ for(const metres of [1000,2000]){
+  g.distance=metres-.01;g.time=metres/11;g.spawn=100;g.tick(1/120);
+  assert.equal(g.phase,'upgrade');assert.equal(g.choices.length,3);
+  const time=g.time;g.tick(.25);assert.equal(g.time,time);
+  g.chooseUpgrade(0);assert.equal(g.phase,'running');
+ }
+ const resumed=new Game(c,g.p);
+ assert.ok(resumed.p.discoveries.includes('leap'));
+});
+test('Luck spawns a separately collectible Bitcoin skill',()=>{
+ const g=new Game(c,{...profile(),workshop:{luck:50},unlocked:['flying']});g.receive([tx(1)]);g.start(false,42);g.choose(0);
+ g.spawn=100;g.time=30;g.lootRoll=()=>0;g.tick(1/120);
+ assert.equal(g.flying.id,'bitcoin');g.flying.age=.6;g.tick(1/120);
+ assert.equal(g.effect('bitcoin'),.3);g.camp();assert.ok(g.p.discoveries.includes('bitcoin'));
 });
 
 test('practice catalogue covers every obstacle and repeats a chosen model with current build and no rewards',()=>{

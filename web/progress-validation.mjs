@@ -15,7 +15,7 @@ function validateProgress(input,config){
  if([3,4,5].indexOf(input.schemaVersion)<0)bad();
  for(var key of ['coins','seeds','runs','bestDistance','legacyCoins','legacyBest'])if(input[key]!==undefined&&!number(input[key],2000000000,true))bad();
  for(var key of ['totalDistance','lastClock'])if(input[key]!==undefined&&!number(input[key],key==='lastClock'?4102444800:9007199254740991,false))bad();
- for(var key of ['hands','boots'])if(input[key]!==undefined&&typeof input[key]!=='boolean')bad();
+ for(var key of ['hands','boots','publicCharacter'])if(input[key]!==undefined&&typeof input[key]!=='boolean')bad();
  if(input.tier!==undefined&&(!number(input.tier,6,true)||input.tier<1))bad();
  if(input.character!==undefined){var ch=input.character;if(!object(ch))bad();if(Object.keys(ch).length){if(!text(ch.name,24)||!ch.name.trim()||!known(ch['class'],ids('classes')))bad();for(var color of ['hair','skin','shirt'])if(ch[color]!==undefined&&(typeof ch[color]!=='string'||!/^#[0-9a-fA-F]{6}$/.test(ch[color])))bad();if(ch.hairStyle!==undefined&&!number(ch.hairStyle,15,true))bad();}}
  if(input.workshop!==undefined){if(!object(input.workshop))bad();for(var key of Object.keys(input.workshop))if(!known(key,ids('workshop'))||!number(input.workshop[key],50,true))bad();}
@@ -30,6 +30,10 @@ function validateProgress(input,config){
   const mine=input.mine,tiers=config.mine.tiers,maxWork=tiers.at(-1).perHour*config.mine.storageHours*3600000;
   if(!object(mine)||!number(mine.owned,tiers.length,true)||mine.owned<1||!number(mine.active,mine.owned,true)||mine.active<1||!number(mine.since,4102444800000,true)||mine.since<1||!number(mine.work,maxWork,true))bad();
  }
+ if(input.progressionMode!==undefined&&input.progressionMode!=='staged')bad();
+ if(input.discoveries!==undefined)list(input.discoveries,32,x=>known(x,ids('skills')));
+ if(input.activeRun?.drops!==undefined)list(input.activeRun.drops,1,x=>known(x,ids('clothing')));
+ if(input.activeRun?.discoveries!==undefined)list(input.activeRun.discoveries,32,x=>known(x,ids('skills')));
  if(input.activeRun!==undefined){var r=input.activeRun;if(!object(r))bad();if(Object.keys(r).length){if(!text(r.id,128)||!r.id||!number(r.seconds,86400,false)||!number(r.score,2000000000,true)||!number(r.coins,2000000000,true)||!text(r.mode,96)||!(r.mode==='live'||r.mode.indexOf('replay:')===0)||!known(r['class'],ids('classes'))||!input.character||r['class']!==input.character['class'])bad();if(r.score>Math.floor(config.physics.speed*config.physics.maxSpeedFactor*r.seconds/10)+2||r.coins>Math.ceil(r.seconds*10)+20)bad();}}
  return true;
 }

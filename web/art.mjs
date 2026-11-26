@@ -85,6 +85,14 @@ export function drawRun(c,s,wlTranslate,width=640,height=360){
  var pose=s.phase==="over"?"hit":s.y>0?(s.velocity<0?"fall":"jump"):s.landing>0?"land":s.phase==="running"?"run":"idle";
  PixelArt.character(c,96,ground-s.y-40,s.profile.character,Math.floor(t*10),s.profile.hands,s.profile.boots,pose,s.profile.equipment,false,{velocity:s.velocity,landing:s.landing});
  if(s.invulnerable>0){c.strokeStyle="#bfe9d4";c.strokeRect(93,ground-s.y-43,30,46)}
- if(s.flying.id&&!s.flying.blocked){var fl=s.flying;c.fillStyle=fl.age<0?"#b8a4d5":"#e4d28b";c.fillRect(Math.round(fl.x),ground-fl.y-7,10,10);c.font="9px monospace";c.fillText(wlTranslate(fl.name),Math.max(180,fl.x),ground-100)}
+ if(s.flying.id&&!s.flying.blocked){
+  const fl=s.flying,x=Math.round(fl.x),y=ground-fl.y+Math.round(Math.sin(t*7)*3);
+  const w=Math.max(3,Math.round(8*Math.abs(Math.cos(t*4))));
+  c.fillStyle='#9d4d16';c.fillRect(x-w,y-5,w*2,12);
+  c.fillStyle='#f39729';c.fillRect(x-w,y-7,w*2,12);
+  c.fillStyle='#ffda89';c.fillRect(x-w,y-7,w*2,2);
+  if(w>=5){c.fillStyle='#fff4d7';c.font='bold 11px monospace';c.fillText('₿',x-3,y+2);}
+  c.fillStyle='#e4d28b';c.font='9px monospace';c.fillText(wlTranslate(fl.name),Math.max(180,x),ground-100);
+ }
  if(s.obstacles.some(p=>p.h>ground)){c.fillStyle="#e7ba85";c.font="10px monospace";c.fillText(wlTranslate("Tall canopy continues above the view"),210,75)}
  if(s.phase==="over"){c.strokeStyle="#e2a27b";c.lineWidth=2;var hit=s.hit;c.strokeRect(hit.x-4,ground-hit.h-4,hit.w+8,hit.h+8)}}

@@ -17,7 +17,7 @@ async function route(request,env,upstream,edgeCache){
  if(!url.pathname.startsWith('/api/'))return env.ASSETS.fetch(request);
  if(url.pathname==='/api/supabase-migration'){if(!env.LEADERBOARD||request.method!=='POST'||!await migrationAuthorized(request))return failure('Forbidden',403);return env.LEADERBOARD.getByName('monthly-v1').fetch(request);}
  if(!await allowed(request,env))return new Response('Please try again shortly',{status:429,headers:{'Retry-After':'60','Cache-Control':'no-store'}});
- if(/^\/api\/leaderboard(?:\/(?:start|finish))?$/.test(url.pathname)||/^\/api\/verified\/(?:profile|register|action|start|step|leaderboard)$/.test(url.pathname)){
+ if(/^\/api\/leaderboard(?:\/(?:start|finish))?$/.test(url.pathname)||/^\/api\/verified\/(?:profile|register|action|start|step|leaderboard|directory)$/.test(url.pathname)){
   if(request.method==='POST'&&['/api/leaderboard/start','/api/leaderboard/finish'].includes(url.pathname))return Response.json({error:'Client-reported submissions are closed',acceptingSubmissions:false},{status:410,headers:{'Cache-Control':'no-store'}});
   if(request.method==='POST'&&url.pathname.startsWith('/api/verified/')){
    if(!/^Bearer [a-f0-9]{64}$/.test(request.headers.get('authorization')||''))return failure('Missing player key',401);
