@@ -279,3 +279,13 @@ The full Chromium journey, ranked browser test and local signing browser test
 passed. The signing test uses an ephemeral key and inspects requests, browser
 storage and console output. The Czech skill picker was checked at 320, 390 and
 1280 px, and the skill book rendered a distinct icon for all nine skills.
+
+## Nostr cookie forwarding and mobile errors · 2026-11-26
+
+Cloudflare release `1984207` serves the updated login UI and stylesheet.
+The production challenge returned one first-party cookie that the cookie jar
+accepted. Production verification reached signature validation with that
+cookie, and the Supabase health response succeeded. The live probe created no
+account. The Chromium scenario at 320 px used a disposable key to verify the
+Czech inline error, a fresh challenge on retry, and successful local signing.
+The checked deployment and cookie forwarding regression passed.
