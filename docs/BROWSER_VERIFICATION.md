@@ -344,3 +344,15 @@ the new rules, and a signed private session still loaded /test. An existing
 training save with Strength level 7 exposed all five attributes and retained
 that level. The 87 unit/integration checks, inventory and Ranked browser
 checks and checked deploy dry-run passed.
+
+## Smaller Bug and sequoia jump balance · 2026-11-27
+
+Cloudflare release `6246d1e` served byte-identical copies of the tested game,
+simulation, rendering, sprites, Czech translations and balance. Supabase Edge
+Function `wondersland` v11 was active. Production health and the Ranked
+leaderboard reported Journey-12.
+
+All 88 Node tests and the checked deploy dry-run passed. Chromium verified
+sharp sprites under fractional scaling, jump progression, keyboard, mouse
+and touch timing, the mobile and full game journeys, and the Ranked flow.
+The physics tests produced identical results at simulated 60 and 144 FPS.
