@@ -5,7 +5,7 @@ const host=server();await new Promise(r=>host.listen(0,'127.0.0.1',r));const bro
 try{
  for(const mobile of [false,true]){
   const page=await browser.newPage({viewport:mobile?{width:390,height:844}:{width:1280,height:800},hasTouch:mobile,isMobile:mobile}),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.clock.install();await page.clock.pauseAt(Date.now()+100);
+  const testTime=Date.now();await page.clock.install({time:testTime});await page.clock.pauseAt(testTime+2000);
   await page.route('**/api/mempool',r=>r.fulfill({json:[]}));
   await page.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:readFileSync('web/app.mjs','utf8')+`\nwindow.fixture={get game(){return game;},setup(model,role){overlay='';if(!game.p.character.name)game.create('Synthetic input check',{class:role,hair:'#5e3936',skin:'#dfaf87',hairStyle:0});game.p.character.class=role;game.p.workshop.strength=0;game.startPractice(model);game.spawnPlant();game.spawn=1e9;game.coins=[];touch();}};`}));
   await page.goto('http://127.0.0.1:'+host.address().port);await page.waitForFunction(()=>document.body.dataset.ready==='true');

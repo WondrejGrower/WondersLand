@@ -29,12 +29,12 @@ try{
   return canvas.width===canvas.clientWidth&&canvas.height===canvas.clientHeight;
  },null,{polling:50});
  const pixelAlpha=await page.evaluate(async()=>{
-  const {character}=await import('/pixels.mjs');
+  const {miniature}=await import('/pixels.mjs');
   const canvas=document.createElement('canvas');canvas.width=100;canvas.height=160;
   const c=canvas.getContext('2d');
   c.setTransform(3.37,0,0,3.37,.4,.7);
   c.imageSmoothingEnabled=true;
-  character(c,1.3,1.6,{hair:'#5e3936',skin:'#dfaf87',hairStyle:0},0,false,false,'idle',{},true);
+  miniature(c,14.3,30.6,20,{hair:'#5e3936',skin:'#dfaf87',hairStyle:0},0,false,false,'fall',{},true,{velocity:-70});
   const pixels=c.getImageData(0,0,100,160).data;
   return [...new Set(pixels.filter((_,i)=>i%4===3))].sort((a,b)=>a-b);
  });

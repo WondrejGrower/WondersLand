@@ -6,7 +6,7 @@ test('transaction identity and continuous uncapped size curve',()=>{let prev=0;f
 test('queue bounded, deduplicated, refreshed and never reused during a run',()=>{const q=new Queue();q.receive(Array.from({length:800},(_,i)=>tx(i+1)));assert.equal(q.cache.length,512);q.begin(1);const ids=new Set();for(let i=0;i<512;i++){const r=q.take();assert.ok(!ids.has(r.txid));ids.add(r.txid);}assert.equal(q.take(),null);q.receive([tx(900)]);assert.equal(q.take().txid,tx(900).txid);q.receive([tx(900),tx(901,'-2')]);assert.equal(q.take(),null);});
 test('live short attempts progressively unlock and reward once; training pays nothing',()=>{const g=new Game(c,profile());assert.equal(g.has('training'),false);for(let i=0;i<10;i++){g.receive([tx(i+1)]);g.start();g.choose(0);g.distance=50;g.earned=5;g.camp();}assert.equal(g.p.totalDistance,500);assert.equal(g.has('forge'),false);assert.equal(g.has('wardrobe'),false);assert.equal(g.has('garden'),false);const saved=JSON.stringify(g.p);g.start(true);g.choose(0);g.distance=10000;g.earned=10000;g.camp();assert.equal(JSON.stringify(g.p),saved);});
 test('every new run starts from zero and region changes do not resize obstacles',()=>{const g=new Game(c,profile());g.receive(Array.from({length:100},(_,i)=>tx(i+1)));g.start(false,42);g.choose(0);while(g.distance<499)g.tick(.1);const before=g.obstacles.map(p=>({...p}));while(g.distance<501)g.tick(.01);assert.equal(g.region().id,'grove');for(const p of before){const same=g.obstacles.find(o=>o.txid===p.txid);if(same){assert.equal(same.h,p.h);assert.equal(same.w,p.w);}}g.camp();g.start();assert.equal(g.distance,0);assert.equal(g.region().id,'edge');});
-test('ordinary jump and repeated air inputs obey caps; jetpack has finite fuel',()=>{const d=profile();d.runs=5;d.totalDistance=7000;d.bestDistance=3500;d.completed=['air','leaf','spore'];d.workshop={strength:50};const g=new Game(c,d);g.start(true);g.choose(0);g.spawn=1e9;g.obstacles=[];g.skills={leap:3,double:3,jetpack:3,glider:3};g.jump();g.jet=true;for(let i=0;i<800;i++){if(i%30===0)g.jump();g.tick(.005);assert.ok(g.y<=g.stats().airCap+.05);}assert.equal(g.fuel,0);g.jet=g.held=false;for(let i=0;i<600;i++)g.tick(.005);assert.equal(g.y,0);});
+test('ordinary jump and repeated air inputs obey caps; jetpack has finite fuel',()=>{const d=profile();d.runs=5;d.totalDistance=7000;d.bestDistance=3500;d.completed=['air','leaf','spore'];d.workshop={strength:50};const g=new Game(c,d);g.start(true);g.choose(0);g.spawn=1e9;g.obstacles=[];g.skills={leap:3,double:3,jetpack:3,glider:3};g.jump();g.jet=true;for(let i=0;i<800;i++){if(i%30===0)g.jump();g.tick(.005);assert.ok(g.y<=g.stats().jetCap+.05);}assert.equal(g.fuel,0);g.jet=g.held=false;for(let i=0;i<600;i++)g.tick(.005);assert.equal(g.y,0);});
 test('giant transaction collides with exact TXID and a rescue resolves a wide instance once',()=>{const d=profile();d.hands=d.boots=true;const g=new Game(c,d);g.receive([tx(1,'2000000000000000'),tx(2,'2000000000000000')]);g.start();g.choose(0);for(let i=0;i<1500&&g.phase==='running';i++)g.tick(.016);assert.equal(g.phase,'over');assert.equal(g.rescuesGranted,1);assert.ok(g.hit.h>c.physics.airCap);assert.ok([tx(1).txid,tx(2).txid].includes(g.hit.txid));const before=g.p.coins;g.settle();assert.equal(g.p.coins,before);});
 test('empty queue freezes and resumes via countdown, no cyclic reuse',()=>{const g=new Game(c,profile());g.receive([tx(1)]);g.start();g.choose(0);for(let i=0;i<1000&&g.phase==='running';i++)g.tick(.016);assert.equal(g.phase,'waiting');const distance=g.distance;g.tick(.25);assert.equal(g.distance,distance);g.receive([tx(2)]);assert.equal(g.phase,'countdown');for(let i=0;i<31;i++)g.tick(.1);assert.equal(g.phase,'running');});
 test('schema migration preserves old gear, statistics, unlocked recipes and classes',()=>{const old={...profile(),schemaVersion:3,coins:777,owned:['hands'],workshop:{strength:7},milestones:['T1:60','T2:120'],runs:1};const d=migrate(old,c);assert.equal(d.coins,777);assert.equal(d.workshop.strength,7);assert.ok(d.recipes.includes('boots'));assert.ok(d.unlocked.includes('classes'));assert.ok(d.unlocked.includes('garden'));assert.throws(()=>migrate({schemaVersion:99},c));});
@@ -81,7 +81,7 @@ test('practice catalogue covers every obstacle and repeats a chosen model with c
  g.startPractice();for(const m of c.trainingModels){g.spawnPlant();assert.equal(g.obstacles.at(-1).type,m.id);}g.camp();assert.equal(JSON.stringify(g.p),saved);
 });
 
-test('permanent strength spans meadow plants to late sequoias while keeping exact plant sizes',async()=>{
+test('strength preserves the early curve and opens taller ordinary jumps without clearing sequoias',async()=>{
  const {windows}=await import('../tools/jump-progression.mjs');
  for(const f of JSON.parse(readFileSync(new URL('../tests/jump-stats.json',import.meta.url)))){const game=new Game(c,{...profile(),character:{name:'Fixture',class:f.role},workshop:{strength:f.level}});assert.ok(Math.abs(game.stats().jumpVelocity-f.jumpVelocity)<1e-8);assert.ok(Math.abs(game.stats().airCap-f.airCap)<1e-8);assert.ok(Math.abs(game.jumpHeight()-f.jumpHeight)<1e-8);}
  for(const role of ['gardener','explorer','collector']){
@@ -91,7 +91,7 @@ test('permanent strength spans meadow plants to late sequoias while keeping exac
   assert.ok(windows('900000',0,role).length>=20,'fern '+role);
  }
  for(const role of ['gardener','explorer','collector']){assert.ok(windows('50000',0,role,false).length>=50,'flower timing margin');assert.ok(windows('250000',0,role,false).length>=30,'tulip timing margin');assert.ok(windows('420000',0,role,false).length>=12,'cannabis timing margin');}
- for(const [sats,locked,unlocked]of [['10000000',0,20],['100000000',8,25],['1000000000',15,32],['100000000000',35,50]]){
+ for(const [sats,locked,unlocked]of [['10000000',0,20],['100000000',8,25],['1000000000',15,32]]){
   const size=plant(sats,c);assert.equal(windows(sats,locked).length,0);assert.ok(windows(sats,unlocked).length);assert.deepEqual(plant(sats,c),size);
  }
  const base=new Game(c,profile());for(let level=0;level<=50;level++){
@@ -102,9 +102,36 @@ test('permanent strength spans meadow plants to late sequoias while keeping exac
  const existing={...profile(),coins:777,workshop:{strength:37},runs:9,bestDistance:1000};const restored=new Game(c,existing);assert.equal(restored.p.workshop.strength,37);assert.equal(restored.p.coins,777);
 });
 
+test('a maxed basic jump stops below sequoias, while upgraded aerial skills can clear them',()=>{
+ function run(sats,lead,skills){
+  const g=new Game(c,{...profile(),boots:true,workshop:{strength:50}});
+  g.startPractice('sequoia');g.spawn=1e9;g.skills=skills;
+  g.obstacles=[{...plant(sats,c),x:lead,resolved:false,txid:'',status:'demo'}];
+  g.jump();
+  for(let frame=0;frame<600&&g.phase==='running'&&g.obstacles[0].x+g.obstacles[0].w>100;frame++){
+   if(frame===144&&skills.double)g.jump();
+   if(frame===96&&skills.jetpack)g.jet=true;
+   g.tick(1/120);
+  }
+  return g;
+ }
+ const normal=run('100000000000',296,{leap:3});
+ assert.ok(normal.stats().jumpVelocity**2/(2*c.physics.heldGravity)<195);
+ assert.equal(normal.phase,'over');
+ const middle=run('100000000000',308,{double:2});
+ assert.equal(middle.phase,'over');
+ assert.ok(middle.stats().airCap<middle.hit.h-4);
+ const smaller=run('100000000000',312,{double:3});
+ assert.equal(smaller.phase,'running');
+ assert.ok(smaller.obstacles[0].x+smaller.obstacles[0].w<=100);
+ const taller=run('1000000000000',360,{jetpack:1});
+ assert.equal(taller.phase,'running');
+ assert.ok(taller.obstacles[0].x+taller.obstacles[0].w<=100);
+ assert.ok(taller.fuel<c.physics.fuel);
+});
 test('releasing jump still allows low controlled hops after long-term Strength upgrades',()=>{
  function peak(level,release,basic=false){const g=new Game(c,{...profile(),workshop:{strength:level}});g.startPractice('flower');g.spawn=1e9;if(basic)g.skills={leap:1};g.jump();if(release)g.release();let peak=0;for(let i=0;i<960;i++){g.tick(1/240);peak=Math.max(peak,g.y);}return peak;}
- assert.ok(peak(0,false)>45&&peak(0,false)<47);assert.ok(peak(50,false)>280);assert.ok(peak(50,true)>45&&peak(50,true)<47);assert.ok(peak(0,true)>45&&peak(0,true)<47);assert.ok(peak(0,true,true)>peak(0,true)*1.14);assert.ok(Math.abs(peak(0,true,true)-peak(0,false,true))<.05);
+ assert.ok(peak(0,false)>45&&peak(0,false)<47);assert.ok(peak(50,false)>168&&peak(50,false)<171);assert.ok(peak(50,true)>45&&peak(50,true)<47);assert.ok(peak(0,true)>45&&peak(0,true)<47);assert.ok(peak(0,true,true)>peak(0,true)*1.14);assert.ok(Math.abs(peak(0,true,true)-peak(0,false,true))<.05);
 });
 
 test('starting choices are complementary movement skills with fixed first ranks',()=>{

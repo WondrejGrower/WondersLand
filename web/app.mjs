@@ -188,7 +188,7 @@ function button(text,action,arg='',disabled=false,selected=false){return `<butto
 function p(text){return '<p>'+escape(text)+'</p>';}
 function title(text){return '<h1>'+escape(text)+'</h1>';}
 function toggleAppearance(part){const ch=game.phase==='creation'?appearance:game.p.character;if(part==='hairStyle')ch[part]=(ch[part]+1)%16;else ch[part]=palettes[part][(palettes[part].indexOf(ch[part])+1)%palettes[part].length];if(game.phase!=='creation')game.persist();touch();}
-function skillText(s){const n=s.effects?.[(s.nextRank||1)-1]||0;return s.id==='coins'?t('Earn %1 gold for this run',config.run.fallbackCoins):s.id==='bitcoin'?t('Collected coins are worth 30% more this run.'):s.id==='leap'?t('Basic Jump height +%1%, capped at 320 px',Math.round(n*100)):s.id==='magnet'?t('Collection range +%1%',Math.round(n*100)):s.id==='aircoins'?t('Airborne coin bonus +%1%',Math.round(n*100)):s.id==='timeslow'?t('Slows expedition time by %1%. Jumps and obstacles slow together.',Math.round(n*100)):s.id==='double'?t('One extra jump every %1 s · %2% impulse. Aerial limit grows with Strength (max 450 px)',s.cooldown,Math.round(n*100)):s.id==='glider'?t('Glide up to %1 s per jump',new Intl.NumberFormat(language,{maximumFractionDigits:1}).format(n)):s.id==='shield'?t('One rescue, at most two granted per run'):t('Jetpack: 3 s fuel for the whole run, hold F');}
+function skillText(s){const n=s.effects?.[(s.nextRank||1)-1]||0;return s.id==='coins'?t('Earn %1 gold for this run',config.run.fallbackCoins):s.id==='bitcoin'?t('Collected coins are worth 30% more this run.'):s.id==='leap'?t('Basic Jump height +%1% · limit %2 px',Math.round(n*100),config.physics.jumpCap):s.id==='magnet'?t('Collection range +%1%',Math.round(n*100)):s.id==='aircoins'?t('Airborne coin bonus +%1%',Math.round(n*100)):s.id==='timeslow'?t('Slows expedition time by %1%. Jumps and obstacles slow together.',Math.round(n*100)):s.id==='double'?t('One extra jump every %1 s · %2% impulse. Rank %3 height limit: %4 px.',s.cooldown,Math.round(n*100),s.nextRank||1,config.physics.doubleJumpCaps[(s.nextRank||1)-1]):s.id==='glider'?t('Glide up to %1 s per jump',new Intl.NumberFormat(language,{maximumFractionDigits:1}).format(n)):s.id==='shield'?t('One rescue, at most two granted per run'):t('Jetpack · %1 s fuel per run · max %2 px · hold F',config.physics.fuel,config.physics.airCap);}
 function roleDescription(id){return t(id==='gardener'?'Gardener: +10% coins, −10% magnet range.':id==='explorer'?'Explorer: one emergency double jump per run, −5% Basic Jump height.':'Collector: +20% magnet range, +1 s to catch upgrades, −5% Basic Jump height.');}
 function skillIcon(skill){
  return '<span class="skill-icon" aria-hidden="true"><canvas width="16" height="16" data-skill-icon="'+escape(skill.id)+'"></canvas></span>';
@@ -223,7 +223,7 @@ function inventoryHtml(wardrobe=false){
  if(wardrobe){
   html+='<details><summary>'+t('Appearance')+'</summary>'+appearanceButtons()+'</details>';
   for(const item of config.items.filter(item=>d.owned.includes(item.id))){
-   const effect=item.id==='hands'?t('Collection range +%1%',Math.round(item.magnet*100)):t('Basic Jump height +%1%, capped at 320 px',Math.round(item.jump*100));
+   const effect=item.id==='hands'?t('Collection range +%1%',Math.round(item.magnet*100)):t('Basic Jump height +%1% · limit %2 px',Math.round(item.jump*100),config.physics.jumpCap);
    html+=button(t(item.name)+' · '+t(d[item.id]?'Equipped':'Equip')+'\n'+effect,'equip',item.id,false,d[item.id]);
   }
  }

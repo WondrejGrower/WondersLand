@@ -1,6 +1,6 @@
 # How WondersLand balance works
 
-Current rules: **`wl-0.3-journey-11`**, application 0.3.3. Journey-8 strengthens Double Jump
+Current rules: **`wl-0.3-journey-12`**, application 0.3.3. Journey-8 strengthens Double Jump
 and shortens its cooldown, as introduced in Journey-8. Journey-9 adds the personal Block Mine. Historical briefs and earlier playtest requests may
 describe older rules.
 The executable source of values is [src/balance.json](../src/balance.json).
@@ -15,7 +15,7 @@ are now separate; see the monthly-record section below.
   menší transakce podle síly postavy.
 - Základní skok je proti journey-6 přibližně o 50 % vyšší a pohodlněji zvládá
   běžné keře a kapradiny. Větší stromy vyžadují
-  postupné vylepšování; druh sám nezaručuje konkrétní velikost. Malé konopí
+  postupné vylepšování a na sekvoje je potřeba vzdušná schopnost. Druh sám nezaručuje konkrétní velikost. Malé konopí
   lze přeskočit, velké konopí může být nepřekonatelné.
 - Při startu volíš Basic Jump (+15 % základní výšky), Time Slow nebo Double
   Jump (další skok jednou za 4 sekundy aktivní hry). S vyšší Silou skok
@@ -130,27 +130,32 @@ velocity to `140 × sqrt(max(0, 1 + role + leap + boots))`, deliberately excludi
 Strength. An instant tap retains the baseline jump; later upgrades need holding.
 The input buffer is fixed at 0.1 s; Agility does not enlarge it.
 
-The ordinary jump limit is 320 px. The aerial limit is
-`min(450, 1.5 × permanent jump height)`, excluding the temporary Basic Jump skill
-but including role, Strength and Diamond Boots. A rank-one Double Jump does not
-instantly grant a 450 px jump. Landing resets the once-per-takeoff flag, **not**
-its four-second cooldown. Pausing/waiting/countdown consume no cooldown.
-Explorer also has one emergency aerial jump per run when the skill is unavailable.
-Jetpack, once unlocked and acquired, has only 3 seconds of fuel for the whole
-run and respects the aerial limit. At most two rescues can be granted per run;
-one broad tree cannot consume repeatedly granted rescues.
+The ordinary jump limit is 195 px. The run sprite is 20 world pixels high,
+and the camp sprite is 24. Both share the original feet anchor used for
+obstacle clearance. The smallest sequoia is 243 px tall.
+
+Double Jump still scales with permanent jump height. Ranks I–III have
+ceilings of 220, 235 and 290 px respectively. Rank III gains up to 0.18
+on top of the 1.5× aerial factor as Strength rises, so a strong build can
+clear the 243 px practice sequoia with a well-timed second jump. Landing
+resets the once-per-takeoff flag. The four-second cooldown runs only in
+active game time. Explorer has one emergency aerial jump per run.
+
+Jetpack has its own ceiling of the lesser of 425 px and 2.5× permanent
+jump height. Its three seconds of fuel are shared across the whole run.
+A well-timed flight can clear a 365 px sequoia. At most two rescues can be
+granted per run. One broad tree cannot consume repeatedly granted rescues.
 
 ## Permanent development and practice
 
-Strength level `L` (0–50) adds `5.7 × (L/50)²` to the height bonus. All five stat
-branches cost `ceil(50 × 1.12^L)` for the next level and stop at 50.
-Agility slows expedition simulation by `0.02 × L/50` (maximum 2%); its time
-factor multiplies Time Slow's factor. Magnetism adds up to 50% collection range,
-Luck shifts offer rarity weights, and Yield adds up to 25% coin bonus. None
-changes transaction amounts. Strength was retuned alongside the higher baseline:
-its level-50 ideal Gardener peak is about 312.67 px, close to journey-6’s
-311.54 px; purchased levels, costs and the 320 px ordinary cap remain.
-Research uses real time, independently of run time.
+Through level 20, Strength adds `5.7 × (L/50)²` to the height bonus. Beyond
+that, a quadratic taper continues from the same value and slope, reaching a
+bonus of 2.65 at level 50. A level-50 Gardener's ideal ordinary peak with no
+equipment or temporary skill is about 170.33 px. All five stat branches cost
+`ceil(50 × 1.12^L)` for the next level and stop at level 50. Purchased levels
+are carried forward. Agility slows expedition simulation by up to 2%, while
+Magnetism adds up to 50% collection range. Luck shifts offer rarity weights
+and Yield adds up to 25% coin bonus. Research runs in real time.
 
 Synthetic timing references, Gardener, no equipment/run skills, initial speed:
 
@@ -164,7 +169,7 @@ Synthetic timing references, Gardener, no equipment/run skills, initial speed:
 | Birch | 10,000,000 | 48 × 21 | 2 |
 | Pine | 100,000,000 | 72 × 25 | 16 |
 | Oak | 1,000,000,000 | 108 × 31 | 25 |
-| Sequoia | 100,000,000,000 | 243 × 56 | 44 |
+| Sequoia | 100,000,000,000 | 243 × 56 | Aerial skill required |
 
 These are finite ideal timing-search results, **not species unlock levels** or
 human success guarantees. A birch near 1,000,000 sats is only 28 px; a larger

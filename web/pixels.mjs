@@ -172,6 +172,31 @@ function character(c,x,y,ch,frame,hands,boots,mode,equipment,facingLeft,motion){
   c.fillRect(left,top,Math.max(1,Math.round(Math.max(a[0],b[0]))-left),Math.max(1,Math.round(b[1])-top));
  }
 }
+let miniatureCanvas;
+export function miniature(c,centerX,feetY,height,...pose){
+ const scale=height/40,width=24*scale;
+ let x=centerX-width/2,y=feetY-height;
+ const document=c.canvas?.ownerDocument;
+ c.save();
+ if(!document){
+  c.translate(x,y);c.scale(scale,scale);
+  character(c,0,0,...pose);
+ }else{
+  if(!miniatureCanvas){
+   miniatureCanvas=document.createElement('canvas');
+   miniatureCanvas.width=24;miniatureCanvas.height=40;
+  }
+  const brush=miniatureCanvas.getContext('2d');
+  brush.clearRect(0,0,24,40);
+  character(brush,0,0,...pose);
+  const transform=c.getTransform();
+  x=(Math.round(transform.a*x+transform.e)-transform.e)/transform.a;
+  y=(Math.round(transform.d*y+transform.f)-transform.f)/transform.d;
+  c.imageSmoothingEnabled=false;
+  c.drawImage(miniatureCanvas,x,y,width,height);
+ }
+ c.restore();
+}
 function plant(c,p,ground){Environment.plant(c,p,ground);}
 function prop(c,id,x,y,w,h){Environment.prop(c,id,x,y,w,h);}
 

@@ -38,8 +38,8 @@ export function drawCamp(c,s,wlTranslate,width=640,height=360){
   c.fillStyle='#13241775';c.beginPath();c.ellipse(x,y,w,h,0,0,2*Math.PI);c.fill();
  }
  function player(){
-  shadow(px,py+2,10,4);
-  PixelArt.character(c,px-12,py-40,s.profile.character,Math.floor(t*(s.moving?9:.8)),
+  shadow(px,py+1,6,2.5);
+  PixelArt.miniature(c,px,py,24,s.profile.character,Math.floor(t*(s.moving?9:.8)),
    s.profile.hands,s.profile.boots,s.moving?'run':'idle',s.profile.equipment,s.facingLeft);
  }
  function mine(x,y){
@@ -106,8 +106,8 @@ export function drawRun(c,s,wlTranslate,width=640,height=360){
  var obstacles=s.obstacles||[];for(i=0;i<obstacles.length;i++)plant(obstacles[i]);
  var coins=s.coins||[];for(i=0;i<coins.length;i++){var coin=coins[i];if(!coin.taken){rect(coin.x,ground-coin.y,7,9,"#d9a94f");rect(coin.x+2,ground-coin.y+2,2,5,"#ffe6a0")}}
  var pose=s.phase==="over"?"hit":s.y>0?(s.velocity<0?"fall":"jump"):s.landing>0?"land":s.phase==="running"?"run":"idle";
- PixelArt.character(c,96,ground-s.y-40,s.profile.character,Math.floor(t*10),s.profile.hands,s.profile.boots,pose,s.profile.equipment,false,{velocity:s.velocity,landing:s.landing});
- if(s.invulnerable>0){c.strokeStyle="#bfe9d4";c.strokeRect(93,ground-s.y-43,30,46)}
+ PixelArt.miniature(c,108,ground-s.y,20,s.profile.character,Math.floor(t*10),s.profile.hands,s.profile.boots,pose,s.profile.equipment,false,{velocity:s.velocity,landing:s.landing});
+ if(s.invulnerable>0){c.strokeStyle="#bfe9d4";c.strokeRect(100,ground-s.y-23,16,26)}
  if(s.flying.id&&!s.flying.blocked){
   const fl=s.flying,x=Math.round(fl.x),y=ground-fl.y+Math.round(Math.sin(t*7)*3);
   c.save();c.translate(x,y);c.scale(Math.max(.22,Math.abs(Math.cos(t*4))),1);

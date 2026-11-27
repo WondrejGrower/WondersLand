@@ -1,5 +1,5 @@
 {
-  "balanceVersion": "wl-0.3-journey-11",
+  "balanceVersion": "wl-0.3-journey-12",
   "loot": {
     "firstDistance": 30,
     "interval": 150,
@@ -63,8 +63,9 @@
     "jumpVelocity": 140,
     "heldGravity": 210,
     "gravity": 280,
-    "jumpCap": 320,
-    "airCap": 450,
+    "jumpCap": 195,
+    "airCap": 425,
+    "doubleJumpCaps": [220, 235, 290],
     "speed": 105,
     "maxSpeedFactor": 1.35,
     "spacing": [
@@ -82,6 +83,8 @@
     "gliderGravity": 210,
     "jetAcceleration": 1500,
     "airHeightFactor": 1.5,
+    "doubleJumpMastery": 0.18,
+    "jetHeightFactor": 2.5,
     "tapVelocity": 140
   },
   "rarityWeights": [
@@ -122,11 +125,13 @@
       "id": "strength",
       "name": "Strength",
       "max": 50,
-      "effect": 5.7,
-      "curve": "quadratic",
+      "effect": 2.65,
+      "curve": "soft-cap",
+      "earlyEffect": 5.7,
+      "softCapLevel": 20,
       "baseCost": 50,
       "growth": 1.12,
-      "description": "Basic Jump clears common shrubs and ferns. Strength gradually unlocks taller trees; sequoias need long-term upgrades. Basic Jump limit: 320 px."
+      "description": "Strength raises held jumps. Growth slows after level 20. Sequoias require an aerial skill."
     },
     {
       "id": "agility",

@@ -50,9 +50,9 @@ pevný 0,1 s. Tábor, odpočítávání, výzkum a síť běží v reálném ča
 
 Balance journey-9 přidává osobní Důl na bloky s jedním aktivním těžařem.
 Změna z journey-8: Dvojskok má impuls 90 / 95 / 100 % a cooldown 4 s.
-Základní fyzika z journey-7: základní/tap impuls 140, gravitace 210/280, kvadratická
-Síla 5.7. Výška začátečníka ~46.67 px, maximum Síly ~312.67 px. Animace letu
-a mělké propružení nemění hitbox. Při změně mechanik aktualizuj balanceVersion,
+Základní/tap impuls je 140 a gravitace 210/280. Journey-12 tlumí Sílu od
+20. úrovně. Výška začátečníka je ~46,67 px, Síla 50 dává ~170,33 px a
+základní skok má strop 195 px. Animace letu a velikost spritu nemění hitbox. Při změně mechanik aktualizuj balanceVersion,
 relevantní testy a docs/BALANCE.md. Kosmetika/FPS/PWA nevyžadují nový balance.
 
 ## Server a PWA
